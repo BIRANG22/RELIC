@@ -1509,7 +1509,7 @@ public class RestRoomController : MonoBehaviour
                     SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) &&
                     !equipped.Contains(skill.SkillId) && SkillOwnershipPolicy.CanEquip(skill, id))
                     candidates.Add(skill);
-            if (candidates.Count == 0) { BattleWarningUI.ShowMessage("발현할 기억이 없습니다."); return; }
+            if (candidates.Count == 0) { BattleWarningUI.ShowMessage(GameLocalization.Get(LocalizationKeys.Warning.NoManifestableMemory)); return; }
             // 각 레어도의 기본 확률은 30/30/30/10. 후보가 없는 레어도의 가중치는
             // 남아 있는 레어도에 비례해 재분배되며, 같은 레어도 내에서 균등 추첨합니다.
             float totalWeight = 0f;
@@ -1539,7 +1539,7 @@ public class RestRoomController : MonoBehaviour
             restChoicePending = false;
             ShowSelectedText(true);
             SetNextButtonVisible(true);
-        })) BattleWarningUI.ShowMessage("기억 선택 패널을 열 수 없습니다.");
+        })) BattleWarningUI.ShowMessage(GameLocalization.Get(LocalizationKeys.Warning.MemorySelectionPanelUnavailable));
         else
         {
             restChoicePending = true;
@@ -1698,7 +1698,7 @@ public class RestRoomController : MonoBehaviour
             !characterStore.TryGet(target.CharacterId, out CharacterRuntimeData character) ||
             character == null)
         {
-            resultMessage = "선택한 캐릭터를 찾을 수 없습니다.";
+            resultMessage = GameLocalization.Get(LocalizationKeys.Warning.MemoryCharacterMissing);
             return false;
         }
 
@@ -1707,20 +1707,20 @@ public class RestRoomController : MonoBehaviour
         if (!TryReadSkillFromAwakenTarget(character, target, out string currentSkillId) ||
             !IsSameId(currentSkillId, target.SkillId))
         {
-            resultMessage = "선택한 기억 장착 상태가 변경되었습니다.";
+            resultMessage = GameLocalization.Get(LocalizationKeys.Warning.MemoryEquipmentChanged);
             return false;
         }
 
         if (!TryGetUpgradeableSkill(currentSkillId, out _, out string upgradeSkillId) ||
             !IsSameId(upgradeSkillId, target.UpgradeSkillId))
         {
-            resultMessage = "선택한 기억은 강화할 수 없습니다.";
+            resultMessage = GameLocalization.Get(LocalizationKeys.Warning.MemoryNotUpgradeable);
             return false;
         }
 
         if (!TryApplySelectedSkillUpgrade(character, target, upgradeSkillId))
         {
-            resultMessage = "선택한 기억을 강화하지 못했습니다.";
+            resultMessage = GameLocalization.Get(LocalizationKeys.Warning.MemoryUpgradeFailed);
             return false;
         }
 

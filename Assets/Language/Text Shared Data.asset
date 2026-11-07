@@ -6011,6 +6011,350 @@ MonoBehaviour:
     m_Key: battle.skill.passive_duration
     m_Metadata:
       m_Items: []
+  - m_Id: 31941125468299264
+    m_Key: warning.data.unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825216
+    m_Key: warning.character.not_selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825217
+    m_Key: warning.character.data_not_found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825218
+    m_Key: warning.character.data_not_found_with_id
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825219
+    m_Key: warning.character.select_first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825220
+    m_Key: warning.character.none_available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825221
+    m_Key: warning.character.max_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825222
+    m_Key: warning.skill.slot_not_connected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825223
+    m_Key: warning.skill.select_slot_first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825224
+    m_Key: warning.skill.not_selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825225
+    m_Key: warning.skill.memory_unlock_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825226
+    m_Key: warning.skill.locked_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825227
+    m_Key: warning.skill.not_available_for_slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825228
+    m_Key: warning.rune.not_selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825229
+    m_Key: warning.rune.not_available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825230
+    m_Key: warning.rune.no_empty_slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825231
+    m_Key: warning.rune.shared_level_required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825232
+    m_Key: warning.rune.character_unlock_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825233
+    m_Key: warning.rune.none_to_unequip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825234
+    m_Key: warning.rune.not_equipped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825235
+    m_Key: warning.rune.slot_not_connected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825236
+    m_Key: warning.rune.slot_locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825237
+    m_Key: warning.rune.slot_unlock_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825238
+    m_Key: warning.rune.shared_locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825239
+    m_Key: warning.rune.equipped_by_other_character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825240
+    m_Key: warning.currency.insufficient_blue_dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825241
+    m_Key: warning.stage.locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825242
+    m_Key: warning.quest.must_complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825243
+    m_Key: warning.party.select_character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825244
+    m_Key: warning.party.select_deployed_character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825245
+    m_Key: warning.map.not_selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825246
+    m_Key: warning.party.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019520
+    m_Key: warning.party.not_full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019521
+    m_Key: warning.system.game_manager_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019522
+    m_Key: warning.tutorial.elric_dialogue_required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019523
+    m_Key: warning.network.host_only_start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019524
+    m_Key: warning.network.battle_start_sync_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019525
+    m_Key: warning.skill.none_registered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019526
+    m_Key: warning.skill.data_not_found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019527
+    m_Key: warning.timeline.controller_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019528
+    m_Key: warning.relic.unavailable_now
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019529
+    m_Key: warning.target_selection.unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019530
+    m_Key: warning.skill.reservation_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019531
+    m_Key: warning.timeline.slot_occupied_by_other_character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019532
+    m_Key: warning.timeline.slot_action_limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019533
+    m_Key: warning.skill.range_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019534
+    m_Key: warning.grid.selectable_range_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019535
+    m_Key: warning.move.insufficient_cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019536
+    m_Key: warning.grid.none_selectable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019537
+    m_Key: warning.grid.not_selectable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019538
+    m_Key: warning.move.destination_occupied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019539
+    m_Key: warning.move.destination_invalid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019540
+    m_Key: warning.move.reservation_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019541
+    m_Key: warning.timeline.select_slot_first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019542
+    m_Key: warning.grid.battle_grid_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019543
+    m_Key: warning.timeline.slot_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019544
+    m_Key: warning.timeline.slot_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019545
+    m_Key: warning.character.position_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019546
+    m_Key: warning.skill.reservation_controller_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019547
+    m_Key: warning.skill.reservation_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019548
+    m_Key: warning.timeline.no_reservation_to_undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019549
+    m_Key: warning.timeline.ui_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019550
+    m_Key: warning.battle.action_preparation_incomplete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019551
+    m_Key: warning.relic.data_not_found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019552
+    m_Key: warning.equip.panel_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019553
+    m_Key: warning.feature.unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019554
+    m_Key: warning.compound.invalid_recipe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019555
+    m_Key: warning.shop.insufficient_currency
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019556
+    m_Key: warning.shop.relic_owned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019557
+    m_Key: warning.shop.skill_owned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019558
+    m_Key: warning.rest.no_memory_to_manifest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019559
+    m_Key: warning.rest.memory_panel_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341465239552
+    m_Key: warning.resource.insufficient_mana
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765504
+    m_Key: warning.currency.insufficient
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765505
+    m_Key: warning.relic.already_owned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765506
+    m_Key: warning.skill.already_owned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765507
+    m_Key: warning.memory.none_manifestable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765508
+    m_Key: warning.memory.selection_panel_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765509
+    m_Key: warning.memory.character_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765510
+    m_Key: warning.memory.equipment_changed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765511
+    m_Key: warning.memory.not_upgradeable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765512
+    m_Key: warning.memory.upgrade_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563750105088
+    m_Key: warning.timeline.combined_action_limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242432
+    m_Key: warning.battle.mana_insufficient
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242433
+    m_Key: warning.battle.karma_insufficient
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242434
+    m_Key: battle.resource.shortage
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

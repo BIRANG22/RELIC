@@ -6199,7 +6199,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31304009331744769
-    m_Localized: Entering Combat Area
+    m_Localized: Combat Area
     m_Metadata:
       m_Items: []
   - m_Id: 31304009331744768
@@ -6219,7 +6219,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31308790653755392
-    m_Localized: Entering Rest Area
+    m_Localized: Rest Area
     m_Metadata:
       m_Items: []
   - m_Id: 31312692526686208
@@ -6296,6 +6296,350 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31924965792260096
     m_Localized: Continuous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019550
+    m_Localized: Action preparation is not complete.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825217
+    m_Localized: Character information could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825218
+    m_Localized: Character information could not be found. ({0})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825221
+    m_Localized: Already at the maximum level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825220
+    m_Localized: No characters are available for selection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825216
+    m_Localized: Please select a character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019545
+    m_Localized: Character position could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825219
+    m_Localized: Please select a character first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019554
+    m_Localized: Invalid synthesis combination.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825240
+    m_Localized: Not enough Blue Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125468299264
+    m_Localized: Failed to load data.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019552
+    m_Localized: Cannot open the equipment window.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019553
+    m_Localized: This feature is not yet available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019542
+    m_Localized: Battle grid could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019536
+    m_Localized: No grid cells are available for selection.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019537
+    m_Localized: This grid cell cannot be selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019534
+    m_Localized: No valid grid cells are available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825245
+    m_Localized: Please select a map.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019539
+    m_Localized: Cannot move to this position.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019538
+    m_Localized: Another unit occupies the destination cell.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019535
+    m_Localized: Not enough resources to move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019540
+    m_Localized: Failed to queue movement.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019524
+    m_Localized: Failed to synchronize battle start.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019523
+    m_Localized: Only the host can start.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825246
+    m_Localized: Please add a character to your party.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019520
+    m_Localized: Not enough party members. ({1}/{0})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825243
+    m_Localized: Please select a character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825244
+    m_Localized: Please select a character in your party.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825242
+    m_Localized: You must complete the quest first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019551
+    m_Localized: Artifact data could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019528
+    m_Localized: Artifacts cannot be used right now.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019559
+    m_Localized: Cannot open the memory selection panel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019558
+    m_Localized: No memories available to manifest.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825232
+    m_Localized: Rune slots unlock at level {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825239
+    m_Localized: This rune is equipped by another character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825230
+    m_Localized: No empty rune slots available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825233
+    m_Localized: No rune to remove.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825229
+    m_Localized: This rune cannot be used.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825234
+    m_Localized: This rune is not equipped.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825228
+    m_Localized: No rune selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825231
+    m_Localized: Your level is too low to use this rune.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825238
+    m_Localized: This rune is locked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825236
+    m_Localized: This rune slot is locked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825235
+    m_Localized: Rune slot is not connected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825237
+    m_Localized: Rune slots can be used starting at level {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019555
+    m_Localized: Not enough currency.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019556
+    m_Localized: You already own this artifact.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019557
+    m_Localized: You already own this skill.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019526
+    m_Localized: Skill data could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825226
+    m_Localized: This skill is not yet available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825225
+    m_Localized: Memories can be used starting at level {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019525
+    m_Localized: No skills registered.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825227
+    m_Localized: This skill cannot be used in this slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825224
+    m_Localized: No skill selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019533
+    m_Localized: Skill range could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019546
+    m_Localized: Skill reservation controller could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019547
+    m_Localized: Failed to queue skill.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019530
+    m_Localized: No skills have been queued.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825223
+    m_Localized: Please select a skill slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825222
+    m_Localized: Skill slot is not connected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825241
+    m_Localized: This area has not been unlocked yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019521
+    m_Localized: Game Manager could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019529
+    m_Localized: No target can be selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019527
+    m_Localized: Timeline could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019548
+    m_Localized: No queued actions to cancel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019541
+    m_Localized: Please select a timeline slot first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019532
+    m_Localized: Action limit for this slot exceeded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019543
+    m_Localized: Timeline slot could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019531
+    m_Localized: This slot is being used by another character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019544
+    m_Localized: This timeline slot cannot be used.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019549
+    m_Localized: Timeline UI could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019522
+    m_Localized: You must finish talking to Elric first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765504
+    m_Localized: Not enough currency.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765509
+    m_Localized: Could not find the selected character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765510
+    m_Localized: The selected Memory's equipment status has changed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765507
+    m_Localized: No Memories available to manifest.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765511
+    m_Localized: The selected Memory cannot be upgraded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765508
+    m_Localized: Cannot open the Memory Selection Panel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765512
+    m_Localized: Failed to upgrade the selected Memory.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765505
+    m_Localized: You already own this Artifact.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341465239552
+    m_Localized: Not enough Mana.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765506
+    m_Localized: You already own this skill.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242434
+    m_Localized: 'Not enough {0}. (Required: {1} / Available: {2})'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242433
+    m_Localized: Not enough Karma.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242432
+    m_Localized: Not enough Mana.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563750105088
+    m_Localized: Not enough space remaining in this slot.
     m_Metadata:
       m_Items: []
   references:

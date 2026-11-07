@@ -241,7 +241,7 @@ public class RestRoomShopPanel : MonoBehaviour
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
         if (runtime.Remnant < goods.Price)
         {
-            ShowWarning("\uC7AC\uD654\uAC00 \uBD80\uC871\uD569\uB2C8\uB2E4.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.InsufficientCurrency));
             return;
         }
 
@@ -284,7 +284,7 @@ public class RestRoomShopPanel : MonoBehaviour
         // 확인창이 열린 사이에 재화/보유 상태가 바뀔 수 있으므로 구매 직전에 다시 검사합니다.
         if (runtime.Remnant < goods.Price)
         {
-            ShowWarning("\uC7AC\uD654\uAC00 \uBD80\uC871\uD569\uB2C8\uB2E4.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.InsufficientCurrency));
             return;
         }
 
@@ -321,13 +321,13 @@ public class RestRoomShopPanel : MonoBehaviour
     {
         if (goods.Kind == RestRoomShopGoodsKind.Relic && HasRelicAnywhere(goods.Id))
         {
-            ShowWarning("\uC774\uBBF8 \uBCF4\uC720 \uC911\uC778 \uC720\uBB3C\uC785\uB2C8\uB2E4.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.RelicAlreadyOwned));
             return false;
         }
 
         if (goods.Kind == RestRoomShopGoodsKind.Skill && HasSkillAnywhere(runtime, goods.Id))
         {
-            ShowWarning("\uC774\uBBF8 \uBCF4\uC720 \uC911\uC778 \uC2A4\uD0AC\uC785\uB2C8\uB2E4.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillAlreadyOwned));
             return false;
         }
 

@@ -6262,7 +6262,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31304009331744769
-    m_Localized: Entrando en la zona de combate
+    m_Localized: "\xC1rea de combate"
     m_Metadata:
       m_Items: []
   - m_Id: 31304009331744768
@@ -6282,7 +6282,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31308790653755392
-    m_Localized: Entrando en la zona de descanso
+    m_Localized: "\xC1rea de descanso"
     m_Metadata:
       m_Items: []
   - m_Id: 31312692526686208
@@ -6359,6 +6359,350 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31924965792260096
     m_Localized: Continuo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019550
+    m_Localized: "La preparaci\xF3n de las acciones no ha terminado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825217
+    m_Localized: "No se encuentra la informaci\xF3n del personaje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825218
+    m_Localized: "No se encuentra la informaci\xF3n del personaje. ({0})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825221
+    m_Localized: "Ya has alcanzado el nivel m\xE1ximo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825220
+    m_Localized: No hay personajes disponibles para seleccionar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825216
+    m_Localized: Selecciona un personaje.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019545
+    m_Localized: "No se encuentra la posici\xF3n del personaje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825219
+    m_Localized: Primero selecciona un personaje.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019554
+    m_Localized: "La combinaci\xF3n de s\xEDntesis no es v\xE1lida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825240
+    m_Localized: No tienes suficiente Dustium azul.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125468299264
+    m_Localized: No se pueden cargar los datos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019552
+    m_Localized: No se puede abrir la ventana de equipamiento.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019553
+    m_Localized: "Esta funci\xF3n a\xFAn no est\xE1 disponible."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019542
+    m_Localized: "No se encuentra la cuadr\xEDcula de combate."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019536
+    m_Localized: No hay casillas disponibles para seleccionar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019537
+    m_Localized: No se puede seleccionar esta casilla.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019534
+    m_Localized: "No hay casillas v\xE1lidas disponibles."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825245
+    m_Localized: Selecciona un mapa.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019539
+    m_Localized: "No puedes moverte a esta posici\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019538
+    m_Localized: Otra unidad ocupa la casilla de destino.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019535
+    m_Localized: No tienes suficientes recursos para moverte.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019540
+    m_Localized: No se ha podido reservar el movimiento.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019524
+    m_Localized: No se ha podido sincronizar el inicio del combate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019523
+    m_Localized: "Solo el anfitri\xF3n puede iniciar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825246
+    m_Localized: "A\xF1ade un personaje al grupo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019520
+    m_Localized: No hay suficientes miembros en el grupo. ({1}/{0})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825243
+    m_Localized: Selecciona un personaje.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825244
+    m_Localized: Selecciona un personaje del grupo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825242
+    m_Localized: "Primero debes completar la misi\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019551
+    m_Localized: No se encuentran los datos del artefacto.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019528
+    m_Localized: No puedes usar artefactos en este momento.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019559
+    m_Localized: "No se puede abrir el panel de selecci\xF3n de recuerdos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019558
+    m_Localized: No hay recuerdos disponibles para manifestar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825232
+    m_Localized: Las ranuras de runas se desbloquean en el nivel {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825239
+    m_Localized: Otro personaje tiene equipada esta runa.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825230
+    m_Localized: "No hay ranuras de runas vac\xEDas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825233
+    m_Localized: No hay ninguna runa que quitar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825229
+    m_Localized: Esta runa no se puede usar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825234
+    m_Localized: "Esta runa no est\xE1 equipada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825228
+    m_Localized: No hay ninguna runa seleccionada.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825231
+    m_Localized: No tienes el nivel necesario para usar esta runa.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825238
+    m_Localized: "Esta runa est\xE1 bloqueada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825236
+    m_Localized: "Esta ranura de runa est\xE1 bloqueada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825235
+    m_Localized: "La ranura de runa no est\xE1 conectada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825237
+    m_Localized: Puedes usar ranuras de runas a partir del nivel {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019555
+    m_Localized: No tienes suficiente moneda.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019556
+    m_Localized: Ya tienes este artefacto.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019557
+    m_Localized: Ya tienes esta habilidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019526
+    m_Localized: No se encuentran los datos de la habilidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825226
+    m_Localized: "Esta habilidad a\xFAn no est\xE1 disponible."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825225
+    m_Localized: Puedes usar recuerdos a partir del nivel {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019525
+    m_Localized: No hay habilidades registradas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825227
+    m_Localized: Esta habilidad no se puede usar en esta ranura.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825224
+    m_Localized: No hay ninguna habilidad seleccionada.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019533
+    m_Localized: No se encuentra el alcance de la habilidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019546
+    m_Localized: No se encuentra el controlador de reserva de habilidades.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019547
+    m_Localized: No se ha podido reservar la habilidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019530
+    m_Localized: No hay habilidades reservadas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825223
+    m_Localized: Selecciona una ranura de habilidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825222
+    m_Localized: "La ranura de habilidad no est\xE1 conectada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125522825241
+    m_Localized: "Esta zona a\xFAn no se ha desbloqueado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019521
+    m_Localized: No se encuentra el administrador del juego.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019529
+    m_Localized: No se puede seleccionar un objetivo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019527
+    m_Localized: "No se encuentra la l\xEDnea de tiempo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019548
+    m_Localized: No hay acciones reservadas que cancelar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019541
+    m_Localized: "Primero selecciona una ranura de la l\xEDnea de tiempo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019532
+    m_Localized: "Se ha superado el l\xEDmite de acciones de esta ranura."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019543
+    m_Localized: "No se encuentra la ranura de la l\xEDnea de tiempo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019531
+    m_Localized: "Otro personaje est\xE1 usando esta ranura."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019544
+    m_Localized: "Esta ranura de la l\xEDnea de tiempo no se puede usar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019549
+    m_Localized: "No se encuentra la interfaz de la l\xEDnea de tiempo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31941125527019522
+    m_Localized: Primero debes terminar de hablar con Elric.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765504
+    m_Localized: No tienes suficiente moneda.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765509
+    m_Localized: No se encuentra el personaje seleccionado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765510
+    m_Localized: El estado de equipamiento del recuerdo seleccionado ha cambiado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765507
+    m_Localized: No hay recuerdos disponibles para manifestar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765511
+    m_Localized: El recuerdo seleccionado no se puede mejorar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765508
+    m_Localized: "No se puede abrir el panel de selecci\xF3n de recuerdos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765512
+    m_Localized: No se ha podido mejorar el recuerdo seleccionado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765505
+    m_Localized: Ya tienes este artefacto.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341465239552
+    m_Localized: "No tienes suficiente man\xE1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31945341519765506
+    m_Localized: Ya tienes esta habilidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242434
+    m_Localized: 'No tienes suficiente {0}. (Necesario: {1} / Disponible: {2})'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242433
+    m_Localized: No tienes suficiente karma.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242432
+    m_Localized: "No tienes suficiente man\xE1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563750105088
+    m_Localized: No queda suficiente espacio en esta ranura.
     m_Metadata:
       m_Items: []
   references:

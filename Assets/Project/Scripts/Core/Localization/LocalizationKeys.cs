@@ -78,6 +78,16 @@ public static class LocalizationKeys
         public const string EquipPanelUnavailable = "warning.equip.panel_unavailable";
         public const string FeatureUnavailable = "warning.feature.unavailable";
         public const string CompoundInvalidRecipe = "warning.compound.invalid_recipe";
+        public const string InsufficientMana = "warning.resource.insufficient_mana";
+        public const string InsufficientCurrency = "warning.currency.insufficient";
+        public const string RelicAlreadyOwned = "warning.relic.already_owned";
+        public const string SkillAlreadyOwned = "warning.skill.already_owned";
+        public const string NoManifestableMemory = "warning.memory.none_manifestable";
+        public const string MemorySelectionPanelUnavailable = "warning.memory.selection_panel_unavailable";
+        public const string MemoryCharacterMissing = "warning.memory.character_missing";
+        public const string MemoryEquipmentChanged = "warning.memory.equipment_changed";
+        public const string MemoryNotUpgradeable = "warning.memory.not_upgradeable";
+        public const string MemoryUpgradeFailed = "warning.memory.upgrade_failed";
     }
 
     public static class Lobby

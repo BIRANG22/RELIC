@@ -501,6 +501,12 @@ public static class LocalizationRuntimeSourceCatalog
     // Adding entries here makes Full Scan & Apply register them before synchronization.
     public static IReadOnlyList<LocalizationWorkbookEntry> RuntimeUiEntries { get; } = new[]
     {
+        // Battle warnings are runtime strings, not static prefab TMP labels.
+        Entry("warning.timeline.slot_action_limit", "슬롯 행동 제한을 초과했습니다."),
+        Entry("warning.timeline.combined_action_limit", "해당 슬롯에 남은 칸이 부족합니다."),
+        Entry("warning.battle.mana_insufficient", "마나가 부족합니다."),
+        Entry("warning.battle.karma_insufficient", "카르마가 부족합니다."),
+        Entry("battle.resource.shortage", "{0}가 부족합니다. (필요 {1} / 보유 {2})"),
         Entry("lobby.quest.setup", "탐사 준비"),
         Entry("lobby.quest.first_expedition", "첫 탐사 - 각성핵 회수 {Current}/{Target}"),
         Entry("battle.intro.enter_battle_area", "전투 구역 진입"),
@@ -508,9 +514,6 @@ public static class LocalizationRuntimeSourceCatalog
         Entry("battle.intro.rest_area", "휴식 구역 진입"),
         // Passive skill type uses this key in battle, reward, and lobby skill tooltips.
         Entry("common.passive", "패시브"),
-        // Passive skill resource labels are written directly at runtime, not serialized in prefabs.
-        // Full Scan & Apply registers the shared key in the workbook without a manual CSV edit.
-        Entry("battle.skill.passive_duration", "지속"),
         // Event dice result texts are produced at runtime, not by prefab TMP labels.
         Entry("event.dice.success", "성공"),
         Entry("event.dice.failure", "실패"),

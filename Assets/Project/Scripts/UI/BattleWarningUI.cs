@@ -1,4 +1,5 @@
 ﻿using TMPro;
+using UnityEngine.Localization.Components;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -212,6 +213,8 @@ public class BattleWarningUI : MonoBehaviour
         if (messageText == null)
             messageText = GetComponentInChildren<TMP_Text>(true);
 
+        ProtectWarningMessageText();
+
         if (backgroundImage == null)
             backgroundImage = GetComponentInChildren<Image>(true);
 
@@ -228,6 +231,30 @@ public class BattleWarningUI : MonoBehaviour
                 }
             }
         }
+    }
+
+    // Warning messages are already localized by their callers. A prefab-level
+    // static localization writer must never overwrite them with "Untranslated".
+    private void ProtectWarningMessageText()
+    {
+        if (messageText == null)
+            return;
+
+        GameObject textObject = messageText.gameObject;
+        if (textObject.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            textObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = textObject.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null && staticWriter.enabled)
+            staticWriter.enabled = false;
+
+        DynamicLocalizedTMPText dynamicWriter = textObject.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null && dynamicWriter.enabled)
+            dynamicWriter.enabled = false;
+
+        LocalizeStringEvent legacyWriter = textObject.GetComponent<LocalizeStringEvent>();
+        if (legacyWriter != null && legacyWriter.enabled)
+            legacyWriter.enabled = false;
     }
 
     private void SetWarningChildrenActive(bool active)
