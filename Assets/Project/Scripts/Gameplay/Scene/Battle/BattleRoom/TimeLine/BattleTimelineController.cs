@@ -3786,10 +3786,7 @@ public class BattleTimelineController : MonoBehaviour
         if (runtime.CanReserveCost(additionalCost))
             return true;
 
-        blockReason = BuildShortageMessage(
-            "Cost",
-            additionalCost,
-            runtime.CurrentCost - runtime.ReservedCost);
+        blockReason = GameLocalization.Get("warning.battle.mana_insufficient");
         return false;
     }
 
@@ -4673,12 +4670,14 @@ public class BattleTimelineController : MonoBehaviour
                 command.SkillData != null
                     ? command.SkillData.ReferenceResource
                     : ReferenceResource.Cost);
-            return BuildShortageMessage(
-                GetCostLabel(command.SkillData != null
-                    ? command.SkillData.ReferenceResource
-                    : ReferenceResource.Cost),
-                command.MinimumSkillCost,
-                available);
+            ReferenceResource resourceType = command.SkillData != null
+                ? command.SkillData.ReferenceResource
+                : ReferenceResource.Cost;
+            if (resourceType == ReferenceResource.Cost || resourceType == ReferenceResource.MovePoint)
+                return GameLocalization.Get("warning.battle.mana_insufficient");
+            if (resourceType == ReferenceResource.UniqueResource)
+                return GameLocalization.Get("warning.battle.karma_insufficient");
+            return BuildShortageMessage(GetCostLabel(resourceType), command.MinimumSkillCost, available);
         }
 
         string shortageMessage = GetShortageMessage(runtime, command);
@@ -4697,10 +4696,10 @@ public class BattleTimelineController : MonoBehaviour
             return BuildShortageMessage(GameLocalization.Get("common.hp"), command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
 
         if (!runtime.CanReserveCost(command.Cost))
-            return BuildShortageMessage(GameLocalization.Get("common.mana"), command.Cost, runtime.CurrentCost - runtime.ReservedCost);
+            return GameLocalization.Get("warning.battle.mana_insufficient");
 
         if (!runtime.CanReserveResource(command.ResourceCost))
-            return BuildShortageMessage(GameLocalization.Get("resource.karma"), command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+            return GameLocalization.Get("warning.battle.karma_insufficient");
 
         if (!runtime.CanReserveShield(command.ShieldCost))
             return BuildShortageMessage(GameLocalization.Get("common.armor"), command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);

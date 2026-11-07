@@ -597,7 +597,6 @@ public sealed class UIBlurReplicaSource
         {
             public int Count;
             public bool OriginalCull;
-            public float OriginalAlpha;
         }
 
         private static readonly Dictionary<CanvasRenderer, Entry> entries = new();
@@ -611,14 +610,13 @@ public sealed class UIBlurReplicaSource
         }
 
         // RectMask2D and UI rebuilds can reset CanvasRenderer.cull.
-        // Reapply both culling and zero alpha before each canvas render.
+        // Reapply culling only. Do not modify CanvasRenderer alpha.
         private static void EnforceHiddenRenderers()
         {
             foreach (KeyValuePair<CanvasRenderer, Entry> item in entries)
             {
                 if (item.Key == null || item.Value.Count <= 0) continue;
                 item.Key.cull = true;
-                item.Key.SetAlpha(0f);
             }
         }
 
@@ -642,15 +640,13 @@ public sealed class UIBlurReplicaSource
                 entry = new Entry
                 {
                     Count = 0,
-                    OriginalCull = renderer.cull,
-                    OriginalAlpha = renderer.GetAlpha()
+                    OriginalCull = renderer.cull
                 };
                 entries.Add(renderer, entry);
             }
 
             entry.Count++;
             renderer.cull = true;
-            renderer.SetAlpha(0f);
         }
 
         public static void Release(CanvasRenderer renderer)
@@ -662,12 +658,10 @@ public sealed class UIBlurReplicaSource
             if (entry.Count > 0)
             {
                 renderer.cull = true;
-                renderer.SetAlpha(0f);
                 return;
             }
 
             renderer.cull = entry.OriginalCull;
-            renderer.SetAlpha(entry.OriginalAlpha);
             entries.Remove(renderer);
         }
     }

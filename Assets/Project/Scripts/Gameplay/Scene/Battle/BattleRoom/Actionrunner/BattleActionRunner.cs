@@ -4682,8 +4682,14 @@ public class BattleActionRunner
             : facing != null && !facing.IsFacingRight
                 ? BattleDirection.Left
                 : BattleDirection.Right;
-        BattleDirection monsterExecutionDirection =
-            BattleAttackExecutionDirectionPolicy.ResolveExecutionDirection(
+        // 녹턴은 그림자걸음으로 대상의 후방에 도착한 뒤, 이동 전 시선이 아닌
+        // AI가 후방 목표를 기준으로 예약한 방향으로 공격해야 합니다.
+        // 다른 몬스터의 기존 실행 시선 정책은 그대로 유지합니다.
+        bool useNocturnReservedAttackDirection =
+            IsNocturnDirectionalAttack(command) && command.HasForcedDirection;
+        BattleDirection monsterExecutionDirection = useNocturnReservedAttackDirection
+            ? command.ForcedDirection
+            : BattleAttackExecutionDirectionPolicy.ResolveExecutionDirection(
                 command.HasForcedDirection
                     ? command.ForcedDirection
                     : liveMonsterDirection,
