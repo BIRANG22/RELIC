@@ -28,6 +28,8 @@ public class OptionPanelUI : MonoBehaviour
 
     [Header("Resolution")]
     [SerializeField] private TMP_Dropdown resolutionDropdown;
+    [Tooltip("Font database for resolution numbers. Assign the existing LocaleFontDatabase asset if it is outside Resources.")]
+    [SerializeField] private LocaleFontDatabase resolutionFontDatabase;
     [SerializeField] private Toggle windowedToggle;
     [SerializeField] private Toggle borderlessToggle;
     [SerializeField] private Toggle fullscreenToggle;
@@ -50,6 +52,25 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private int saveToastSortingOrder = 32100;
 
     private bool isResolutionDropdownReady;
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (resolutionFontDatabase != null)
+            return;
+
+        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:LocaleFontDatabase");
+        for (int i = 0; i < guids.Length; i++)
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[i]);
+            LocaleFontDatabase candidate = UnityEditor.AssetDatabase.LoadAssetAtPath<LocaleFontDatabase>(path);
+            if (candidate == null || candidate.CommonNumberFont == null)
+                continue;
+            resolutionFontDatabase = candidate;
+            break;
+        }
+    }
+#endif
 
     private void OnEnable()
     {
@@ -224,7 +245,10 @@ public class OptionPanelUI : MonoBehaviour
         if (resolutionController != null)
         {
             resolutionController.Configure(resolutionDropdownSortingOrderOffset);
-            resolutionController.ConfigureCommonNumberFont(LocaleFontDatabaseProvider.LoadDefault());
+            LocaleFontDatabase fontDatabase = resolutionFontDatabase != null
+                ? resolutionFontDatabase
+                : LocaleFontDatabaseProvider.LoadDefault();
+            resolutionController.ConfigureCommonNumberFont(fontDatabase);
         }
 
         isResolutionDropdownReady = true;

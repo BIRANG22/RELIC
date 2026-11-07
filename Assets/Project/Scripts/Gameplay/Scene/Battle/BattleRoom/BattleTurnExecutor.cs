@@ -129,9 +129,49 @@ public class BattleTurnExecutor : MonoBehaviour
 
         if (activeSkillCutscene == null)
         {
-            activeSkillCutscene = Instantiate(skillCutscenePrefab, skillCutsceneRoot);
-            Debug.Log("[UniqueSkillCutscene] Prefab instantiated.");
+            // Instantiate under an inactive parent so OnEnable / animation events
+            // cannot fire once with the prefab's default image or audio.
+            GameObject stagingRoot = new GameObject("SkillCutsceneInactiveStaging");
+            stagingRoot.SetActive(false);
+            try
+            {
+                activeSkillCutscene = Instantiate(skillCutscenePrefab, stagingRoot.transform);
+                activeSkillCutscene.gameObject.SetActive(false);
+                activeSkillCutscene.transform.SetParent(skillCutsceneRoot, false);
+            }
+            finally
+            {
+                Destroy(stagingRoot);
+            }
+            Debug.Log("[UniqueSkillCutscene] Prefab instantiated inactive.");
         }
+
+        // Prepare the correct image while hidden, then focus the actual skill caster.
+        // The skill's normal action framing will take over after this cutscene ends.
+        activeSkillCutscene.gameObject.SetActive(false);
+        activeSkillCutscene.SetImage(image);
+        BattleCharacter caster = null;
+        BattleCharacter[] casters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < casters.Length; i++)
+        {
+            BattleCharacter candidate = casters[i];
+            if (candidate == null || candidate.RuntimeData == null || candidate.RuntimeData.IsDead ||
+                !string.Equals(candidate.RuntimeData.CharacterId, command.CharacterId, StringComparison.Ordinal))
+                continue;
+            caster = candidate;
+            break;
+        }
+
+        if (caster == null)
+        {
+            Debug.LogWarning($"[UniqueSkillCutscene] Caster not found / Character:{command.CharacterId}");
+            yield break;
+        }
+
+        BattleCameraController camera = BattleCameraController.Instance;
+        if (camera != null)
+            yield return camera.FocusForUltimateIntroduction(caster.transform);
 
         Debug.Log("[UniqueSkillCutscene] Prefab activated.");
         yield return activeSkillCutscene.PlayAndWait(image);
@@ -629,6 +669,15 @@ public class BattleTurnExecutor : MonoBehaviour
                         HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
                     phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
                     orderAnimation = null;
+
+                    // Finish the phase transition before executing the next batch.
+                    // Otherwise subsequent attacks can hit phase one at zero HP.
+                    if (ArabellaPhaseTransition.HasPendingTransition)
+                    {
+                        RestoreIdleAnimationsBeforeArabellaTransition();
+                        yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+                        RefreshBattleHUDs();
+                    }
                 }
 
                 // Do not advance the timeline until both the action and its visual finish.
@@ -680,7 +729,7 @@ public class BattleTurnExecutor : MonoBehaviour
             if (timelineController != null)
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
-            yield return runner.ReturnCameraDefaultIfNeeded();
+            yield return ReturnCameraAfterTimelineActionsRoutine();
             // BattleEffect planes remain in battle positions between turns.
             // Only the completed-battle sequence may restore them.
 
@@ -975,6 +1024,15 @@ public class BattleTurnExecutor : MonoBehaviour
                         HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
                     phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
                     orderAnimation = null;
+
+                    // Finish the phase transition before executing the next batch.
+                    // Otherwise subsequent attacks can hit phase one at zero HP.
+                    if (ArabellaPhaseTransition.HasPendingTransition)
+                    {
+                        RestoreIdleAnimationsBeforeArabellaTransition();
+                        yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+                        RefreshBattleHUDs();
+                    }
                 }
 
                 // Do not advance the timeline until both the action and its visual finish.
@@ -1011,7 +1069,7 @@ public class BattleTurnExecutor : MonoBehaviour
             if (timelineController != null)
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
-            yield return runner.ReturnCameraDefaultIfNeeded();
+            yield return ReturnCameraAfterTimelineActionsRoutine();
             // BattleEffect planes remain in battle positions between turns.
             // Only the completed-battle sequence may restore them.
 
@@ -1192,6 +1250,16 @@ public class BattleTurnExecutor : MonoBehaviour
 
         if (controller != null)
             controller.AdvanceTurnDurations();
+    }
+
+    private IEnumerator ReturnCameraAfterTimelineActionsRoutine()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController == null)
+            yield break;
+
+        cameraController.SetHoldDefaultReturn(false);
+        yield return cameraController.ReturnDefaultAfterTimelineActions();
     }
 
     private IEnumerator ReturnCameraDefaultRoutine()

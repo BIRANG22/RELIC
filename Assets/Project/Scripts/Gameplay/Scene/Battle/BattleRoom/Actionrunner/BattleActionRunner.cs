@@ -2596,7 +2596,7 @@ public class BattleActionRunner
                         continue;
                     }
 
-                    FaceMonsterToAttacker(monster, caster);
+                    FaceMonsterAgainstAttackDirection(monster, command.Direction);
 
                     BattleEffectContext context = CreatePlayerMonsterEffectContext(
                         caster,
@@ -2674,7 +2674,7 @@ public class BattleActionRunner
                     }
                     else if (playPushFeedback)
                     {
-                        yield return PlayDamageHitFeedback(
+                        yield return PlayPlayerDirectedDamageHitFeedback(
                             caster != null ? caster.transform : null,
                             feedbackTargets,
                             command.Direction);
@@ -3298,6 +3298,25 @@ public class BattleActionRunner
                !monster.RuntimeData.IsDead;
     }
 
+    // The defender faces against the direction of the incoming player attack.
+    // Do not use monster.x - caster.x: area attacks may hit both sides.
+    private void FaceMonsterAgainstAttackDirection(MonsterUnit monster, BattleDirection attackDirection)
+    {
+        if (monster == null)
+            return;
+
+        bool faceRight = attackDirection == BattleDirection.Left;
+        BattleUnitFacing hitFacing = monster.GetComponent<BattleUnitFacing>();
+        if (hitFacing == null)
+            hitFacing = monster.GetComponentInChildren<BattleUnitFacing>();
+        if (hitFacing != null)
+        {
+            // The hit reaction is visual only. Never overwrite the reserved
+            // attack direction with the direction of an incoming hit.
+            hitFacing.FaceRight(faceRight);
+        }
+    }
+
     private void FaceMonsterToAttacker(MonsterUnit monster, BattleCharacter attacker)
     {
         if (monster == null || attacker == null)
@@ -3308,10 +3327,9 @@ public class BattleActionRunner
         if (hitFacing == null)
             return;
 
+        // Keep the logical monster action direction intact while briefly
+        // turning the visible sprite towards the source of the hit.
         hitFacing.FaceByWorldTarget(attacker.transform.position);
-
-        if (monster.RuntimeData != null)
-            monster.RuntimeData.Direction = hitFacing.GetBattleDirection();
     }
 
     private void ExecutePlayerSkillEffects(
@@ -3785,6 +3803,14 @@ public class BattleActionRunner
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
+        // Hunting leap bypasses ExecuteMonsterSkill: focus before the leap animation.
+        if (ShouldEnterCameraForActiveAction() && BattleCameraController.Instance != null)
+        {
+            Vector3 impactWorldPosition = gridManager.GetWorldPositionByIndex(destinationIndex);
+            yield return BattleCameraController.Instance.ZoomForActionTargets(
+                monster.transform, null, false, false, impactWorldPosition);
+        }
+
         // Prepare VFX and ascent begin together; the prefab root (and its VFX) stay still.
         BattleCharacter initiallyOccupiedCharacter = null;
         if (!IsGridEffectBlocked(destinationIndex) &&
@@ -3990,8 +4016,14 @@ public class BattleActionRunner
 
             BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
+            if (facing == null)
+                facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
             if (facing != null)
+            {
                 facing.FaceByMoveOffset(moveOffset);
+                if (monster.RuntimeData != null && moveOffset.x != 0)
+                    monster.RuntimeData.Direction = facing.GetBattleDirection();
+            }
 
             // 첫 이동 칸이 이미 다른 유닛에게 점유되어 있다면 한 칸도 이동하지 않고 즉시 충돌합니다.
             // 이동자와 해당 칸을 점유한 유닛 모두 충돌 고정 피해를 받습니다.
@@ -4682,19 +4714,62 @@ public class BattleActionRunner
             : facing != null && !facing.IsFacingRight
                 ? BattleDirection.Left
                 : BattleDirection.Right;
-        // 녹턴은 그림자걸음으로 대상의 후방에 도착한 뒤, 이동 전 시선이 아닌
-        // AI가 후방 목표를 기준으로 예약한 방향으로 공격해야 합니다.
-        // 다른 몬스터의 기존 실행 시선 정책은 그대로 유지합니다.
-        bool useNocturnReservedAttackDirection =
-            IsNocturnDirectionalAttack(command) && command.HasForcedDirection;
-        BattleDirection monsterExecutionDirection = useNocturnReservedAttackDirection
-            ? command.ForcedDirection
-            : BattleAttackExecutionDirectionPolicy.ResolveExecutionDirection(
-                command.HasForcedDirection
-                    ? command.ForcedDirection
-                    : liveMonsterDirection,
-                liveMonsterDirection);
+        // Attack direction must agree with the reserved attack cells even if the
+        // intended target has moved to the opposite side before execution.
+        // ForcedDirection is authoritative for directional/special attacks.
+        BattleDirection monsterExecutionDirection = liveMonsterDirection;
+        // Muck's projectile direction must match the specific cell selected by
+        // its AI, not the direction of a potentially detoured approach step.
+        bool muckReservedAttack =
+            string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal) &&
+            command.HasExplicitRangeResult && command.TargetGridIndices != null &&
+            command.TargetGridIndices.Count > 0 && gridManager != null &&
+            monster.MainGridIndex >= 0;
+        if (muckReservedAttack)
+        {
+            int targetIndex = command.TargetGridIndices[0];
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetIndex);
+            Vector2Int casterCoord = gridManager.IndexToCoord(monster.MainGridIndex);
+            if (gridManager.IsValidCoord(targetCoord) && targetCoord.x != casterCoord.x)
+                monsterExecutionDirection = targetCoord.x > casterCoord.x
+                    ? BattleDirection.Right : BattleDirection.Left;
+            else if (command.HasForcedDirection)
+                monsterExecutionDirection = command.ForcedDirection;
+        }
+        else if (command.HasForcedDirection)
+        {
+            monsterExecutionDirection = command.ForcedDirection;
+        }
+        else if (gridManager != null && monster.MainGridIndex >= 0)
+        {
+            Vector2Int origin = gridManager.IndexToCoord(monster.MainGridIndex);
+            int left = 0;
+            int right = 0;
+            // Explicit hit cells have priority over the broader range preview.
+            System.Collections.Generic.IReadOnlyList<int> attackCells =
+                command.TargetGridIndices != null && command.TargetGridIndices.Count > 0
+                    ? command.TargetGridIndices : command.RangeGridIndices;
+            if (attackCells != null)
+            {
+                for (int i = 0; i < attackCells.Count; i++)
+                {
+                    int index = attackCells[i];
+                    if (index < 0)
+                        continue;
+                    int dx = gridManager.IndexToCoord(index).x - origin.x;
+                    if (dx < 0) left++;
+                    else if (dx > 0) right++;
+                }
+                if (left > right)
+                    monsterExecutionDirection = BattleDirection.Left;
+                else if (right > left)
+                    monsterExecutionDirection = BattleDirection.Right;
+            }
+        }
 
+        if (facing == null)
+            facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
         if (facing != null)
             facing.FaceRight(monsterExecutionDirection == BattleDirection.Right);
         if (monster.RuntimeData != null)
@@ -4796,11 +4871,28 @@ public class BattleActionRunner
                             focusTargets.Add(recipient.transform);
                     }
                 }
-                if (focusTargets.Count == 0 && firstPlayerTarget != null)
-                    focusTargets.Add(firstPlayerTarget.transform);
-                yield return BattleCameraController.Instance.ZoomForActionTargets(
-                    monster.transform, focusTargets, IsMonsterStatusSkill(command),
-                    ShouldSkipMonsterSkillCamera(command));
+                // Muck's projectile impacts a reserved grid cell, even when
+                // the original character has moved away. Frame the monster
+                // and that fixed cell at the screen centre; do not use the
+                // normal ranged-caster-at-screen-edge camera composition.
+                Vector3 muckImpactPosition = Vector3.zero;
+                bool muckFixedImpact =
+                    string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
+                    string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal) &&
+                    TryGetGroundTargetedProjectilePosition(command, out muckImpactPosition);
+                if (muckFixedImpact)
+                {
+                    yield return BattleCameraController.Instance.ZoomForActionTargets(
+                        monster.transform, null, false, true, muckImpactPosition);
+                }
+                else
+                {
+                    if (focusTargets.Count == 0 && firstPlayerTarget != null)
+                        focusTargets.Add(firstPlayerTarget.transform);
+                    yield return BattleCameraController.Instance.ZoomForActionTargets(
+                        monster.transform, focusTargets, IsMonsterStatusSkill(command),
+                        ShouldSkipMonsterSkillCamera(command));
+                }
             }
 
             // 카메라의 공격자 포커스 후 기울기와 공격 애니메이션을 함께 시작합니다.
@@ -4880,6 +4972,15 @@ public class BattleActionRunner
         {
             if (monster.RuntimeData == null || monster.RuntimeData.IsDead)
                 yield break;
+
+            // A hit reaction may have turned the monster towards its attacker.
+            // Restore the direction of the current reserved attack before EVERY hit
+            // (including subsequent hits of a multi-hit skill).
+            BattleUnitFacing actionFacing = monster.GetComponent<BattleUnitFacing>();
+            if (actionFacing == null)
+                actionFacing = monster.GetComponentInChildren<BattleUnitFacing>(true);
+            if (actionFacing != null && monster.RuntimeData != null)
+                actionFacing.FaceRight(monster.RuntimeData.Direction == BattleDirection.Right);
 
             bool hasAliveTarget = HasAliveMonsterSkillTarget(monster, command);
             bool canPlayProjectileVfx = ShouldPlayMonsterProjectileVfx(monster, command, monsterAnimator);
@@ -5442,6 +5543,21 @@ public class BattleActionRunner
             yield return BattleCameraController.Instance.PlayRangedDamageImpact();
     }
 
+    // Player damage hits use the attack direction, not each target's world position.
+    // This keeps every target in an area attack facing/pushing consistently.
+    private IEnumerator PlayPlayerDirectedDamageHitFeedback(
+        Transform attacker,
+        IReadOnlyList<Transform> targets,
+        BattleDirection attackDirection)
+    {
+        int horizontalDirection = BattleDirectionToHorizontal(attackDirection);
+        if (BattleCameraController.Instance != null)
+            BattleCameraController.Instance.SetNextImpactDirection(horizontalDirection);
+
+        yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
+            attacker, targets, horizontalDirection, true, true);
+    }
+
     private IEnumerator PlayDamageHitFeedback(
         Transform attacker,
         IReadOnlyList<Transform> targets,
@@ -5801,15 +5917,24 @@ public class BattleActionRunner
     {
         targetPosition = Vector3.zero;
 
-        if (!ShouldUseRangeOriginForProjectileTarget(command))
+        if (gridManager == null || command == null ||
+            !string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) ||
+            !string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
             return false;
 
-        Vector2Int originCoord = gridManager.IndexToCoord(command.RangeOriginGridIndex);
-
-        if (!gridManager.IsValidCoord(originCoord))
+        // The AI explicitly reserves the character's target cell. RangeOrigin
+        // is an attack-range origin, never the projectile destination.
+        int destinationIndex = command.HasExplicitRangeResult &&
+            command.TargetGridIndices != null && command.TargetGridIndices.Count > 0
+                ? command.TargetGridIndices[0] : -1;
+        if (destinationIndex < 0)
             return false;
 
-        targetPosition = gridManager.GetWorldPositionByIndex(command.RangeOriginGridIndex);
+        Vector2Int destinationCoord = gridManager.IndexToCoord(destinationIndex);
+        if (!gridManager.IsValidCoord(destinationCoord))
+            return false;
+
+        targetPosition = gridManager.GetWorldPositionByIndex(destinationIndex);
         return true;
     }
 
@@ -5823,129 +5948,12 @@ public class BattleActionRunner
                    System.StringComparison.Ordinal);
     }
 
-    private Vector2Int GetMonsterMoveOffset(MonsterReservedCommand command)
+    // 예약형 턴제: 확정된 이동 명령은 실행 중 재탐색하거나 변경하지 않습니다.
+    // 실제로 도착 칸이 선점되었는지 여부는 ExecuteMonsterMove의
+    // ResolveMonsterMove에서 판정하여 이동/충돌을 처리합니다.
+    private static Vector2Int GetMonsterMoveOffset(MonsterReservedCommand command)
     {
-        if (command == null)
-            return Vector2Int.zero;
-
-        // 머크도 예약 시 정한 이동 벡터를 실행 순간까지 그대로 유지합니다.
-        // 예약 이후 캐릭터가 이동 경로에 들어오면 EffectiveMoveOffset이 축소될 수 있으므로,
-        // 원래 MoveOffset으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
-        if (string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, MuckMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 신더는 이동 예약 후 다른 유닛이 목적지에 들어와도 이동 시도를 유지합니다.
-        // 충돌은 실행 시점의 실제 점유 상태로 판단합니다.
-        if (string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, "S_Monster_13", System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 블롭은 캐릭터가 있는 칸으로 충돌 이동을 예약할 수 있습니다.
-        // 타임라인 시뮬레이션에서는 점유된 칸이라 이동량이 0으로 계산될 수 있지만,
-        // 실제 실행에서는 원래 요청한 이동 방향으로 충돌을 시도해야 합니다.
-        if (string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BlobMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 랜서는 예약한 도망 경로를 실행 시점에도 그대로 시도합니다.
-        // 플레이어가 그 경로를 먼저 막았다면 실제 이동 처리에서 충돌이 발생해야 하므로,
-        // 타임라인 시뮬레이션에서 줄어든 이동량이 아니라 원래 예약된 이동 벡터를 사용합니다.
-        if (string.Equals(command.MonsterId, RancorMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, RancorMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 블라이트도 랜서와 같은 도망 이동 규칙을 사용합니다.
-        // 예약 후 점유 상태가 바뀌더라도 실행 시 다른 방향을 다시 고르지 않고,
-        // 원래 예약한 2칸 이동 벡터를 그대로 시도해 실제 충돌 여부를 결정합니다.
-        if (string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BlightMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 드라우그도 예약한 이동 방향을 실행 순간까지 유지합니다.
-        // 예약 이후 플레이어가 목적지/경로를 먼저 점유했다면 ResolveMonsterMove에서 실제 충돌을 처리해야 하므로,
-        // 타임라인 시뮬레이션으로 축소된 EffectiveMoveOffset 대신 원래 MoveOffset을 사용합니다.
-        if (string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, DraugrMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 바로우도 예약한 2칸 도망 방향을 실행 순간까지 유지합니다.
-        // 예약 후 플레이어가 경로나 목적지를 먼저 점유했다면 다른 방향으로 재탐색하지 않고,
-        // 원래 예약한 이동을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
-        if (string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BarrowMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 루크도 예약한 일반 이동을 실행 순간까지 그대로 시도합니다.
-        // 예약 이후 플레이어가 목적지로 먼저 이동했다면 시뮬레이션 축소값을 쓰지 않고,
-        // 원래 예약한 이동 방향으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
-        if (string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, RookMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 녹턴의 일반 이동도 예약 시 정한 이동 벡터를 실행 순간까지 유지합니다.
-        // 예약 후 플레이어가 이동 칸을 먼저 점유했다면 이동 자체를 지우지 않고,
-        // 원래 방향으로 진입을 시도해 실제 실행 시 충돌하도록 합니다.
-        if (string.Equals(command.MonsterId, NocturnMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, NocturnMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 모르트의 도망 이동도 예약 시 정한 1칸 이동 방향을 실행 순간까지 유지합니다.
-        // 예약 후 플레이어가 목적지를 먼저 점유하면 이동을 취소하지 않고 원래 방향으로 진입을 시도해
-        // ResolveMonsterMove의 기존 충돌 규칙으로 처리합니다.
-        if (string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, MortMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // Arabella keeps the escape vector selected at reservation time.
-        // If a player occupies that path before execution, ResolveMonsterMove handles the collision.
-        if (ArabellaPhaseTransition.IsArabellaMonsterId(command.MonsterId) &&
-            string.Equals(command.SkillId, ArabellaMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        // 베스파의 비행은 1칸/2칸 어느 쪽이든 예약 시 정한 이동 벡터를 실행 순간까지 유지합니다.
-        // 이동 스킬 ID 자체로 판정해 런타임 MonsterId 상태와 무관하게 시뮬레이션 축소값을 사용하지 않습니다.
-        // 실행 순간 실제 점유 상태는 ResolveMonsterMove에서 확인하므로, 새로 길을 막은 유닛과 정상적으로 충돌합니다.
-        if (string.Equals(command.SkillId, VespaMoveSkillId, System.StringComparison.Ordinal) &&
-            command.MoveOffset != Vector2Int.zero)
-        {
-            return command.MoveOffset;
-        }
-
-        return command.EffectiveMoveOffset;
+        return command != null ? command.MoveOffset : Vector2Int.zero;
     }
 
     private bool IsMonsterInRange(MonsterUnit monster, PlayerReservedCommand command)

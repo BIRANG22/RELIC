@@ -82,6 +82,9 @@ public class BattleTimelinePreviewEntry
     {
         get
         {
+            if (IsPlayer && PlayerCommand != null && PlayerCommand.IsFacingFlipCommand)
+                return GameLocalization.Get("battle.action.flip.name", "전환");
+
             if (IsPlayer && PlayerSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.Name))
@@ -109,6 +112,9 @@ public class BattleTimelinePreviewEntry
     {
         get
         {
+            if (IsPlayer && PlayerCommand != null && PlayerCommand.IsFacingFlipCommand)
+                return GameLocalization.Get("battle.action.flip.detail", "캐릭터가 바라보는 방향을 전환합니다.");
+
             if (IsPlayer && PlayerSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.Details))

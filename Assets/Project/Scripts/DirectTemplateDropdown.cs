@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// TMP_Dropdown이 Template 복제본(Dropdown List)을 만들지 않고,
-/// 프리팹에 배치된 기존 Template을 직접 열어 사용하게 합니다.
+/// TMP_Dropdown의 Template 오브젝트(Dropdown List)를 복제하지 않고,
+/// 기존에 배치된 원본 Template을 직접 사용합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler, ISubmitHandler, ICancelHandler
@@ -41,6 +41,8 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
         optionLocaleCodes = null;
         useCommonNumberFont = true;
         ApplyCaptionFont();
+        if (dropdown != null)
+            ApplyOptionFont(dropdown.itemText, 0);
     }
 
     public void ConfigureOptionFonts(LocaleFontDatabase database, IList<string> localeCodes)
@@ -92,8 +94,11 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
 
     public void ApplyCaptionFont()
     {
-        if (dropdown != null)
-            ApplyOptionFont(dropdown.captionText, dropdown.value);
+        if (dropdown == null)
+            return;
+        ApplyOptionFont(dropdown.captionText, dropdown.value);
+        if (useCommonNumberFont)
+            ApplyOptionFont(dropdown.itemText, 0);
     }
 
 
@@ -124,7 +129,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
 
         CreateClickCatcher();
 
-        // 기본 TMP_Dropdown은 옵션 데이터와 현재 선택값 보관용으로만 사용합니다.
+        // 기본 TMP_Dropdown의 옵션 처리와 중복 실행되지 않도록 비활성화합니다.
         ColorBlock colors = dropdown.colors;
         colors.disabledColor = colors.normalColor;
         dropdown.colors = colors;
@@ -321,7 +326,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
         if (itemTemplate == null)
         {
             Debug.LogWarning(
-                "[DirectTemplateDropdown] Template 안에서 Item Toggle을 찾을 수 없습니다.",
+                "[DirectTemplateDropdown] Template 내부에서 Item Toggle을 찾을 수 없습니다.",
                 dropdown);
             return false;
         }
@@ -453,7 +458,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
 }
 
 /// <summary>
-/// 클릭을 부모 TMP_Dropdown까지 전달하지 않고 직접 Template 열기로 전환합니다.
+/// 클릭을 부모 TMP_Dropdown으로 전달하지 않고 원본 Template 목록을 토글합니다.
 /// </summary>
 public sealed class DirectTemplateDropdownClickCatcher : MonoBehaviour, IPointerClickHandler
 {

@@ -44,7 +44,7 @@ namespace Relic.Gameplay.Monster
             // When the target is directly above or below, retain the current facing.
             Vector2Int current = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             Vector2Int target = gridManager.IndexToCoord(targetGridIndex);
-            int horizontal = moveOffset.x != 0 ? moveOffset.x : target.x - current.x;
+            int horizontal = target.x - current.x;
             BattleDirection reservedDirection = monsterUnit.RuntimeData.Direction;
             bool hasReservedDirection = horizontal != 0;
             if (hasReservedDirection)
@@ -84,16 +84,13 @@ namespace Relic.Gameplay.Monster
                 return Vector2Int.zero;
 
             Vector2Int origin = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            BattleCharacter[] players = FindPlayers();
-            List<Vector2Int> targets = new();
-            foreach (BattleCharacter player in players)
-            {
-                if (IsAlivePlayer(player) && player.CurrentGridIndex >= 0)
-                    targets.Add(gridManager.IndexToCoord(player.CurrentGridIndex));
-            }
-
-            if (targets.Count == 0)
+            // Approach the same target cell used by the reserved projectile.
+            // Evaluating all characters here could move toward a different
+            // character while keeping the projectile aimed at the original one.
+            Vector2Int reservedTarget = gridManager.IndexToCoord(targetGridIndex);
+            if (!gridManager.IsValidCoord(reservedTarget))
                 return Vector2Int.zero;
+            List<Vector2Int> targets = new() { reservedTarget };
 
             // 이미 공격 가능한 거리라면 움직이지 않습니다.
             foreach (Vector2Int target in targets)

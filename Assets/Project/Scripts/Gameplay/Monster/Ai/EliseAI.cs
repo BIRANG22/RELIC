@@ -8,6 +8,8 @@ namespace Relic.Gameplay.Monster
     public class EliseAI : MonsterAIBase
     {
         private const string MoveSkillId = "S_Monster_33";
+        // First phase flees only when a player is sufficiently close (Manhattan distance).
+        private const int PhaseOneEscapeThreatDistance = 2;
         private const string PhaseTwoMoveSkillId = "S_Monster_38";
         private const string PositionPressureSkillId = "S_Monster_34";
         private const string MeleeAttackSkillId = "S_Monster_35";
@@ -115,19 +117,54 @@ namespace Relic.Gameplay.Monster
                     forcedDirection: attackRight ? BattleDirection.Right : BattleDirection.Left));
             }
 
-            Vector2Int escape = ResolveEscapeMove(unit, players, gridManager);
+            // Do not flee automatically at the beginning of a turn.
+            // Only retreat in response to a nearby player; other planned skills remain available.
+            Vector2Int escape = Vector2Int.zero;
+            if (unit.MainGridIndex >= 0)
+            {
+                Vector2Int origin = gridManager.IndexToCoord(unit.MainGridIndex);
+                int nearestDistance = GetNearestPlayerDistance(origin, players, gridManager);
+                if (nearestDistance <= PhaseOneEscapeThreatDistance)
+                    escape = ResolveEscapeMove(unit, players, gridManager);
+            }
             if (escape != Vector2Int.zero)
             {
+                // 이동 예약과 실행이 같은 방향을 사용하도록 좌우 방향을 명시합니다.
+                bool hasMoveDirection = escape.x != 0;
+                BattleDirection moveDirection = hasMoveDirection
+                    ? (escape.x > 0 ? BattleDirection.Right : BattleDirection.Left)
+                    : unit.RuntimeData.Direction;
                 plan.Add(new MonsterAIAction(
                     MoveSkillId, escape,
                     nearby ? MonsterAISlotPreference.NextSlot : MonsterAISlotPreference.Front,
-                    -1, priority++));
+                    -1, priority++, -1,
+                    hasForcedDirection: hasMoveDirection,
+                    forcedDirection: moveDirection));
             }
 
             if (turn % 2 != 0)
                 AddSpiderSpawnAction(plan, unit, players, gridManager, priority++);
 
             AddPositionPressureActions(plan, players, priority);
+
+            // 첫 예약 행동이 이동인 경우, 턴 실행 전에 본체 방향을 맞춥니다.
+            // 거미줄 설치 방향이 왼쪽이어도 첫 이동이 오른쪽이면 오른쪽을 바라봅니다.
+            // 공격이나 보호막이 선행되는 턴은 그 행동의 방향을 강제로 바꾸지 않습니다.
+            // The planner applies facing from the actual earliest reserved slot.
+            // Do not alter the sprite while assembling tentative AI actions.
+        }
+
+        private static void SetFacingForReservation(MonsterUnit monsterUnit, BattleDirection direction)
+        {
+            if (monsterUnit == null)
+                return;
+
+            BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+            if (facing != null)
+                facing.FaceRight(direction == BattleDirection.Right);
+
+            if (monsterUnit.RuntimeData != null)
+                monsterUnit.RuntimeData.Direction = direction;
         }
 
         private void CreatePhaseTwoPlan(
@@ -336,6 +373,80 @@ namespace Relic.Gameplay.Monster
                 explicitRangeGridIndices: targetGridIndices));
         }
 
+        // 예약 단계에서 가장 가까운 한 명을 고정해 판단합니다.
+        // 다른 캐릭터와의 거리는 도주 방향을 막는 조건으로 사용하지 않습니다.
+        public static bool IsStrictEscapePath(
+            Vector2Int origin, Vector2Int offset,
+            BattleCharacter[] players, GridManager gridManager)
+        {
+            if (offset == Vector2Int.zero || players == null || gridManager == null)
+                return false;
+
+            if (!TryGetNearestPlayerCoord(origin, players, gridManager, out Vector2Int threat))
+                return false;
+
+            return IsStrictEscapeAxisOrder(origin, offset, threat, gridManager, true) &&
+                   IsStrictEscapeAxisOrder(origin, offset, threat, gridManager, false);
+        }
+
+        private static bool IsStrictEscapeAxisOrder(
+            Vector2Int origin, Vector2Int offset, Vector2Int threat,
+            GridManager gridManager, bool horizontalFirst)
+        {
+            Vector2Int position = origin;
+            int previousDistance = Mathf.Abs(position.x - threat.x) +
+                                   Mathf.Abs(position.y - threat.y);
+            for (int axis = 0; axis < 2; axis++)
+            {
+                bool horizontal = axis == 0 ? horizontalFirst : !horizontalFirst;
+                int amount = horizontal ? offset.x : offset.y;
+                int step = amount > 0 ? 1 : -1;
+                for (int i = 0; i < Mathf.Abs(amount); i++)
+                {
+                    position += horizontal ? new Vector2Int(step, 0) : new Vector2Int(0, step);
+                    if (!gridManager.IsValidCoord(position))
+                        return false;
+                    int distance = Mathf.Abs(position.x - threat.x) +
+                                   Mathf.Abs(position.y - threat.y);
+                    if (distance <= previousDistance)
+                        return false;
+                    previousDistance = distance;
+                }
+            }
+            return true;
+        }
+
+        private static bool TryGetNearestPlayerCoord(
+            Vector2Int origin, BattleCharacter[] players,
+            GridManager gridManager, out Vector2Int threat)
+        {
+            threat = default;
+            if (players == null || gridManager == null)
+                return false;
+
+            int bestDistance = int.MaxValue;
+            int bestGridIndex = int.MaxValue;
+            for (int i = 0; i < players.Length; i++)
+            {
+                BattleCharacter player = players[i];
+                if (player == null || player.RuntimeData == null ||
+                    player.RuntimeData.IsDead || player.CurrentGridIndex < 0)
+                    continue;
+
+                Vector2Int candidate = gridManager.IndexToCoord(player.CurrentGridIndex);
+                int distance = Mathf.Abs(origin.x - candidate.x) +
+                               Mathf.Abs(origin.y - candidate.y);
+                if (distance > bestDistance ||
+                    (distance == bestDistance && player.CurrentGridIndex >= bestGridIndex))
+                    continue;
+
+                bestDistance = distance;
+                bestGridIndex = player.CurrentGridIndex;
+                threat = candidate;
+            }
+            return bestDistance != int.MaxValue;
+        }
+
         private Vector2Int ResolveEscapeMove(
             MonsterUnit monsterUnit,
             BattleCharacter[] players,
@@ -345,10 +456,14 @@ namespace Relic.Gameplay.Monster
                 return Vector2Int.zero;
 
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            // 예약 시점의 가장 가까운 캐릭터 한 명을 도주 기준으로 고정합니다.
+            if (!TryGetNearestPlayerCoord(currentCoord, players, gridManager, out Vector2Int threat))
+                return Vector2Int.zero;
+            int currentThreatDistance = ManhattanDistance(currentCoord, threat);
+
             Vector2Int bestOffset = Vector2Int.zero;
             int bestScore = int.MinValue;
-            int bestNearestDistance = int.MinValue;
-            int bestTotalDistance = int.MinValue;
+            int bestThreatDistance = int.MinValue;
 
             for (int i = 0; i < MoveOffsets.Length; i++)
             {
@@ -359,33 +474,27 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int movedCoord = currentCoord + offset;
-                int nearestDistance = GetNearestPlayerDistance(movedCoord, players, gridManager);
-                int totalDistance = GetTotalPlayerDistance(movedCoord, players, gridManager);
+                int threatDistance = ManhattanDistance(movedCoord, threat);
+                // 도착 칸뿐 아니라 이동 중간 칸에서도 거리가 반드시 증가해야 합니다.
+                // 대각선은 실제 실행 시 가로/세로 순서가 바뀔 수 있어 양쪽 순서를 검사합니다.
+                if (threatDistance <= currentThreatDistance ||
+                    !IsStrictEscapePath(currentCoord, offset, players, gridManager))
+                    continue;
+
                 int spaceScore = GetEscapeSpaceScore(movedCoord, monsterUnit, gridManager);
 
-                // 단순히 가장 멀어지는 칸만 고르면 모서리에 갇히기 쉽습니다.
-                // 플레이어와의 거리와 함께, 다음 턴에도 빠져나갈 수 있는 열린 공간을 크게 평가합니다.
-                int score =
-                    nearestDistance * 40 +
-                    totalDistance * 2 +
-                    spaceScore;
+                // 가장 가까웠던 목표로부터 멀어지는 정도를 최우선으로 평가합니다.
+                // 공간 점수는 같은 거리에서만 보조 판단에 사용합니다.
+                int score = threatDistance * 1000 + spaceScore;
 
                 if (score < bestScore)
                     continue;
 
-                if (score == bestScore && nearestDistance < bestNearestDistance)
+                if (score == bestScore && threatDistance <= bestThreatDistance)
                     continue;
-
-                if (score == bestScore &&
-                    nearestDistance == bestNearestDistance &&
-                    totalDistance <= bestTotalDistance)
-                {
-                    continue;
-                }
 
                 bestScore = score;
-                bestNearestDistance = nearestDistance;
-                bestTotalDistance = totalDistance;
+                bestThreatDistance = threatDistance;
                 bestOffset = offset;
             }
 

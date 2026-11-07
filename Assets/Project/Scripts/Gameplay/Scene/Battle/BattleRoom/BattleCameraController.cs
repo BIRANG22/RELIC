@@ -25,9 +25,24 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool useFixedZoomZPosition = true;
     [SerializeField] private float zoomZPosition = -13f;
     [SerializeField] private float zoomZOffset = 5f;
+
+    [Header("Movement Camera Zoom")]
+    [Tooltip("그리드 이동 전용 카메라 Z 좌표입니다. 기본 -18이며 공격 및 피격 줌 설정에는 영향을 주지 않습니다.")]
+    [SerializeField] private float movementZoomZPosition = -18f;
     [SerializeField] private bool useOrthographicSizeZoom = false;
     [SerializeField] private bool clampZoomPosition = false;
     [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Header("Combat Edge Framing")]
+    [Tooltip("전투 그리드의 좌우 끝 두 열에 포커스할 때 화면 바깥 배경 노출을 줄입니다.")]
+    [SerializeField] private bool useCombatEdgeFraming = true;
+    [Tooltip("왼쪽 0~9번 그리드에 포커스할 때 카메라를 오른쪽으로 이동할 거리입니다.")]
+    [SerializeField, Min(0f)] private float leftEdgeCameraInset = 3.0f;
+    [Tooltip("오른쪽 25~34번 그리드에 포커스할 때 카메라를 왼쪽으로 이동할 거리입니다.")]
+    [SerializeField, Min(0f)] private float rightEdgeCameraInset = 3.0f;
+    [Tooltip("좌우 끝 두 열의 아래쪽 3~4행에 포커스할 때 카메라를 맵 위쪽으로 이동할 거리입니다.")]
+    [SerializeField, Min(0f)] private float bottomEdgeCameraInset = 1.4f;
+    private GridManager combatEdgeGridManager;
 
     [Header("Action Cinematic Camera")]
     [Tooltip("전투 행동 중 시전자와 대상 방향에 따라 Y축 카메라 회전을 적용합니다.")]
@@ -188,6 +203,11 @@ public class BattleCameraController : MonoBehaviour
     [Tooltip("전투 행동이 명시적으로 요청한 이동 유닛 중심으로 카메라 줌을 적용합니다.")]
     [SerializeField] private bool enableGridMovementImpactZoom = true;
     private Transform gridMovementFocusedUnit;
+
+    [Header("Movement To Action Camera Transition")]
+    [Tooltip("이동 직후 구도 유지 판정 시 화면 가장자리의 여유 비율입니다. 0.08은 상하좌우 8% 여유를 의미합니다.")]
+    [SerializeField, Range(0f, 0.3f)] private float movementToActionViewportPadding = 0.08f;
+
 
     [Header("Directional Impact Beats")]
     [SerializeField, Min(0f)] private float impactCompressionDistance = 0.08f;
@@ -588,6 +608,46 @@ public class BattleCameraController : MonoBehaviour
         hasAppliedExternalShake = false;
     }
 
+    // Ultimate intro uses the movement focus distance, not the attack zoom.
+    // The action camera can then take over when the skill actually executes.
+    public IEnumerator FocusForUltimateIntroduction(Transform caster)
+    {
+        if (targetCamera == null || caster == null)
+            yield break;
+
+        hasActiveGridSelectionFocus = false;
+        hasActiveCombatZoom = true;
+        activeCombatFocusOwner = caster;
+        activeCombatFocusMode = CombatCameraFocusMode.None;
+        RemoveMouseParallax();
+        hasActiveMonsterInfoFocus = false;
+        EndZoomFollowTarget();
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+        ClearImpactOffset();
+
+        Vector3 destination = caster.position;
+        destination.y += zoomOffset.y;
+        destination.z = usePositionZZoom
+            ? movementZoomZPosition
+            : targetCamera.transform.position.z;
+        float targetSize = useOrthographicSizeZoom
+            ? zoomSize : targetCamera.orthographicSize;
+        destination.x = CalculateCameraXForScreenAnchor(
+            caster.position, destination.z, targetCamera.transform.rotation,
+            0.5f, targetSize) + zoomOffset.x;
+        // Apply the same inward framing as direct movement before the cutscene starts.
+        destination += GetCombatEdgeCameraOffset(caster.position);
+
+        // Combat focus is intentionally not clamped to the grid camera bounds.
+        routine = StartCoroutine(MoveCamera(
+            destination, targetSize, zoomDuration, false, useOrthographicSizeZoom));
+        yield return routine;
+    }
+
     public IEnumerator ZoomTo(Transform target)
     {
         if (targetCamera == null || target == null)
@@ -776,11 +836,14 @@ public class BattleCameraController : MonoBehaviour
     /// </summary>
     public IEnumerator ZoomForActionTargets(
         Transform caster, System.Collections.Generic.IReadOnlyList<Transform> targets,
-        bool isStatusSkill, bool isRangedSkill)
+        bool isStatusSkill, bool isRangedSkill, Vector3? fixedWorldTarget = null)
     {
         if (targetCamera == null || caster == null)
             yield break;
 
+        // EndZoomFollowTarget() clears this flag; capture it before changing camera ownership.
+        bool transitioningFromGridMovement = gridMovementFocusedUnit != null;
+        Vector3 movementCameraPosition = targetCamera.transform.position;
         bool useRangedFrame = isStatusSkill || isRangedSkill;
         hasActiveGridSelectionFocus = false;
         hasActiveCombatZoom = true;
@@ -815,6 +878,17 @@ public class BattleCameraController : MonoBehaviour
             }
         }
 
+        // Ground-targeted projectiles have a fixed impact cell, not a moving
+        // Transform. Include that cell in the framing bounds.
+        if (fixedWorldTarget.HasValue)
+        {
+            Vector3 point = fixedWorldTarget.Value;
+            minX = Mathf.Min(minX, point.x);
+            maxX = Mathf.Max(maxX, point.x);
+            minY = Mathf.Min(minY, point.y);
+            maxY = Mathf.Max(maxY, point.y);
+        }
+
         // 근거리 공격은 시전자와 실제 피격 대상(들)을 포함한 구도의 중심을 사용합니다.
         // 직접 그리드 이동은 별도의 FocusMovingGridUnit에서 이동 유닛을 중심으로 유지합니다.
         // 원거리 공격은 대상 방향에 따라 시전자를 화면 좌/우 가장자리 근처에 배치합니다.
@@ -833,12 +907,20 @@ public class BattleCameraController : MonoBehaviour
                 targetCountForFraming++;
             }
         }
-        if (targetCountForFraming > 0)
+        if (fixedWorldTarget.HasValue)
+        {
+            targetAverageX = fixedWorldTarget.Value.x;
+            targetCountForFraming = 1;
+        }
+        else if (targetCountForFraming > 0)
             targetAverageX = (targetAverageX - caster.position.x) / targetCountForFraming;
         else
             targetAverageX = caster.position.x;
 
-        bool rangedEdgeFrame = isRangedSkill && !isStatusSkill && targetCountForFraming > 0;
+        // All attacks frame caster + actual targets/impact at their midpoint.
+        // An edge frame with targets directly above/below used to send the camera
+        // far along X even though the attack has no horizontal separation.
+        bool rangedEdgeFrame = false;
         float attackDirection = targetAverageX >= caster.position.x ? 1f : -1f;
         if (Mathf.Abs(targetAverageX - caster.position.x) < 0.001f)
             rangedEdgeFrame = false;
@@ -846,12 +928,8 @@ public class BattleCameraController : MonoBehaviour
         // Melee: center the frame on both caster and hit target(s), not caster alone.
         // Status skills retain their shared bounds framing; ranged attacks retain
         // the dedicated edge framing below.
-        destination.x = isStatusSkill || !isRangedSkill
-            ? (minX + maxX) * 0.5f + zoomOffset.x
-            : caster.position.x + zoomOffset.x;
-        destination.y = isStatusSkill || !isRangedSkill || rangedEdgeFrame
-            ? (minY + maxY) * 0.5f + zoomOffset.y
-            : caster.position.y + zoomOffset.y;
+        destination.x = (minX + maxX) * 0.5f + zoomOffset.x;
+        destination.y = (minY + maxY) * 0.5f + zoomOffset.y;
 
         float desiredZ = useRangedFrame ? rangedExecutionZoomZPosition :
             usePositionZZoom ? GetZoomZPosition() : destination.z;
@@ -916,7 +994,13 @@ public class BattleCameraController : MonoBehaviour
         }
 
         float actionYaw = 0f;
-        if (enableActionDirectionYaw && !isStatusSkill && targets != null)
+        if (enableActionDirectionYaw && !isStatusSkill && fixedWorldTarget.HasValue)
+        {
+            float differenceX = fixedWorldTarget.Value.x - caster.position.x;
+            if (Mathf.Abs(differenceX) >= actionYawDeadZone)
+                actionYaw = differenceX < 0f ? actionDirectionYaw : -actionDirectionYaw;
+        }
+        else if (enableActionDirectionYaw && !isStatusSkill && targets != null)
         {
             float targetXSum = 0f;
             int targetCount = 0;
@@ -965,24 +1049,143 @@ public class BattleCameraController : MonoBehaviour
         destination.x = CalculateCameraXForScreenAnchor(
             screenAnchor, destination.z, framingRotation, anchorViewportX, desiredSize)
             + zoomOffset.x;
+        destination += GetCombatEdgeCameraOffset(screenAnchor);
 
-        // Attack camera's highest priority is the Inspector Camera Position Clamp.
-        // The caster/target viewport anchor and yaw correction are best-effort:
-        // they must never move the camera beyond the configured X/Y bounds.
-        // Apply it to the calculated destination AND each animation frame.
-        destination = ClampCameraPosition(destination);
+        // Normal attacks obey the inspector clamp. A direct grid movement may already
+        // have placed the camera beyond that range. Clamping the *first* frame of the
+        // next action would snap the camera back into the grid.
+        bool keepMovementXY = false;
+        if (keepMovementXY)
+        {
+            destination.x = movementCameraPosition.x;
+            destination.y = movementCameraPosition.y;
+        }
 
+        // Combat actions use the same unrestricted framing as direct movement.
+        // Do not snap back to the inspector's normal/selection camera bounds.
         float duration = useRangedFrame ? rangedExecutionZoomDuration : zoomDuration;
         routine = StartCoroutine(MoveCamera(
-            destination, desiredSize, duration, true,
+            destination, desiredSize, duration, false,
             targetCamera.orthographic || (!useRangedFrame && useOrthographicSizeZoom),
             false, actionYaw));
         yield return routine;
     }
 
+    // Preview the new action's zoom/yaw while retaining the current movement X/Y.
+    // When every participant fits inside this view, no recentering is necessary.
+    private bool AreActionTargetsVisibleAtCameraPosition(
+        Vector3 currentPosition, float actionZ, float actionYaw, float actionSize,
+        Transform caster, System.Collections.Generic.IReadOnlyList<Transform> targets)
+    {
+        if (targetCamera == null || caster == null)
+            return false;
+
+        Transform cameraTransform = targetCamera.transform;
+        Vector3 originalPosition = cameraTransform.position;
+        Quaternion originalRotation = cameraTransform.rotation;
+        float originalSize = targetCamera.orthographicSize;
+        float pad = Mathf.Clamp(movementToActionViewportPadding, 0f, 0.3f);
+        try
+        {
+            cameraTransform.position = new Vector3(currentPosition.x, currentPosition.y, actionZ);
+            cameraTransform.rotation = Quaternion.Euler(0f, actionYaw, 0f);
+            if (targetCamera.orthographic)
+                targetCamera.orthographicSize = actionSize;
+
+            if (!IsWithinActionViewport(caster.position, pad))
+                return false;
+            if (targets != null)
+            {
+                for (int i = 0; i < targets.Count; i++)
+                {
+                    Transform target = targets[i];
+                    if (target != null && !IsWithinActionViewport(target.position, pad))
+                        return false;
+                }
+            }
+            return true;
+        }
+        finally
+        {
+            cameraTransform.position = originalPosition;
+            cameraTransform.rotation = originalRotation;
+            if (targetCamera.orthographic)
+                targetCamera.orthographicSize = originalSize;
+        }
+    }
+
+    private bool IsWithinActionViewport(Vector3 worldPosition, float padding)
+    {
+        Vector3 viewport = targetCamera.WorldToViewportPoint(worldPosition);
+        return viewport.z > 0f &&
+               viewport.x >= padding && viewport.x <= 1f - padding &&
+               viewport.y >= padding && viewport.y <= 1f - padding;
+    }
+
     // Place a world-space anchor at a specific horizontal screen fraction,
     // while preserving the requested camera Z and yaw.  The perspective case
     // also accounts for the change in camera-relative depth caused by yaw.
+    // The grid is indexed by column (five rows per column). The camera is
+    // nudged inward near columns 0-1 and 5-6, without enabling world clamps.
+    // This also works with attacks focused between units, not only cell centers.
+    // Both the movement focus and all action/cutscene focuses use this one
+    // world-space offset. The bottom correction applies only at the two outer
+    // columns, not to the center of the battlefield.
+    private Vector3 GetCombatEdgeCameraOffset(Vector3 focusWorldPosition)
+    {
+        if (!useCombatEdgeFraming)
+            return Vector3.zero;
+
+        if (combatEdgeGridManager == null)
+            combatEdgeGridManager = FindFirstObjectByType<GridManager>();
+        GridManager grid = combatEdgeGridManager;
+        if (grid == null || grid.Width < 5 || grid.Height < 5)
+            return Vector3.zero;
+
+        int height = grid.Height;
+        float leftStartX = grid.GetWorldPositionByIndex(0).x;
+        float leftEndX = grid.GetWorldPositionByIndex(height).x;
+        float rightStartX = grid.GetWorldPositionByIndex((grid.Width - 2) * height).x;
+        float rightEndX = grid.GetWorldPositionByIndex((grid.Width - 1) * height).x;
+        bool increasingX = rightEndX > leftStartX;
+        float directionalX = increasingX ? focusWorldPosition.x : -focusWorldPosition.x;
+        float leftBoundary = increasingX ? leftEndX : -leftEndX;
+        float rightBoundary = increasingX ? rightStartX : -rightStartX;
+
+        float leftFadeEnd = leftBoundary + Mathf.Abs(leftEndX - leftStartX);
+        float rightFadeStart = rightBoundary - Mathf.Abs(rightEndX - rightStartX);
+        float leftWeight = 0f;
+        float rightWeight = 0f;
+        if (directionalX <= leftFadeEnd)
+        {
+            float t = Mathf.InverseLerp(leftBoundary, leftFadeEnd, directionalX);
+            leftWeight = 1f - Mathf.SmoothStep(0f, 1f, t);
+        }
+        else if (directionalX >= rightFadeStart)
+        {
+            float t = Mathf.InverseLerp(rightFadeStart, rightBoundary, directionalX);
+            rightWeight = Mathf.SmoothStep(0f, 1f, t);
+        }
+
+        float xInset = leftEdgeCameraInset * leftWeight - rightEdgeCameraInset * rightWeight;
+        if (!increasingX)
+            xInset = -xInset;
+
+        // With column-major indexing, rows 3 and 4 are the bottom two cells.
+        // Start blending at row 2 and reach full correction at row 3.
+        // Derive the positive/upward direction from actual grid world positions.
+        float row2Y = grid.GetWorldPositionByIndex(2).y;
+        float row3Y = grid.GetWorldPositionByIndex(3).y;
+        float topY = grid.GetWorldPositionByIndex(0).y;
+        float bottomY = grid.GetWorldPositionByIndex(height - 1).y;
+        float bottomWeight = Mathf.SmoothStep(0f, 1f,
+            Mathf.InverseLerp(row2Y, row3Y, focusWorldPosition.y));
+        float towardTop = topY >= bottomY ? 1f : -1f;
+        float yInset = towardTop * bottomEdgeCameraInset *
+            Mathf.Max(leftWeight, rightWeight) * bottomWeight;
+        return new Vector3(xInset, yInset, 0f);
+    }
+
     private float CalculateCameraXForScreenAnchor(
         Vector3 anchor, float cameraZ, Quaternion cameraRotation,
         float viewportX, float orthographicSize)
@@ -1525,11 +1728,23 @@ public class BattleCameraController : MonoBehaviour
 
     public IEnumerator ReturnDefault()
     {
+        return ReturnDefaultInternal(false);
+    }
+
+    // 5번 슬롯까지 모두 완료된 후에는 실행 플래그가 남아 있어도
+    // 턴 종료 회복 및 패시브 효과에 앞서 카메라를 복귀시킵니다.
+    public IEnumerator ReturnDefaultAfterTimelineActions()
+    {
+        return ReturnDefaultInternal(true);
+    }
+
+    private IEnumerator ReturnDefaultInternal(bool timelineActionsCompleted)
+    {
         if (targetCamera == null)
             yield break;
 
-        // 턴 중간 복귀 요청을 실제 이동으로 처리하면 매 슬롯마다 기본 위치를 경유하게 됩니다.
-        if (IsTurnCameraExecutionActive())
+        // 턴 중간에는 복귀하지 않고, 모든 예약 행동 완료 후에만 예외를 허용합니다.
+        if (!timelineActionsCompleted && IsTurnCameraExecutionActive())
         {
             pendingTurnCameraReturn = true;
             yield break;
@@ -2160,7 +2375,9 @@ public class BattleCameraController : MonoBehaviour
         targetPosition.x = CalculateCameraXForScreenAnchor(
             zoomFollowTarget.position, targetPosition.z, targetCamera.transform.rotation,
             0.5f, targetCamera.orthographicSize) + zoomOffset.x;
+        targetPosition += GetCombatEdgeCameraOffset(zoomFollowTarget.position);
 
+        // Keep the moving unit centered, without the normal camera position clamp.
         targetCamera.transform.position = Vector3.SmoothDamp(
             targetCamera.transform.position,
             targetPosition,
@@ -2278,11 +2495,12 @@ public class BattleCameraController : MonoBehaviour
             Vector3 desiredPosition = unit.position;
             desiredPosition.x += zoomOffset.x;
             desiredPosition.y += zoomOffset.y;
-            desiredPosition.z = usePositionZZoom ? GetZoomZPosition() : startPosition.z;
+            desiredPosition.z = usePositionZZoom ? movementZoomZPosition : startPosition.z;
             desiredPosition.x = CalculateCameraXForScreenAnchor(
                 unit.position, desiredPosition.z, targetCamera.transform.rotation,
                 0.5f, useOrthographicSizeZoom ? Mathf.Lerp(startSize, targetSize, eased) : startSize)
                 + zoomOffset.x;
+            desiredPosition += GetCombatEdgeCameraOffset(unit.position);
             targetCamera.transform.position = Vector3.Lerp(startPosition, desiredPosition, eased);
             if (useOrthographicSizeZoom)
                 targetCamera.orthographicSize = Mathf.Lerp(startSize, targetSize, eased);
@@ -2294,10 +2512,11 @@ public class BattleCameraController : MonoBehaviour
             Vector3 finalPosition = unit.position;
             finalPosition.x += zoomOffset.x;
             finalPosition.y += zoomOffset.y;
-            finalPosition.z = usePositionZZoom ? GetZoomZPosition() : targetCamera.transform.position.z;
+            finalPosition.z = usePositionZZoom ? movementZoomZPosition : targetCamera.transform.position.z;
             finalPosition.x = CalculateCameraXForScreenAnchor(
                 unit.position, finalPosition.z, targetCamera.transform.rotation,
                 0.5f, targetSize) + zoomOffset.x;
+            finalPosition += GetCombatEdgeCameraOffset(unit.position);
             targetCamera.transform.position = finalPosition;
             if (useOrthographicSizeZoom)
                 targetCamera.orthographicSize = targetSize;

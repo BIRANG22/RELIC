@@ -9,9 +9,9 @@ public static class BattlePresentationSpeedSettings
     public const string PreferenceKey = "Relic.BattlePresentationSpeedIndex";
 
     // 표시 배속과 실제 연출 속도는 별도로 관리합니다.
-    // 기본 1초 연출이 각각 0.85 / 0.70 / 0.50 / 0.25초에 실행되도록 설정합니다.
+    // 기본 1초 연출이 각각 0.90 / 0.70 / 0.50 / 0.25초에 실행되도록 설정합니다.
     private static readonly float[] DisplayMultipliers = { 1f, 1.5f, 2f, 4f };
-    private static readonly float[] Multipliers = { 1f / 0.85f, 1f / 0.70f, 2f, 1f / 0.25f };
+    private static readonly float[] Multipliers = { 1f / 0.90f, 1f / 0.70f, 2f, 1f / 0.25f };
 
     public static int CurrentIndex => SanitizeIndex(PlayerPrefs.GetInt(PreferenceKey, 0));
     public static float CurrentMultiplier => Multipliers[CurrentIndex];

@@ -31,7 +31,7 @@ MonoBehaviour:
   - localeCode: zh-Hant
     defaultFont: {fileID: 11400000, guid: 4486ac4c14f79ac42acf64808c5789eb, type: 2}
     roleFonts: []
-  commonNumberFont: {fileID: 11400000, guid: 9a815c71f02eb4f4db49652c3cb6a08b, type: 2}
+  commonNumberFont: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   sourceFontRoles:
   - sourceFont: {fileID: 11400000, guid: 9a815c71f02eb4f4db49652c3cb6a08b, type: 2}
     roleId: number

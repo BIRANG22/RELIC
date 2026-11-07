@@ -38,6 +38,9 @@ public class CharacterHUDSlot : MonoBehaviour
     private CharacterRuntimeData boundRuntime;
     private CharacterMasterData boundMaster;
     private Collider2D followCollider2D;
+    // Store the HUD anchor once. Animated/disabled colliders can change bounds during movement and death.
+    private Vector3 stableColliderWorldOffset;
+    private bool hasStableColliderWorldOffset;
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
 
     private Coroutine hpValueRoutine;
@@ -92,8 +95,24 @@ public class CharacterHUDSlot : MonoBehaviour
 
     public void SetFollowTarget(Transform target, Collider2D collider2D)
     {
+        bool targetChanged = followTarget != target || followCollider2D != collider2D;
         followTarget = target;
         followCollider2D = collider2D;
+
+        if (targetChanged)
+        {
+            hasStableColliderWorldOffset = false;
+            if (followTarget != null && followCollider2D != null &&
+                followCollider2D.enabled && followCollider2D.gameObject.activeInHierarchy)
+            {
+                Bounds bounds = followCollider2D.bounds;
+                stableColliderWorldOffset = new Vector3(
+                    bounds.center.x - followTarget.position.x,
+                    bounds.max.y - followTarget.position.y,
+                    0f);
+                hasStableColliderWorldOffset = true;
+            }
+        }
 
         if (useFollowPosition)
             UpdateFollowPosition();
@@ -101,7 +120,8 @@ public class CharacterHUDSlot : MonoBehaviour
 
     private void UpdateFollowPosition()
     {
-        if (!useFollowPosition || followTarget == null || rectTransform == null)
+        if (!useFollowPosition || followTarget == null || rectTransform == null ||
+            !followTarget.gameObject.activeInHierarchy)
             return;
 
         Camera cam = Camera.main;
@@ -110,8 +130,10 @@ public class CharacterHUDSlot : MonoBehaviour
 
         Vector3 followWorldPosition = GetFollowWorldPosition();
         Vector3 screenPos = cam.WorldToScreenPoint(followWorldPosition);
+        if (screenPos.z <= 0f)
+            return;
 
-        if (followCollider2D != null)
+        if (hasStableColliderWorldOffset)
         {
             float pivotOffset = rectTransform.rect.height * rectTransform.lossyScale.y * rectTransform.pivot.y;
             screenPos.y += pivotOffset + colliderTopScreenPadding;
@@ -122,11 +144,8 @@ public class CharacterHUDSlot : MonoBehaviour
 
     private Vector3 GetFollowWorldPosition()
     {
-        if (followCollider2D != null)
-        {
-            Bounds bounds = followCollider2D.bounds;
-            return new Vector3(bounds.center.x, bounds.max.y, followTarget.position.z);
-        }
+        if (hasStableColliderWorldOffset)
+            return followTarget.position + stableColliderWorldOffset;
 
         return followTarget.position + worldOffset;
     }
