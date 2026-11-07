@@ -80,7 +80,7 @@ MonoBehaviour:
   vfxPrefab: {fileID: 4671743514916339104, guid: e4093da82de88464da3c237f1f0c1e1a, type: 3}
   vfxLocalOffset: {x: 0, y: 0, z: 0}
   vfxLocalScale: {x: 1, y: 1, z: 1}
-  tintParticleStartColor: 0
+  tintParticleStartColor: 1
   duration: 0.6
   arcHeightMultiplierRange: {x: 0.72, y: 1.28}
   lateralRandomness: 130
@@ -90,6 +90,8 @@ MonoBehaviour:
   oppositeKickSideRandomness: 30
   kickDurationRatio: 0.32
   suckCurveLift: 75
+  conversionSideSpreadRange: {x: 240, y: 460}
+  conversionVerticalSpreadRange: {x: -170, y: 210}
   sortingOrder: 20000
   maxParticleFinishWait: 3
 --- !u!1 &200000

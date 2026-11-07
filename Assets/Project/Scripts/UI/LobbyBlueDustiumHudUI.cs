@@ -60,6 +60,25 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
         hasDisplayedValue = false;
     }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    // Available in the lobby even when the conversion panel starts inactive.
+    // Only the first active HUD processes the key when multiple HUDs exist.
+    private void Update()
+    {
+        if (!Application.isPlaying || !Input.GetKeyDown(KeyCode.M))
+            return;
+
+        foreach (LobbyBlueDustiumHudUI hud in Instances)
+        {
+            if (hud != null && hud.isActiveAndEnabled && hud != this)
+                return;
+            break;
+        }
+
+        ResearchResultPanelUI.TryPlayDebugConversion(500);
+    }
+#endif
+
     private void StartInitialRefresh()
     {
         StopInitialRefresh();
