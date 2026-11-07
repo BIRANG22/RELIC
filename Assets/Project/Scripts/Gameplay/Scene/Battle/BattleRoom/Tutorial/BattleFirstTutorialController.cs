@@ -66,6 +66,10 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
     [SerializeField] private RectTransform tutorialTooltip;
     [SerializeField] private TMP_Text tutorialText;
 
+    [Header("Tutorial Text Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string tutorialTextSfxId = AudioIds.Sfx.TutorialTextAdvance;
+    [SerializeField, Range(0f, 1f)] private float tutorialTextSfxVolume = 0.5f;
+
     [Header("Focus")]
     [SerializeField, Min(0f)] private float focusPadding = 18f;
     [SerializeField, Min(0f)] private float highlightPadding = 8f;
@@ -856,8 +860,13 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
             return;
 
         EnsureBattleSkillTooltipAboveFocus();
+        bool playTextSound = ShouldPlayTextSound(currentLocalizationKey, localizationKey);
         currentLocalizationKey = localizationKey;
         RefreshTutorialText();
+        if (playTextSound)
+            AudioManager.Instance?.PlaySfx(
+                ResolveTutorialTextSoundId(tutorialTextSfxId),
+                tutorialTextSfxVolume);
 
         if (focusAnimationCoroutine != null)
             StopCoroutine(focusAnimationCoroutine);
@@ -1330,6 +1339,19 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
             return;
 
         tutorialText.text = GameLocalization.Get(currentLocalizationKey);
+    }
+
+    public static bool ShouldPlayTextSound(string previousLocalizationKey, string nextLocalizationKey)
+    {
+        return !string.IsNullOrWhiteSpace(nextLocalizationKey) &&
+               !string.Equals(previousLocalizationKey, nextLocalizationKey, StringComparison.Ordinal);
+    }
+
+    public static string ResolveTutorialTextSoundId(string serializedSoundId)
+    {
+        return string.IsNullOrWhiteSpace(serializedSoundId)
+            ? AudioIds.Sfx.TutorialTextAdvance
+            : serializedSoundId.Trim();
     }
 
     private void HandleLocaleChanged(Locale _)

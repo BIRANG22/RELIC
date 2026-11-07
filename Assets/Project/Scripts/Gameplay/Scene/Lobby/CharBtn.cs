@@ -412,11 +412,43 @@ public class CharBtn : MonoBehaviour,
 
         Transform relicRoot = transform.Find("Relic");
         if (IsPointerInsideRect(relicRoot as RectTransform, eventData))
-            return ForwardInfoEquipmentSlotClick(isCompound: false);
+        {
+            ForwardInfoEquipmentSlotClick(isCompound: false);
+            return true;
+        }
 
         Transform compoundRoot = transform.Find("Compound");
         if (IsPointerInsideRect(compoundRoot as RectTransform, eventData))
-            return ForwardInfoEquipmentSlotClick(isCompound: true);
+        {
+            ForwardInfoEquipmentSlotClick(isCompound: true);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool ShouldConsumeInfoEquipmentAreaClick(bool isInfoPanelPartyEditButton, bool pointerInsideEquipmentArea)
+    {
+        return isInfoPanelPartyEditButton && pointerInsideEquipmentArea;
+    }
+
+    public bool IsInfoEquipmentAreaTransform(Transform target)
+    {
+        if (!IsInfoPanelPartyEditButton() || target == null)
+            return false;
+
+        Transform current = target;
+        while (current != null && current != transform)
+        {
+            if (current.parent == transform &&
+                (string.Equals(current.name, "Relic", System.StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(current.name, "Compound", System.StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            current = current.parent;
+        }
 
         return false;
     }

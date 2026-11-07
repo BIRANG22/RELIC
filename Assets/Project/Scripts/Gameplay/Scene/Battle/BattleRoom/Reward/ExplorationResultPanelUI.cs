@@ -32,6 +32,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private ExplorationResultCharacterRowUI[] characterRows;
     [Header("Result Count-Up")]
     [SerializeField, Min(0f)] private float countUpDuration = 1f;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string countUpSfxId = AudioIds.Sfx.ExplorationReportCountUp;
+    [SerializeField, Range(1, 20)] private int countUpSoundSteps = 10;
     [Header("Report Layout")]
     [SerializeField] private BattleBagItemSlotUI iconSlotPrefab;
     [SerializeField] private Image hardModeBlurPrefab;
@@ -88,6 +90,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private int targetEventCount;
     private int targetRedDustium;
     private bool hasResultCountUpTargets;
+    private bool hasAudibleCountUpValue;
+    private int lastCountUpSoundStep = -1;
+    private int lastDisplayedCountUpSignature;
 
     [System.Serializable]
     private sealed class DigitImageDisplay
@@ -357,6 +362,13 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             targetEventCount = 1;
         }
         hasResultCountUpTargets = true;
+        hasAudibleCountUpValue = targetElapsedSeconds > 0f
+            || targetNormalBattleCount > 0
+            || targetEliteBattleCount > 0
+            || targetEventCount > 0
+            || targetRedDustium > 0;
+        lastCountUpSoundStep = -1;
+        lastDisplayedCountUpSignature = 0;
 
         if (!Application.isPlaying || countUpDuration <= 0f)
         {
@@ -388,12 +400,26 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         int displayedNormalCount = CalculateCountUpCount(targetNormalBattleCount, progress);
         int displayedEliteCount = CalculateCountUpCount(targetEliteBattleCount, progress);
         int displayedEventCount = CalculateCountUpCount(targetEventCount, progress);
+        int displayedRedDustium = CalculateCountUpCount(targetRedDustium, progress);
+        int displaySignature = System.HashCode.Combine(
+            displayedSeconds,
+            displayedNormalCount,
+            displayedEliteCount,
+            displayedEventCount,
+            displayedRedDustium);
+        int soundStep = Mathf.FloorToInt(Mathf.Clamp01(progress) * Mathf.Max(1, countUpSoundSteps));
+        bool displayChanged = displaySignature != lastDisplayedCountUpSignature;
+        if (Application.isPlaying && hasAudibleCountUpValue && displayChanged && soundStep > 0 && soundStep != lastCountUpSoundStep)
+        {
+            lastCountUpSoundStep = soundStep;
+            AudioManager.Instance?.PlaySfx(countUpSfxId);
+        }
+        lastDisplayedCountUpSignature = displaySignature;
 
         ApplyElapsedTimeDisplay(displayedSeconds);
         ApplyBattleCountDisplay(normalBattleCountText, normalBattleCountImageDisplay, displayedNormalCount);
         ApplyBattleCountDisplay(eliteBattleCountText, eliteBattleCountImageDisplay, displayedEliteCount);
         ApplyBattleCountDisplay(eventCountText, eventCountImageDisplay, displayedEventCount);
-        int displayedRedDustium = CalculateCountUpCount(targetRedDustium, progress);
         SetText(redDustiumText, $"+ {displayedRedDustium}");
         redDustiumImageDisplay.ApplyValue(displayedRedDustium, numberSprites);
     }

@@ -34,6 +34,19 @@ public static class AudioIds
         public const string BattleEventDiceRoll = "battle.event.dice.roll";
         public const string BattleBossRevealImpactLow = "battle.boss.reveal.impact.low";
         public const string BattleBossRevealImpactHigh = "battle.boss.reveal.impact.high";
+        public const string TutorialTextAdvance = "ui.tutorial.text.advance";
+        public const string BattleMoveFlipClick = "battle.move-flip.click";
+        public const string BattleSkillResetCancel = "battle.skill.reset-cancel";
+        public const string LobbyCharacterSelectionChange = "lobby.character.selection.change";
+        public const string BattleTimelineMarkerClick = "battle.timeline.marker.click";
+        public const string LobbyRuneEquip = "lobby.rune.equip";
+        public const string LobbySkillChange = "lobby.skill.change";
+        public const string LobbySkillMaterialCombine = "lobby.skill-material.combine";
+        public const string LobbySkillMaterialRemove = "lobby.skill-material.remove";
+        public const string LobbyCharacterRemove = "lobby.character.remove";
+        public const string BattleGridSelectionDrop = "battle.grid-selection.drop";
+        public const string LobbyEquipmentEquip = "lobby.equipment.equip";
+        public const string ExplorationReportCountUp = "ui.exploration-report.count-up";
     }
 
 }

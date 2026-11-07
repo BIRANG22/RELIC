@@ -21,6 +21,9 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyInfoPanelUI : MonoBehaviour
 {
+    [Header("Equipment Result Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string equipmentEquipSfxId = AudioIds.Sfx.LobbyEquipmentEquip;
+
     private const string InfoPanelName = "Info_Panel";
     private static readonly Color EquipTargetHoverColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
@@ -298,6 +301,13 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (target == null)
             return;
 
+        foreach (DBAudioSource audio in target.GetComponentsInChildren<DBAudioSource>(true))
+            audio.SetClickSoundEnabled(false);
+        foreach (UISoundTrigger audio in target.GetComponentsInChildren<UISoundTrigger>(true))
+            audio.SetClickSoundEnabled(false);
+        foreach (ButtonAnimationCoroutine audio in target.GetComponentsInChildren<ButtonAnimationCoroutine>(true))
+            audio.SetClickSoundEnabled(false);
+
         Image targetImage = target.GetComponent<Image>();
         if (targetImage != null)
             targetImage.raycastTarget = true;
@@ -384,6 +394,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
                 return false;
 
             ClearInventorySelection();
+            AudioManager.Instance?.PlaySfx(equipmentEquipSfxId);
         }
         else
         {

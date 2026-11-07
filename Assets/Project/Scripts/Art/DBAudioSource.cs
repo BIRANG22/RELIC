@@ -63,6 +63,16 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
         }
     }
 
+    public void SetClickSoundId(string id)
+    {
+        clickSoundId = id;
+    }
+
+    public void SetClickSoundEnabled(bool enabled)
+    {
+        playOnClick = enabled;
+    }
+
     private Coroutine delayedPlayCoroutine;
     private readonly List<AudioSource> activeLoopSources = new();
 

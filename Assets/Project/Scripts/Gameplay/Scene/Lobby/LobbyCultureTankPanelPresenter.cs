@@ -35,6 +35,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [SerializeField, Range(0f, 1f)]
     private float ingredientRegisterSoundVolume = 1f;
 
+    [Header("Material Result Sounds")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string materialCombineSoundId = AudioIds.Sfx.LobbySkillMaterialCombine;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string materialRemoveSoundId = AudioIds.Sfx.LobbySkillMaterialRemove;
+
     [Header("Compound Transfer Sound")]
     [Tooltip("완성된 연성제 획득 이펙트가 타겟으로 이동하기 시작할 때 재생할 SFX입니다.")]
     [SerializeField, SoundId(SoundCategory.Sfx)]
@@ -375,6 +379,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         SaveAndPublish();
         RefreshAll();
         RefreshCompoundReferenceNow();
+        AudioManager.Instance?.PlaySfx(materialCombineSoundId);
     }
 
     private void ClaimCompletion()
@@ -723,6 +728,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         // 제거 후 RefreshAll()에서 Storage 슬롯 선택 효과도 함께 해제됩니다.
         if (TryRemoveStorageItemFromTank(lobby, normalizedItemId))
         {
+            AudioManager.Instance?.PlaySfx(materialRemoveSoundId);
             selectedSlotIndex = -1;
             SaveAndPublish();
             RefreshAll();

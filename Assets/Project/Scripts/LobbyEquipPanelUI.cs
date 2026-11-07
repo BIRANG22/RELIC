@@ -16,6 +16,8 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyEquipPanelUI : MonoBehaviour
 {
+    [Header("Equipment Result Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string equipmentEquipSfxId = AudioIds.Sfx.LobbyEquipmentEquip;
     private const string ReadyPanelName = "Ready_Panel";
     private const string InfoPanelName = "Info_Panel";
     private const int CharacterCount = 3;
@@ -787,6 +789,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResetOwnedRelicSelection();
         RefreshCharacterData();
         RelicEquipPanelUI.RefreshAll();
+        AudioManager.Instance?.PlaySfx(equipmentEquipSfxId);
     }
 
     private void TryEquipSelectedOwnedRelicToCharacter(int partySlotIndex)
@@ -1498,6 +1501,13 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (slot == null)
             return;
 
+        foreach (DBAudioSource audio in slot.GetComponentsInChildren<DBAudioSource>(true))
+            audio.SetClickSoundEnabled(false);
+        foreach (UISoundTrigger audio in slot.GetComponentsInChildren<UISoundTrigger>(true))
+            audio.SetClickSoundEnabled(false);
+        foreach (ButtonAnimationCoroutine audio in slot.GetComponentsInChildren<ButtonAnimationCoroutine>(true))
+            audio.SetClickSoundEnabled(false);
+
         LobbyReadyEquipmentPointerRelay relay = slot.GetComponent<LobbyReadyEquipmentPointerRelay>();
         if (relay == null)
             relay = slot.gameObject.AddComponent<LobbyReadyEquipmentPointerRelay>();
@@ -2072,7 +2082,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             : EquipOwnedRelicToInfoSlot(partyIndex, runtimeSlotIndex, itemId);
 
         if (changed)
+        {
             RefreshAfterEquipmentChange();
+            AudioManager.Instance?.PlaySfx(equipmentEquipSfxId);
+        }
 
         return changed;
     }
@@ -2314,6 +2327,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         // Clean up the drag preview here, without waiting for the source event.
         ClearEquipmentDragState();
         RefreshAfterEquipmentChange();
+        AudioManager.Instance?.PlaySfx(equipmentEquipSfxId);
     }
 
     private bool MoveEquippedItem(
@@ -2326,7 +2340,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (sourcePartyIndex == targetPartyIndex && sourceRuntimeSlotIndex == targetRuntimeSlotIndex)
         {
             equipmentDragHandled = true;
-            return true;
+            return false;
         }
 
         if (!TryGetCharacterRuntime(sourcePartyIndex, out CharacterRuntimeData sourceRuntime) ||

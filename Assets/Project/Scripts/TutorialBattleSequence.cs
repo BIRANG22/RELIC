@@ -215,6 +215,9 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     [SerializeField, Min(0f)] private float textCompleteFadeDuration = 0.2f;
     private readonly Dictionary<GameObject, Coroutine> completeFades = new();
     [SerializeField, Min(1f)] private float dialogueCharactersPerSecond = 35f;
+    [Header("Dialogue Advance Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string dialogueAdvanceSoundId = AudioIds.Sfx.TutorialTextAdvance;
+    [SerializeField, Range(0f, 1f)] private float dialogueAdvanceSoundVolume = 0.5f;
     private readonly Dictionary<Renderer, bool> gridRenderers = new();
     private BattleTurnExecutor tutorialTurnExecutor;
     private bool tutorialControlInputOpened;
@@ -1404,12 +1407,31 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return true;
     }
 
-    private static IEnumerator WaitForClick()
+    private IEnumerator WaitForClick()
     {
         // Avoid advancing on the same click that opened this step.
         yield return null;
         while (!IsAdvancePressed())
             yield return null;
+
+        PlayDialogueAdvanceSound();
+    }
+
+    private void PlayDialogueAdvanceSound()
+    {
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(
+            ResolveDialogueAdvanceSoundId(dialogueAdvanceSoundId),
+            dialogueAdvanceSoundVolume);
+    }
+
+    public static string ResolveDialogueAdvanceSoundId(string serializedSoundId)
+    {
+        return string.IsNullOrWhiteSpace(serializedSoundId)
+            ? AudioIds.Sfx.TutorialTextAdvance
+            : serializedSoundId.Trim();
     }
 
     // HUD 준비 신호만으로는 그리드 표시가 완료됐다고 판단하지 않습니다.

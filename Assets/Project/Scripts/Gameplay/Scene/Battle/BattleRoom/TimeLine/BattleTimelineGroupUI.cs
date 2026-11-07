@@ -52,6 +52,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private GameObject turnMarkLine;
     [Header("TurnMark Glow (Assign In Inspector)")]
     [SerializeField] private GameObject turnMarkGlowImage;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string markerClickSfxId = AudioIds.Sfx.BattleTimelineMarkerClick;
 
     [Header("Cancelled Order Animation")]
     [SerializeField, Min(0f)] private float cancelledOrderMoveDown = 70f;
@@ -1602,7 +1603,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         button.transition = Selectable.Transition.None;
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(OnClickTimelineSlot);
+        button.onClick.AddListener(OnClickTurnMark);
     }
 
     private void EnsureButton()
@@ -1634,6 +1635,15 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
+    }
+
+    private void OnClickTurnMark()
+    {
+        if (IsBattleEnded())
+            return;
+
+        if (owner != null && owner.OnTimelineSlotClicked(slotIndex))
+            AudioManager.Instance?.PlaySfx(markerClickSfxId);
     }
 
     private static bool IsBattleEnded()

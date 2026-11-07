@@ -73477,6 +73477,8 @@ MonoBehaviour:
   highlightLine: {fileID: 0}
   tutorialTooltip: {fileID: 0}
   tutorialText: {fileID: 0}
+  tutorialTextSfxId: ui.tutorial.text.advance
+  tutorialTextSfxVolume: 0.5
   focusPadding: 18
   highlightPadding: 8
   slideDuration: 0.28

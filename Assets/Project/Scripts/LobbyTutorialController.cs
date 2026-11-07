@@ -43,7 +43,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [Header("문장 넘김 사운드")]
     [Tooltip("다음 문장으로 넘어갈 때 재생할 SFX입니다. AudioManager의 사운드 DB에서 선택합니다.")]
     [SerializeField, SoundId(SoundCategory.Sfx)]
-    private string lineAdvanceSoundId = AudioIds.Sfx.NormalButtonClick;
+    private string lineAdvanceSoundId = AudioIds.Sfx.TutorialTextAdvance;
 
     [Tooltip("문장 넘김 사운드의 볼륨입니다.")]
     [SerializeField, Range(0f, 1f)]
