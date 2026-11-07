@@ -372,6 +372,11 @@ public sealed class UIBlurReplicaSource
                 CanvasRendererHideRegistry.Release(sourceRenderer);
 
             sourceRendererHidden = hidden;
+            // A source Image can be rebuilt while hidden by the blur replica.
+            // Mark its UI geometry/material dirty after releasing the cull so
+            // Unity re-evaluates it on the next canvas update.
+            if (!hidden && Source != null && Source.isActiveAndEnabled)
+                Source.SetAllDirty();
         }
 
         private static float GetEffectiveCanvasGroupAlpha(Transform transform)

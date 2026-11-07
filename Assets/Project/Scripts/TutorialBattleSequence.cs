@@ -1364,6 +1364,12 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (UIManager.Instance != null && UIManager.Instance.IsConfirmDialogOpen)
             return false;
 
+        // Opening or operating the menu never counts as a tutorial advance click.
+        BattleMenuEscapeInputController menuController =
+            FindFirstObjectByType<BattleMenuEscapeInputController>(FindObjectsInactive.Include);
+        if (menuController != null && menuController.IsMenuPanelVisible)
+            return false;
+
         bool pressed = Input.GetMouseButtonDown(0) ||
             (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
         if (!pressed)
@@ -1385,7 +1391,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 {
                     string targetName = target.name;
                     if (targetName == "SkipButton" || targetName == "Check(Clone)" ||
-                        targetName == "TutorialSkipButton")
+                        targetName == "TutorialSkipButton" || targetName == "MenuButton" ||
+                        targetName == "MenuPanel" || targetName == "MenuRoot")
                     {
                         NotifyModalInteraction();
                         return false;

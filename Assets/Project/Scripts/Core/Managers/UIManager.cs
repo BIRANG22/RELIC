@@ -414,7 +414,12 @@ public class UIManager : Singleton<UIManager>
 
         optionCanvas.overrideSorting = true;
         int desiredOrder = GetHighestCanvasSortingOrder(optionCanvas) + Mathf.Max(1, optionPanelSortingOrderOffset);
-        optionCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
+        // In the tutorial, MenuPanel is raised above the input-blocking overlay.
+        // OptionPanel opened from that menu must render above MenuPanel as well.
+        bool tutorialMenuOpen = IsTutorialBattleRun() || BattleFirstTutorialController.IsInputRestricted;
+        optionCanvas.sortingOrder = tutorialMenuOpen
+            ? 30010
+            : Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
 
         if (optionPanelInstance.GetComponent<GraphicRaycaster>() == null)
             optionPanelInstance.AddComponent<GraphicRaycaster>();
@@ -436,7 +441,11 @@ public class UIManager : Singleton<UIManager>
 
         recordCanvas.overrideSorting = true;
         int desiredOrder = GetHighestCanvasSortingOrder(recordCanvas) + Mathf.Max(1, recordPanelSortingOrderOffset);
-        recordCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
+        // RecordPanel must stay above the tutorial MenuPanel (order 30003).
+        bool tutorialMenuOpen = IsTutorialBattleRun() || BattleFirstTutorialController.IsInputRestricted;
+        recordCanvas.sortingOrder = tutorialMenuOpen
+            ? 30011
+            : Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
 
         if (recordPanelInstance.GetComponent<GraphicRaycaster>() == null)
             recordPanelInstance.AddComponent<GraphicRaycaster>();
