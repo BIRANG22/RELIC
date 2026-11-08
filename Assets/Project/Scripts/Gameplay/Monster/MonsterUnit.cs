@@ -471,34 +471,75 @@ namespace Relic.Gameplay.Monster
             statusTooltipUI.HideMonsterPrefab(this);
         }
 
+        private int lastTutorialWorldClickFrame = -1;
+
+        // Physics2D raycast fallback for colliders on child objects. Reuses the
+        // normal click/selection path and guards against duplicate same-frame events.
+        public void TryHandleFinalTutorialWorldClick()
+        {
+            if (!TutorialBattleSequence.CanClickFinalTutorialWorldMonster(this)) return;
+            OnMouseDown();
+        }
+
         private void OnMouseDown()
         {
+            if (TutorialBattleSequence.CanClickFinalTutorialWorldMonster(this))
+            {
+                if (lastTutorialWorldClickFrame == Time.frameCount) return;
+                lastTutorialWorldClickFrame = Time.frameCount;
+            }
+            bool diagnoseWorldClick = TutorialBattleSequence.IsFinalTutorialRunning && TutorialBattleSequence.ActiveBattleGuideStep == 4;
+            if (diagnoseWorldClick) Debug.Log($"[T03CLICK] OnMouseDown monster={name} id={RuntimeData?.MonsterId} frame={Time.frameCount}", this);
+            // Tutorial_03 permits the required world target, not an arbitrary monster.
+            bool allowedTutorialWorldClick =
+                TutorialBattleSequence.CanClickFinalTutorialWorldMonster(this);
             // 튜토리얼 전투 시작 전에는 정보 패널 클릭을 허용하지 않습니다.
             if ((TutorialBattleSequence.IsPresentationRunning &&
                  !TutorialBattleSequence.CanClickTutorialMonster()) ||
                 BattleSceneController.IsBattleRoomIntroPlaying ||
                 BattleMapIntroText.IsAnyPlayingOrVisible())
+            {
+                if (diagnoseWorldClick) Debug.LogWarning($"[T03CLICK] BLOCK intro/presentation presentation={TutorialBattleSequence.IsPresentationRunning} allowedStage={TutorialBattleSequence.CanClickTutorialMonster()} sceneIntro={BattleSceneController.IsBattleRoomIntroPlaying} mapIntro={BattleMapIntroText.IsAnyPlayingOrVisible()}", this);
                 return;
+            }
 
-            if (!BattleFirstTutorialController.CanClickMonster(this))
+            if (!allowedTutorialWorldClick && !BattleFirstTutorialController.CanClickMonster(this))
+            {
+                if (diagnoseWorldClick) Debug.LogWarning("[T03CLICK] BLOCK first tutorial monster gate", this);
                 return;
+            }
 
             // 턴 실행 중에는 몬스터 클릭 선택과 카메라 포커스를 막습니다.
             // 호버 HUD/범위/상태 정보는 OnMouseEnter에서 계속 표시합니다.
             if (!CanAcceptMonsterInfoClick())
+            {
+                if (diagnoseWorldClick) Debug.LogWarning("[T03CLICK] BLOCK CanAcceptMonsterInfoClick", this);
                 return;
+            }
 
             if (UIPanelButton.IsMenuPanelOpen)
+            {
+                if (diagnoseWorldClick) Debug.LogWarning("[T03CLICK] BLOCK menu open", this);
                 return;
+            }
 
             if (reservationVisualActive)
+            {
+                if (diagnoseWorldClick) Debug.LogWarning("[T03CLICK] BLOCK reservationVisualActive", this);
                 return;
+            }
 
             if (RuntimeData == null || RuntimeData.IsDead)
+            {
+                if (diagnoseWorldClick) Debug.LogWarning("[T03CLICK] BLOCK runtime missing/dead", this);
                 return;
+            }
 
-            if (IsPointerOverUI())
+            if (!allowedTutorialWorldClick && IsPointerOverUI())
+            {
+                if (diagnoseWorldClick) Debug.LogWarning("[T03CLICK] BLOCK pointer over UI", this);
                 return;
+            }
 
             MonsterUnit previousInfoSelectedMonster = infoSelectedMonster;
 
@@ -525,6 +566,7 @@ namespace Relic.Gameplay.Monster
             SetSelected(true);
             ShowAttackRangePreview();
 
+            if (diagnoseWorldClick) Debug.Log("[T03CLICK] PASS MonsterInfoSelectionChanged event sent", this);
             MonsterInfoSelectionChanged?.Invoke(this);
         }
 

@@ -1149,6 +1149,16 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    // Use the same automatic slot selection when tutorial input becomes ready
+    // after a character was chosen while battle input was locked.
+    public bool EnsureSelectedCharacterAutoSlot()
+    {
+        if (selectedCharacter == null || selectedCharacter.IsDead)
+            return false;
+
+        return TryAutoSelectSlotForCharacter(selectedCharacter);
+    }
+
     private bool TryAutoSelectSlotForCharacter(CharacterRuntimeData runtimeData)
     {
         if (runtimeData == null)

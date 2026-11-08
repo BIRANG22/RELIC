@@ -349,6 +349,42 @@ public class BattleCharacter : MonoBehaviour
         }
     }
 
+    private int lastFinalTutorialClickFrame = -1;
+
+    // Uses the normal character selection action after validating the world target.
+    // Only Tutorial_03 step 10 may call this entry point.
+    public void TryHandleFinalTutorialWorldClick()
+    {
+        if (lastFinalTutorialClickFrame == Time.frameCount) return;
+        if (RuntimeData == null || RuntimeData.IsDead ||
+            !TutorialBattleSequence.CanClickFinalTutorialWorldCharacter(RuntimeData.CharacterId)) return;
+        // This tutorial deliberately requests a world character selection while
+        // its normal battle input gate may still be closed for presentation.
+        // Only the exact character authorized by Tutorial_03 step 10 bypasses it.
+        if (IsBattleEnded() || IsBattleExecutionActive() || UIPanelButton.IsMenuPanelOpen ||
+            IsMoveGridClickFrame || IsMoveGridSelectionActive())
+        {
+            Debug.LogWarning($"[T03CLICK] Step10 blocked by character state: ended={IsBattleEnded()} executing={IsBattleExecutionActive()} menu={UIPanelButton.IsMenuPanelOpen} moveFrame={IsMoveGridClickFrame} moveSelection={IsMoveGridSelectionActive()}", this);
+            return;
+        }
+
+        BattleRoomLoader roomLoader = FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
+        if (roomLoader == null)
+        {
+            Debug.LogWarning("[T03CLICK] Step10 BattleRoomLoader not found", this);
+            return;
+        }
+        lastFinalTutorialClickFrame = Time.frameCount;
+        roomLoader.OnPlayerWorldCharacterClicked(RuntimeData);
+        // The tutorial advances only if selection truly reached the timeline.
+        BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+        bool selected = timeline != null && timeline.SelectedCharacter != null &&
+            string.Equals(timeline.SelectedCharacter.CharacterId, RuntimeData.CharacterId, System.StringComparison.Ordinal);
+        Debug.Log($"[T03CLICK] Step10 selection result: selected={selected} timeline={timeline?.SelectedCharacter?.CharacterId ?? "null"} target={RuntimeData.CharacterId}", this);
+        if (selected)
+            TutorialBattleSequence.NotifyFinalTutorialWorldCharacterClicked(RuntimeData.CharacterId);
+    }
+
     private void OnMouseDown()
     {
         // 튜토리얼 안내 및 전투방 진입 연출 중에는 캐릭터 선택만 차단합니다.

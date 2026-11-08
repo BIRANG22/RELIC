@@ -84,7 +84,11 @@ public class GridCell : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (!TutorialBattleSequence.CanClickTutorialGrid(Index) ||
+        // Tutorial_03 owns its grid restrictions while it is running.
+        // The old first-tutorial controller may still be alive after the event room.
+        if (!TutorialBattleSequence.CanClickTutorialGrid(Index))
+            return;
+        if (!TutorialBattleSequence.IsFinalTutorialRunning &&
             !BattleFirstTutorialController.CanClickGrid(Index))
             return;
 
