@@ -1266,7 +1266,7 @@ MonoBehaviour:
   autoFindFacing: 1
   flipVfxLocalPositionX: 1
   flipVfxScaleXWhenFlipTypeNone: 1
-  vfxLifeTime: 5
+  vfxLifeTime: 10
   animatorLayer: 0
   crossFadeDuration: 0
   deadAnimationDuration: 0.6
