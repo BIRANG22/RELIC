@@ -3,6 +3,8 @@ using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor.Animations;
+using UnityAssetDatabase = UnityEditor.AssetDatabase;
 
 public class ArabellaPhaseTransitionTests
 {
@@ -183,6 +185,36 @@ public class ArabellaPhaseTransitionTests
         Assert.That(
             ArabellaPhaseTransition.PhaseOneDefeatedAnimationState,
             Is.EqualTo("PhaseOneDefeated"));
+    }
+
+    [Test]
+    public void ArabellaController_PhaseOneDefeatedUsesDeadClip_WhileIdleKeepsIdleClip()
+    {
+        const string root = "Assets/Project/PrefabsR/Monster/Boss/01.Arabella/";
+        AnimatorController controller = UnityAssetDatabase.LoadAssetAtPath<AnimatorController>(
+            root + "Controller/Arabella_BattleAnimatorController.controller");
+        AnimationClip dead = UnityAssetDatabase.LoadAssetAtPath<AnimationClip>(root + "Clip/Dead.anim");
+        AnimationClip idle = UnityAssetDatabase.LoadAssetAtPath<AnimationClip>(root + "Clip/Idle.anim");
+
+        Assert.That(controller, Is.Not.Null);
+        ChildAnimatorState[] states = controller.layers[0].stateMachine.states;
+        Motion defeatedMotion = FindStateMotion(states, "PhaseOneDefeated");
+        Motion idleMotion = FindStateMotion(states, "Idle");
+
+        Assert.That(defeatedMotion, Is.SameAs(dead));
+        Assert.That(idleMotion, Is.SameAs(idle));
+    }
+
+    private static Motion FindStateMotion(ChildAnimatorState[] states, string stateName)
+    {
+        foreach (ChildAnimatorState child in states)
+        {
+            if (child.state.name == stateName)
+                return child.state.motion;
+        }
+
+        Assert.Fail($"Missing animator state: {stateName}");
+        return null;
     }
 
     private static MonsterMasterData CreateMaster(

@@ -3821,10 +3821,20 @@ public class BattleActionRunner
                 animator.PlayMonsterSkillPrepare(command);
             Transform leapSpriteRoot = monster.transform.Find("SpriteRoot");
             Vector3 spriteRootDefaultLocalPosition = leapSpriteRoot != null ? leapSpriteRoot.localPosition : Vector3.zero;
-            yield return AnimateArabellaHuntingLeap(
-                monster,
-                pos,
-                () => animator?.PlayMonsterSkillActionStatePhase(command));
+            if (animator != null)
+                animator.SuspendPersistentIdleVfx();
+            try
+            {
+                yield return AnimateArabellaHuntingLeap(
+                    monster,
+                    pos,
+                    () => animator?.PlayMonsterSkillActionStatePhase(command));
+            }
+            finally
+            {
+                if (animator != null)
+                    animator.ResumePersistentIdleVfx();
+            }
             if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
                 yield break;
 

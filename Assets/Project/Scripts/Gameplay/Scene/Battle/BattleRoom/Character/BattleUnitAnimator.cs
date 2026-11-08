@@ -158,6 +158,8 @@ public class BattleUnitAnimator : MonoBehaviour
     private GameObject persistentIdleVfxInstance;
     private BattleVfxEntry activePersistentIdleVfxEntry;
     private bool persistentIdleVfxIsPhaseTwo;
+    private bool persistentIdleVfxFacingRight = true;
+    private int persistentIdleVfxSuspendCount;
 
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
@@ -1437,17 +1439,26 @@ public class BattleUnitAnimator : MonoBehaviour
         if (!isActiveAndEnabled || deathPresentationPlayed)
             return;
 
+        if (persistentIdleVfxSuspendCount > 0)
+        {
+            StopPersistentIdleVfx();
+            return;
+        }
+
         bool phaseTwo = IsPhaseTwoIdleVfx();
         BattleVfxEntry desired = phaseTwo && HasVfx(phaseTwoIdleVfx)
             ? phaseTwoIdleVfx : idleVfx;
+        bool facingRight = GetPersistentIdleVfxFacingRight();
 
         if (persistentIdleVfxInstance != null &&
             activePersistentIdleVfxEntry == desired &&
-            persistentIdleVfxIsPhaseTwo == phaseTwo)
+            persistentIdleVfxIsPhaseTwo == phaseTwo &&
+            persistentIdleVfxFacingRight == facingRight)
             return;
 
         StopPersistentIdleVfx();
         persistentIdleVfxIsPhaseTwo = phaseTwo;
+        persistentIdleVfxFacingRight = facingRight;
         if (!HasVfx(desired))
             return;
 
@@ -1487,6 +1498,29 @@ public class BattleUnitAnimator : MonoBehaviour
         }
 
         activePersistentIdleVfxEntry = desired;
+    }
+
+    public void SuspendPersistentIdleVfx()
+    {
+        persistentIdleVfxSuspendCount++;
+        if (persistentIdleVfxSuspendCount == 1)
+            StopPersistentIdleVfx();
+    }
+
+    public void ResumePersistentIdleVfx()
+    {
+        if (persistentIdleVfxSuspendCount <= 0)
+            return;
+
+        persistentIdleVfxSuspendCount--;
+        if (persistentIdleVfxSuspendCount == 0)
+            RefreshPersistentIdleVfx();
+    }
+
+    private bool GetPersistentIdleVfxFacingRight()
+    {
+        FindFacingIfNeeded();
+        return unitFacing == null || unitFacing.IsFacingRight;
     }
 
     private void StopPersistentIdleVfx()
