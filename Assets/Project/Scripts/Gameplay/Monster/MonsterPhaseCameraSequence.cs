@@ -14,6 +14,10 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
     public class CameraStep
     {
         public bool enabled = true;
+        [Header("Global Light 2D")]
+        [Tooltip("Override the assigned Global Light 2D intensity during this step.")]
+        public bool overrideLightIntensity = false;
+        [Min(0f)] public float lightIntensity = 0.8f;
         [Tooltip("Offset from this monster's world position (X/Y).")]
         public Vector2 offset = new Vector2(0f, 0.35f);
         public float zPosition = -13f;
@@ -45,10 +49,16 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
     [Tooltip("Optional Animator that plays the phase transition. Assign it to wait for the clip as well as the camera steps.")]
     [SerializeField] private Animator phaseAnimator;
     [Tooltip("Animator STATE name (not necessarily the clip asset name). Must match exactly.")]
-    [SerializeField] private string phaseStateName = "2Phase";
+    [SerializeField] private string phaseStateName = "2phase";
     [SerializeField, Min(0)] private int phaseAnimatorLayer = 0;
     [Tooltip("Maximum time to detect the phase state after the camera starts. Prevents indefinite waiting if no clip is played.")]
     [SerializeField, Min(0.05f)] private float phaseStateEnterTimeout = 1f;
+
+    [Header("Phase Animation Completion")]
+    [Tooltip("When the configured phase Animator state finishes normally, return the monster to Idle through BattleUnitAnimator. Does not depend on camera step duration.")]
+    [SerializeField] private bool returnToIdleAfterPhaseAnimation = true;
+    [Tooltip("BattleUnitAnimator on the same monster. If empty, resolved from this object, its parents, or children.")]
+    [SerializeField] private BattleUnitAnimator unitAnimator;
 
     private Coroutine phaseAnimationMonitor;
     private bool phaseAnimationMonitoring;
@@ -101,6 +111,7 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
             yield break;
         }
 
+        bool finishedNormally = false;
         while (phaseAnimator != null && phaseAnimator.isActiveAndEnabled)
         {
             AnimatorStateInfo current = phaseAnimator.GetCurrentAnimatorStateInfo(layer);
@@ -113,18 +124,48 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
                     yield return null;
                     continue;
                 }
-                // This is not a successful clip completion. Animator transitions can interrupt playback.
+                // A different state took ownership before the clip completed.
                 phaseAnimationInterrupted = true;
                 Debug.LogWarning($"[MonsterPhaseCameraSequence] State '{phaseStateName}' was interrupted before finishing. Check Animator transitions or external Play/CrossFade calls.", this);
                 break;
             }
             if (current.normalizedTime >= 1f)
+            {
+                finishedNormally = true;
                 break;
+            }
             yield return null;
         }
+
+        // Idle is now owned by this component, NOT by a fixed-duration timer in
+        // BattleUnitAnimator. Never override an interrupted phase animation.
+        if (finishedNormally && returnToIdleAfterPhaseAnimation &&
+            phaseAnimator != null && phaseAnimator.isActiveAndEnabled &&
+            phaseAnimator.GetCurrentAnimatorStateInfo(layer).shortNameHash == stateHash)
+        {
+            BattleUnitAnimator resolvedUnitAnimator = ResolveUnitAnimator();
+            if (resolvedUnitAnimator != null && resolvedUnitAnimator.isActiveAndEnabled)
+                resolvedUnitAnimator.PlayIdle();
+            else
+                Debug.LogWarning("[MonsterPhaseCameraSequence] Phase animation completed, but BattleUnitAnimator was not found for Idle return.", this);
+        }
+
         phaseAnimationComplete = true;
         phaseAnimationMonitoring = false;
         phaseAnimationMonitor = null;
+    }
+
+    private BattleUnitAnimator ResolveUnitAnimator()
+    {
+        if (unitAnimator != null)
+            return unitAnimator;
+
+        unitAnimator = GetComponent<BattleUnitAnimator>();
+        if (unitAnimator == null)
+            unitAnimator = GetComponentInParent<BattleUnitAnimator>();
+        if (unitAnimator == null)
+            unitAnimator = GetComponentInChildren<BattleUnitAnimator>(true);
+        return unitAnimator;
     }
 
     public IEnumerator WaitForPhaseAnimationCompletion()
@@ -200,6 +241,7 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
             if (step == null)
                 continue;
             step.duration = Mathf.Max(0f, step.duration);
+            step.lightIntensity = Mathf.Max(0f, step.lightIntensity);
             step.holdDuration = Mathf.Max(0f, step.holdDuration);
             step.orthographicSize = Mathf.Max(0.1f, step.orthographicSize);
             step.shakeDuration = Mathf.Max(0f, step.shakeDuration);

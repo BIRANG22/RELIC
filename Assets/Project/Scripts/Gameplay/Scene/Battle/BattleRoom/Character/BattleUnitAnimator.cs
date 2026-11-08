@@ -71,6 +71,12 @@ public class BattleUnitAnimator : MonoBehaviour
 
     [SerializeField] private bool autoFindHitFlashRenderers = true;
 
+    [Header("Persistent Idle VFX")]
+    [Tooltip("Displayed continuously in phase 1, including during attacks and movement. The prefab should loop its particles/VFX.")]
+    [SerializeField] private BattleVfxEntry idleVfx;
+    [Tooltip("Displayed continuously in phase 2 instead of Idle VFX. Empty uses the normal Idle VFX.")]
+    [SerializeField] private BattleVfxEntry phaseTwoIdleVfx;
+
     [Header("Move VFX")]
     [SerializeField] private BattleVfxEntry moveVfx;
 
@@ -131,8 +137,6 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private int animatorLayer = 0;
     [SerializeField] private float crossFadeDuration = 0f;
     [SerializeField] private float deadAnimationDuration = 0.6f;
-    [SerializeField, Min(0f)] private float arabellaPhaseTransitionDuration = 3.34f;
-    public float ArabellaPhaseTransitionDuration => arabellaPhaseTransitionDuration;
     [SerializeField] private bool forceAnimatorUpdate = true;
     [SerializeField] private bool autoFindAnimatorInChildren = true;
 
@@ -148,10 +152,13 @@ public class BattleUnitAnimator : MonoBehaviour
     private MaterialPropertyBlock hitFlashPropertyBlock;
     private int hitFlashPropertyId;
     private Coroutine hitFlashCoroutine;
-    private Coroutine arabellaPhaseTransitionCoroutine;
     private Coroutine deathVfxCoroutine;
     private bool deathPresentationPlayed;
     private bool phaseTransitionPresentationPlayed;
+    private GameObject persistentIdleVfxInstance;
+    private BattleVfxEntry activePersistentIdleVfxEntry;
+    private bool persistentIdleVfxIsPhaseTwo;
+
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
     public float LastScheduledPrepareWaitDuration { get; private set; }
@@ -169,8 +176,21 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayIdle();
     }
 
+    private void OnEnable()
+    {
+        if (animator != null)
+            RefreshPersistentIdleVfx();
+    }
+
+    private void Update()
+    {
+        // Runtime monster id can switch to phase 2 without an Idle state callback.
+        RefreshPersistentIdleVfx();
+    }
+
     private void OnDisable()
     {
+        StopPersistentIdleVfx();
         if (lastCombatActionAnimator == this)
             lastCombatActionAnimator = null;
 
@@ -178,12 +198,6 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             StopCoroutine(hitFlashCoroutine);
             hitFlashCoroutine = null;
-        }
-
-        if (arabellaPhaseTransitionCoroutine != null)
-        {
-            StopCoroutine(arabellaPhaseTransitionCoroutine);
-            arabellaPhaseTransitionCoroutine = null;
         }
 
         if (deathVfxCoroutine != null)
@@ -210,6 +224,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         RestoreIdlePlaybackSpeed();
         PlayState(idleStateName);
+        RefreshPersistentIdleVfx();
     }
 
     /// <summary>
@@ -361,6 +376,7 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
 
         deathPresentationPlayed = true;
+        StopPersistentIdleVfx();
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
 
@@ -432,32 +448,8 @@ public class BattleUnitAnimator : MonoBehaviour
             SpawnVfx(phaseTransitionVfx);
         }
 
-        if (arabellaPhaseTransitionCoroutine != null)
-            StopCoroutine(arabellaPhaseTransitionCoroutine);
-
-        if (isActiveAndEnabled)
-        {
-            arabellaPhaseTransitionCoroutine =
-                StartCoroutine(ReturnToIdleAfterArabellaPhaseTransition());
-        }
-        else
-        {
-            PlayIdle();
-        }
-    }
-
-    private IEnumerator ReturnToIdleAfterArabellaPhaseTransition()
-    {
-        float playbackSpeed = Mathf.Max(
-            0.01f,
-            BattleConsecutiveActionPresentationContext.BattleExecutionSpeedMultiplier);
-        float waitDuration = Mathf.Max(0f, arabellaPhaseTransitionDuration) / playbackSpeed;
-
-        if (waitDuration > 0f)
-            yield return new WaitForSeconds(waitDuration);
-
-        arabellaPhaseTransitionCoroutine = null;
-        PlayIdle();
+        // 2phase 상태의 종료와 Idle 복귀는 Animator 전환 또는 페이즈 진행 로직에 맡깁니다.
+        // 고정 시간으로 강제 Idle 전환하지 않습니다.
     }
 
     public void PlayBuff()
@@ -1428,6 +1420,81 @@ public class BattleUnitAnimator : MonoBehaviour
             return 3;
 
         return Mathf.Clamp(attackIndex, 1, 3);
+    }
+
+    private bool IsPhaseTwoIdleVfx()
+    {
+        MonsterUnit monster = GetComponent<MonsterUnit>();
+        if (monster == null)
+            monster = GetComponentInParent<MonsterUnit>();
+        return monster != null && monster.RuntimeData != null &&
+            string.Equals(monster.RuntimeData.MonsterId,
+                ArabellaPhaseTransition.PhaseTwoMonsterId, System.StringComparison.Ordinal);
+    }
+
+    private void RefreshPersistentIdleVfx()
+    {
+        if (!isActiveAndEnabled || deathPresentationPlayed)
+            return;
+
+        bool phaseTwo = IsPhaseTwoIdleVfx();
+        BattleVfxEntry desired = phaseTwo && HasVfx(phaseTwoIdleVfx)
+            ? phaseTwoIdleVfx : idleVfx;
+
+        if (persistentIdleVfxInstance != null &&
+            activePersistentIdleVfxEntry == desired &&
+            persistentIdleVfxIsPhaseTwo == phaseTwo)
+            return;
+
+        StopPersistentIdleVfx();
+        persistentIdleVfxIsPhaseTwo = phaseTwo;
+        if (!HasVfx(desired))
+            return;
+
+        if (vfxLayer < 0)
+            vfxLayer = LayerMask.NameToLayer(vfxLayerName);
+
+        Transform spawn = GetVfxSpawnTransform();
+        if (spawn == null)
+            return;
+
+        // Preserve the project's configured VFX render mode, including the
+        // dedicated world-render-texture path. Keep a handle for cleanup.
+        bool spawned = BattleWorldVfxRenderer.TrySpawn(
+            desired, spawn, vfxLayer, 100000000f,
+            vfx => ConfigureVfxInstance(vfx, desired, applyFacingFlip: true),
+            out BattleWorldVfxHandle handle);
+        if (spawned && handle != null)
+        {
+            ApplyUnitVfxSortingTarget(handle, desired);
+            persistentIdleVfxInstance = handle.gameObject;
+        }
+        else if (!spawned)
+        {
+            GameObject instance = Instantiate(desired.prefab, spawn, false);
+            if (desired.renderMode == BattleVfxRenderMode.DirectWorldRenderer)
+            {
+                instance.transform.localPosition += desired.proxyWorldOffset;
+                ConfigureDirectWorldVfxInstance(instance, desired,
+                    GetUnitVfxSortingReferenceY(), applyFacingFlip: true);
+            }
+            else
+            {
+                ConfigureVfxInstance(instance, desired, applyFacingFlip: true);
+                ApplyDirectWorldVfxSorting(instance, desired, GetUnitVfxSortingReferenceY());
+            }
+            persistentIdleVfxInstance = instance;
+        }
+
+        activePersistentIdleVfxEntry = desired;
+    }
+
+    private void StopPersistentIdleVfx()
+    {
+        if (persistentIdleVfxInstance != null)
+            Destroy(persistentIdleVfxInstance);
+        persistentIdleVfxInstance = null;
+        activePersistentIdleVfxEntry = null;
     }
 
     private bool HasVfx(BattleVfxEntry entry)

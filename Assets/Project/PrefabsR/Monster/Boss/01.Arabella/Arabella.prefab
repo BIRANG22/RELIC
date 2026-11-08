@@ -233,6 +233,36 @@ MonoBehaviour:
   guardFlashDuration: 0.08
   defaultHitFlashValue: 0
   autoFindHitFlashRenderers: 1
+  idleVfx:
+    prefab: {fileID: 4473044640437507891, guid: 2b316a628f0a650489459077fde5e74c, type: 3}
+    flipType: 0
+    renderMode: 2
+    proxyBlendMode: 0
+    scaleDirectWorldRendererToProxyHeight: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Default
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
+  phaseTwoIdleVfx:
+    prefab: {fileID: 4603137440868227362, guid: 26fb88ff39331de438842e7c8833ef36, type: 3}
+    flipType: 0
+    renderMode: 2
+    proxyBlendMode: 0
+    scaleDirectWorldRendererToProxyHeight: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Default
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: f94cfdb990d214a48adce8f4af3baa01, type: 3}
     flipType: 2
@@ -1271,7 +1301,6 @@ MonoBehaviour:
   animatorLayer: 0
   crossFadeDuration: 0
   deadAnimationDuration: 0.6
-  arabellaPhaseTransitionDuration: 6
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
@@ -1291,6 +1320,8 @@ MonoBehaviour:
   focusTarget: {fileID: 0}
   steps:
   - enabled: 1
+    overrideLightIntensity: 1
+    lightIntensity: 0.1
     offset: {x: 0, y: 0.35}
     zPosition: -13
     orthographicSize: 3.7
@@ -1325,6 +1356,8 @@ MonoBehaviour:
     shakeFrequency: 20
     holdDuration: 1
   - enabled: 1
+    overrideLightIntensity: 0
+    lightIntensity: 0.8
     offset: {x: 0, y: 0.35}
     zPosition: -13
     orthographicSize: 3.7
@@ -1359,6 +1392,8 @@ MonoBehaviour:
     shakeFrequency: 20
     holdDuration: 1
   - enabled: 1
+    overrideLightIntensity: 0
+    lightIntensity: 0.8
     offset: {x: 0, y: 0.35}
     zPosition: -13
     orthographicSize: 3.7
@@ -1393,6 +1428,8 @@ MonoBehaviour:
     shakeFrequency: 20
     holdDuration: 2
   - enabled: 1
+    overrideLightIntensity: 1
+    lightIntensity: 0.8
     offset: {x: 0, y: 0.35}
     zPosition: -13
     orthographicSize: 3.7
@@ -1456,6 +1493,8 @@ MonoBehaviour:
   phaseStateName: 2phase
   phaseAnimatorLayer: 0
   phaseStateEnterTimeout: 1
+  returnToIdleAfterPhaseAnimation: 1
+  unitAnimator: {fileID: 0}
 --- !u!114 &1436557978760145995
 MonoBehaviour:
   m_ObjectHideFlags: 0
