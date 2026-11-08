@@ -786,6 +786,12 @@ public class BattleRoomLoader : MonoBehaviour
         if (steps == null || steps.Count == 0) return;
         var runner = GetComponent<TutorialBattleSequence>();
         if (runner == null) runner = gameObject.AddComponent<TutorialBattleSequence>();
+        // Reactivate the shared runner when continuing after a previous tutorial.
+        if (!runner.enabled) runner.enabled = true;
+        // Prevent duplicate Begin calls from separate room-entry callbacks.
+        if (TutorialBattleSequence.IsPresentationRunning &&
+            string.Equals(TutorialBattleSequence.ActiveTutorialMapId, loadedMapId,
+                System.StringComparison.OrdinalIgnoreCase)) return;
         runner.Begin(this, loadedMapId);
     }
 
@@ -1341,7 +1347,11 @@ public class BattleRoomLoader : MonoBehaviour
     /// </summary>
     public void OnPlayerWorldCharacterClicked(CharacterRuntimeData runtimeData)
     {
-        if (!CanAcceptCharacterSelectionClick())
+        // Tutorial_03 step 10 is a controlled world-character click. The ordinary
+        // battle input gate may remain closed while the tutorial tooltip is up.
+        bool tutorialWorldSelect = runtimeData != null &&
+            TutorialBattleSequence.CanClickFinalTutorialWorldCharacter(runtimeData.CharacterId);
+        if (!tutorialWorldSelect && !CanAcceptCharacterSelectionClick())
             return;
 
         if (BattleCharacter.WasMoveGridClickedThisFrame)

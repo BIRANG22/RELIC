@@ -2235,9 +2235,24 @@ public class BattleSceneController : MonoBehaviour
         if (battleRoom == null || !battleRoom.activeInHierarchy || !loader.IsLoaded)
             yield break;
 
-        loader.PlayPreparedPartyEntry(
-            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true
-                ? battleTransition : null);
+        bool isTutorialBattle = DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+        loader.PlayPreparedPartyEntry(isTutorialBattle ? battleTransition : null);
+
+        // Both continuing a run and restoring a run must reach the same tutorial
+        // initialization after the entry presentation. The deferred entry route
+        // does not call BeginDeferredTutorialSequence during LoadBattle.
+        if (isTutorialBattle)
+        {
+            yield return null; // Allow the presenter to enter its playing state.
+            BattleRoomPartyTransitionPresenter entryPresenter =
+                ResolveActiveBattleRoomPartyTransitionPresenter();
+            while (entryPresenter != null && entryPresenter.IsPlaying &&
+                   battleRoom != null && battleRoom.activeInHierarchy)
+                yield return null;
+
+            if (battleRoom != null && battleRoom.activeInHierarchy && loader.IsLoaded)
+                loader.BeginDeferredTutorialSequence();
+        }
     }
 
     private void PrepareSharedPartyEntryIfNeeded()

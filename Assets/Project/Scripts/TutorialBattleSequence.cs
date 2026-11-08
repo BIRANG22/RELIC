@@ -16,13 +16,55 @@ using UnityEngine.Localization.Components;
 public sealed class TutorialBattleSequence : MonoBehaviour
 {
     public static bool IsPresentationRunning { get; private set; }
+    // Use the runner that actually started the current tutorial. Searching with
+    // FindObjectsInactive.Include can return the previous room's disabled runner.
+    private static TutorialBattleSequence activeTutorialRunner;
+
+    private static TutorialBattleSequence GetActiveTutorialRunner()
+    {
+        if (activeTutorialRunner != null && activeTutorialRunner.isActiveAndEnabled &&
+            activeTutorialRunner.gameObject.activeInHierarchy)
+            return activeTutorialRunner;
+
+        // Defensive recovery for reloaded battle rooms; never select an inactive
+        // or disabled runner simply because it happens to be enumerated first.
+        foreach (TutorialBattleSequence candidate in FindObjectsByType<TutorialBattleSequence>(
+                     FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (candidate != null && candidate.isActiveAndEnabled &&
+                candidate.gameObject.activeInHierarchy && candidate.routine != null)
+            {
+                activeTutorialRunner = candidate;
+                return candidate;
+            }
+        }
+        return null;
+    }
+
     private static string activeBattleTutorialMapId = string.Empty;
+    public static string ActiveTutorialMapId => activeBattleTutorialMapId;
     public static bool IsFinalTutorialRunning => IsPresentationRunning &&
         string.Equals(activeBattleTutorialMapId, "Map_27", StringComparison.OrdinalIgnoreCase);
     public static bool IsFirstTutorialRunning => IsPresentationRunning && !IsFinalTutorialRunning;
     public static bool CanClickTutorialMonster() => IsFinalTutorialRunning && ActiveBattleGuideStep == 4;
     public static bool CanClickTutorialPlayer() => IsFinalTutorialRunning &&
         ActiveBattleGuideStep == 10;
+
+    // World-object clicks in Tutorial_03 are permitted only on the actual
+    // required runtime unit, independently of legacy Tutorial_01 input gates.
+    public static bool CanClickFinalTutorialWorldMonster(MonsterUnit monster)
+    {
+        return CanClickTutorialMonster() && monster != null &&
+            monster.RuntimeData != null &&
+            string.Equals(monster.RuntimeData.MonsterId, "Mon_07", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool CanClickFinalTutorialWorldCharacter(string characterId)
+    {
+        return CanClickTutorialPlayer() &&
+            string.Equals(characterId, "Char_03", StringComparison.Ordinal);
+    }
+
     private static int finalTutorialWorldClickSerial;
     private static string finalTutorialWorldClickCharacterId = string.Empty;
     public static void NotifyFinalTutorialWorldCharacterClicked(string characterId)
@@ -45,7 +87,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         get
         {
             if (!IsPresentationRunning) return -1;
-            TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            TutorialBattleSequence sequence = GetActiveTutorialRunner();
             return sequence != null ? sequence.tutorialStageIndex : -1;
         }
     }
@@ -57,7 +99,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (step < 0) return true;
         if (IsFinalTutorialRunning)
         {
-            TutorialBattleSequence runner = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            TutorialBattleSequence runner = GetActiveTutorialRunner();
             BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
             string characterId = timeline?.SelectedCharacter?.CharacterId;
             if (runner == null || timeline == null) return false;
@@ -86,7 +128,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 return false;
 
             TutorialBattleSequence sequence =
-                FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+                GetActiveTutorialRunner();
             BattleTimelineController timeline =
                 FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
             if (sequence == null || timeline == null || sequence.skill26ReservationBaseline < 0)
@@ -105,7 +147,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool IsShortcutAllowed(KeyCode key)
     {
         if (!IsPresentationRunning) return true;
-        TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+        TutorialBattleSequence sequence = GetActiveTutorialRunner();
         if (sequence == null) return false;
         if (IsFinalTutorialRunning)
         {
@@ -136,7 +178,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool CanSelectTutorialCharacter(string characterId)
     {
         if (!IsPresentationRunning) return true;
-        TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+        TutorialBattleSequence sequence = GetActiveTutorialRunner();
         if (sequence == null) return false;
         if (IsFinalTutorialRunning)
         {
@@ -162,7 +204,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool CanClickTutorialGrid(int gridIndex)
     {
         if (!IsPresentationRunning) return true;
-        TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+        TutorialBattleSequence sequence = GetActiveTutorialRunner();
         if (sequence == null) return false;
         if (IsFinalTutorialRunning)
             return sequence.grid25InputArmed &&
@@ -175,7 +217,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool CanAcceptTutorialMove(PlayerReservedCommand command)
     {
         if (!IsPresentationRunning) return true;
-        TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+        TutorialBattleSequence sequence = GetActiveTutorialRunner();
         if (sequence == null || command == null) return false;
         if (IsFinalTutorialRunning)
         {
@@ -260,6 +302,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             return;
         }
 
+        activeTutorialRunner = runner;
         runner.continuationMode = true;
         runner.continuationStart = firstOrder;
         runner.continuationEnd = lastOrder;
@@ -309,13 +352,78 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool CanClickTutorialEndTurn()
     {
         if (!IsPresentationRunning) return true;
-        TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+        TutorialBattleSequence sequence = GetActiveTutorialRunner();
         return sequence != null &&
             (IsFinalTutorialRunning ? sequence.tutorialStageIndex == 27 : sequence.tutorialStageIndex == 29);
     }
 
     private void Update()
     {
+        if (IsFinalTutorialRunning && tutorialStageIndex == 4 && Input.GetMouseButtonDown(0))
+        {
+            Camera camera = Camera.main;
+            Vector3 screenPosition = Input.mousePosition;
+            bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            if (camera == null)
+                Debug.LogWarning($"[T03CLICK] MouseDown stage4: NO Camera.main, overUI={overUi}", this);
+            else
+            {
+                Ray ray = camera.ScreenPointToRay(screenPosition);
+                RaycastHit2D[] hits = Physics2D.GetRayIntersectionAll(ray);
+                System.Text.StringBuilder hitNames = new System.Text.StringBuilder();
+                foreach (RaycastHit2D hit in hits)
+                {
+                    if (hit.collider == null) continue;
+                    MonsterUnit monster = hit.collider.GetComponentInParent<MonsterUnit>();
+                    if (hitNames.Length > 0) hitNames.Append(" | ");
+                    hitNames.Append(hit.collider.name).Append(" [monster=")
+                        .Append(monster != null ? monster.RuntimeData?.MonsterId : "none")
+                        .Append("]");
+                }
+                Debug.Log($"[T03CLICK] MouseDown stage4 screen={screenPosition} overUI={overUi} physicsHits={hits.Length} hitList={hitNames}", this);
+                // OnMouseDown messages are delivered to the Collider2D GameObject,
+                // which may differ from the GameObject carrying MonsterUnit.
+                // Use the verified physics hit to forward this world click through
+                // the same MonsterUnit selection path, only during T03 step 4.
+                if (!overUi)
+                {
+                    foreach (RaycastHit2D hit in hits)
+                    {
+                        if (hit.collider == null) continue;
+                        MonsterUnit targetMonster = hit.collider.GetComponentInParent<MonsterUnit>();
+                        if (!CanClickFinalTutorialWorldMonster(targetMonster))
+                        {
+                            Debug.LogWarning($"[T03CLICK] World target rejected: target={targetMonster?.RuntimeData?.MonsterId ?? "null"}, running={IsPresentationRunning}, map={activeBattleTutorialMapId}, activeStep={ActiveBattleGuideStep}, localStep={tutorialStageIndex}, runner={GetActiveTutorialRunner()?.name ?? "null"}", this);
+                            continue;
+                        }
+                        Debug.Log($"[T03CLICK] Forward physics hit to MonsterUnit: {targetMonster.name}", targetMonster);
+                        targetMonster.TryHandleFinalTutorialWorldClick();
+                        break;
+                    }
+                }
+            }
+        }
+        // Tutorial_03 step 10 selects Haze through her world BoxCollider2D.
+        // Unity OnMouseDown can be skipped after a continuous room transition;
+        // use the same verified physics click path as the Draugr step.
+        if (IsFinalTutorialRunning && tutorialStageIndex == 10 && Input.GetMouseButtonDown(0))
+        {
+            bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            Camera worldCamera = Camera.main;
+            if (!overUi && worldCamera != null)
+            {
+                foreach (RaycastHit2D hit in Physics2D.GetRayIntersectionAll(worldCamera.ScreenPointToRay(Input.mousePosition)))
+                {
+                    if (hit.collider == null) continue;
+                    BattleCharacter character = hit.collider.GetComponentInParent<BattleCharacter>();
+                    if (character == null || character.RuntimeData == null ||
+                        !CanClickFinalTutorialWorldCharacter(character.RuntimeData.CharacterId)) continue;
+                    Debug.Log($"[T03CLICK] Step10 Haze physics hit: {hit.collider.name}, character={character.RuntimeData.CharacterId}", character);
+                    character.TryHandleFinalTutorialWorldClick();
+                    break;
+                }
+            }
+        }
         if (!IsPresentationRunning || continuationMode) return;
         // Buttons can be instantiated after the room intro; recheck their pointer gate.
         lastTutorialPointerStage = tutorialStageIndex;
@@ -387,7 +495,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool CanAcceptTutorialCommand(PlayerReservedCommand command, BattleTimelineController timeline)
     {
         if (!IsPresentationRunning || command == null || timeline == null) return true;
-        TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+        TutorialBattleSequence sequence = GetActiveTutorialRunner();
         if (sequence == null) return true;
         // 다른 그리드나 다른 캐릭터의 이동 예약은 현재 단계에서 차단합니다.
         if (IsFinalTutorialRunning)
@@ -434,6 +542,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (routine != null) StopCoroutine(routine);
         continuationMode = false;
         loader = battleLoader;
+        activeTutorialRunner = this;
         activeBattleTutorialMapId = mapId ?? string.Empty;
         IsPresentationRunning = true;
         // In Map_27, dialogue 1-3 must precede monster planning and the battle-start intro.
@@ -576,7 +685,28 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 }
                 else
                     yield return WaitForClick();
-                if (IsFinalTutorialRunning && step.Order == 27)
+                if (IsFinalTutorialRunning && step.Order == 7)
+                {
+                    // The monster info close event schedules HUD restoration on the next frame.
+                    // During tutorial input gating, the normal input-ready check can leave
+                    // BattleCharacterPanel and BattleSlot at their lowered positions.
+                    // Let the close event settle, then restore the tutorial reservation HUD
+                    // before continuing to the next dialogue.
+                    while (MonsterUnit.CurrentInfoSelectedMonster != null)
+                        yield return null;
+                    yield return null;
+                    yield return null;
+                    BattleCharacterPanelUI characterPanel = FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Exclude);
+                    if (characterPanel != null)
+                    {
+                        characterPanel.BeginTutorialReservationPanelMove();
+                        while (characterPanel != null && characterPanel.isActiveAndEnabled &&
+                               !characterPanel.IsAtReservationPosition)
+                            yield return null;
+                    }
+                    yield return FadeOutComplete(tooltipTextComplete);
+                }
+                else if (IsFinalTutorialRunning && step.Order == 27)
                 {
                     // Clear the step-27 guide and focus immediately on End Turn.
                     // No tutorial focus may remain during the execution animation.
@@ -616,9 +746,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         SetBattleUiPointerBlocked(false);
         ReleaseDialogueInputBlocker();
         RestoreTutorialButtonRaycasts();
-        IsPresentationRunning = false;
-        IsBlockingBattleStart = false;
-        activeBattleTutorialMapId = string.Empty;
+        if (activeTutorialRunner == this)
+        {
+            activeTutorialRunner = null;
+            IsPresentationRunning = false;
+            IsBlockingBattleStart = false;
+            activeBattleTutorialMapId = string.Empty;
+        }
         if (continuationMode)
         {
             IsContinuationActive = false;
@@ -2085,9 +2219,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             tutorialEndTurnButton = null;
         }
         RestoreTutorialButtonRaycasts();
-        IsPresentationRunning = false;
-        IsBlockingBattleStart = false;
-        activeBattleTutorialMapId = string.Empty;
+        if (activeTutorialRunner == this)
+        {
+            activeTutorialRunner = null;
+            IsPresentationRunning = false;
+            IsBlockingBattleStart = false;
+            activeBattleTutorialMapId = string.Empty;
+        }
         if (continuationMode)
         {
             IsContinuationActive = false;

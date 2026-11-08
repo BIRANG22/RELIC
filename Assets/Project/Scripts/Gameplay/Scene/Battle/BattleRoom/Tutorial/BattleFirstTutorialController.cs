@@ -39,7 +39,16 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
     public int CurrentStepIndex => GetVisibleStepIndex(currentStep);
     public bool IsConfigured => focusOverlayRoot != null && topOverlay != null && bottomOverlay != null && leftOverlay != null && rightOverlay != null;
 
-    public static bool IsInputRestricted => Instance != null && Instance.IsRunning;
+    // The first-battle gate must never lock input in the following tutorial rooms.
+    // The same BattleRoom objects can survive Map_26 -> Map_28 -> Map_27.
+    public static bool IsInputRestricted => Instance != null && Instance.IsRunning && IsFirstTutorialMapActive();
+
+    private static bool IsFirstTutorialMapActive()
+    {
+        DataManager dataManager = DataManager.Instance;
+        string mapId = dataManager?.MapRuntimeStore?.Get()?.CurrentMapId;
+        return string.Equals(mapId, TutorialBattleEntrySetup.FirstTutorialMapId, StringComparison.OrdinalIgnoreCase);
+    }
     public static bool CanSelectMove => !IsInputRestricted || Instance.currentStep == TutorialStep.Move;
     public static bool CanSelectSkill01 => !IsInputRestricted ||
                                            Instance.currentStep == TutorialStep.Skill01Turn1 ||
