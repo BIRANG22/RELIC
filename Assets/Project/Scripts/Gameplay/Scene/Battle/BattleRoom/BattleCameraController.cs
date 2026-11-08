@@ -422,7 +422,10 @@ public class BattleCameraController : MonoBehaviour
 
     private Transform zoomFollowTarget;
     private Vector3 zoomFollowVelocity;
-    private const float ZoomFollowSmoothTime = 0.045f;
+    [Header("Grid Movement Camera Smoothing")]
+    [SerializeField, Min(0.01f)] private float movementFollowSmoothTime = 0.12f;
+    private Vector3 movementFocusVelocity;
+    private float ZoomFollowSmoothTime => Mathf.Max(0.01f, movementFollowSmoothTime);
 
     private Vector3 activeImpactOffset;
     private Vector3 lastImpactAppliedPosition;
@@ -2794,6 +2797,7 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
 
         gridMovementFocusedUnit = movingUnit;
+        movementFocusVelocity = Vector3.zero;
         hasActiveGridSelectionFocus = false;
         hasActiveMonsterInfoFocus = false;
         hasActiveCombatZoom = true;
@@ -2834,7 +2838,14 @@ public class BattleCameraController : MonoBehaviour
                 0.5f, useOrthographicSizeZoom ? Mathf.Lerp(startSize, targetSize, eased) : startSize)
                 + zoomOffset.x;
             desiredPosition += GetCombatEdgeCameraOffset(unit.position);
-            targetCamera.transform.position = Vector3.Lerp(startPosition, desiredPosition, eased);
+            // Follow the changing target continuously instead of lerping from an
+            // obsolete starting point. This avoids cornering jitter on L-shaped paths.
+            Vector3 nextXY = Vector3.SmoothDamp(
+                targetCamera.transform.position, desiredPosition,
+                ref movementFocusVelocity, ZoomFollowSmoothTime,
+                Mathf.Infinity, GetCameraDeltaTime());
+            nextXY.z = Mathf.Lerp(startPosition.z, desiredPosition.z, eased);
+            targetCamera.transform.position = nextXY;
             if (useOrthographicSizeZoom)
                 targetCamera.orthographicSize = Mathf.Lerp(startSize, targetSize, eased);
             yield return null;
@@ -2850,12 +2861,14 @@ public class BattleCameraController : MonoBehaviour
                 unit.position, finalPosition.z, targetCamera.transform.rotation,
                 0.5f, targetSize) + zoomOffset.x;
             finalPosition += GetCombatEdgeCameraOffset(unit.position);
-            targetCamera.transform.position = finalPosition;
+            // Do not snap to the unit at the zoom boundary: preserve camera
+            // velocity and let normal follow settle smoothly around turns.
             if (useOrthographicSizeZoom)
                 targetCamera.orthographicSize = targetSize;
             // Keep tracking the unit after zoom-in, without zooming out at the
             // end of movement. A later attack focus naturally takes ownership.
-            BeginZoomFollowTarget(unit);
+            zoomFollowTarget = unit;
+            zoomFollowVelocity = movementFocusVelocity;
         }
         routine = null;
     }

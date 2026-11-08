@@ -127,7 +127,14 @@ public class BattleActionRunner
     private const string NocturnSlashSkillId = "S_Monster_27";
     private const string NocturnPullSkillId = "S_Monster_28";
     private const string ResidueGridEffectId = "GR_Residue";
+    // Keep short moves snappy while giving the camera enough time to follow long moves.
     public const float MoveAnimationDuration = 0.15f;
+    private const float AdditionalMoveGridDuration = 0.03f;
+
+    private static float GetMoveAnimationDuration(int gridCount)
+    {
+        return MoveAnimationDuration + Mathf.Max(0, gridCount - 1) * AdditionalMoveGridDuration;
+    }
     private const float GridEffectResumeDelay = 0.65f;
 
     private class ActionRoutine
@@ -1245,7 +1252,7 @@ public class BattleActionRunner
 
     /// <summary>
     /// 장애물 효과가 발생하는 칸에서만 이동을 멈추고, 효과 연출 후 남은 경로를 이동합니다.
-    /// 장애물 사이의 이동은 기존 전체 이동 시간에 비례하여 연속적으로 처리합니다.
+    /// 장애물 사이의 이동은 통과하는 칸 수에 비례한 시간으로 연속적으로 처리합니다.
     /// </summary>
     private IEnumerator MovePlayerThroughEnteredGrids(
         BattleCharacter character,
@@ -1278,9 +1285,8 @@ public class BattleActionRunner
             {
                 Vector2Int previousCoord = gridManager.IndexToCoord(previousGridIndex);
                 Vector2Int nextCoord = gridManager.IndexToCoord(gridIndex);
-                // The original movement duration applies to the entire path, not each grid.
-                float segmentDuration = MoveAnimationDuration *
-                    (i - segmentStart + 1) / (float)totalSteps;
+                // Increase travel time gently for longer movement without slowing every cell equally.
+                float segmentDuration = GetMoveAnimationDuration(i - segmentStart + 1);
                 yield return MoveTransformSmooth(
                     character.transform,
                     character.transform.position,
@@ -4096,7 +4102,7 @@ public class BattleActionRunner
                 monster.transform,
                 monster.transform.position,
                 pos,
-                MoveAnimationDuration
+                GetMoveAnimationDuration(enteredGridIndices.Count)
             );
 
             monster.MoveOccupiedCells(moveResolution.ActualOffset, gridManager);
@@ -6107,7 +6113,7 @@ public class BattleActionRunner
                 monster.transform,
                 monster.transform.position,
                 pos,
-                MoveAnimationDuration
+                GetMoveAnimationDuration(enteredGridIndices.Count)
             );
 
             monster.MoveOccupiedCells(finalOffset, gridManager);
