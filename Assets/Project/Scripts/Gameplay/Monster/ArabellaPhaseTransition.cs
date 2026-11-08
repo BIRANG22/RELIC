@@ -111,7 +111,7 @@ public static class ArabellaPhaseTransition
         // 현재 행동이 종료된 다음 아라벨라를 화면 중앙에 포커스합니다.
         // 전환 연출이 끝날 때까지 카메라를 유지하고 기존 전투 위치로 돌아갑니다.
         if (cameraController != null)
-            yield return cameraController.ZoomTo(monster.transform);
+            yield return cameraController.PlayArabellaPhaseTransitionCamera(monster.transform);
 
         // 포커스 전에 HUD가 새 HP(105)를 먼저 표시하지 않도록 순서를 고정합니다.
         monster.Initialize(phaseTwo);
@@ -138,7 +138,7 @@ public static class ArabellaPhaseTransition
         monster.EndPhaseTransitionHUDPresentation();
 
         if (cameraController != null)
-            yield return cameraController.ReturnPanelDown();
+            yield return cameraController.ReturnFromArabellaPhaseTransitionCamera();
     }
 
     public static void NotifyPhaseTwoStarted()

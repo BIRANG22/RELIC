@@ -33,6 +33,29 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool clampZoomPosition = false;
     [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Arabella Phase Transition Camera")]
+    [Tooltip("아라벨라 2페이즈 전환에서 공용 전투 줌 대신 아래 전용 구도를 사용합니다.")]
+    [SerializeField] private bool enableArabellaPhaseTransitionCamera = true;
+    [Header("Arabella Phase Transition Camera - First Step")]
+    [SerializeField] private Vector2 arabellaPhaseFirstOffset = new Vector2(0f, 0.35f);
+    [SerializeField] private float arabellaPhaseFirstZPosition = -13f;
+    [SerializeField, Min(0.1f)] private float arabellaPhaseFirstOrthographicSize = 3.7f;
+    [SerializeField, Min(0f)] private float arabellaPhaseFirstDuration = 0.3f;
+    [SerializeField] private AnimationCurve arabellaPhaseFirstCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Header("Arabella Phase Transition Camera - Second Step")]
+    [Tooltip("1차 구도 이후 한 번 더 이동하거나 당기는 강조 연출을 사용합니다.")]
+    [SerializeField] private bool enableArabellaPhaseSecondStep = false;
+    [SerializeField] private Vector2 arabellaPhaseSecondOffset = new Vector2(0f, 0.35f);
+    [SerializeField] private float arabellaPhaseSecondZPosition = -11.5f;
+    [SerializeField, Min(0.1f)] private float arabellaPhaseSecondOrthographicSize = 3.2f;
+    [SerializeField, Min(0f)] private float arabellaPhaseSecondDuration = 0.2f;
+    [SerializeField] private AnimationCurve arabellaPhaseSecondCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Tooltip("1차 구도에 도착한 뒤 2차 이동을 시작하기 전까지 유지하는 시간입니다.")]
+    [SerializeField, Min(0f)] private float arabellaPhaseStepHoldDuration = 0.1f;
+    [Header("Arabella Phase Transition Camera - Return")]
+    [SerializeField, Min(0f)] private float arabellaPhaseReturnDuration = 0.3f;
+    [SerializeField] private AnimationCurve arabellaPhaseReturnCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
     [Header("Combat Edge Framing")]
     [Tooltip("전투 그리드의 좌우 끝 두 열에 포커스할 때 화면 바깥 배경 노출을 줄입니다.")]
     [SerializeField] private bool useCombatEdgeFraming = true;
@@ -654,6 +677,180 @@ public class BattleCameraController : MonoBehaviour
             yield break;
 
         yield return ZoomToPosition(target.position);
+    }
+
+    public IEnumerator PlayArabellaPhaseTransitionCamera(Transform target)
+    {
+        if (!enableArabellaPhaseTransitionCamera)
+        {
+            yield return ZoomTo(target);
+            yield break;
+        }
+
+        if (targetCamera == null || target == null)
+            yield break;
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        Coroutine ownedRoutine = StartCoroutine(PlayArabellaPhaseTransitionCameraSteps(target));
+        routine = ownedRoutine;
+        yield return ownedRoutine;
+
+        if (routine == ownedRoutine)
+            routine = null;
+    }
+
+    private IEnumerator PlayArabellaPhaseTransitionCameraSteps(Transform target)
+    {
+        if (targetCamera == null || target == null)
+            yield break;
+
+        RemoveMouseParallax();
+        hasActiveMonsterInfoFocus = false;
+        EndZoomFollowTarget();
+
+        ClearImpactOffset();
+
+        yield return MoveArabellaPhaseCameraStep(
+            target,
+            arabellaPhaseFirstOffset,
+            arabellaPhaseFirstZPosition,
+            arabellaPhaseFirstOrthographicSize,
+            arabellaPhaseFirstDuration,
+            arabellaPhaseFirstCurve);
+
+        if (enableArabellaPhaseSecondStep)
+        {
+            if (arabellaPhaseStepHoldDuration > 0f)
+            {
+                float speed = Mathf.Max(0.01f,
+                    BattleConsecutiveActionPresentationContext.BattleExecutionSpeedMultiplier);
+                yield return new WaitForSeconds(arabellaPhaseStepHoldDuration / speed);
+            }
+
+            yield return MoveArabellaPhaseCameraStep(
+                target,
+                arabellaPhaseSecondOffset,
+                arabellaPhaseSecondZPosition,
+                arabellaPhaseSecondOrthographicSize,
+                arabellaPhaseSecondDuration,
+                arabellaPhaseSecondCurve);
+        }
+
+        hasActiveCombatZoom = true;
+    }
+
+    public IEnumerator ReturnFromArabellaPhaseTransitionCamera()
+    {
+        if (!enableArabellaPhaseTransitionCamera)
+        {
+            yield return ReturnPanelDown();
+            yield break;
+        }
+
+        if (targetCamera == null)
+            yield break;
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        Coroutine ownedRoutine = StartCoroutine(ReturnFromArabellaPhaseTransitionCameraSteps());
+        routine = ownedRoutine;
+        yield return ownedRoutine;
+
+        if (routine == ownedRoutine)
+            routine = null;
+    }
+
+    private IEnumerator ReturnFromArabellaPhaseTransitionCameraSteps()
+    {
+        if (targetCamera == null)
+            yield break;
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        ClearImpactOffset();
+        ApplyCameraRotationZ(0f);
+        ResetDamageImpactRotationSequence();
+
+        yield return MoveCameraUsingCurve(
+            GetNeutralBattlePosition(),
+            defaultSize,
+            arabellaPhaseReturnDuration,
+            arabellaPhaseReturnCurve,
+            true,
+            true);
+
+        ApplyCameraRotationZ(0f);
+        hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
+        hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
+    }
+
+    private IEnumerator MoveArabellaPhaseCameraStep(
+        Transform target,
+        Vector2 offset,
+        float zPosition,
+        float orthographicSize,
+        float duration,
+        AnimationCurve curve)
+    {
+        Vector3 destination = target.position;
+        destination.x += offset.x;
+        destination.y += offset.y;
+        destination.z = zPosition;
+
+        yield return MoveCameraUsingCurve(
+            destination,
+            orthographicSize,
+            duration,
+            curve,
+            targetCamera.orthographic);
+    }
+
+    private IEnumerator MoveCameraUsingCurve(
+        Vector3 targetPosition,
+        float targetSize,
+        float duration,
+        AnimationCurve curve,
+        bool applyOrthographicSize,
+        bool resetRotation = false)
+    {
+        Vector3 startPosition = targetCamera.transform.position;
+        float startSize = targetCamera.orthographicSize;
+        Quaternion startRotation = targetCamera.transform.rotation;
+
+        if (duration <= 0f)
+        {
+            targetCamera.transform.position = targetPosition;
+            if (applyOrthographicSize)
+                targetCamera.orthographicSize = targetSize;
+            if (resetRotation)
+                targetCamera.transform.rotation = Quaternion.identity;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += GetCameraDeltaTime();
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = curve != null ? curve.Evaluate(t) : t * t * (3f - 2f * t);
+            targetCamera.transform.position = Vector3.Lerp(startPosition, targetPosition, eased);
+            if (applyOrthographicSize)
+                targetCamera.orthographicSize = Mathf.Lerp(startSize, targetSize, eased);
+            if (resetRotation)
+                targetCamera.transform.rotation = Quaternion.Slerp(startRotation, Quaternion.identity, eased);
+            yield return null;
+        }
+
+        targetCamera.transform.position = targetPosition;
+        if (applyOrthographicSize)
+            targetCamera.orthographicSize = targetSize;
+        if (resetRotation)
+            targetCamera.transform.rotation = Quaternion.identity;
     }
 
     public IEnumerator ZoomToBetween(Transform first, Transform second)
@@ -2834,6 +3031,12 @@ public class BattleCameraController : MonoBehaviour
         rangedCasterScreenEdgePadding = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
+        arabellaPhaseFirstOrthographicSize = Mathf.Max(0.1f, arabellaPhaseFirstOrthographicSize);
+        arabellaPhaseFirstDuration = Mathf.Max(0f, arabellaPhaseFirstDuration);
+        arabellaPhaseSecondOrthographicSize = Mathf.Max(0.1f, arabellaPhaseSecondOrthographicSize);
+        arabellaPhaseSecondDuration = Mathf.Max(0f, arabellaPhaseSecondDuration);
+        arabellaPhaseStepHoldDuration = Mathf.Max(0f, arabellaPhaseStepHoldDuration);
+        arabellaPhaseReturnDuration = Mathf.Max(0f, arabellaPhaseReturnDuration);
         battleEffectReturnLeadTime = Mathf.Max(0f, battleEffectReturnLeadTime);
         zoomZOffset = Mathf.Max(0f, zoomZOffset);
         impactZoomAmount = Mathf.Max(0f, impactZoomAmount);
