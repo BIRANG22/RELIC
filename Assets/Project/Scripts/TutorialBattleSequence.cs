@@ -657,6 +657,44 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                         tutorialControlInputOpened = true;
                     }
                 }
+                // Map_27: the monster-info panel and tutorial dialogue may leave the
+                // player-input-ready flag false after closing the panel. Compound_03
+                // is immediate-use, but still requires an input-ready battle turn.
+                // Restore only readiness (not SetBattleInputReady, which re-applies
+                // turn-start equipment effects and may reset the selected slot).
+                if (!continuationMode && IsFinalTutorialRunning && step.Order == 11)
+                {
+                    BattleTurnExecutor compoundExecutor = tutorialTurnExecutor != null
+                        ? tutorialTurnExecutor
+                        : FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Exclude);
+                    if (compoundExecutor != null && !compoundExecutor.IsExecuting &&
+                        !compoundExecutor.CanAcceptPlayerInput)
+                    {
+                        compoundExecutor.SetPlayerInputReady(true);
+                        if (!compoundExecutor.CanAcceptPlayerInput)
+                        {
+                            Debug.LogWarning("[Tutorial_03] Step11: player input restored, but turn not ready; checking monster-plan readiness.");
+                            compoundExecutor.SetMonsterPlanReady(true);
+                        }
+                        Debug.Log($"[Tutorial_03] Step11 compound input ready={compoundExecutor.CanAcceptPlayerInput}");
+                    }
+
+                    // Step 10 selects Haze while tutorial input can still be locked.
+                    // Normal character switching auto-selects a timeline slot only
+                    // when input is ready. Re-run that same selection now rather
+                    // than requiring a manual slot click in the tutorial.
+                    if (compoundExecutor != null && compoundExecutor.CanAcceptPlayerInput)
+                    {
+                        BattleTimelineController activeTimeline =
+                            FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Exclude);
+                        if (activeTimeline != null)
+                        {
+                            activeTimeline.EnsureSelectedCharacterAutoSlot();
+                            if (activeTimeline.ActiveSlotIndex < 0)
+                                Debug.LogWarning("[Tutorial_03] Step11: no available timeline slot after input became ready.");
+                        }
+                    }
+                }
                 // 타임라인 및 행동 소개 단계에서는 안내를 넘길 수 있지만 실제 UI 조작은 차단합니다.
                 bool blockGuideInput = !continuationMode &&
                     (IsBattleUiExplanationGuide(step) ||
