@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 8538534029465631251}
   - component: {fileID: 7352004359467415760}
   - component: {fileID: 2911902474039894627}
+  - component: {fileID: 5282782068058847965}
   - component: {fileID: 1436557978760145995}
   m_Layer: 0
   m_Name: Arabella
@@ -1270,10 +1271,191 @@ MonoBehaviour:
   animatorLayer: 0
   crossFadeDuration: 0
   deadAnimationDuration: 0.6
-  arabellaPhaseTransitionDuration: 3.34
+  arabellaPhaseTransitionDuration: 6
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
+--- !u!114 &5282782068058847965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1910251976348132752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05cd55f43ce51304eb373d0f397cab2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enablePhaseCamera: 1
+  focusTarget: {fileID: 0}
+  steps:
+  - enabled: 1
+    offset: {x: 0, y: 0.35}
+    zPosition: -13
+    orthographicSize: 3.7
+    duration: 2
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    shake: 0
+    shakeDuration: 0.15
+    shakeStrength: 0.1
+    shakeFrequency: 20
+    holdDuration: 1
+  - enabled: 1
+    offset: {x: 0, y: 0.35}
+    zPosition: -13
+    orthographicSize: 3.7
+    duration: 0
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    shake: 1
+    shakeDuration: 0.15
+    shakeStrength: 0.1
+    shakeFrequency: 20
+    holdDuration: 1
+  - enabled: 1
+    offset: {x: 0, y: 0.35}
+    zPosition: -13
+    orthographicSize: 3.7
+    duration: 0
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    shake: 1
+    shakeDuration: 0.15
+    shakeStrength: 0.1
+    shakeFrequency: 20
+    holdDuration: 2
+  - enabled: 1
+    offset: {x: 0, y: 0.35}
+    zPosition: -13
+    orthographicSize: 3.7
+    duration: 0
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    shake: 1
+    shakeDuration: 0.5
+    shakeStrength: 0.1
+    shakeFrequency: 20
+    holdDuration: 1
+  autoReturnAfterSteps: 0
+  returnDuration: 0.3
+  returnCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  phaseAnimator: {fileID: 0}
+  phaseStateName: 2phase
+  phaseAnimatorLayer: 0
+  phaseStateEnterTimeout: 1
 --- !u!114 &1436557978760145995
 MonoBehaviour:
   m_ObjectHideFlags: 0
