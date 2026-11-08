@@ -4929,7 +4929,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9057118977192445789, guid: 2b316a628f0a650489459077fde5e74c, type: 3}
       propertyPath: startDelay.scalar
-      value: 2.5
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
