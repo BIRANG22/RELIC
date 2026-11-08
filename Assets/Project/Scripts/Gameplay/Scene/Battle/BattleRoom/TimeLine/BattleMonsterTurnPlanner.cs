@@ -1405,6 +1405,11 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 
+        // 마지막 튜토리얼 전투(Map_27)의 1턴 드라우그 행동만 3번 슬롯에 배치합니다.
+        // 슬롯은 0부터 시작하므로 3번 슬롯의 인덱스는 2입니다.
+        if (IsFirstTurnFinalTutorialDraugr(runtime) && slotCount > 2)
+            return 2;
+
         // 튜토리얼 1 전투(Map_26)는 몬스터의 AI 패턴과 행동 선택은
         // 그대로 사용하되, 예약되는 타임라인 위치만 항상 3번 슬롯으로 고정합니다.
         // 슬롯 인덱스는 0부터 시작하므로 3번 슬롯은 index 2입니다.
@@ -1451,6 +1456,18 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             default:
                 return offsetBaseSlot;
         }
+    }
+
+    private bool IsFirstTurnFinalTutorialDraugr(MonsterRuntimeData runtime)
+    {
+        if (runtime == null || plannedBattleTurn != 1 ||
+            !string.Equals(runtime.MonsterId, "Mon_07", System.StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        DataManager data = DataManager.Instance;
+        return data?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+               string.Equals(data.MapRuntimeStore?.Get()?.CurrentMapId?.Trim(),
+                   "Map_27", System.StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsTutorialBattle1Map()

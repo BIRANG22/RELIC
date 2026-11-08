@@ -243,7 +243,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         // Grid_16 is a world collider. The tutorial focus canvas must not
         // make its native hover / drag / release look like a UI interaction.
-        if (TutorialBattleSequence.ActiveBattleGuideStep == 25)
+        if (TutorialBattleSequence.IsFirstTutorialRunning &&
+            TutorialBattleSequence.ActiveBattleGuideStep == 25)
             return false;
         return EventSystem.current != null &&
                EventSystem.current.IsPointerOverGameObject();
