@@ -19,6 +19,27 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float battleEffectReturnLeadTime = 0.05f;
 
     private float activeBattleEffectReturnLeadProgress;
+    private MonsterPhaseCameraSequence activeMonsterPhaseCamera;
+    private Coroutine monsterPhaseStepsRoutine;
+    private Coroutine monsterPhaseReturnRoutine;
+    private bool monsterPhaseStepsRunning;
+    private bool monsterPhaseReturnRequested;
+    private bool monsterPhaseReturning;
+
+    private void ClearMonsterPhaseCameraState()
+    {
+        if (monsterPhaseStepsRoutine != null)
+            StopCoroutine(monsterPhaseStepsRoutine);
+        if (monsterPhaseReturnRoutine != null)
+            StopCoroutine(monsterPhaseReturnRoutine);
+        monsterPhaseStepsRoutine = null;
+        monsterPhaseReturnRoutine = null;
+        monsterPhaseStepsRunning = false;
+        monsterPhaseReturnRequested = false;
+        monsterPhaseReturning = false;
+        activeMonsterPhaseCamera = null;
+    }
+
 
     [SerializeField] private Vector2 zoomOffset = new Vector2(0f, 0.35f);
     [SerializeField] private bool usePositionZZoom = true;
@@ -32,29 +53,6 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool useOrthographicSizeZoom = false;
     [SerializeField] private bool clampZoomPosition = false;
     [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-
-    [Header("Arabella Phase Transition Camera")]
-    [Tooltip("아라벨라 2페이즈 전환에서 공용 전투 줌 대신 아래 전용 구도를 사용합니다.")]
-    [SerializeField] private bool enableArabellaPhaseTransitionCamera = true;
-    [Header("Arabella Phase Transition Camera - First Step")]
-    [SerializeField] private Vector2 arabellaPhaseFirstOffset = new Vector2(0f, 0.35f);
-    [SerializeField] private float arabellaPhaseFirstZPosition = -13f;
-    [SerializeField, Min(0.1f)] private float arabellaPhaseFirstOrthographicSize = 3.7f;
-    [SerializeField, Min(0f)] private float arabellaPhaseFirstDuration = 0.3f;
-    [SerializeField] private AnimationCurve arabellaPhaseFirstCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [Header("Arabella Phase Transition Camera - Second Step")]
-    [Tooltip("1차 구도 이후 한 번 더 이동하거나 당기는 강조 연출을 사용합니다.")]
-    [SerializeField] private bool enableArabellaPhaseSecondStep = false;
-    [SerializeField] private Vector2 arabellaPhaseSecondOffset = new Vector2(0f, 0.35f);
-    [SerializeField] private float arabellaPhaseSecondZPosition = -11.5f;
-    [SerializeField, Min(0.1f)] private float arabellaPhaseSecondOrthographicSize = 3.2f;
-    [SerializeField, Min(0f)] private float arabellaPhaseSecondDuration = 0.2f;
-    [SerializeField] private AnimationCurve arabellaPhaseSecondCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [Tooltip("1차 구도에 도착한 뒤 2차 이동을 시작하기 전까지 유지하는 시간입니다.")]
-    [SerializeField, Min(0f)] private float arabellaPhaseStepHoldDuration = 0.1f;
-    [Header("Arabella Phase Transition Camera - Return")]
-    [SerializeField, Min(0f)] private float arabellaPhaseReturnDuration = 0.3f;
-    [SerializeField] private AnimationCurve arabellaPhaseReturnCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Combat Edge Framing")]
     [Tooltip("전투 그리드의 좌우 끝 두 열에 포커스할 때 화면 바깥 배경 노출을 줄입니다.")]
@@ -407,6 +405,7 @@ public class BattleCameraController : MonoBehaviour
         }
         gridMovementFocusedUnit = null;
         RestoreCinematicCameraImmediate();
+        ClearMonsterPhaseCameraState();
         StopExternalShake();
         RemoveMouseParallax();
         RestoreTimeScaleIfNeeded();
@@ -679,135 +678,178 @@ public class BattleCameraController : MonoBehaviour
         yield return ZoomToPosition(target.position);
     }
 
+    // Legacy entry points retained for existing boss phase call sites.
+    // All camera settings live exclusively on the monster's own component.
+    // No component means no phase-camera animation (and no global fallback).
     public IEnumerator PlayArabellaPhaseTransitionCamera(Transform target)
     {
-        if (!enableArabellaPhaseTransitionCamera)
-        {
-            yield return ZoomTo(target);
-            yield break;
-        }
-
-        if (targetCamera == null || target == null)
+        MonsterPhaseCameraSequence sequence = target != null
+            ? target.GetComponentInParent<MonsterPhaseCameraSequence>() : null;
+        if (sequence == null || !sequence.isActiveAndEnabled || !sequence.EnablePhaseCamera)
             yield break;
 
-        if (routine != null)
-            StopCoroutine(routine);
-
-        Coroutine ownedRoutine = StartCoroutine(PlayArabellaPhaseTransitionCameraSteps(target));
-        routine = ownedRoutine;
-        yield return ownedRoutine;
-
-        if (routine == ownedRoutine)
-            routine = null;
-    }
-
-    private IEnumerator PlayArabellaPhaseTransitionCameraSteps(Transform target)
-    {
-        if (targetCamera == null || target == null)
-            yield break;
-
-        RemoveMouseParallax();
-        hasActiveMonsterInfoFocus = false;
-        EndZoomFollowTarget();
-
-        ClearImpactOffset();
-
-        yield return MoveArabellaPhaseCameraStep(
-            target,
-            arabellaPhaseFirstOffset,
-            arabellaPhaseFirstZPosition,
-            arabellaPhaseFirstOrthographicSize,
-            arabellaPhaseFirstDuration,
-            arabellaPhaseFirstCurve);
-
-        if (enableArabellaPhaseSecondStep)
-        {
-            if (arabellaPhaseStepHoldDuration > 0f)
-            {
-                float speed = Mathf.Max(0.01f,
-                    BattleConsecutiveActionPresentationContext.BattleExecutionSpeedMultiplier);
-                yield return new WaitForSeconds(arabellaPhaseStepHoldDuration / speed);
-            }
-
-            yield return MoveArabellaPhaseCameraStep(
-                target,
-                arabellaPhaseSecondOffset,
-                arabellaPhaseSecondZPosition,
-                arabellaPhaseSecondOrthographicSize,
-                arabellaPhaseSecondDuration,
-                arabellaPhaseSecondCurve);
-        }
-
-        hasActiveCombatZoom = true;
+        // Start the camera sequence independently. The phase caller may yield this
+        // legacy IEnumerator before playing its 2Phase clip; waiting here would
+        // incorrectly postpone the animation until all camera steps had finished.
+        // The camera remains owned by the monster and is returned by the existing
+        // return call (or the component's Auto Return After Steps setting).
+        StartCoroutine(PlayMonsterPhaseCamera(sequence.FocusTarget, sequence));
+        yield break;
     }
 
     public IEnumerator ReturnFromArabellaPhaseTransitionCamera()
     {
-        if (!enableArabellaPhaseTransitionCamera)
-        {
-            yield return ReturnPanelDown();
-            yield break;
-        }
-
-        if (targetCamera == null)
-            yield break;
-
-        if (routine != null)
-            StopCoroutine(routine);
-
-        Coroutine ownedRoutine = StartCoroutine(ReturnFromArabellaPhaseTransitionCameraSteps());
-        routine = ownedRoutine;
-        yield return ownedRoutine;
-
-        if (routine == ownedRoutine)
-            routine = null;
+        MonsterPhaseCameraSequence sequence = activeMonsterPhaseCamera;
+        if (sequence != null)
+            yield return ReturnFromMonsterPhaseCamera(sequence);
     }
 
-    private IEnumerator ReturnFromArabellaPhaseTransitionCameraSteps()
+    /// <summary>
+    /// Play only the sequence configured on this particular monster prefab.
+    /// This is not a global camera preset; callers explicitly select a monster.
+    /// </summary>
+    public IEnumerator PlayMonsterPhaseCamera(Transform target, MonsterPhaseCameraSequence sequence)
     {
         if (targetCamera == null)
+            targetCamera = Camera.main;
+        if (targetCamera == null || target == null || sequence == null || !sequence.EnablePhaseCamera)
             yield break;
 
+        // Repeated calls from the same monster must not restart its unfinished steps.
+        if (activeMonsterPhaseCamera == sequence && (monsterPhaseStepsRunning || monsterPhaseReturning))
+            yield break;
+
+        // Another monster explicitly taking ownership may cancel the previous sequence.
+        if (activeMonsterPhaseCamera != null)
+            ClearMonsterPhaseCameraState();
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+        StopExternalShake();
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        ClearImpactOffset();
+        hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
+        activeMonsterPhaseCamera = sequence;
+        sequence.NotifyPhaseCameraStarted();
+        monsterPhaseStepsRunning = true;
+        monsterPhaseReturnRequested = false;
+        monsterPhaseReturning = false;
+
+        // This coroutine owns the phase steps independently of the general combat camera.
+        monsterPhaseStepsRoutine = StartCoroutine(RunMonsterPhaseCameraSteps(target, sequence));
+        yield return monsterPhaseStepsRoutine;
+    }
+
+    private IEnumerator RunMonsterPhaseCameraSteps(Transform target, MonsterPhaseCameraSequence sequence)
+    {
+        MonsterPhaseCameraSequence.CameraStep[] steps = sequence.Steps;
+        if (steps != null)
+        {
+            foreach (MonsterPhaseCameraSequence.CameraStep step in steps)
+            {
+                if (target == null || sequence == null || activeMonsterPhaseCamera != sequence)
+                    yield break;
+                if (step == null || !step.enabled)
+                    continue;
+
+                Vector3 destination = target.position + new Vector3(step.offset.x, step.offset.y, 0f);
+                destination.z = step.zPosition;
+                yield return MoveCameraUsingCurve(destination, step.orthographicSize,
+                    step.duration, step.curve, targetCamera.orthographic);
+
+                if (step.shake && step.shakeDuration > 0f && step.shakeStrength > 0f)
+                    PlayExternalShake(step.shakeDuration, step.shakeStrength,
+                        step.shakeFrequency, true);
+
+                float elapsed = 0f;
+                while (elapsed < step.holdDuration)
+                {
+                    elapsed += GetCameraDeltaTime();
+                    yield return null;
+                }
+            }
+        }
+
+        monsterPhaseStepsRunning = false;
+        monsterPhaseStepsRoutine = null;
+        hasActiveCombatZoom = true;
+
+        // The animation may request return before the last step completes.
+        // In that case, defer return until this point instead of aborting the steps.
+        if (activeMonsterPhaseCamera == sequence &&
+            (monsterPhaseReturnRequested || sequence.AutoReturnAfterSteps))
+        {
+            if (!monsterPhaseReturning)
+            {
+                monsterPhaseReturning = true;
+                monsterPhaseReturnRoutine = StartCoroutine(ReturnFromMonsterPhaseCameraAfterAnimation(sequence));
+            }
+        }
+    }
+
+    public IEnumerator ReturnFromMonsterPhaseCamera(MonsterPhaseCameraSequence sequence)
+    {
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+        if (targetCamera == null || sequence == null || activeMonsterPhaseCamera != sequence)
+            yield break;
+
+        // Do not interrupt the camera steps, even if the phase clip ends first.
+        monsterPhaseReturnRequested = true;
+        while (activeMonsterPhaseCamera == sequence && monsterPhaseStepsRunning)
+            yield return null;
+
+        if (activeMonsterPhaseCamera != sequence)
+            yield break;
+
+        // Camera steps and the configured phase Animator must BOTH finish before return.
+        yield return sequence.WaitForPhaseAnimationCompletion();
+        if (activeMonsterPhaseCamera != sequence)
+            yield break;
+
+        if (!monsterPhaseReturning)
+        {
+            monsterPhaseReturning = true;
+            monsterPhaseReturnRoutine = StartCoroutine(ReturnFromMonsterPhaseCameraSteps(sequence));
+        }
+        while (activeMonsterPhaseCamera == sequence && monsterPhaseReturning)
+            yield return null;
+    }
+
+    private IEnumerator ReturnFromMonsterPhaseCameraAfterAnimation(MonsterPhaseCameraSequence sequence)
+    {
+        yield return sequence.WaitForPhaseAnimationCompletion();
+        if (activeMonsterPhaseCamera != sequence)
+            yield break;
+        yield return ReturnFromMonsterPhaseCameraSteps(sequence);
+    }
+
+    private IEnumerator ReturnFromMonsterPhaseCameraSteps(MonsterPhaseCameraSequence sequence)
+    {
+        if (targetCamera == null || activeMonsterPhaseCamera != sequence)
+            yield break;
+        StopExternalShake();
         RemoveMouseParallax();
         EndZoomFollowTarget();
         ClearImpactOffset();
         ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
 
-        yield return MoveCameraUsingCurve(
-            GetNeutralBattlePosition(),
-            defaultSize,
-            arabellaPhaseReturnDuration,
-            arabellaPhaseReturnCurve,
-            true,
-            true);
+        yield return MoveCameraUsingCurve(GetNeutralBattlePosition(), defaultSize,
+            sequence.ReturnDuration, sequence.ReturnCurve, true, true);
 
-        ApplyCameraRotationZ(0f);
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
         hasActiveGridSelectionFocus = false;
-    }
-
-    private IEnumerator MoveArabellaPhaseCameraStep(
-        Transform target,
-        Vector2 offset,
-        float zPosition,
-        float orthographicSize,
-        float duration,
-        AnimationCurve curve)
-    {
-        Vector3 destination = target.position;
-        destination.x += offset.x;
-        destination.y += offset.y;
-        destination.z = zPosition;
-
-        yield return MoveCameraUsingCurve(
-            destination,
-            orthographicSize,
-            duration,
-            curve,
-            targetCamera.orthographic);
+        monsterPhaseReturnRoutine = null;
+        monsterPhaseReturning = false;
+        monsterPhaseReturnRequested = false;
+        activeMonsterPhaseCamera = null;
     }
 
     private IEnumerator MoveCameraUsingCurve(
@@ -1551,6 +1593,8 @@ public class BattleCameraController : MonoBehaviour
 
     public void ReturnDefaultFromMonsterInfoFocus()
     {
+        if (activeMonsterPhaseCamera != null)
+            return;
         if (!hasActiveMonsterInfoFocus)
             return;
 
@@ -1595,6 +1639,7 @@ public class BattleCameraController : MonoBehaviour
 
     public void ForceReturnMapImmediate()
     {
+        ClearMonsterPhaseCameraState();
         pendingTurnCameraReturn = false;
         if (targetCamera == null)
             targetCamera = Camera.main;
@@ -1651,6 +1696,8 @@ public class BattleCameraController : MonoBehaviour
 
     private void StartReturnPanelDownInternal(float moveDuration, bool forceMonsterInfo = false)
     {
+        if (activeMonsterPhaseCamera != null)
+            return;
         // 실행 중 또는 턴 종료 후 캐릭터 포커스 복귀가 예정되어 있다면
         // 패널 이동 이벤트가 카메라를 Y=1로 덮어쓰지 않게 합니다.
         if (!forceMonsterInfo && (hasActiveMonsterInfoFocus || ShouldPreserveTurnSelectionFocus()))
@@ -1682,6 +1729,8 @@ public class BattleCameraController : MonoBehaviour
 
     private IEnumerator ReturnPanelDown(float moveDuration)
     {
+        if (activeMonsterPhaseCamera != null)
+            yield break;
         if (targetCamera == null)
             yield break;
 
@@ -1708,6 +1757,7 @@ public class BattleCameraController : MonoBehaviour
 
     public void ForceReturnPanelDownImmediate()
     {
+        ClearMonsterPhaseCameraState();
         pendingTurnCameraReturn = false;
         if (targetCamera == null)
             return;
@@ -1763,6 +1813,8 @@ public class BattleCameraController : MonoBehaviour
 
     private void StartReturnDefaultCore()
     {
+        if (activeMonsterPhaseCamera != null)
+            return;
 
         if (targetCamera == null)
             return;
@@ -1804,6 +1856,7 @@ public class BattleCameraController : MonoBehaviour
 
     public void ForceReturnDefaultImmediate()
     {
+        ClearMonsterPhaseCameraState();
         pendingTurnCameraReturn = false;
         if (targetCamera == null)
             return;
@@ -1937,6 +1990,9 @@ public class BattleCameraController : MonoBehaviour
 
     private IEnumerator ReturnDefaultInternal(bool timelineActionsCompleted)
     {
+        // Phase camera owns its framing until all steps and its own return finish.
+        if (activeMonsterPhaseCamera != null)
+            yield break;
         if (targetCamera == null)
             yield break;
 
@@ -3031,12 +3087,6 @@ public class BattleCameraController : MonoBehaviour
         rangedCasterScreenEdgePadding = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
-        arabellaPhaseFirstOrthographicSize = Mathf.Max(0.1f, arabellaPhaseFirstOrthographicSize);
-        arabellaPhaseFirstDuration = Mathf.Max(0f, arabellaPhaseFirstDuration);
-        arabellaPhaseSecondOrthographicSize = Mathf.Max(0.1f, arabellaPhaseSecondOrthographicSize);
-        arabellaPhaseSecondDuration = Mathf.Max(0f, arabellaPhaseSecondDuration);
-        arabellaPhaseStepHoldDuration = Mathf.Max(0f, arabellaPhaseStepHoldDuration);
-        arabellaPhaseReturnDuration = Mathf.Max(0f, arabellaPhaseReturnDuration);
         battleEffectReturnLeadTime = Mathf.Max(0f, battleEffectReturnLeadTime);
         zoomZOffset = Mathf.Max(0f, zoomZOffset);
         impactZoomAmount = Mathf.Max(0f, impactZoomAmount);
