@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class BattleCameraController : MonoBehaviour
 {
@@ -19,6 +20,81 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float battleEffectReturnLeadTime = 0.05f;
 
     private float activeBattleEffectReturnLeadProgress;
+    [Header("Monster Phase Lighting")]
+    [Tooltip("Scene Global Light 2D used for monster-specific camera step lighting. Assign once on BattleCameraController.")]
+    [SerializeField] private Light2D monsterPhaseGlobalLight2D;
+    private Coroutine monsterPhaseLightingRoutine;
+    private bool monsterPhaseLightingSaved;
+    private float monsterPhaseOriginalLightIntensity;
+
+    private void StartMonsterPhaseStepLighting(MonsterPhaseCameraSequence.CameraStep step)
+    {
+        if (monsterPhaseGlobalLight2D == null || step == null || !step.overrideLightIntensity)
+            return;
+        if (!monsterPhaseLightingSaved)
+        {
+            monsterPhaseOriginalLightIntensity = monsterPhaseGlobalLight2D.intensity;
+            monsterPhaseLightingSaved = true;
+        }
+        StartMonsterPhaseLightTransition(Mathf.Max(0f, step.lightIntensity), step.duration, step.curve);
+    }
+
+    private void StartMonsterPhaseReturnLighting(MonsterPhaseCameraSequence sequence)
+    {
+        if (!monsterPhaseLightingSaved || monsterPhaseGlobalLight2D == null || sequence == null)
+            return;
+        StartMonsterPhaseLightTransition(monsterPhaseOriginalLightIntensity,
+            sequence.ReturnDuration, sequence.ReturnCurve);
+    }
+
+    private void StartMonsterPhaseLightTransition(float intensity, float duration, AnimationCurve curve)
+    {
+        if (monsterPhaseLightingRoutine != null)
+        {
+            StopCoroutine(monsterPhaseLightingRoutine);
+            monsterPhaseLightingRoutine = null;
+        }
+        if (monsterPhaseGlobalLight2D == null)
+            return;
+        if (duration <= 0f || !isActiveAndEnabled)
+        {
+            monsterPhaseGlobalLight2D.intensity = intensity;
+            return;
+        }
+        monsterPhaseLightingRoutine = StartCoroutine(AnimateMonsterPhaseLight(intensity, duration, curve));
+    }
+
+    private IEnumerator AnimateMonsterPhaseLight(float intensity, float duration, AnimationCurve curve)
+    {
+        if (monsterPhaseGlobalLight2D == null)
+            yield break;
+        float startingIntensity = monsterPhaseGlobalLight2D.intensity;
+        float elapsed = 0f;
+        while (elapsed < duration && monsterPhaseGlobalLight2D != null)
+        {
+            elapsed += GetCameraDeltaTime();
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = curve != null ? curve.Evaluate(t) : t * t * (3f - 2f * t);
+            monsterPhaseGlobalLight2D.intensity = Mathf.Lerp(startingIntensity, intensity, eased);
+            yield return null;
+        }
+        if (monsterPhaseGlobalLight2D != null)
+            monsterPhaseGlobalLight2D.intensity = intensity;
+        monsterPhaseLightingRoutine = null;
+    }
+
+    private void RestoreMonsterPhaseLightingImmediate()
+    {
+        if (monsterPhaseLightingRoutine != null)
+        {
+            StopCoroutine(monsterPhaseLightingRoutine);
+            monsterPhaseLightingRoutine = null;
+        }
+        if (monsterPhaseLightingSaved && monsterPhaseGlobalLight2D != null)
+            monsterPhaseGlobalLight2D.intensity = monsterPhaseOriginalLightIntensity;
+        monsterPhaseLightingSaved = false;
+    }
+
     private MonsterPhaseCameraSequence activeMonsterPhaseCamera;
     private Coroutine monsterPhaseStepsRoutine;
     private Coroutine monsterPhaseReturnRoutine;
@@ -28,6 +104,7 @@ public class BattleCameraController : MonoBehaviour
 
     private void ClearMonsterPhaseCameraState()
     {
+        RestoreMonsterPhaseLightingImmediate();
         if (monsterPhaseStepsRoutine != null)
             StopCoroutine(monsterPhaseStepsRoutine);
         if (monsterPhaseReturnRoutine != null)
@@ -758,6 +835,7 @@ public class BattleCameraController : MonoBehaviour
 
                 Vector3 destination = target.position + new Vector3(step.offset.x, step.offset.y, 0f);
                 destination.z = step.zPosition;
+                StartMonsterPhaseStepLighting(step);
                 yield return MoveCameraUsingCurve(destination, step.orthographicSize,
                     step.duration, step.curve, targetCamera.orthographic);
 
@@ -838,9 +916,11 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
         ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
+        StartMonsterPhaseReturnLighting(sequence);
 
         yield return MoveCameraUsingCurve(GetNeutralBattlePosition(), defaultSize,
             sequence.ReturnDuration, sequence.ReturnCurve, true, true);
+        RestoreMonsterPhaseLightingImmediate();
 
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();

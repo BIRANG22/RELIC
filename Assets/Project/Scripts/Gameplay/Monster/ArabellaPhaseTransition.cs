@@ -11,7 +11,7 @@ public static class ArabellaPhaseTransition
     public const string PhaseTwoMonsterId = "Mon_12_2";
     public const string PhaseOneDefeatedAnimationState = "PhaseOneDefeated";
 
-    // 2ÆäÀÌÁî HP Ç¥½Ã°¡ Â÷¿À¸£´Â ÃÖ´ë ½Ã°£(±âº» ÀüÅõ ¼Óµµ ±âÁØ, ÃÊ).
+    // 2í˜ì´ì¦ˆ HP í‘œì‹œê°€ ì°¨ì˜¤ë¥´ëŠ” ìµœëŒ€ ì‹œê°„(ê¸°ë³¸ ì „íˆ¬ ì†ë„ ê¸°ì¤€, ì´ˆ).
     private const float PhaseTwoHPFillDuration = 1f;
 
     // Incremented only when phase one successfully changes to phase two.
@@ -94,7 +94,7 @@ public static class ArabellaPhaseTransition
         animator?.PlayArabellaPhaseOneDefeated();
     }
 
-    // ÇöÀç ½ÇÇà ÁßÀÎ ½ºÅ³ÀÌ ³¡³­ ÈÄ¿¡¸¸ 2ÆäÀÌÁî µ¥ÀÌÅÍ¿Í ¿¬ÃâÀ» Àû¿ëÇÕ´Ï´Ù.
+    // í˜„ì¬ ì‹¤í–‰ ì¤‘ì¸ ìŠ¤í‚¬ì´ ëë‚œ í›„ì—ë§Œ 2í˜ì´ì¦ˆ ë°ì´í„°ì™€ ì—°ì¶œì„ ì ìš©í•©ë‹ˆë‹¤.
     public static IEnumerator CompletePendingTransitionRoutine()
     {
         MonsterUnit monster = pendingMonster;
@@ -108,37 +108,99 @@ public static class ArabellaPhaseTransition
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
         BattleCameraController cameraController = BattleCameraController.Instance;
 
-        // ÇöÀç Çàµ¿ÀÌ Á¾·áµÈ ´ÙÀ½ ¾Æ¶óº§¶ó¸¦ È­¸é Áß¾Ó¿¡ Æ÷Ä¿½ºÇÕ´Ï´Ù.
-        // ÀüÈ¯ ¿¬ÃâÀÌ ³¡³¯ ¶§±îÁö Ä«¸Ş¶ó¸¦ À¯ÁöÇÏ°í ±âÁ¸ ÀüÅõ À§Ä¡·Î µ¹¾Æ°©´Ï´Ù.
+        // í˜„ì¬ í–‰ë™ì´ ì¢…ë£Œëœ ë‹¤ìŒ ì•„ë¼ë²¨ë¼ë¥¼ í™”ë©´ ì¤‘ì•™ì— í¬ì»¤ìŠ¤í•©ë‹ˆë‹¤.
+        // ì „í™˜ ì—°ì¶œì´ ëë‚  ë•Œê¹Œì§€ ì¹´ë©”ë¼ë¥¼ ìœ ì§€í•˜ê³  ê¸°ì¡´ ì „íˆ¬ ìœ„ì¹˜ë¡œ ëŒì•„ê°‘ë‹ˆë‹¤.
         if (cameraController != null)
             yield return cameraController.PlayArabellaPhaseTransitionCamera(monster.transform);
 
-        // Æ÷Ä¿½º Àü¿¡ HUD°¡ »õ HP(105)¸¦ ¸ÕÀú Ç¥½ÃÇÏÁö ¾Êµµ·Ï ¼ø¼­¸¦ °íÁ¤ÇÕ´Ï´Ù.
+        // í¬ì»¤ìŠ¤ ì „ì— HUDê°€ ìƒˆ HP(105)ë¥¼ ë¨¼ì € í‘œì‹œí•˜ì§€ ì•Šë„ë¡ ìˆœì„œë¥¼ ê³ ì •í•©ë‹ˆë‹¤.
         monster.Initialize(phaseTwo);
         monster.BeginPhaseTransitionHUDPresentation();
+
+        MonsterPhaseCameraSequence phaseCameraSequence =
+            monster.GetComponentInParent<MonsterPhaseCameraSequence>();
 
         if (animator != null)
         {
             float speed = Mathf.Max(0.01f,
                 BattleConsecutiveActionPresentationContext.BattleExecutionSpeedMultiplier);
-            float duration = animator.ArabellaPhaseTransitionDuration / speed;
-            // ÀüÈ¯ ¿¬ÃâÀº ³¡±îÁö Àç»ıÇÏµÇ HP °ÔÀÌÁö´Â ºü¸£°Ô Ã¤¿ó´Ï´Ù.
-            float hpFillDuration = Mathf.Min(duration, PhaseTwoHPFillDuration / speed);
-            monster.ShowPhaseTransitionHPFill(hpFillDuration);
+            // HP í‘œì‹œ ì†ë„ëŠ” 2Phase í´ë¦½ ê¸¸ì´ì™€ ë³„ê°œë¡œ ìµœëŒ€ 1ì´ˆë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+            monster.ShowPhaseTransitionHPFill(PhaseTwoHPFillDuration / speed);
             animator.PlayArabellaPhaseTransition();
-            if (duration > 0f)
-                yield return new WaitForSeconds(duration);
+
+            if (phaseCameraSequence != null && phaseCameraSequence.EnablePhaseCamera &&
+                cameraController != null)
+            {
+                // ì¹´ë©”ë¼ê°€ ì‹œì‘í•  ë•Œ ë“±ë¡í•œ Animator ëª¨ë‹ˆí„°ê°€ ì‹¤ì œ ìƒíƒœ ì™„ë£Œë¥¼ íŒì •í•©ë‹ˆë‹¤.
+                // ê³ ì • ì‹œê°„ìœ¼ë¡œ ì• ë‹ˆë©”ì´ì…˜ì„ ì¢…ë£Œí•˜ê±°ë‚˜ ì „íˆ¬ë¥¼ ì¬ê°œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+                yield return phaseCameraSequence.WaitForPhaseAnimationCompletion();
+            }
+            else
+            {
+                // ì¹´ë©”ë¼ ì»´í¬ë„ŒíŠ¸ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ê¸°ì¡´ í”„ë¦¬íŒ¹ë„ í´ë¦½ ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
+                yield return WaitForPhaseAnimationState(monster, "2phase");
+            }
         }
         else
         {
             monster.ShowPhaseTransitionHPFill(0f);
         }
 
-        // ÀüÈ¯ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ¸ğµÎ ³¡³­ ´ÙÀ½¿¡¸¸ HUD ¼û±èÀ» Çã¿ëÇÕ´Ï´Ù.
+        // ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ í›„ ê¸°ì¡´ HUDë¥¼ ë‹«ìŠµë‹ˆë‹¤. ì¹´ë©”ë¼ Stepì´ ì•„ì§ ì§„í–‰ ì¤‘ì´ë©´
+        // ReturnFromArabellaPhaseTransitionCameraê°€ ë‚˜ë¨¸ì§€ Step ì™„ë£Œ í›„ ë³µê·€í•©ë‹ˆë‹¤.
         monster.EndPhaseTransitionHUDPresentation();
 
         if (cameraController != null)
             yield return cameraController.ReturnFromArabellaPhaseTransitionCamera();
+    }
+
+    // MonsterPhaseCameraSequenceê°€ ì—†ëŠ” ê²½ìš°ì—ë„ í´ë¦½ ì™„ë£Œë¥¼ í™•ì¸í•˜ê¸° ìœ„í•œ ëŒ€ì²´ ê²½ë¡œ.
+    private static IEnumerator WaitForPhaseAnimationState(MonsterUnit monster, string stateName)
+    {
+        if (monster == null)
+            yield break;
+        Animator phaseAnimator = monster.GetComponentInChildren<Animator>(true);
+        if (phaseAnimator == null || !phaseAnimator.isActiveAndEnabled)
+            yield break;
+
+        const int layer = 0;
+        int hash = Animator.StringToHash(stateName);
+        float elapsed = 0f;
+        const float enterTimeout = 1f;
+        bool entered = false;
+        while (phaseAnimator != null && phaseAnimator.isActiveAndEnabled && elapsed < enterTimeout)
+        {
+            AnimatorStateInfo current = phaseAnimator.GetCurrentAnimatorStateInfo(layer);
+            AnimatorStateInfo next = phaseAnimator.GetNextAnimatorStateInfo(layer);
+            if (current.shortNameHash == hash ||
+                (phaseAnimator.IsInTransition(layer) && next.shortNameHash == hash))
+            {
+                entered = true;
+                break;
+            }
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        if (!entered)
+        {
+            Debug.LogWarning("[ArabellaPhaseTransition] 2phase Animator state was not entered.", monster);
+            yield break;
+        }
+
+        while (phaseAnimator != null && phaseAnimator.isActiveAndEnabled)
+        {
+            AnimatorStateInfo current = phaseAnimator.GetCurrentAnimatorStateInfo(layer);
+            if (current.shortNameHash == hash && current.normalizedTime >= 1f)
+                yield break;
+            if (current.shortNameHash != hash &&
+                !(phaseAnimator.IsInTransition(layer) &&
+                  phaseAnimator.GetNextAnimatorStateInfo(layer).shortNameHash == hash))
+            {
+                Debug.LogWarning("[ArabellaPhaseTransition] 2phase Animator state was interrupted.", monster);
+                yield break;
+            }
+            yield return null;
+        }
     }
 
     public static void NotifyPhaseTwoStarted()
@@ -174,9 +236,9 @@ public static class ArabellaPhaseTransition
             Direction = current.Direction
         };
 
-        // ÆäÀÌÁî ÀüÈ¯ ½Ã ÀÏ¹İ ¹öÇÁ¿Í µğ¹öÇÁ´Â ½Â°èÇÏÁö ¾Ê½À´Ï´Ù.
-        // 1ÆäÀÌÁîºÎÅÍ º¸À¯Çß´ø ¸ó½ºÅÍ °íÀ¯ »óÅÂ´Â À¯ÁöÇÏ°í,
-        // 2ÆäÀÌÁîÀÇ ±âº» °íÀ¯ »óÅÂ´Â »ı¼ºÀÚ¿¡¼­ ÃÊ±âÈ­µÈ ±×´ë·Î º¸Á¸ÇÕ´Ï´Ù.
+        // í˜ì´ì¦ˆ ì „í™˜ ì‹œ ì¼ë°˜ ë²„í”„ì™€ ë””ë²„í”„ëŠ” ìŠ¹ê³„í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // 1í˜ì´ì¦ˆë¶€í„° ë³´ìœ í–ˆë˜ ëª¬ìŠ¤í„° ê³ ìœ  ìƒíƒœëŠ” ìœ ì§€í•˜ê³ ,
+        // 2í˜ì´ì¦ˆì˜ ê¸°ë³¸ ê³ ìœ  ìƒíƒœëŠ” ìƒì„±ìì—ì„œ ì´ˆê¸°í™”ëœ ê·¸ëŒ€ë¡œ ë³´ì¡´í•©ë‹ˆë‹¤.
         if (current.StatusEffects != null)
         {
             foreach (StatusEffectRuntimeData status in current.StatusEffects)
