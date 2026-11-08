@@ -2584,7 +2584,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetFonts:
   - {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
-  - {fileID: 11400000, guid: 58cfb648301c200439eb7bacf0db7ac7, type: 2}
+  - {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   resourcesTextAssetPaths:
   - Data/GameData
   includeBasicAscii: 1
