@@ -188,8 +188,8 @@ TextureImporter:
       name: Mon_B_01_2phase_4
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 3072
+        x: 0
+        y: 2048
         width: 1024
         height: 1024
       alignment: 9
@@ -210,7 +210,7 @@ TextureImporter:
       name: Mon_B_01_2phase_5
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1024
         y: 2048
         width: 1024
         height: 1024
@@ -232,7 +232,7 @@ TextureImporter:
       name: Mon_B_01_2phase_6
       rect:
         serializedVersion: 2
-        x: 1024
+        x: 2048
         y: 2048
         width: 1024
         height: 1024
@@ -254,7 +254,7 @@ TextureImporter:
       name: Mon_B_01_2phase_7
       rect:
         serializedVersion: 2
-        x: 2048
+        x: 3072
         y: 2048
         width: 1024
         height: 1024
@@ -276,8 +276,8 @@ TextureImporter:
       name: Mon_B_01_2phase_8
       rect:
         serializedVersion: 2
-        x: 3072
-        y: 2048
+        x: 0
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -298,8 +298,8 @@ TextureImporter:
       name: Mon_B_01_2phase_9
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 2048
+        x: 1024
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -320,7 +320,7 @@ TextureImporter:
       name: Mon_B_01_2phase_10
       rect:
         serializedVersion: 2
-        x: 0
+        x: 2048
         y: 1024
         width: 1024
         height: 1024
@@ -342,7 +342,7 @@ TextureImporter:
       name: Mon_B_01_2phase_11
       rect:
         serializedVersion: 2
-        x: 1024
+        x: 3072
         y: 1024
         width: 1024
         height: 1024
@@ -364,8 +364,8 @@ TextureImporter:
       name: Mon_B_01_2phase_12
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 1024
+        x: 0
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -386,8 +386,8 @@ TextureImporter:
       name: Mon_B_01_2phase_13
       rect:
         serializedVersion: 2
-        x: 3072
-        y: 1024
+        x: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -408,8 +408,8 @@ TextureImporter:
       name: Mon_B_01_2phase_14
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 1024
+        x: 2048
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -430,7 +430,7 @@ TextureImporter:
       name: Mon_B_01_2phase_15
       rect:
         serializedVersion: 2
-        x: 0
+        x: 3072
         y: 0
         width: 1024
         height: 1024
@@ -444,94 +444,6 @@ TextureImporter:
       bones: []
       spriteID: 751bf21b6841b3540a65286c95716008
       internalID: 616642380
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_2phase_16
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 153e08891783b7b45bfb91e6794eff32
-      internalID: 230759330
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_2phase_17
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 09ce180e68f0528408f3e7611aea3404
-      internalID: -2002604185
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_2phase_18
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 12714d3c41c80a643bd7b64cdfccaf14
-      internalID: 330527267
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_2phase_19
-      rect:
-        serializedVersion: 2
-        x: 4096
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 21dda1522bd76364d8262bbf0868d9a3
-      internalID: 128936049
       vertices: []
       indices: 
       edges: []
@@ -558,10 +470,6 @@ TextureImporter:
       Mon_B_01_2phase_13: -311358603
       Mon_B_01_2phase_14: -1281151901
       Mon_B_01_2phase_15: 616642380
-      Mon_B_01_2phase_16: 230759330
-      Mon_B_01_2phase_17: -2002604185
-      Mon_B_01_2phase_18: 330527267
-      Mon_B_01_2phase_19: 128936049
       Mon_B_01_2phase_2: -615046121
       Mon_B_01_2phase_3: 925057999
       Mon_B_01_2phase_4: -542741437
