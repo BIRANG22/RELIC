@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,28 @@ using UnityEngine.Localization.Components;
 public sealed class TutorialBattleSequence : MonoBehaviour
 {
     public static bool IsPresentationRunning { get; private set; }
+    private static string activeBattleTutorialMapId = string.Empty;
+    public static bool IsFinalTutorialRunning => IsPresentationRunning &&
+        string.Equals(activeBattleTutorialMapId, "Map_27", StringComparison.OrdinalIgnoreCase);
+    public static bool IsFirstTutorialRunning => IsPresentationRunning && !IsFinalTutorialRunning;
+    public static bool CanClickTutorialMonster() => IsFinalTutorialRunning && ActiveBattleGuideStep == 4;
+    public static bool CanClickTutorialPlayer() => IsFinalTutorialRunning &&
+        ActiveBattleGuideStep == 10;
+    private static int finalTutorialWorldClickSerial;
+    private static string finalTutorialWorldClickCharacterId = string.Empty;
+    public static void NotifyFinalTutorialWorldCharacterClicked(string characterId)
+    {
+        if (!CanClickTutorialPlayer() || !CanSelectTutorialCharacter(characterId)) return;
+        finalTutorialWorldClickCharacterId = characterId;
+        finalTutorialWorldClickSerial++;
+    }
+    private static int finalTutorialCompoundUseSerial;
+    public static void NotifyFinalTutorialCompoundUsed()
+    {
+        if (IsFinalTutorialRunning && ActiveBattleGuideStep == 11)
+            finalTutorialCompoundUseSerial++;
+    }
+
 
     // 현재 진행 중인 전투 튜토리얼의 단계입니다. 튜토리얼이 아니면 -1을 반환합니다.
     public static int ActiveBattleGuideStep
@@ -32,6 +55,21 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     {
         int step = ActiveBattleGuideStep;
         if (step < 0) return true;
+        if (IsFinalTutorialRunning)
+        {
+            TutorialBattleSequence runner = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+            string characterId = timeline?.SelectedCharacter?.CharacterId;
+            if (runner == null || timeline == null) return false;
+            if ((step == 19 || step == 24) && skillId == moveId)
+                return runner.IsFinalExpectedCharacterSelected(timeline);
+            if ((step == 12 || step == 22 || step == 26) && skillId == firstSkillId)
+                return runner.IsFinalExpectedCharacterSelected(timeline);
+            if (step == 13 && timeline.SelectedCharacter != null &&
+                skillId == timeline.SelectedCharacter.UniqueSkillId)
+                return runner.IsFinalExpectedCharacterSelected(timeline);
+            return false;
+        }
         if (step == 24)
         {
             if (string.IsNullOrEmpty(moveId) || skillId != moveId)
@@ -69,6 +107,19 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (!IsPresentationRunning) return true;
         TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
         if (sequence == null) return false;
+        if (IsFinalTutorialRunning)
+        {
+            return sequence.tutorialStageIndex switch
+            {
+                11 => key == KeyCode.D,
+                12 or 22 or 26 => key == KeyCode.Q,
+                13 => key == KeyCode.R,
+                19 or 24 => key == KeyCode.A,
+                21 => key == KeyCode.S,
+                27 => key == KeyCode.Space,
+                _ => false
+            };
+        }
         switch (sequence.tutorialStageIndex)
         {
             case 24: return key == KeyCode.A;
@@ -86,7 +137,19 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     {
         if (!IsPresentationRunning) return true;
         TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
-        if (sequence == null || sequence.tutorialStageIndex < 24 || sequence.tutorialStageIndex > 28)
+        if (sequence == null) return false;
+        if (IsFinalTutorialRunning)
+        {
+            string required = sequence.tutorialStageIndex switch
+            {
+                10 or 11 or 12 or 13 => "Char_03",
+                18 or 19 or 20 or 21 or 22 => "Char_02",
+                23 or 24 or 25 or 26 => "Char_01",
+                _ => null
+            };
+            return required != null && string.Equals(characterId, required, StringComparison.Ordinal);
+        }
+        if (sequence.tutorialStageIndex < 24 || sequence.tutorialStageIndex > 28)
             return true;
         if (sequence.tutorialStageIndex == 27 || sequence.tutorialStageIndex == 28)
             return characterId == "Char_02";
@@ -100,7 +163,12 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     {
         if (!IsPresentationRunning) return true;
         TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
-        return sequence != null && sequence.tutorialStageIndex == 25 &&
+        if (sequence == null) return false;
+        if (IsFinalTutorialRunning)
+            return sequence.grid25InputArmed &&
+                ((sequence.tutorialStageIndex == 20 && gridIndex == 32) ||
+                 (sequence.tutorialStageIndex == 25 && gridIndex == 17));
+        return sequence.tutorialStageIndex == 25 &&
                sequence.grid25InputArmed && gridIndex == 16;
     }
 
@@ -108,9 +176,18 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     {
         if (!IsPresentationRunning) return true;
         TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
-        return sequence != null && sequence.tutorialStageIndex == 25 &&
-               sequence.grid25InputArmed && command != null &&
-               command.CharacterId == "Char_01" && command.ReservedMoveGridIndex == 16;
+        if (sequence == null || command == null) return false;
+        if (IsFinalTutorialRunning)
+        {
+            BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+            if (timeline == null || timeline.ActiveSlotIndex !=
+                (sequence.tutorialStageIndex == 20 ? 1 : 2)) return false;
+            return sequence.grid25InputArmed &&
+                ((sequence.tutorialStageIndex == 20 && command.CharacterId == "Char_02" && command.ReservedMoveGridIndex == 32) ||
+                 (sequence.tutorialStageIndex == 25 && command.CharacterId == "Char_01" && command.ReservedMoveGridIndex == 17));
+        }
+        return sequence.tutorialStageIndex == 25 &&
+               sequence.grid25InputArmed && command.CharacterId == "Char_01" && command.ReservedMoveGridIndex == 16;
     }
 
     public static bool IsBlockingBattleStart { get; private set; }
@@ -202,6 +279,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private GameObject focusRoot;
     private RectTransform overlayRoot;
     private RectTransform worldGridFocusProxy;
+    private RectTransform compositeUiFocusProxy;
     [SerializeField, Min(0f)] private float focusSlideDuration = 0.45f;
     private Coroutine focusSlideRoutine;
     private TMP_Text dialogText;
@@ -232,7 +310,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     {
         if (!IsPresentationRunning) return true;
         TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
-        return sequence != null && sequence.tutorialStageIndex == 29;
+        return sequence != null &&
+            (IsFinalTutorialRunning ? sequence.tutorialStageIndex == 27 : sequence.tutorialStageIndex == 29);
     }
 
     private void Update()
@@ -267,7 +346,18 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (!tutorialButtonRaycastStates.ContainsKey(group))
             tutorialButtonRaycastStates[group] = group.blocksRaycasts;
         string name = button.gameObject.name;
-        bool allowed = tutorialStageIndex switch
+        bool allowed = IsFinalTutorialRunning ? tutorialStageIndex switch
+        {
+            11 => name.Equals("Compound", StringComparison.OrdinalIgnoreCase),
+            12 or 22 or 26 => name.Equals("Skill01", StringComparison.OrdinalIgnoreCase),
+            13 => name.Equals("Ultimate", StringComparison.OrdinalIgnoreCase),
+            19 or 24 => name.Equals("Move", StringComparison.OrdinalIgnoreCase),
+            21 => name.Equals("Flip", StringComparison.OrdinalIgnoreCase),
+            18 => name.Equals("Char02", StringComparison.OrdinalIgnoreCase),
+            23 => name.Equals("Char01", StringComparison.OrdinalIgnoreCase),
+            27 => button == FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include)?.EndTurnButton,
+            _ => false
+        } : tutorialStageIndex switch
         {
             24 => name.Equals("Move", StringComparison.OrdinalIgnoreCase) || name.Equals("MoveButton", StringComparison.OrdinalIgnoreCase),
             26 or 28 => name.Equals("Skill01", StringComparison.OrdinalIgnoreCase) || name.Equals("Skill01Button", StringComparison.OrdinalIgnoreCase),
@@ -300,6 +390,30 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
         if (sequence == null) return true;
         // 다른 그리드나 다른 캐릭터의 이동 예약은 현재 단계에서 차단합니다.
+        if (IsFinalTutorialRunning)
+        {
+            // Flip commands also carry their current grid index, so validate
+            // them before treating commands with a grid index as movement.
+            // Otherwise the Grid_32/Grid_17 movement gate rejects Flip.
+            if (command.IsFacingFlipCommand)
+                return sequence.tutorialStageIndex == 21 &&
+                    sequence.IsFinalExpectedCharacterSelected(timeline) &&
+                    command.CharacterId == "Char_02" &&
+                    timeline.ActiveSlotIndex == 1;
+            if (command.ReservedMoveGridIndex >= 0)
+                return CanAcceptTutorialMove(command);
+            if (!sequence.IsFinalExpectedCharacterSelected(timeline) ||
+                command.CharacterId != timeline.SelectedCharacter?.CharacterId)
+                return false;
+            int stage = sequence.tutorialStageIndex;
+            int slot = stage <= 13 ? 0 : stage <= 22 ? 1 : 2;
+            if (timeline.ActiveSlotIndex != slot) return false;
+            if (stage == 12 || stage == 22 || stage == 26)
+                return command.SkillId == timeline.SelectedCharacter.AbilitySkillId;
+            if (stage == 13)
+                return command.SkillId == timeline.SelectedCharacter.UniqueSkillId;
+            return false;
+        }
         if (command.ReservedMoveGridIndex >= 0)
             return CanAcceptTutorialMove(command);
         if (sequence.tutorialStageIndex == 25)
@@ -320,7 +434,10 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (routine != null) StopCoroutine(routine);
         continuationMode = false;
         loader = battleLoader;
+        activeBattleTutorialMapId = mapId ?? string.Empty;
         IsPresentationRunning = true;
+        // In Map_27, dialogue 1-3 must precede monster planning and the battle-start intro.
+        // Keep the loader's initial plan paused until those lines finish.
         IsBlockingBattleStart = true;
         IsInitialBattleHudReady = false;
         var steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
@@ -340,7 +457,9 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             yield return null;
         yield return null;
         ResolveUi();
-        HideGridVisuals();
+        // Map_27 begins with its three encounter dialogue lines before the
+        // battle-start intro. Its HUD is intentionally not ready at this point.
+        if (!IsFinalTutorialRunning) HideGridVisuals();
         HideUi();
 
         string previousGuideTarget = null;
@@ -357,6 +476,18 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 && string.Equals(previousGuideTarget, step.HighlightTarget, StringComparison.OrdinalIgnoreCase);
             previousGuideTarget = output.Equals("TutorialTooltip", StringComparison.OrdinalIgnoreCase)
                 ? step.HighlightTarget : null;
+            // Map_27: after dialogues 1-3, allow the loader to plan the monsters,
+            // play its original battle-start intro once, and raise the reservation HUD.
+            // Only then show the monster-click guide (order 4).
+            if (!continuationMode && IsFinalTutorialRunning && step.Order == 4 && IsBlockingBattleStart)
+            {
+                HideUi();
+                IsBlockingBattleStart = false;
+                while (!IsInitialBattleHudReady) yield return null;
+                while (BattleSceneController.IsBattleRoomIntroPlaying || BattleMapIntroText.IsAnyPlayingOrVisible())
+                    yield return null;
+                yield return null;
+            }
             // HUD guides run after battle-start presentation and timeline slots are visible.
             if (IsCharacterHudGuide(step) && IsBlockingBattleStart)
             {
@@ -396,7 +527,9 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             {
                 tutorialStageIndex = step.Order;
                 grid25InputArmed = false;
-                if (!continuationMode && step.Order == 25)
+                if (!continuationMode && (IsFinalTutorialRunning
+                    ? step.Order == 20 || step.Order == 25
+                    : step.Order == 25))
                 {
                     // 24번 이동 버튼 클릭이나 키 입력이 25번 그리드 입력으로 처리되지 않게 합니다.
                     while (Input.GetMouseButton(0) || Input.touchCount > 0)
@@ -406,7 +539,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 }
                 // Only the first hands-on control step opens normal reservation input.
                 // BattleRoomLoader still owns the later turn / input lifecycle.
-                if (step.Order == 24 && !tutorialControlInputOpened)
+                if ((IsFinalTutorialRunning ? step.Order == 4 : step.Order == 24) && !tutorialControlInputOpened)
                 {
                     tutorialTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
                     if (tutorialTurnExecutor != null)
@@ -416,8 +549,11 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                     }
                 }
                 // 타임라인 및 행동 소개 단계에서는 안내를 넘길 수 있지만 실제 UI 조작은 차단합니다.
-                bool blockGuideInput = !continuationMode && IsBattleUiExplanationGuide(step);
+                bool blockGuideInput = !continuationMode &&
+                    (IsBattleUiExplanationGuide(step) ||
+                     (IsFinalTutorialRunning && (step.Order == 5 || step.Order == 6 || step.Order == 28)));
                 ShowGuide(step, sameGuideTarget);
+                if (IsFinalTutorialRunning && step.Order == 28) ShowFinalTutorialCompletionOverlay();
                 if (blockGuideInput)
                 {
                     SetBattleUiPointerBlocked(true);
@@ -440,7 +576,24 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 }
                 else
                     yield return WaitForClick();
-                yield return FadeOutComplete(tooltipTextComplete);
+                if (IsFinalTutorialRunning && step.Order == 27)
+                {
+                    // Clear the step-27 guide and focus immediately on End Turn.
+                    // No tutorial focus may remain during the execution animation.
+                    HideUi();
+                    RestoreTutorialButtonRaycasts();
+                    BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+                    if (executor != null)
+                    {
+                        // Wait for the actual turn execution before proceeding to step 28.
+                        while (!executor.IsExecuting)
+                            yield return null;
+                        while (executor.IsExecuting || !executor.CanAcceptPlayerInput)
+                            yield return null;
+                    }
+                }
+                else
+                    yield return FadeOutComplete(tooltipTextComplete);
                 if (blockGuideInput)
                 {
                     SetBattleUiPointerBlocked(false);
@@ -465,6 +618,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         RestoreTutorialButtonRaycasts();
         IsPresentationRunning = false;
         IsBlockingBattleStart = false;
+        activeBattleTutorialMapId = string.Empty;
         if (continuationMode)
         {
             IsContinuationActive = false;
@@ -776,6 +930,27 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
         // RewardSlot is instantiated as RewardSlot(Clone) under Contant at runtime.
         // Resolve the active slot instead of falling back to an unrelated button.
+        if (IsFinalTutorialRunning && step.Order == 4)
+        {
+            // 런타임 이름의 일련번호가 아니라 몬스터 데이터 ID로 드라우그를 찾습니다.
+            MonsterUnit draugr = FindFinalTutorialDraugr();
+            if (draugr != null) target = draugr.transform;
+            else Debug.LogWarning("[Tutorial_03] 드라우그(Mon_07)를 찾을 수 없습니다.", this);
+        }
+        if (IsFinalTutorialRunning && (step.Order == 18 || step.Order == 23))
+        {
+            // The actual Char_Select entries are custom pointer targets, not Buttons.
+            // Use the same resolved object for focus and the click completion gate.
+            target = FindFinalCharacterSelectTarget(step.Order == 18 ? "Char02" : "Char01");
+        }
+        if (IsFinalTutorialRunning && step.Order == 10)
+        {
+            string targetCharacterId = "Char_03";
+            // Runtime prefab names/ordering can change. Resolve by character database ID.
+            target = null;
+            foreach (BattleCharacter actor in FindObjectsByType<BattleCharacter>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                if (actor.RuntimeData?.CharacterId == targetCharacterId) { target = actor.transform; break; }
+        }
         if (continuationMode && step.Order == 33)
         {
             BattleRewardPanelUI rewardPanel = FindFirstObjectByType<BattleRewardPanelUI>(FindObjectsInactive.Exclude);
@@ -818,8 +993,16 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             }
         }
         RectTransform source = target as RectTransform;
+        if (IsFinalTutorialRunning && (step.Order == 5 || step.Order == 6) && target != null)
+            source = CreateCompositeUiFocusProxy(target) ?? source;
         if (source == null && target != null)
-            source = CreateWorldGridFocusProxy(target);
+        {
+            // 최종 튜토리얼의 몬스터/캐릭터는 이미지가 아닌 클릭용 2D 박스 콜라이더를 강조합니다.
+            bool useColliderFocus = IsFinalTutorialRunning && (step.Order == 4 || step.Order == 10);
+            source = useColliderFocus
+                ? CreateWorldBoxColliderFocusProxy(target)
+                : CreateWorldGridFocusProxy(target);
+        }
         if (source == null && continuationMode)
             Debug.LogWarning($"[TutorialBattleSequence] Focus target not found: {step.HighlightTarget} (Order {step.Order})", this);
         if (source != null && focusRoot.transform is RectTransform frame)
@@ -854,12 +1037,174 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
+    // The final message has no interactive target: dim the whole battle view and
+    // place its tooltip at screen center instead of leaving a highlight cutout.
+    private void ShowFinalTutorialCompletionOverlay()
+    {
+        if (focusSlideRoutine != null)
+        {
+            StopCoroutine(focusSlideRoutine);
+            focusSlideRoutine = null;
+        }
+        if (focusRoot != null) focusRoot.SetActive(false);
+        if (overlayRoot != null)
+        {
+            RectTransform top = Find(overlayRoot, "Top") as RectTransform;
+            RectTransform bottom = Find(overlayRoot, "Bottom") as RectTransform;
+            RectTransform left = Find(overlayRoot, "Left") as RectTransform;
+            RectTransform right = Find(overlayRoot, "Right") as RectTransform;
+            if (top != null)
+            {
+                SetOverlayPanel(top, overlayRoot.rect);
+                overlayRoot.gameObject.SetActive(true);
+                top.gameObject.SetActive(true);
+                if (bottom != null) bottom.gameObject.SetActive(false);
+                if (left != null) left.gameObject.SetActive(false);
+                if (right != null) right.gameObject.SetActive(false);
+            }
+        }
+        RectTransform tooltip = tooltipRoot != null ? tooltipRoot.transform as RectTransform : null;
+        if (tooltip != null)
+        {
+            tooltip.anchorMin = tooltip.anchorMax = new Vector2(.5f, .5f);
+            tooltip.pivot = new Vector2(.5f, .5f);
+            tooltip.anchoredPosition = Vector2.zero;
+        }
+    }
+
+    // 몬스터 정보 목록은 Content 컨테이너 전체 너비가 아닌 실제 표시 프리팹 너비로 강조합니다.
+    // 높이는 제목(Name)부터 마지막 표시 항목까지 포함하되, 가로 범위는 항목 프리팹으로만 정합니다.
+    private RectTransform CreateCompositeUiFocusProxy(Transform group)
+    {
+        RectTransform frame = focusRoot != null ? focusRoot.transform as RectTransform : null;
+        RectTransform parent = frame != null ? frame.parent as RectTransform : null;
+        if (parent == null || group == null) return null;
+
+        Transform content = group.Find("Contant") ?? group.Find("Content") ?? group.Find("content");
+        Transform heading = group.Find("Name");
+        Canvas groupCanvas = group.GetComponentInParent<Canvas>();
+        Camera groupCamera = groupCanvas != null && groupCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? groupCanvas.worldCamera : null;
+        Canvas parentCanvas = parent.GetComponentInParent<Canvas>();
+        Camera parentCamera = parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? parentCanvas.worldCamera : null;
+
+        float minX = float.MaxValue, maxX = float.MinValue;
+        float minY = float.MaxValue, maxY = float.MinValue;
+        bool hasEntry = false;
+
+        // Only the actual item roots set X bounds, never the stretched Content/SkillList rect.
+        if (content != null)
+        {
+            foreach (Transform child in content)
+            {
+                RectTransform rect = child as RectTransform;
+                if (rect == null || !rect.gameObject.activeInHierarchy ||
+                    rect.rect.width <= 0f || rect.rect.height <= 0f) continue;
+                Vector3[] corners = new Vector3[4];
+                rect.GetWorldCorners(corners);
+                foreach (Vector3 corner in corners)
+                {
+                    Vector2 screen = RectTransformUtility.WorldToScreenPoint(groupCamera, corner);
+                    if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                            parent, screen, parentCamera, out Vector2 local)) continue;
+                    minX = Mathf.Min(minX, local.x);
+                    maxX = Mathf.Max(maxX, local.x);
+                    minY = Mathf.Min(minY, local.y);
+                    maxY = Mathf.Max(maxY, local.y);
+                    hasEntry = true;
+                }
+            }
+        }
+        if (!hasEntry) return null;
+
+        // Include the title vertically, without allowing its potentially stretched width to enlarge X.
+        if (heading is RectTransform titleRect && heading.gameObject.activeInHierarchy)
+        {
+            Vector3[] corners = new Vector3[4];
+            titleRect.GetWorldCorners(corners);
+            foreach (Vector3 corner in corners)
+            {
+                Vector2 screen = RectTransformUtility.WorldToScreenPoint(groupCamera, corner);
+                if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        parent, screen, parentCamera, out Vector2 local)) continue;
+                minY = Mathf.Min(minY, local.y);
+                maxY = Mathf.Max(maxY, local.y);
+            }
+        }
+
+        if (compositeUiFocusProxy == null)
+        {
+            GameObject proxy = new GameObject("TutorialMonsterInfoGroupFocus", typeof(RectTransform));
+            compositeUiFocusProxy = proxy.GetComponent<RectTransform>();
+            compositeUiFocusProxy.SetParent(parent, false);
+        }
+        Vector2 min = new Vector2(minX, minY);
+        Vector2 max = new Vector2(maxX, maxY);
+        compositeUiFocusProxy.anchorMin = compositeUiFocusProxy.anchorMax = new Vector2(.5f, .5f);
+        compositeUiFocusProxy.pivot = new Vector2(.5f, .5f);
+        compositeUiFocusProxy.anchoredPosition = (min + max) * .5f - parent.rect.center;
+        compositeUiFocusProxy.sizeDelta = Vector2.Max(new Vector2(16f, 16f), max - min);
+        return compositeUiFocusProxy;
+    }
+
+    // 최종 전투의 드라우그와 헤이즈는 스프라이트가 아닌 BoxCollider2D의 실제 영역을 강조합니다.
+    // 콜라이더 로컬 모서리를 월드/화면 좌표로 변환하므로 Offset, Scale, Rotation도 반영됩니다.
+    private RectTransform CreateWorldBoxColliderFocusProxy(Transform worldTarget)
+    {
+        RectTransform frame = focusRoot != null ? focusRoot.transform as RectTransform : null;
+        RectTransform parent = frame != null ? frame.parent as RectTransform : null;
+        BoxCollider2D box = worldTarget != null ? worldTarget.GetComponent<BoxCollider2D>() : null;
+        if (box == null && worldTarget != null)
+            box = worldTarget.GetComponentInChildren<BoxCollider2D>(true);
+        Camera camera = Camera.main;
+        if (parent == null || box == null || camera == null)
+        {
+            Debug.LogWarning($"[TutorialBattleSequence] BoxCollider2D focus unavailable: {worldTarget?.name}", this);
+            return null;
+        }
+
+        Canvas canvas = parent.GetComponentInParent<Canvas>();
+        Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera : null;
+        Vector2 halfSize = box.size * .5f;
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+        for (int x = -1; x <= 1; x += 2)
+            for (int y = -1; y <= 1; y += 2)
+            {
+                Vector3 localCorner = new Vector3(box.offset.x + halfSize.x * x,
+                    box.offset.y + halfSize.y * y, 0f);
+                Vector3 worldCorner = box.transform.TransformPoint(localCorner);
+                Vector3 screen = camera.WorldToScreenPoint(worldCorner);
+                if (screen.z <= 0f) continue;
+                if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screen, uiCamera, out Vector2 local))
+                    continue;
+                min = Vector2.Min(min, local);
+                max = Vector2.Max(max, local);
+            }
+        if (min.x == float.MaxValue) return null;
+        if (worldGridFocusProxy == null)
+        {
+            GameObject proxy = new GameObject("TutorialWorldGridFocusTarget", typeof(RectTransform));
+            worldGridFocusProxy = proxy.GetComponent<RectTransform>();
+            worldGridFocusProxy.SetParent(parent, false);
+        }
+        worldGridFocusProxy.anchorMin = worldGridFocusProxy.anchorMax = new Vector2(.5f, .5f);
+        worldGridFocusProxy.pivot = new Vector2(.5f, .5f);
+        worldGridFocusProxy.anchoredPosition = (min + max) * .5f - parent.rect.center;
+        worldGridFocusProxy.sizeDelta = new Vector2(Mathf.Max(12f, max.x - min.x), Mathf.Max(12f, max.y - min.y));
+        return worldGridFocusProxy;
+    }
+
     // MeshRenderer 기반 월드 그리드 좌표를 화면 안내용 UI RectTransform으로 변환합니다.
     private RectTransform CreateWorldGridFocusProxy(Transform worldTarget)
     {
         RectTransform frame = focusRoot != null ? focusRoot.transform as RectTransform : null;
         RectTransform parent = frame != null ? frame.parent as RectTransform : null;
         Renderer renderer = worldTarget != null ? worldTarget.GetComponent<Renderer>() : null;
+        if (renderer == null && worldTarget != null)
+            renderer = worldTarget.GetComponentInChildren<Renderer>(true);
         Camera camera = Camera.main;
         if (parent == null || renderer == null || camera == null)
         {
@@ -897,6 +1242,20 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         worldGridFocusProxy.anchoredPosition = (min + max) * .5f - parent.rect.center;
         worldGridFocusProxy.sizeDelta = new Vector2(Mathf.Max(12f, max.x - min.x), Mathf.Max(12f, max.y - min.y));
         return worldGridFocusProxy;
+    }
+
+    // 몬스터 생성 순서에 따라 RuntimeMonster 번호가 바뀌어도 동일한 드라우그를 선택합니다.
+    private static bool IsFinalTutorialDraugr(MonsterUnit monster)
+    {
+        return monster != null && monster.RuntimeData != null &&
+            string.Equals(monster.RuntimeData.MonsterId, "Mon_07", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static MonsterUnit FindFinalTutorialDraugr()
+    {
+        foreach (MonsterUnit monster in FindObjectsByType<MonsterUnit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            if (IsFinalTutorialDraugr(monster)) return monster;
+        return null;
     }
 
     private static bool MatchesHighlightTarget(Transform item, string key)
@@ -1229,10 +1588,204 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         yield return WaitForClick();
     }
 
+    private bool IsFinalExpectedCharacterSelected(BattleTimelineController timeline)
+    {
+        if (timeline?.SelectedCharacter == null) return false;
+        int stage = tutorialStageIndex;
+        string expected = stage >= 10 && stage <= 13 ? "Char_03" :
+            stage >= 18 && stage <= 22 ? "Char_02" :
+            stage >= 23 && stage <= 26 ? "Char_01" : null;
+        return expected != null && timeline.SelectedCharacter.CharacterId == expected;
+    }
+
+    private static bool HasFinalCommand(BattleTimelineController timeline, int baseline,
+        string characterId, Func<PlayerReservedCommand, bool> predicate)
+    {
+        if (timeline == null || CountCharacterCommands(timeline, characterId) <= baseline) return false;
+        for (int i = 0; i < timeline.SlotCount; ++i)
+        {
+            var commands = timeline.GetPlayerCommands(i);
+            if (commands == null) continue;
+            foreach (var command in commands)
+                if (command != null && command.CharacterId == characterId && predicate(command))
+                    return true;
+        }
+        return false;
+    }
+
+    private static Transform FindFinalGuideTarget(string target)
+    {
+        if (string.IsNullOrWhiteSpace(target)) return null;
+        foreach (Transform item in Resources.FindObjectsOfTypeAll<Transform>())
+            if (item != null && item.gameObject.scene.IsValid() && item.gameObject.activeInHierarchy &&
+                MatchesHighlightTarget(item, target)) return item;
+        return null;
+    }
+
+    private static Transform FindFinalCharacterSelectTarget(string name)
+    {
+        // Resolve by the actual BattleCharacterPanelUI hierarchy rather than a
+        // strict full scene path, which can differ for instantiated UI prefabs.
+        foreach (BattleCharacterPanelUI panel in
+            FindObjectsByType<BattleCharacterPanelUI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (panel == null || !panel.gameObject.scene.IsValid()) continue;
+            Transform root = panel.transform.Find("Char_Select");
+            Transform target = root != null ? root.Find(name) : null;
+            if (target != null && target.gameObject.activeInHierarchy)
+                return target;
+            foreach (BattleCharacterSelectTarget selection in
+                panel.GetComponentsInChildren<BattleCharacterSelectTarget>(true))
+                if (selection != null && selection.gameObject.activeInHierarchy &&
+                    string.Equals(selection.name, name, StringComparison.OrdinalIgnoreCase))
+                    return selection.transform;
+        }
+        return null;
+    }
+
+    private IEnumerator WaitForFinalTutorialAction(TutorialData step)
+    {
+        BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+        PlayerSkillReservationController reservation = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+        BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        string character = step.Order >= 10 && step.Order <= 13 ? "Char_03" :
+            step.Order >= 18 && step.Order <= 22 ? "Char_02" : "Char_01";
+        int before = CountCharacterCommands(timeline, character);
+        int compoundBefore = finalTutorialCompoundUseSerial;
+        bool clicked = false;
+        Button button = null;
+        UnityEngine.Events.UnityAction onClick = () => clicked = true;
+        if (step.Order == 4)
+        {
+            bool monsterSelected = false;
+            Action<MonsterUnit> onMonster = unit => { if (IsFinalTutorialDraugr(unit)) monsterSelected = true; };
+            MonsterUnit.MonsterInfoSelectionChanged += onMonster;
+            while (!monsterSelected) yield return null;
+            MonsterUnit.MonsterInfoSelectionChanged -= onMonster;
+            yield break;
+        }
+        if (step.Order == 7)
+        {
+            Transform buttonTarget = FindFinalGuideTarget(step.HighlightTarget);
+            button = buttonTarget != null ?
+                buttonTarget.GetComponent<Button>() ?? buttonTarget.GetComponentInChildren<Button>(true) : null;
+            if (button == null)
+            {
+                Debug.LogError("[Tutorial_03] MonsterInfoPanel/BackButton was not found.", this);
+                yield break;
+            }
+            button.onClick.AddListener(onClick);
+            while (!clicked) yield return null;
+            button.onClick.RemoveListener(onClick);
+            yield break;
+        }
+        if (step.Order == 10)
+        {
+            // Haze is selected by clicking her world BoxCollider2D.
+            int clickBaseline = finalTutorialWorldClickSerial;
+            while (finalTutorialWorldClickSerial <= clickBaseline ||
+                   !string.Equals(finalTutorialWorldClickCharacterId, "Char_03", StringComparison.Ordinal) ||
+                   !IsFinalExpectedCharacterSelected(timeline))
+                yield return null;
+            yield break;
+        }
+        if (step.Order == 18 || step.Order == 23)
+        {
+            // Char_Select entries use BattleCharacterSelectTarget (IPointerClickHandler),
+            // not UnityEngine.UI.Button. Never skip the tutorial when lookup fails.
+            string expectedId = step.Order == 18 ? "Char_02" : "Char_01";
+            string expectedName = step.Order == 18 ? "Char02" : "Char01";
+            TutorialCharacterSelectionClickRelay relay = null;
+            bool selectionClicked = false;
+            Action onSelection = () => selectionClicked = true;
+            bool warned = false;
+            while (true)
+            {
+                if (relay == null)
+                {
+                    Transform selection = FindFinalCharacterSelectTarget(expectedName);
+                    if (selection == null)
+                    {
+                        if (!warned)
+                        {
+                            Debug.LogWarning($"[Tutorial_03] Waiting for character selection target at order {step.Order}: {expectedName}", this);
+                            warned = true;
+                        }
+                        yield return null;
+                        continue;
+                    }
+                    relay = selection.GetComponent<TutorialCharacterSelectionClickRelay>();
+                    if (relay == null)
+                        relay = selection.gameObject.AddComponent<TutorialCharacterSelectionClickRelay>();
+                    relay.Clicked += onSelection;
+                }
+                // The explicit click must occur during this stage AND actually select
+                // the expected character. Merely being selected is not enough.
+                if (selectionClicked &&
+                    string.Equals(timeline?.SelectedCharacter?.CharacterId, expectedId, StringComparison.Ordinal))
+                    break;
+                if (selectionClicked) selectionClicked = false;
+                yield return null;
+            }
+            if (relay != null) relay.Clicked -= onSelection;
+            yield break;
+        }
+        if (step.Order == 27)
+        {
+            tutorialEndTurnClicked = false;
+            tutorialEndTurnButton = executor != null ? executor.EndTurnButton : null;
+            if (tutorialEndTurnButton != null)
+                tutorialEndTurnButton.onClick.AddListener(OnTutorialEndTurnClicked);
+            while (!tutorialEndTurnClicked && !Input.GetKeyDown(KeyCode.Space) &&
+                   (executor == null || !executor.IsExecuting)) yield return null;
+            if (tutorialEndTurnButton != null)
+            {
+                tutorialEndTurnButton.onClick.RemoveListener(OnTutorialEndTurnClicked);
+                tutorialEndTurnButton = null;
+            }
+            yield break;
+        }
+        if (step.Order == 19 || step.Order == 24)
+        {
+            while (reservation == null || !reservation.IsMoveSkillSelectionActive()) yield return null;
+            yield break;
+        }
+        if (step.Order == 11)
+        {
+            while (finalTutorialCompoundUseSerial == compoundBefore) yield return null;
+            yield break;
+        }
+        if (step.Order == 20 || step.Order == 25)
+        {
+            int grid = step.Order == 20 ? 32 : 17;
+            while (!HasFinalCommand(timeline, before, character,
+                c => c.ReservedMoveGridIndex == grid)) yield return null;
+            yield break;
+        }
+        if (step.Order == 21)
+        {
+            while (!HasFinalCommand(timeline, before, character,
+                c => c.IsFacingFlipCommand)) yield return null;
+            yield break;
+        }
+        if (step.Order == 12 || step.Order == 13 || step.Order == 22 || step.Order == 26)
+        {
+            bool ultimate = step.Order == 13;
+            while (!HasFinalCommand(timeline, before, character,
+                c => c.SkillId == (ultimate ? c.UserRuntime?.UniqueSkillId : c.UserRuntime?.AbilitySkillId)))
+                yield return null;
+        }
+    }
+
     // Advance values are validated against the actual selection/reservation state,
     // not against an arbitrary click or a tooltip-dismiss button.
     private IEnumerator WaitForRequiredBattleAction(TutorialData step)
     {
+        if (IsFinalTutorialRunning)
+        {
+            yield return WaitForFinalTutorialAction(step);
+            yield break;
+        }
         BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
         PlayerSkillReservationController reservation = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
         string advance = step.Advance ?? string.Empty;
@@ -1534,6 +2087,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         RestoreTutorialButtonRaycasts();
         IsPresentationRunning = false;
         IsBlockingBattleStart = false;
+        activeBattleTutorialMapId = string.Empty;
         if (continuationMode)
         {
             IsContinuationActive = false;
@@ -1592,5 +2146,17 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             tutorialSortingCanvas.sortingOrder = previousSortingOrder;
             tutorialSortingCanvas = null;
         }
+    }
+}
+// Listens alongside the existing BattleCharacterSelectTarget without changing its
+// normal character selection behavior or requiring a Unity UI Button component.
+public sealed class TutorialCharacterSelectionClickRelay : MonoBehaviour, IPointerClickHandler
+{
+    public event Action Clicked;
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData != null && eventData.button == PointerEventData.InputButton.Left)
+            Clicked?.Invoke();
     }
 }

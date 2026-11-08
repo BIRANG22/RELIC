@@ -12,7 +12,7 @@ public static class TutorialBattleEntrySetup
     public const string SecondTutorialMapId = "Map_29";
     public const string FirstTutorialEventMapId = "Map_31";
     public const string SecondTutorialEventMapId = "Map_32";
-    public const string ThirdTutorialMapId = "Map_30";
+    public const string ThirdTutorialMapId = "Map_27";
     public const string HiltCharacterId = "Char_01";
     public const string HazeCharacterId = "Char_03";
     public const string KayaCharacterId = "Char_02";
@@ -91,6 +91,20 @@ public static class TutorialBattleEntrySetup
             hazeRuntime = CreateCharacterRuntime(master, dataManager.RelicDatabase);
             characterStore.AddOrUpdate(hazeRuntime);
         }
+
+        // 헤이즈는 튜토리얼 합류 시 Compound_03 연성제를 장착한 상태로 시작합니다.
+        const string hazeStartingCompoundId = "Compound_03";
+        if (dataManager.CompoundDatabase == null ||
+            !dataManager.CompoundDatabase.TryGet(hazeStartingCompoundId, out CompoundData hazeCompound))
+        {
+            Debug.LogError($"[TutorialBattleEntrySetup] Haze starting compound was not found: {hazeStartingCompoundId}");
+            return false;
+        }
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(hazeRuntime);
+        hazeRuntime.EquippedRelicIds[ActiveRelicRuntimeUtility.ActiveRelicSlotIndex] = hazeStartingCompoundId;
+        ActiveRelicRuntimeUtility.ResetUses(hazeRuntime, hazeCompound);
+        characterStore.AddOrUpdate(hazeRuntime);
 
         if (!partyStore.SetSlot(2, HazeCharacterId, HazeSpawnGridIndex))
         {

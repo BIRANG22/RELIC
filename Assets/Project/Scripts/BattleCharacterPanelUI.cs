@@ -2737,6 +2737,24 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 StartKeyboardSkillWithRangePreview(0, skill01Button);
                 return;
             }
+            if (TutorialBattleSequence.IsFinalTutorialRunning)
+            {
+                if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.S) && Input.GetKeyDown(KeyCode.S))
+                {
+                    OnFlipButtonClicked();
+                    return;
+                }
+                if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.D) && Input.GetKeyDown(KeyCode.D))
+                {
+                    OnItemButtonClicked();
+                    return;
+                }
+                if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.R) && Input.GetKeyDown(KeyCode.R))
+                {
+                    StartKeyboardSkillWithRangePreview(3, skill04Button);
+                    return;
+                }
+            }
             return;
         }
 
@@ -4154,6 +4172,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             ActiveRelicUseResult result = activeRelicService.TryUseImmediate(boundRuntime);
             if (!result.Succeeded)
                 ShowBattleWarning(result.Message);
+            else if (boundRuntime.CharacterId == "Char_03")
+                TutorialBattleSequence.NotifyFinalTutorialCompoundUsed();
 
             Refresh();
             return;

@@ -474,7 +474,8 @@ namespace Relic.Gameplay.Monster
         private void OnMouseDown()
         {
             // 튜토리얼 전투 시작 전에는 정보 패널 클릭을 허용하지 않습니다.
-            if (TutorialBattleSequence.IsPresentationRunning ||
+            if ((TutorialBattleSequence.IsPresentationRunning &&
+                 !TutorialBattleSequence.CanClickTutorialMonster()) ||
                 BattleSceneController.IsBattleRoomIntroPlaying ||
                 BattleMapIntroText.IsAnyPlayingOrVisible())
                 return;
@@ -691,7 +692,8 @@ namespace Relic.Gameplay.Monster
         {
             BattleTurnExecutor executor = UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(
                 FindObjectsInactive.Include);
-            return executor != null && executor.CanAcceptPlayerInput;
+            return TutorialBattleSequence.CanClickTutorialMonster() ||
+                (executor != null && executor.CanAcceptPlayerInput);
         }
 
         private static bool IsBattleExecutionActive()

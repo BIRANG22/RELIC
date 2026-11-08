@@ -962,8 +962,8 @@ Tutorial_01,22,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.02,캐릭�
 Tutorial_01,23,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.03,"이외에도 피해를 주거나 버프, 디버프 등의 효과를 가진 행동인 '기억'을 사용할 수 있습니다.",ClickAny,BattleCharacterPanel/Active,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
 Tutorial_01,24,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.04,"이동은 1칸을 사용하는 행동으로, 예약한 거리에 따라 마나를 소모합니다.",ClickTarget,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above
 Tutorial_01,25,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.05,이동할 위치를 선택하면 해당 행동이 타임라인에 예약됩니다.,ReserveMove,Grid_16,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Above
-Tutorial_01,26,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,기억의 범위는 캐릭터가 바라보는 방향을 기준으로 자동 설정됩니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 게속,Above
-Tutorial_01,27,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,캐릭터를 변경하면 예약할 슬롯도 자동으로 변경됩니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,Tab 또는 버튼을 클릭하여 게속,Above
+Tutorial_01,26,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,기억의 범위는 캐릭터가 바라보는 방향을 기준으로 자동 설정됩니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,27,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,캐릭터를 변경하면 예약할 슬롯도 자동으로 변경됩니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,Tab 또는 버튼을 클릭하여 계속,Above
 Tutorial_01,28,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,"같은 기억을 여러 번 등록할 수도 있으며, 각각의 행동이 타임라인에 예약됩니다.",ReserveActionTwice,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory_twice,Q 또는 버튼을 두 번 클릭하여 계속,Above
 Tutorial_01,29,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.09,행동 예약을 마쳤다면 턴을 종료합니다. 그러면 등록한 행동이 순서대로 실행되며 전투가 진행됩니다.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Above
 Tutorial_01,30,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.reward.dialogue.01,이 정도 녀석이라면 몇 마리가 덤벼도 문제없지!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
@@ -978,8 +978,32 @@ Tutorial_02,2,Map_28,,,,,Dialogue,Char_01,Dialogbox,tutorial.t02.dialogue.02,우
 Tutorial_02,3,Map_28,,,,,Dialogue,Char_02,Dialogbox,tutorial.t02.dialogue.03,같은 방향이라면 함께 가시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_02,4,Map_28,,,,,Dialogue,Char_03,Dialogbox,tutorial.t02.dialogue.04,"저, 정말요? 그럼 잠깐 쉬었다 가면 안 될까요?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_02,5,Map_28,,,,,Guide,,TutorialTooltip,tutorial.t02.choice.01,"탐사 중 다양한 이벤트를 마주하게 되며, 선택에 따라 보상을 얻거나 손해를 볼 수도 있습니다.",ClickTarget,EventChoiceSlot_1,tutorial.prompt.continue,버튼을 클릭하여 계속,Above
-,,,,,,,,,,,
-,,,,,,,,,,,
-,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,
+Tutorial_03,1,Map_27,,,,,Dialogue,Char_03,Dialogbox,tutorial.t03.dialogue.01,"벼, 변이체예요! 어, 어떻게 해야 하죠…?!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,2,Map_27,,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.dialogue.02,뭘 고민해? 그냥 덤비면 되는 거 아니야?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,3,Map_27,,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.dialogue.03,무작정 덤비는 건 위험해요. 우선 상대의 정보를 파악해야겠어요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,4,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.01,변이체를 클릭하여 정보를 확인할 수 있습니다.,ClickTarget,Monster_Root/드라우그_RuntimeMonster_0002,tutorial.prompt.click_monster,변이체를 클릭하여 계속,Below
+Tutorial_03,5,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.02,행동 목록에서는 변이체가 예약할 행동들을 확인할 수 있습니다.,ClickAny,MonsterInfoPanel/SkillList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_03,6,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.03,상태 목록에서는 변이체가 보유한 특수 효과와 버프 및 디버프를 확인할 수 있습니다.,ClickAny,MonsterInfoPanel/StatusEffectList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_03,7,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.04,전투 중 변이체를 클릭하면 언제든지 정보를 확인할 수 있습니다.,ClickTarget,MonsterInfoPanel/BackButton,tutorial.prompt.continue,버튼을 클릭하여 계속,Above
+Tutorial_03,8,Map_27,,,,,Dialogue,Char_03,Dialogbox,tutorial.t03.dialogue.04,"저, 저도 도움이 될 수 있을 것 같아요…!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,9,Map_27,,,,,Dialogue,Char_03,Dialogbox,tutorial.t03.dialogue.05,연성제를 사용해서… 여러분의 공격에 힘을 보탤게요!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,10,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.05,캐릭터를 직접 클릭하여 선택을 전환할 수도 있습니다.,ClickTarget,UnitRoot/Player_Root/C_BattlePrefab(Clone),tutorial.prompt.select_character,캐릭터를 클릭하여 계속,Below
+Tutorial_03,11,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.06,연성제는 행동을 예약하지 않고 즉시 사용됩니다.,ReserveAction,BattleCharacterPanel/Active/Compound,tutorial.prompt.use_compound,D 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,12,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.07,증폭 효과는 수치만큼 아군의 공격력을 증가시킵니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,13,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.08,카르마를 소모하여 강력한 기억을 사용할 수 있습니다. 투지 효과는 아군의 공격력을 30% 증가시킵니다.,ReserveAction,BattleCharacterPanel/Active/Ultimate,tutorial.prompt.click_ultimate,R 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,14,Map_27,,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.dialogue.06,제가 뒤로 돌아가 변이체의 움직임을 제한하겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,15,Map_27,,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.dialogue.07,그럼 내가 정면에서 몰아붙일게!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,16,Map_27,,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.dialogue.08,다만 정면에서의 반격에는 주의하세요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,17,Map_27,,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.dialogue.09,"쳇, 정면은 안 되겠네. 그럼 옆에서 한 방 먹여주지!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,18,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.09,"여러 캐릭터의 행동을 각각 예약하고, 하나의 턴에서 함께 실행할 수 있습니다.",ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,버튼을 클릭하여 계속,Above
+Tutorial_03,19,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.10,이동은 적의 공격을 피하거나 유리한 위치를 선점하는 데 활용할 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,20,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.11,"변이체의 이동을 예측해 자리를 잡으면, 다음 턴의 이동을 유도할 수 있습니다.",ReserveMove,Grid_32,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Below
+Tutorial_03,21,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.12,"방향 전환은 행동 슬롯 1칸을 소모하며, 이동하지 않고 바라보는 방향을 변경할 수 있습니다.",ReserveAction,BattleCharacterPanel/Active/Flip,tutorial.prompt.click_flip,S 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,22,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.13,변이체의 후방을 공격하면 방향을 전환시킬 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,23,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.14,캐릭터의 행동을 연계하면 다양한 전술을 펼칠 수 있습니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char01,tutorial.prompt.select_char01,버튼을 클릭하여 계속,Above
+Tutorial_03,24,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.15,변이체의 반격 방향을 파악하면 이동으로 반격을 피할 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,25,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.16,다음 턴의 상황까지 예측해 이동 위치를 정하는 것이 유리합니다.,ReserveMove,Grid_17,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Below
+Tutorial_03,26,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.17,이동과 공격을 연계하면 유리한 위치에서 공격할 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,27,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.18,여러 캐릭터의 행동을 연계하면 더욱 효과적인 전투를 펼칠 수 있습니다.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,28,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.19,지금까지 배운 전술을 활용해 변이체를 처치해 보세요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 

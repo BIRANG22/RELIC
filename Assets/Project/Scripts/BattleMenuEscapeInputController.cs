@@ -487,8 +487,10 @@ public class BattleMenuEscapeInputController : MonoBehaviour
                 if (!addedTutorialMenuButtonCanvas)
                     tutorialMenuButtonCanvas.sortingOrder = originalButtonSortingOrder;
             }
+            // Keep the raycaster active while its temporary nested Canvas exists.
+            // Disabling it makes MenuButton visible but unclickable after the tutorial.
             if (tutorialMenuButtonRaycaster != null && addedTutorialMenuButtonRaycaster)
-                tutorialMenuButtonRaycaster.enabled = false;
+                tutorialMenuButtonRaycaster.enabled = true;
             return;
         }
 

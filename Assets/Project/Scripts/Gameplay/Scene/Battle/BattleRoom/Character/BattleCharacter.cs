@@ -352,7 +352,8 @@ public class BattleCharacter : MonoBehaviour
     private void OnMouseDown()
     {
         // 튜토리얼 안내 및 전투방 진입 연출 중에는 캐릭터 선택만 차단합니다.
-        if (TutorialBattleSequence.IsPresentationRunning ||
+        if ((TutorialBattleSequence.IsPresentationRunning &&
+             !TutorialBattleSequence.CanClickTutorialPlayer()) ||
             BattleSceneController.IsBattleRoomIntroPlaying ||
             BattleFirstTutorialController.IsInputRestricted ||
             IsTutorialEntryMovementPlaying())
@@ -401,6 +402,7 @@ public class BattleCharacter : MonoBehaviour
         }
 
         roomLoader.OnPlayerWorldCharacterClicked(RuntimeData);
+        TutorialBattleSequence.NotifyFinalTutorialWorldCharacterClicked(RuntimeData.CharacterId);
     }
 
     private static bool IsBattleEnded()
