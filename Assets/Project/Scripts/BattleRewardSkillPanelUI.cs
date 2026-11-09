@@ -1855,11 +1855,11 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             : skill.Category == Category.Passive
                 ? GameLocalization.Get("common.passive")
                 : skill.SkillType == SkillType.Buff
-                    ? GameLocalization.Get("common.buff")
+                    ? GameLocalization.Get(skill.IsFastSkill == 1 ? "common.fast_buff" : "common.buff")
                     : skill.SkillType == SkillType.Debuff
                         ? GameLocalization.Get("common.debuff")
                         : skill.SkillType == SkillType.Attack
-                            ? GameLocalization.Get("common.attack")
+                            ? GameLocalization.Get(skill.IsFastSkill == 1 ? "common.fast_attack" : "common.attack")
                             : GameLocalization.Get("common.passive");
     }
 

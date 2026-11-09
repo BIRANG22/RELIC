@@ -16,7 +16,7 @@ public sealed class RestoreManaPerHitTargetEffect : BattleEffectBase
     protected override void Apply(BattleEffectContext context)
     {
         if (context?.PlayerCaster?.RuntimeData == null || context.ExecutionResult == null) return;
-        int amount = NewSkillEffectRules.ResolveManaRestore(context.ExecutionResult.SuccessfulHitCount, context.Value);
+        int amount = NewSkillEffectRules.ResolveManaRestore(context.ExecutionResult.DistinctHitTargetCount, context.Value);
         context.PlayerCaster.RuntimeData.CurrentCost = Mathf.Min(
             context.PlayerCaster.RuntimeData.MaxCost,
             context.PlayerCaster.RuntimeData.CurrentCost + amount);

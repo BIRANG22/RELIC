@@ -353,8 +353,17 @@ public static class BattleEquipmentEffectService
 
         int healAmount = Mathf.CeilToInt(dealtDamage * 0.3f);
 
-        if (healAmount > 0)
-            BattleEffectUtility.HealPlayer(context.PlayerCaster, healAmount);
+        if (healAmount <= 0)
+            return;
+
+        BattleEffectUtility.HealPlayer(context.PlayerCaster, healAmount);
+
+        // Decrease E_Lifesteal by one only when its healing effect triggers.
+        // The Effect sheet must use EndTurn = DecreaseOnTrigger.
+        // A hit that deals no damage does not consume a stack.
+        BattleStatusEffectService.TryConsumeOnTrigger(
+            context.PlayerCaster.RuntimeData.StatusEffects,
+            LifestealEffectId);
     }
 
     public static int GetKillHealAmount(CharacterRuntimeData runtime)

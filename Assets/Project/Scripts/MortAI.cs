@@ -11,8 +11,8 @@ namespace Relic.Gameplay.Monster
     /// - 근접, 접근 이동, 플레이어 효과/피해를 감지하면 1칸 도망 이동을 예약합니다.
     /// - 도망이 필요하지 않아도 망령쇄도를 사용할 가로 라인을 잡기 위해 이동할 수 있습니다.
     /// - 망령쇄도는 공격 예상 위치와 같은 라인에 캐릭터가 있을 때만 예약합니다.
-    /// - 혼령폭발은 범위와 관계없이 가장 가까운 생존 캐릭터에게 예약합니다.
-    /// - 피의 저주는 공격 범위 안에서 가장 먼 생존 캐릭터에게 예약합니다.
+    /// - 혼령폭발은 범위와 관계없이 가장 먼 생존 캐릭터에게 예약합니다.
+    /// - 피의 저주는 가장 가까운 생존 캐릭터에게 예약합니다.
     /// - 사령술은 턴 시작 특성으로 처리되므로 여기서는 예약하지 않습니다.
     /// </summary>
     public class MortAI : MonsterAIBase
@@ -279,8 +279,8 @@ namespace Relic.Gameplay.Monster
                     wraithRushDirection));
             }
 
-            // 혼령폭발은 AttackRange와 관계없이 가장 가까운 생존 캐릭터에게 사용합니다.
-            BattleCharacter explosionTarget = FindNearestTarget(
+            // 혼령폭발은 AttackRange와 관계없이 가장 먼 생존 캐릭터에게 사용합니다.
+            BattleCharacter explosionTarget = FindFarthestTarget(
                 attackOriginGridIndex,
                 allAlivePlayers,
                 gridManager);
@@ -300,8 +300,8 @@ namespace Relic.Gameplay.Monster
             }
 
             // 피의 저주는 매 턴 사용하며, 공격 범위로 대상을 제한하지 않습니다.
-            // 혼령폭발과 동일한 이동 예상 위치를 기준으로 가장 먼 생존 캐릭터를 선택합니다.
-            BattleCharacter curseTarget = FindFarthestTarget(
+            // 혼령폭발과 동일한 이동 예상 위치를 기준으로 가장 가까운 생존 캐릭터를 선택합니다.
+            BattleCharacter curseTarget = FindNearestTarget(
                 attackOriginGridIndex, allAlivePlayers, gridManager);
 
             if (curseTarget != null && curseTarget.CurrentGridIndex >= 0)

@@ -5,6 +5,22 @@ using UnityEngine;
 
 public class BattlePassiveSkillService
 {
+    private const string PassiveLoseHpEffectId = "E_Passive_Lose_HP";
+    private static readonly HashSet<string> appliedBattleStartPassives = new HashSet<string>();
+
+    // Called once when a new battle room is initialized, before initial passives are queued.
+    public static void ResetBattleStartPassives()
+    {
+        appliedBattleStartPassives.Clear();
+    }
+
+    private static bool IsBattleStartOnlyPassive(string skillId)
+    {
+        return skillId == "S_Passive_04" ||
+               skillId == "S_Passive_06" ||
+               skillId == "S_Passive_08";
+    }
+
     public void RefreshAllPlayerPassives()
     {
         BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
@@ -35,7 +51,7 @@ public class BattlePassiveSkillService
             BattleEffectInfoFeed.ScheduleInitialPassive(passiveSkill, () =>
             {
                 // Do not queue another duplicate passive notification when the effect applies.
-                RefreshRuntimePassiveEffects(capturedRuntime);
+                RefreshRuntimePassiveEffects(capturedRuntime, true);
                 refreshHud?.Invoke();
             });
         }
@@ -49,7 +65,7 @@ public class BattlePassiveSkillService
         RefreshRuntimePassiveEffects(character.RuntimeData);
     }
 
-    public static void RefreshRuntimePassiveEffects(CharacterRuntimeData runtime)
+    public static void RefreshRuntimePassiveEffects(CharacterRuntimeData runtime, bool initialBattleStart = false)
     {
         if (runtime == null)
             return;
@@ -73,6 +89,18 @@ public class BattlePassiveSkillService
             return;
         }
 
+        bool battleStartOnly = IsBattleStartOnlyPassive(passiveSkill.SkillId);
+        if (battleStartOnly)
+        {
+            string key = runtime.CharacterId + ":" + passiveSkill.SkillId;
+            // Never reapply an opening passive on ordinary turn refreshes.
+            if (!initialBattleStart || !appliedBattleStartPassives.Add(key))
+            {
+                BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
+                return;
+            }
+        }
+
         for (int i = 0; i < passiveSkill.EffectEntries.Count; i++)
         {
             SkillEffectEntry entry = passiveSkill.EffectEntries[i];
@@ -83,7 +111,7 @@ public class BattlePassiveSkillService
             int value = Mathf.Max(0, entry.ValueAmount);
             int count = Mathf.Max(1, entry.CountAmount);
 
-            ApplyPassiveEffect(runtime, passiveSkill, entry.EffectId, value, count);
+            ApplyPassiveEffect(runtime, passiveSkill, entry.EffectId, value, count, battleStartOnly);
         }
 
         BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
@@ -101,9 +129,24 @@ public class BattlePassiveSkillService
         SkillMasterData passiveSkill,
         string effectId,
         int value,
-        int count)
+        int count,
+        bool battleStartOnly)
     {
         int appliedValue = BattleEffectUtility.GetRepeatedValue(value, count);
+
+        // Direct HP loss is not a status effect and cannot be blocked by armor.
+        // Keep at least 1 HP, matching the existing turn-start rune behavior.
+        if (effectId == PassiveLoseHpEffectId)
+        {
+            if (appliedValue > 0)
+            {
+                int beforeHp = runtime.CurrentHP;
+                runtime.CurrentHP = Mathf.Max(1, beforeHp - appliedValue);
+                Debug.Log($"[Passive] HP cost / Character:{runtime.CharacterId} / Skill:{passiveSkill.SkillId} / HP:{beforeHp}->{runtime.CurrentHP}");
+            }
+            return;
+        }
+
         BattlePassiveTargetGroup targetGroup = BattlePassiveTargetPolicy.Resolve(passiveSkill.Target);
 
         if (targetGroup == BattlePassiveTargetGroup.Monsters)
@@ -131,6 +174,23 @@ public class BattlePassiveSkillService
 
         if (finalStack <= 0)
             return;
+
+        if (battleStartOnly)
+        {
+            // Opening buffs belong to the normal status pool so later passive
+            // refreshes do not remove any unused stacks.
+            BattleCharacter character = FindBattleCharacter(runtime);
+            if (character != null)
+                BattleEffectUtility.AddStatusToPlayer(character, effectId, finalStack);
+            else
+            {
+                if (runtime.StatusEffects == null)
+                    runtime.StatusEffects = new List<StatusEffectRuntimeData>();
+                BattleEffectUtility.AddOrStackStatus(runtime.StatusEffects, effectId, finalStack);
+            }
+            BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, finalStack, false, false, false);
+            return;
+        }
 
         StatusEffectRuntimeData status = new StatusEffectRuntimeData
         {

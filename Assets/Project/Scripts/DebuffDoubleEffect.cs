@@ -9,19 +9,19 @@ public class DebuffDoubleEffect : BattleEffectBase
     {
         if (context?.PlayerTarget != null)
         {
-            DoubleHighest(context.PlayerTarget.RuntimeData?.StatusEffects);
+            MultiplyHighest(context.PlayerTarget.RuntimeData?.StatusEffects, context.Value);
             BattleEffectUtility.OnPlayerHudRefreshRequested?.Invoke(context.PlayerTarget);
         }
         else if (context?.MonsterTarget != null)
         {
-            DoubleHighest(context.MonsterTarget.RuntimeData?.StatusEffects);
+            MultiplyHighest(context.MonsterTarget.RuntimeData?.StatusEffects, context.Value);
             context.MonsterTarget.ShowTemporaryHUDForEffect();
         }
     }
 
-    private static void DoubleHighest(List<StatusEffectRuntimeData> statuses)
+    private static void MultiplyHighest(List<StatusEffectRuntimeData> statuses, int multiplier)
     {
-        if (statuses == null || DataManager.Instance?.EffectDatabase == null)
+        if (statuses == null || multiplier <= 0 || DataManager.Instance?.EffectDatabase == null)
             return;
 
         StatusEffectRuntimeData highest = null;
@@ -40,6 +40,6 @@ public class DebuffDoubleEffect : BattleEffectBase
         }
 
         if (highest != null)
-            highest.Stack *= 2;
+            highest.Stack = (int)System.Math.Min(int.MaxValue, (long)highest.Stack * multiplier);
     }
 }

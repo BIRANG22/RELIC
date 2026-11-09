@@ -12,7 +12,27 @@ namespace Relic.Gameplay.Data
 
             List<SkillMasterData> skills = DataRowMapper.MapList<SkillMasterData>(rows);
             for (int i = 0; i < skills.Count && i < rows.Count; i++)
+            {
                 skills[i].ResourceCostFormula = GetResourceCostFormula(rows[i]);
+                foreach (KeyValuePair<string, string> pair in rows[i])
+                {
+                    string key = pair.Key?.Replace("\uFEFF", "").Replace("_", "").Replace(" ", "");
+                    if (!string.Equals(key, "SkillType", System.StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    string type = (pair.Value ?? string.Empty).Replace(" ", "").Replace("\t", "").Trim();
+                    if (string.Equals(type, "FastAttack", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        skills[i].SkillType = SkillType.Attack;
+                        skills[i].IsFastSkill = 1;
+                    }
+                    else if (string.Equals(type, "FastBuff", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        skills[i].SkillType = SkillType.Buff;
+                        skills[i].IsFastSkill = 1;
+                    }
+                    break;
+                }
+            }
 
             return skills.Where(x => !string.IsNullOrWhiteSpace(x.SkillId)).ToList();
         }
