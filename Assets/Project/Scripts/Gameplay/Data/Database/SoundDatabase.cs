@@ -56,6 +56,7 @@ public class SoundDatabase : ScriptableObject
     [SerializeField] private List<SoundData> sfxList = new();
     [SerializeField] private List<SoundData> eventSfxList = new();
     [SerializeField] private List<VfxSoundData> playerSkillVfxSfxList = new();
+    [SerializeField] private List<VfxSoundData> gridEffectVfxSfxList = new();
     [SerializeField] private List<VfxSoundData> monsterSkillVfxSfxList = new();
 
     private Dictionary<string, SoundData> sfxById;
@@ -67,6 +68,7 @@ public class SoundDatabase : ScriptableObject
     public IReadOnlyList<SoundData> SfxEntries => sfxList;
     public IReadOnlyList<SoundData> EventSfxEntries => eventSfxList;
     public IReadOnlyList<VfxSoundData> PlayerSkillVfxSfxEntries => playerSkillVfxSfxList;
+    public IReadOnlyList<VfxSoundData> GridEffectVfxSfxEntries => gridEffectVfxSfxList;
     public IReadOnlyList<VfxSoundData> MonsterSkillVfxSfxEntries => monsterSkillVfxSfxList;
 
     public void Initialize()
@@ -80,6 +82,7 @@ public class SoundDatabase : ScriptableObject
         RegisterSfxList(sfxList, "SFX");
         RegisterSfxList(eventSfxList, "Event SFX");
         RegisterVfxSoundList(playerSkillVfxSfxList, "Player Skill VFX SFX");
+        RegisterVfxSoundList(gridEffectVfxSfxList, "Grid Effect VFX SFX");
         RegisterVfxSoundList(monsterSkillVfxSfxList, "Monster Skill VFX SFX");
     }
 
@@ -370,6 +373,12 @@ public class VfxSoundCue
 
     public bool useRandomPitch;
 
+    [Tooltip("활성화하면 공용 SFX AudioSource 대신 이 Cue의 2D/3D 공간 혼합값을 사용합니다.")]
+    public bool overrideSpatialBlend;
+
+    [Range(0f, 1f)]
+    public float spatialBlend;
+
     [Range(SoundData.MinPitch, SoundData.MaxPitch)]
     public float randomPitchMin = 1f;
 
@@ -399,6 +408,7 @@ public class VfxSoundCue
         pitch = SoundData.ClampPlaybackPitch(pitch);
         randomPitchMin = SoundData.ClampPlaybackPitch(randomPitchMin);
         randomPitchMax = SoundData.ClampPlaybackPitch(randomPitchMax);
+        spatialBlend = Mathf.Clamp01(spatialBlend);
     }
 }
 

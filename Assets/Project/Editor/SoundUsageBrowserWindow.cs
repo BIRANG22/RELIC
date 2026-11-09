@@ -95,6 +95,7 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
 
             EditorGUILayout.Space(8);
             DrawVfxSoundListGroup("Player", "Player VFX Sounds");
+            DrawVfxSoundListGroup("Grid Effect", "Grid Effect VFX Sounds");
             DrawVfxSoundListGroup("Monster", "Monster VFX Sounds");
             DrawMissingVfxSoundList();
 
@@ -407,9 +408,12 @@ public sealed class SoundUsageBrowserWindow : EditorWindow
 
     private SerializedProperty FindVfxEntryProperty(SoundUsageVfxSoundEntry entry)
     {
-        string listName = entry.Group == "Player"
-            ? "playerSkillVfxSfxList"
-            : "monsterSkillVfxSfxList";
+        string listName = entry.Group switch
+        {
+            "Player" => "playerSkillVfxSfxList",
+            "Grid Effect" => "gridEffectVfxSfxList",
+            _ => "monsterSkillVfxSfxList",
+        };
 
         SerializedProperty list = serializedDatabase.FindProperty(listName);
         if (list == null || !list.isArray)

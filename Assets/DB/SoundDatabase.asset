@@ -2792,7 +2792,50 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
+  gridEffectVfxSfxList:
+  - displayName: GR_Residue
+    vfxPrefab: {fileID: 6416350362071025190, guid: 29e413fcd251b764daf2b40f112d6b53, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 708dcfe786a83e748840fceff9bc0a26, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 1
+      spatialBlend: 1
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: Vfx_Gr_poisson
+    vfxPrefab: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 708dcfe786a83e748840fceff9bc0a26, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 1
+      spatialBlend: 1
+      randomPitchMin: 1
+      randomPitchMax: 1
   monsterSkillVfxSfxList:
+  - displayName: Arabella.attack.02.prepare
+    vfxPrefab: {fileID: 6287963228254279517, guid: 148ec99a4ab2ab64cae37540118ff5ca, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 6e22c23e3d58fda4db1a40d49a979a56, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 1
+      spatialBlend: 1
+      randomPitchMin: 1
+      randomPitchMax: 1
   - displayName: move.muck,blob
     vfxPrefab: {fileID: 4145361429921181282, guid: 14446538ebfd3ff4890ea1f5dd834341, type: 3}
     cues:
