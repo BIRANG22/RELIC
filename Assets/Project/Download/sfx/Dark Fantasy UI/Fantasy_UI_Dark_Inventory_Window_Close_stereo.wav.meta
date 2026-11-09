@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 5b5475283300c4af8a80c8419be6c147
+AssetOrigin:
+  serializedVersion: 1
+  productId: 394848
+  packageName: Dark Fantasy UI Sound Effects Pack
+  packageVersion: 1.0
+  assetPath: Assets/Dark Fantasy UI/Fantasy_UI_Dark_Inventory_Window_Close_stereo.wav
+  uploadId: 957712
 AudioImporter:
   externalObjects: {}
   serializedVersion: 8
@@ -13,7 +20,7 @@ AudioImporter:
     conversionMode: 0
     preloadAudioData: 0
   platformSettingOverrides: {}
-  forceToMono: 0
+  forceToMono: 1
   normalize: 1
   loadInBackground: 0
   ambisonic: 0
@@ -21,10 +28,3 @@ AudioImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 394848
-  packageName: Dark Fantasy UI Sound Effects Pack
-  packageVersion: 1.0
-  assetPath: Assets/Dark Fantasy UI/Fantasy_UI_Dark_Inventory_Window_Close_stereo.wav
-  uploadId: 957712

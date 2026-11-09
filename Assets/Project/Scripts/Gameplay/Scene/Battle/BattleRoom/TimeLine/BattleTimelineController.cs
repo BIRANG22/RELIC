@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -138,7 +138,10 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Timeline Grind VFX")]
     [SerializeField] private GameObject timelineGrindVfxPrefab;
-    [SerializeField] private Vector3 timelineGrindVfxPosition = new(-6.0f, -3.6f, 0f);
+    [Tooltip("VFX를 마지막 자식으로 생성할 UI 캔버스 루트입니다. 비어 있으면 상위 BattleHUDCanvas를 자동으로 찾습니다.")]
+    [SerializeField] private RectTransform timelineGrindVfxCanvasRoot;
+    [Tooltip("BattleHUDCanvas 기준의 VFX UI 좌표입니다 (RectTransform anchoredPosition).") ]
+    [SerializeField] private Vector2 timelineGrindVfxAnchoredPosition = Vector2.zero;
     [SerializeField] private float timelineGrindVfxLifeTime = 2f;
 
     [Header("End Button Hover Rotation")]
@@ -1888,15 +1891,59 @@ public class BattleTimelineController : MonoBehaviour
         if (timelineGrindVfxPrefab == null)
             return null;
 
-        GameObject vfx = Instantiate(
-            timelineGrindVfxPrefab,
-            timelineGrindVfxPosition,
-            Quaternion.identity);
+        RectTransform canvasRoot = ResolveTimelineGrindVfxCanvasRoot();
+        if (canvasRoot == null)
+        {
+            Debug.LogWarning("[BattleTimelineController] Timeline Grind VFX: BattleHUDCanvas를 찾을 수 없어 생성하지 않습니다.", this);
+            return null;
+        }
+
+        // 월드에 생성하지 않고 BattleHUDCanvas의 마지막 자식(UI 최상단)에 생성합니다.
+        GameObject vfx = Instantiate(timelineGrindVfxPrefab, canvasRoot, false);
+        RectTransform vfxRect = vfx.GetComponent<RectTransform>();
+        if (vfxRect != null)
+        {
+            vfxRect.anchoredPosition = timelineGrindVfxAnchoredPosition;
+            vfxRect.localRotation = Quaternion.identity;
+        }
+        else
+        {
+            // Transform 프리팹도 캔버스 아래 로컬 좌표에 배치합니다.
+            vfx.transform.localPosition = new Vector3(
+                timelineGrindVfxAnchoredPosition.x,
+                timelineGrindVfxAnchoredPosition.y,
+                0f);
+            vfx.transform.localRotation = Quaternion.identity;
+        }
+
+        vfx.transform.SetAsLastSibling();
 
         if (timelineGrindVfxLifeTime > 0f)
             Destroy(vfx, timelineGrindVfxLifeTime);
 
         return vfx;
+    }
+
+    private RectTransform ResolveTimelineGrindVfxCanvasRoot()
+    {
+        if (timelineGrindVfxCanvasRoot != null)
+            return timelineGrindVfxCanvasRoot;
+
+        // BattleSlot -> HUD_Root -> Resolution Viewport -> BattleHUDCanvas
+        for (Transform current = transform; current != null; current = current.parent)
+        {
+            if (current.name == "BattleHUDCanvas" && current is RectTransform rect)
+            {
+                timelineGrindVfxCanvasRoot = rect;
+                return rect;
+            }
+        }
+
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas != null)
+            timelineGrindVfxCanvasRoot = canvas.GetComponent<RectTransform>();
+
+        return timelineGrindVfxCanvasRoot;
     }
 
     public IEnumerator ResetTimelineSlotsToOriginalPositionRoutine()

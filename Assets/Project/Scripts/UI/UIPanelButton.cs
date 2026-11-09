@@ -9,7 +9,7 @@ public enum UIPanelEffect
     Fade
 }
 
-public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
+public class UIPanelButton : MonoBehaviour
 {
     [Header("World Sprite")]
     [SerializeField] private bool allowSpriteRendererClick = true;
@@ -54,12 +54,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private Image panelFadeImage;
     [SerializeField, Range(0f, 1f)] private float openedPanelAlpha = 230f / 255f;
     [SerializeField] private float panelFadeDuration = 0.2f;
-
-    [Header("Sound")]
-    [SerializeField] private bool playHoverSound = true;
-    [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfx = AudioIds.Sfx.NormalButtonHover;
-    [SerializeField] private bool playClickSound = true;
-    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     [Header("Panel Open Close Sound")]
     [SerializeField] private bool playPanelOpenCloseSound = false;
@@ -108,7 +102,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private Vector2[] originalTogetherPositions;
     private Coroutine moveCoroutine;
     private Coroutine panelImageFadeCoroutine;
-    private int lastClickSoundFrame = -1;
     private float originalPanelAlpha = 1f;
     private bool usesBattlePlayerHudOpenOrigin;
     private int lastMoveToggleFrame = -1;
@@ -193,8 +186,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (playPanelOpenCloseSound)
             PlayPanelOpenCloseSound(open);
-        else
-            PlayClickSound();
 
         ApplyButtonFlip();
 
@@ -244,17 +235,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         HandleMovePanelDismissInput();
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (ShouldBlockInteractionByOpenMenuPanel())
-            return;
-
-        // 마우스 호버는 사운드만 재생합니다.
-        // 패널 안의 새로하기, 이어하기, 방 생성, 입장 버튼에 마우스를 올렸을 때
-        // 열린 모드 패널이 접히는 현상을 막기 위해 호버에서는 패널을 닫지 않습니다.
-        PlayHoverSound();
-    }
-
     public void Execute()
     {
         if (ShouldBlockInteractionByOpenMenuPanel())
@@ -267,8 +247,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (playPanelOpenCloseSound)
             PlayPanelOpenCloseSound(willOpen);
-        else
-            PlayClickSound();
 
         if (toggleIfAlreadyOpen &&
             panelToOpen != null &&
@@ -305,8 +283,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (isPlayingEffect)
             return;
 
-        PlayClickSound();
-
         if (UIManager.Instance == null)
         {
             Debug.LogWarning("[UIPanelButton] UIManager.Instance를 찾지 못했습니다.");
@@ -323,8 +299,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (isPlayingEffect)
             return;
-
-        PlayClickSound();
 
         if (UIManager.Instance == null)
         {
@@ -343,8 +317,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (isPlayingEffect)
             return;
 
-        PlayClickSound();
-
         if (UIManager.Instance == null)
         {
             Debug.LogWarning("[UIPanelButton] UIManager.Instance를 찾지 못했습니다.");
@@ -361,8 +333,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (isPlayingEffect)
             return;
-
-        PlayClickSound();
 
         if (TryCloseCurrentOpenedPanel())
             return;
@@ -425,8 +395,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (playPanelOpenCloseSound)
             PlayPanelOpenCloseSound(willOpen);
-        else
-            PlayClickSound();
 
         ApplyButtonFlip();
 
@@ -807,35 +775,10 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         FadePanelImageTo(originalPanelAlpha);
     }
 
-    private void PlayHoverSound()
-    {
-        if (!playHoverSound)
-            return;
-
-        if (AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(hoverSfx);
-    }
-
+    // 외부 스크립트에서 호출할 수 있는 기존 API는 호환성을 위해 유지합니다.
+    // 일반 클릭 SFX는 이 컴포넌트에서 더 이상 재생하지 않습니다.
     public void PlayClickSoundOnly()
     {
-        PlayClickSound();
-    }
-
-    private void PlayClickSound()
-    {
-        if (!playClickSound)
-            return;
-
-        if (Time.frameCount == lastClickSoundFrame)
-            return;
-
-        if (AudioManager.Instance == null)
-            return;
-
-        lastClickSoundFrame = Time.frameCount;
-        AudioManager.Instance.PlaySfx(clickSfx);
     }
 
     private void PlayPanelOpenCloseSound(bool willOpen)
