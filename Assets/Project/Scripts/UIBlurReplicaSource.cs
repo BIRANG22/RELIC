@@ -355,6 +355,8 @@ public sealed class UIBlurReplicaSource
 
             Replica.enabled = Source.enabled && Source.gameObject.activeInHierarchy;
             Color color = Source.color;
+            if (sourceRenderer != null)
+                color *= sourceRenderer.GetColor();
             color.a *= GetEffectiveCanvasGroupAlpha(Source.transform);
             Replica.color = color;
             Replica.material = Source.material;
