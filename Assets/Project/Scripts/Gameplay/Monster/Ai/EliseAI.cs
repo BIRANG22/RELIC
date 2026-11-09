@@ -210,11 +210,11 @@ namespace Relic.Gameplay.Monster
                 }
             }
 
-            BattleCharacter farthest = FindFarthestPlayer(unit, players, gridManager);
-            if (IsAlivePlayer(farthest) && farthest.CurrentGridIndex >= 0)
-                plan.Add(new MonsterAIAction(
-                    PhaseTwoAttackSkillId02, Vector2Int.zero,
-                    MonsterAISlotPreference.Center, -1, priority++, farthest.CurrentGridIndex));
+            // The poison volley uses the caster position as the range origin.
+            // Do not lock its range to a selected player grid.
+            plan.Add(new MonsterAIAction(
+                PhaseTwoAttackSkillId02, Vector2Int.zero,
+                MonsterAISlotPreference.Center, -1, priority++, -1));
 
             AddPositionPressureActions(plan, players, priority);
         }

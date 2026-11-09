@@ -1842,6 +1842,10 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return GameLocalization.Get("common.move");
         if (skill.Category == Category.Passive)
             return GameLocalization.Get("common.passive");
+        if (skill.IsFastSkill == 1 && skill.SkillType == SkillType.Buff)
+            return GameLocalization.Get("common.fast_buff");
+        if (skill.IsFastSkill == 1 && skill.SkillType == SkillType.Attack)
+            return GameLocalization.Get("common.fast_attack");
         switch (skill.SkillType)
         {
             case SkillType.Attack: return GameLocalization.Get("common.attack");
@@ -1878,7 +1882,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             skill.CountRate,
             skill.ScalingType,
             false,
-            skill.EffectIds);
+            skill.EffectIds,
+            skill.ResourceCostValue);
         string colorHex = ColorUtility.ToHtmlStringRGB(valueHighlightColor);
         return HighlightNumericTextPreservingRichTextTags(result, colorHex);
     }

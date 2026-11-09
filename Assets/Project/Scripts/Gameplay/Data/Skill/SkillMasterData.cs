@@ -96,6 +96,8 @@ namespace Relic.Gameplay.Data
         public int Entry = 1;
         public SkillRarity Rarity;
         public SkillType SkillType;
+        // SkillMaster.IsFastSkill: 0 = normal, 1 = executes before monsters.
+        public int IsFastSkill;
         public TimelineActionType TimelineNotation;
 
         // 엑셀 원본 문자열: 세미콜론 구분

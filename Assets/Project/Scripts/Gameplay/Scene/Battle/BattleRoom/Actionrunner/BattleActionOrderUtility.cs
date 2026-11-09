@@ -4,7 +4,8 @@ public static class BattleActionOrderUtility
 {
     public static bool HasSwift(PlayerReservedCommand command)
     {
-        return command != null && HasSwift(command.UserRuntime);
+        return command != null &&
+            ((command.SkillData != null && command.SkillData.IsFastSkill == 1) || HasSwift(command.UserRuntime));
     }
 
     public static bool HasSwift(CharacterRuntimeData runtime)

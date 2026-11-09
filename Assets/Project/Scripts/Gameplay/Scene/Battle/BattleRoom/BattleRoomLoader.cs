@@ -713,6 +713,7 @@ public class BattleRoomLoader : MonoBehaviour
             monsterTurnPlanner.ResetBattleStartIntroState();
 
         initialPassivesScheduled = false;
+        BattlePassiveSkillService.ResetBattleStartPassives();
         // Collect first-turn effects until the battle-start intro has finished.
         BattleEffectInfoFeed.BeginInitialEffects();
         Transform playerRoot = unitSpawner != null ? unitSpawner.PlayerRoot : null;
