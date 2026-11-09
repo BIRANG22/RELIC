@@ -2492,7 +2492,7 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Rest event start: {nodeData.MapId}");
         pendingBattleRoomUsesBossIntro = false;
-        pendingRoomIntroMessage = GameLocalization.Get("battle.intro.rest_area");
+        pendingRoomIntroMessage = GameLocalization.Get("battle.intro.rest_area", "휴식 구역");
         ShowRoomBackground(restRoom, nodeData);
         RefreshBack2LocationName(nodeData);
         sharedRoomPresentationController?.RefreshForMap(nodeData.MapId);
@@ -2598,7 +2598,7 @@ public class BattleSceneController : MonoBehaviour
             AutoFindBattleMapIntroTextIfNeeded();
 
         if (battleMapIntroText != null)
-            battleMapIntroText.Play(GameLocalization.Get("battle.intro.enter_battle_area"));
+            battleMapIntroText.Play(GameLocalization.Get("battle.intro.enter_battle_area", "전투 구역"));
     }
 
     private void PlayPendingRoomIntroText()
