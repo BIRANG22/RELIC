@@ -81,7 +81,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     }
 
 
-    // ÇöÀç ÁøÇà ÁßÀÎ ÀüÅõ Æ©Åä¸®¾óÀÇ ´Ü°èÀÔ´Ï´Ù. Æ©Åä¸®¾óÀÌ ¾Æ´Ï¸é -1À» ¹İÈ¯ÇÕ´Ï´Ù.
+    // í˜„ì¬ ì§„í–‰ ì¤‘ì¸ ì „íˆ¬ íŠœí† ë¦¬ì–¼ì˜ ë‹¨ê³„ì…ë‹ˆë‹¤. íŠœí† ë¦¬ì–¼ì´ ì•„ë‹ˆë©´ -1ì„ ë°˜í™˜í•©ë‹ˆë‹¤.
     public static int ActiveBattleGuideStep
     {
         get
@@ -92,7 +92,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // ±âÁ¸ ½ºÅ³ ¼±ÅÃ °æ·Î¸¦ À¯ÁöÇÏ¸é¼­ ÇöÀç ¾È³» ´Ü°è¿¡¼­ Çã¿ëÇÑ ½ºÅ³¸¸ ¼±ÅÃÇÕ´Ï´Ù.
+    // ê¸°ì¡´ ìŠ¤í‚¬ ì„ íƒ ê²½ë¡œë¥¼ ìœ ì§€í•˜ë©´ì„œ í˜„ì¬ ì•ˆë‚´ ë‹¨ê³„ì—ì„œ í—ˆìš©í•œ ìŠ¤í‚¬ë§Œ ì„ íƒí•©ë‹ˆë‹¤.
     public static bool CanUseBattleSkill(string skillId, string moveId, string firstSkillId)
     {
         int step = ActiveBattleGuideStep;
@@ -117,7 +117,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             if (string.IsNullOrEmpty(moveId) || skillId != moveId)
                 return false;
 
-            // ÀÌµ¿ ¹öÆ°À» ¿¬Å¸ÇØ ¼±ÅÃ »óÅÂ°¡ ÇØÁ¦µÇ´Â °ÍÀ» ¹æÁöÇÕ´Ï´Ù.
+            // ì´ë™ ë²„íŠ¼ì„ ì—°íƒ€í•´ ì„ íƒ ìƒíƒœê°€ í•´ì œë˜ëŠ” ê²ƒì„ ë°©ì§€í•©ë‹ˆë‹¤.
             PlayerSkillReservationController reservation =
                 FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
             return reservation == null || !reservation.IsMoveSkillSelectionActive();
@@ -134,7 +134,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             if (sequence == null || timeline == null || sequence.skill26ReservationBaseline < 0)
                 return false;
 
-            // ÈúÆ®ÀÇ Ã¹ ±â¾ïÀº ´Ü ÇÑ ¹ø¸¸ ¿¹¾àÇÒ ¼ö ÀÖ½À´Ï´Ù.
+            // ííŠ¸ì˜ ì²« ê¸°ì–µì€ ë‹¨ í•œ ë²ˆë§Œ ì˜ˆì•½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
             return CountCharacterCommands(timeline, "Char_01") <
                    sequence.skill26ReservationBaseline + 1;
         }
@@ -143,7 +143,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return false;
     }
 
-    // Æ©Åä¸®¾ó ¾È³» Áß¿¡´Â ÇØ´ç ´Ü°è¿¡¼­ Çã¿ëÇÑ ´ÜÃàÅ°¸¸ ÀÔ·ÂÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    // íŠœí† ë¦¬ì–¼ ì•ˆë‚´ ì¤‘ì—ëŠ” í•´ë‹¹ ë‹¨ê³„ì—ì„œ í—ˆìš©í•œ ë‹¨ì¶•í‚¤ë§Œ ì…ë ¥í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     public static bool IsShortcutAllowed(KeyCode key)
     {
         if (!IsPresentationRunning) return true;
@@ -173,8 +173,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // 27¹ø ´Ü°è¿¡¼­ Ä«¾ß¸¦ ¼±ÅÃÇß´Ù¸é 28¹ø ¿¹¾àÀÌ ³¡³ª±â Àü±îÁö ´Ù¸¥ Ä³¸¯ÅÍ·Î ÀüÈ¯ÇÏÁö ¾Ê½À´Ï´Ù.
-    // ¸¶¿ì½º, HUD, Tab, Å¸ÀÓ¶óÀÎ ¼±ÅÃ¿¡µµ µ¿ÀÏÇÑ Ä³¸¯ÅÍ Á¦ÇÑÀ» Àû¿ëÇÕ´Ï´Ù.
+    // 27ë²ˆ ë‹¨ê³„ì—ì„œ ì¹´ì•¼ë¥¼ ì„ íƒí–ˆë‹¤ë©´ 28ë²ˆ ì˜ˆì•½ì´ ëë‚˜ê¸° ì „ê¹Œì§€ ë‹¤ë¥¸ ìºë¦­í„°ë¡œ ì „í™˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // ë§ˆìš°ìŠ¤, HUD, Tab, íƒ€ì„ë¼ì¸ ì„ íƒì—ë„ ë™ì¼í•œ ìºë¦­í„° ì œí•œì„ ì ìš©í•©ë‹ˆë‹¤.
     public static bool CanSelectTutorialCharacter(string characterId)
     {
         if (!IsPresentationRunning) return true;
@@ -198,8 +198,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return characterId == "Char_01";
     }
 
-    // Æ©Åä¸®¾ó ÀÌµ¿ ¾È³» Áß 25¹ø ´Ü°è¿¡¼­´Â Grid_16¸¸ ¼±ÅÃÇÒ ¼ö ÀÖ½À´Ï´Ù.
-    // ¹öÆ° Å¬¸¯¿¡ »ç¿ëÇÑ ¸¶¿ì½º ÀÔ·ÂÀÌ ´ÙÀ½ ´Ü°èÀÇ ±×¸®µå Å¬¸¯À¸·Î Àü´ŞµÇÁö ¾Êµµ·Ï ¹æÁöÇÕ´Ï´Ù.
+    // íŠœí† ë¦¬ì–¼ ì´ë™ ì•ˆë‚´ ì¤‘ 25ë²ˆ ë‹¨ê³„ì—ì„œëŠ” Grid_16ë§Œ ì„ íƒí•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+    // ë²„íŠ¼ í´ë¦­ì— ì‚¬ìš©í•œ ë§ˆìš°ìŠ¤ ì…ë ¥ì´ ë‹¤ìŒ ë‹¨ê³„ì˜ ê·¸ë¦¬ë“œ í´ë¦­ìœ¼ë¡œ ì „ë‹¬ë˜ì§€ ì•Šë„ë¡ ë°©ì§€í•©ë‹ˆë‹¤.
     private bool grid25InputArmed;
     public static bool CanClickTutorialGrid(int gridIndex)
     {
@@ -236,7 +236,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public bool IsInitialBattleHudReady { get; private set; }
 
     public void NotifyInitialBattleHudReady() => IsInitialBattleHudReady = true;
-    // ´ëÈ­ ¹× ¾È³» UI¿¡¼­ Å¬¸¯ ½Ã È£ÃâÇÒ ÀÌº¥Æ®¸¦ °ü¸®ÇÕ´Ï´Ù.
+    // ëŒ€í™” ë° ì•ˆë‚´ UIì—ì„œ í´ë¦­ ì‹œ í˜¸ì¶œí•  ì´ë²¤íŠ¸ë¥¼ ê´€ë¦¬í•©ë‹ˆë‹¤.
     private readonly Dictionary<GraphicRaycaster, bool> blockedBattleRaycasters = new();
     private readonly Dictionary<Collider, bool> blockedGridColliders = new();
     private readonly Dictionary<Collider2D, bool> blockedGridColliders2D = new();
@@ -348,6 +348,9 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private readonly Dictionary<CanvasGroup, bool> tutorialButtonRaycastStates = new();
     private readonly HashSet<CanvasGroup> tutorialCreatedButtonGroups = new();
     private int lastTutorialPointerStage = int.MinValue;
+    private int lastTooltipScreenWidth = -1;
+    private int lastTooltipScreenHeight = -1;
+    private bool tooltipLayoutDirty;
 
     public static bool CanClickTutorialEndTurn()
     {
@@ -425,9 +428,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             }
         }
         if (!IsPresentationRunning || continuationMode) return;
-        // Buttons can be instantiated after the room intro; recheck their pointer gate.
-        lastTutorialPointerStage = tutorialStageIndex;
-        ApplyTutorialButtonRaycasts();
+        if (TutorialPresentationRefreshPolicy.ShouldRefreshButtons(
+                lastTutorialPointerStage,
+                tutorialStageIndex))
+        {
+            lastTutorialPointerStage = tutorialStageIndex;
+            ApplyTutorialButtonRaycasts();
+        }
     }
 
     private void ApplyTutorialButtonRaycasts()
@@ -491,13 +498,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private int skill26ReservationBaseline = -1;
     private int skill28ReservationBaseline = -1;
 
-    // ¿¹¾à ¸í·ÉÀÌ ÇöÀç Æ©Åä¸®¾ó ´Ü°è¿¡¼­ Çã¿ëµÇ´ÂÁö °Ë»çÇÕ´Ï´Ù.
+    // ì˜ˆì•½ ëª…ë ¹ì´ í˜„ì¬ íŠœí† ë¦¬ì–¼ ë‹¨ê³„ì—ì„œ í—ˆìš©ë˜ëŠ”ì§€ ê²€ì‚¬í•©ë‹ˆë‹¤.
     public static bool CanAcceptTutorialCommand(PlayerReservedCommand command, BattleTimelineController timeline)
     {
         if (!IsPresentationRunning || command == null || timeline == null) return true;
         TutorialBattleSequence sequence = GetActiveTutorialRunner();
         if (sequence == null) return true;
-        // ´Ù¸¥ ±×¸®µå³ª ´Ù¸¥ Ä³¸¯ÅÍÀÇ ÀÌµ¿ ¿¹¾àÀº ÇöÀç ´Ü°è¿¡¼­ Â÷´ÜÇÕ´Ï´Ù.
+        // ë‹¤ë¥¸ ê·¸ë¦¬ë“œë‚˜ ë‹¤ë¥¸ ìºë¦­í„°ì˜ ì´ë™ ì˜ˆì•½ì€ í˜„ì¬ ë‹¨ê³„ì—ì„œ ì°¨ë‹¨í•©ë‹ˆë‹¤.
         if (IsFinalTutorialRunning)
         {
             // Flip commands also carry their current grid index, so validate
@@ -603,7 +610,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 HideUi();
                 IsBlockingBattleStart = false;
                 while (!IsInitialBattleHudReady) yield return null;
-                // ÀÌÀü ´Ü°è¿¡¼­ Â÷´ÜÇÑ ±×¸®µå Ç¥½Ã¸¦ º¹±¸ÇÏ°í ÁØºñ ¿Ï·á¸¦ ±â´Ù¸³´Ï´Ù.
+                // ì´ì „ ë‹¨ê³„ì—ì„œ ì°¨ë‹¨í•œ ê·¸ë¦¬ë“œ í‘œì‹œë¥¼ ë³µêµ¬í•˜ê³  ì¤€ë¹„ ì™„ë£Œë¥¼ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
                 RestoreGridVisuals();
                 GridManager preparedGrid = FindFirstObjectByType<GridManager>(FindObjectsInactive.Exclude);
                 if (preparedGrid != null)
@@ -640,7 +647,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                     ? step.Order == 20 || step.Order == 25
                     : step.Order == 25))
                 {
-                    // 24¹ø ÀÌµ¿ ¹öÆ° Å¬¸¯ÀÌ³ª Å° ÀÔ·ÂÀÌ 25¹ø ±×¸®µå ÀÔ·ÂÀ¸·Î Ã³¸®µÇÁö ¾Ê°Ô ÇÕ´Ï´Ù.
+                    // 24ë²ˆ ì´ë™ ë²„íŠ¼ í´ë¦­ì´ë‚˜ í‚¤ ì…ë ¥ì´ 25ë²ˆ ê·¸ë¦¬ë“œ ì…ë ¥ìœ¼ë¡œ ì²˜ë¦¬ë˜ì§€ ì•Šê²Œ í•©ë‹ˆë‹¤.
                     while (Input.GetMouseButton(0) || Input.touchCount > 0)
                         yield return null;
                     yield return null;
@@ -695,7 +702,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                         }
                     }
                 }
-                // Å¸ÀÓ¶óÀÎ ¹× Çàµ¿ ¼Ò°³ ´Ü°è¿¡¼­´Â ¾È³»¸¦ ³Ñ±æ ¼ö ÀÖÁö¸¸ ½ÇÁ¦ UI Á¶ÀÛÀº Â÷´ÜÇÕ´Ï´Ù.
+                // íƒ€ì„ë¼ì¸ ë° í–‰ë™ ì†Œê°œ ë‹¨ê³„ì—ì„œëŠ” ì•ˆë‚´ë¥¼ ë„˜ê¸¸ ìˆ˜ ìˆì§€ë§Œ ì‹¤ì œ UI ì¡°ì‘ì€ ì°¨ë‹¨í•©ë‹ˆë‹¤.
                 bool blockGuideInput = !continuationMode &&
                     (IsBattleUiExplanationGuide(step) ||
                      (IsFinalTutorialRunning && (step.Order == 5 || step.Order == 6 || step.Order == 28)));
@@ -706,7 +713,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                     SetBattleUiPointerBlocked(true);
                     if (dialogueInputBlocker != null) dialogueInputBlocker.SetActive(true);
                 }
-                // ClickAny ´Ü°è´Â È­¸é Å¬¸¯À¸·Î ÁøÇàÇÏ¸ç ±× ¿Ü ´Ü°è´Â ÁöÁ¤µÈ Á¶°ÇÀ» µû¸¨´Ï´Ù.
+                // ClickAny ë‹¨ê³„ëŠ” í™”ë©´ í´ë¦­ìœ¼ë¡œ ì§„í–‰í•˜ë©° ê·¸ ì™¸ ë‹¨ê³„ëŠ” ì§€ì •ëœ ì¡°ê±´ì„ ë”°ë¦…ë‹ˆë‹¤.
                 string advance = step.Advance ?? string.Empty;
                 if (advance.Equals("ClickTarget", StringComparison.OrdinalIgnoreCase) ||
                     advance.Equals("ReserveMove", StringComparison.OrdinalIgnoreCase) ||
@@ -901,7 +908,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         tooltipTextComplete = tooltip != null ? Find(tooltip, "TextComplete")?.gameObject : null;
         dialogCompleteLabel = dialogTextComplete != null ? dialogTextComplete.GetComponentInChildren<TMP_Text>(true) : null;
         tooltipCompleteLabel = tooltipTextComplete != null ? tooltipTextComplete.GetComponentInChildren<TMP_Text>(true) : null;
-        // TextComplete ¹®±¸°¡ ´Ù¸¥ ·ÎÄÃ¶óÀÌÂ¡ ÄÄÆ÷³ÍÆ®¿¡ ÀÇÇØ µ¤¾î¾²ÀÌÁö ¾Ê°Ô º¸È£ÇÕ´Ï´Ù.
+        // TextComplete ë¬¸êµ¬ê°€ ë‹¤ë¥¸ ë¡œì»¬ë¼ì´ì§• ì»´í¬ë„ŒíŠ¸ì— ì˜í•´ ë®ì–´ì“°ì´ì§€ ì•Šê²Œ ë³´í˜¸í•©ë‹ˆë‹¤.
         ProtectTutorialText(dialogCompleteLabel);
         ProtectTutorialText(tooltipCompleteLabel);
         portrait = dialog != null ? Find(dialog, "Icon")?.GetComponent<Image>() : null;
@@ -1086,6 +1093,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
         if (guideText != null) guideText.text = Localize(step);
         if (tooltipRoot != null) tooltipRoot.SetActive(true);
+        tooltipLayoutDirty = true;
         // Tooltip displays the whole message immediately.
         SetComplete(tooltipTextComplete, true);
         SetCompletionPrompt(step, tooltipCompleteLabel);
@@ -1104,10 +1112,10 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         // Resolve the active slot instead of falling back to an unrelated button.
         if (IsFinalTutorialRunning && step.Order == 4)
         {
-            // ·±Å¸ÀÓ ÀÌ¸§ÀÇ ÀÏ·Ã¹øÈ£°¡ ¾Æ´Ï¶ó ¸ó½ºÅÍ µ¥ÀÌÅÍ ID·Î µå¶ó¿ì±×¸¦ Ã£½À´Ï´Ù.
+            // ëŸ°íƒ€ì„ ì´ë¦„ì˜ ì¼ë ¨ë²ˆí˜¸ê°€ ì•„ë‹ˆë¼ ëª¬ìŠ¤í„° ë°ì´í„° IDë¡œ ë“œë¼ìš°ê·¸ë¥¼ ì°¾ìŠµë‹ˆë‹¤.
             MonsterUnit draugr = FindFinalTutorialDraugr();
             if (draugr != null) target = draugr.transform;
-            else Debug.LogWarning("[Tutorial_03] µå¶ó¿ì±×(Mon_07)¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.", this);
+            else Debug.LogWarning("[Tutorial_03] ë“œë¼ìš°ê·¸(Mon_07)ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.", this);
         }
         if (IsFinalTutorialRunning && (step.Order == 18 || step.Order == 23))
         {
@@ -1169,7 +1177,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             source = CreateCompositeUiFocusProxy(target) ?? source;
         if (source == null && target != null)
         {
-            // ÃÖÁ¾ Æ©Åä¸®¾óÀÇ ¸ó½ºÅÍ/Ä³¸¯ÅÍ´Â ÀÌ¹ÌÁö°¡ ¾Æ´Ñ Å¬¸¯¿ë 2D ¹Ú½º Äİ¶óÀÌ´õ¸¦ °­Á¶ÇÕ´Ï´Ù.
+            // ìµœì¢… íŠœí† ë¦¬ì–¼ì˜ ëª¬ìŠ¤í„°/ìºë¦­í„°ëŠ” ì´ë¯¸ì§€ê°€ ì•„ë‹Œ í´ë¦­ìš© 2D ë°•ìŠ¤ ì½œë¼ì´ë”ë¥¼ ê°•ì¡°í•©ë‹ˆë‹¤.
             bool useColliderFocus = IsFinalTutorialRunning && (step.Order == 4 || step.Order == 10);
             source = useColliderFocus
                 ? CreateWorldBoxColliderFocusProxy(target)
@@ -1244,8 +1252,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // ¸ó½ºÅÍ Á¤º¸ ¸ñ·ÏÀº Content ÄÁÅ×ÀÌ³Ê ÀüÃ¼ ³Êºñ°¡ ¾Æ´Ñ ½ÇÁ¦ Ç¥½Ã ÇÁ¸®ÆÕ ³Êºñ·Î °­Á¶ÇÕ´Ï´Ù.
-    // ³ôÀÌ´Â Á¦¸ñ(Name)ºÎÅÍ ¸¶Áö¸· Ç¥½Ã Ç×¸ñ±îÁö Æ÷ÇÔÇÏµÇ, °¡·Î ¹üÀ§´Â Ç×¸ñ ÇÁ¸®ÆÕÀ¸·Î¸¸ Á¤ÇÕ´Ï´Ù.
+    // ëª¬ìŠ¤í„° ì •ë³´ ëª©ë¡ì€ Content ì»¨í…Œì´ë„ˆ ì „ì²´ ë„ˆë¹„ê°€ ì•„ë‹Œ ì‹¤ì œ í‘œì‹œ í”„ë¦¬íŒ¹ ë„ˆë¹„ë¡œ ê°•ì¡°í•©ë‹ˆë‹¤.
+    // ë†’ì´ëŠ” ì œëª©(Name)ë¶€í„° ë§ˆì§€ë§‰ í‘œì‹œ í•­ëª©ê¹Œì§€ í¬í•¨í•˜ë˜, ê°€ë¡œ ë²”ìœ„ëŠ” í•­ëª© í”„ë¦¬íŒ¹ìœ¼ë¡œë§Œ ì •í•©ë‹ˆë‹¤.
     private RectTransform CreateCompositeUiFocusProxy(Transform group)
     {
         RectTransform frame = focusRoot != null ? focusRoot.transform as RectTransform : null;
@@ -1320,8 +1328,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return compositeUiFocusProxy;
     }
 
-    // ÃÖÁ¾ ÀüÅõÀÇ µå¶ó¿ì±×¿Í ÇìÀÌÁî´Â ½ºÇÁ¶óÀÌÆ®°¡ ¾Æ´Ñ BoxCollider2DÀÇ ½ÇÁ¦ ¿µ¿ªÀ» °­Á¶ÇÕ´Ï´Ù.
-    // Äİ¶óÀÌ´õ ·ÎÄÃ ¸ğ¼­¸®¸¦ ¿ùµå/È­¸é ÁÂÇ¥·Î º¯È¯ÇÏ¹Ç·Î Offset, Scale, Rotationµµ ¹İ¿µµË´Ï´Ù.
+    // ìµœì¢… ì „íˆ¬ì˜ ë“œë¼ìš°ê·¸ì™€ í—¤ì´ì¦ˆëŠ” ìŠ¤í”„ë¼ì´íŠ¸ê°€ ì•„ë‹Œ BoxCollider2Dì˜ ì‹¤ì œ ì˜ì—­ì„ ê°•ì¡°í•©ë‹ˆë‹¤.
+    // ì½œë¼ì´ë” ë¡œì»¬ ëª¨ì„œë¦¬ë¥¼ ì›”ë“œ/í™”ë©´ ì¢Œí‘œë¡œ ë³€í™˜í•˜ë¯€ë¡œ Offset, Scale, Rotationë„ ë°˜ì˜ë©ë‹ˆë‹¤.
     private RectTransform CreateWorldBoxColliderFocusProxy(Transform worldTarget)
     {
         RectTransform frame = focusRoot != null ? focusRoot.transform as RectTransform : null;
@@ -1369,7 +1377,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return worldGridFocusProxy;
     }
 
-    // MeshRenderer ±â¹İ ¿ùµå ±×¸®µå ÁÂÇ¥¸¦ È­¸é ¾È³»¿ë UI RectTransformÀ¸·Î º¯È¯ÇÕ´Ï´Ù.
+    // MeshRenderer ê¸°ë°˜ ì›”ë“œ ê·¸ë¦¬ë“œ ì¢Œí‘œë¥¼ í™”ë©´ ì•ˆë‚´ìš© UI RectTransformìœ¼ë¡œ ë³€í™˜í•©ë‹ˆë‹¤.
     private RectTransform CreateWorldGridFocusProxy(Transform worldTarget)
     {
         RectTransform frame = focusRoot != null ? focusRoot.transform as RectTransform : null;
@@ -1416,7 +1424,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return worldGridFocusProxy;
     }
 
-    // ¸ó½ºÅÍ »ı¼º ¼ø¼­¿¡ µû¶ó RuntimeMonster ¹øÈ£°¡ ¹Ù²î¾îµµ µ¿ÀÏÇÑ µå¶ó¿ì±×¸¦ ¼±ÅÃÇÕ´Ï´Ù.
+    // ëª¬ìŠ¤í„° ìƒì„± ìˆœì„œì— ë”°ë¼ RuntimeMonster ë²ˆí˜¸ê°€ ë°”ë€Œì–´ë„ ë™ì¼í•œ ë“œë¼ìš°ê·¸ë¥¼ ì„ íƒí•©ë‹ˆë‹¤.
     private static bool IsFinalTutorialDraugr(MonsterUnit monster)
     {
         return monster != null && monster.RuntimeData != null &&
@@ -1474,17 +1482,30 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 
     private void LateUpdate()
     {
-        // ÅØ½ºÆ® ·¹ÀÌ¾Æ¿ô °»½Å ½Ã ¾È³» UI°¡ È­¸é ¹ÛÀ¸·Î ¹ş¾î³ªÁö ¾Ê°Ô º¸Á¤ÇÕ´Ï´Ù.
-        if (IsPresentationRunning && tooltipRoot != null && tooltipRoot.activeInHierarchy)
+        if (IsPresentationRunning &&
+            tooltipRoot != null &&
+            tooltipRoot.activeInHierarchy &&
+            TutorialPresentationRefreshPolicy.ShouldRefreshTooltip(
+                tooltipLayoutDirty,
+                lastTooltipScreenWidth,
+                lastTooltipScreenHeight,
+                Screen.width,
+                Screen.height))
+        {
             KeepTooltipInsideScreen();
+        }
     }
 
-    // ÇöÀç È­¸é ÁÂÇ¥¸¦ Äµ¹ö½º Å©±â¿¡ ¸Â°Ô º¯È¯ÇÏ¿© À§Ä¡¸¦ °è»êÇÕ´Ï´Ù.
+    // í˜„ì¬ í™”ë©´ ì¢Œí‘œë¥¼ ìº”ë²„ìŠ¤ í¬ê¸°ì— ë§ê²Œ ë³€í™˜í•˜ì—¬ ìœ„ì¹˜ë¥¼ ê³„ì‚°í•©ë‹ˆë‹¤.
     private void KeepTooltipInsideScreen()
     {
         RectTransform tooltip = tooltipRoot != null ? tooltipRoot.transform as RectTransform : null;
         RectTransform parent = tooltip != null ? tooltip.parent as RectTransform : null;
         if (tooltip == null || parent == null) return;
+
+        lastTooltipScreenWidth = Screen.width;
+        lastTooltipScreenHeight = Screen.height;
+        tooltipLayoutDirty = false;
 
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(tooltip);
@@ -2060,8 +2081,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return count;
     }
 
-    // È®ÀÎÃ¢À» ´İ´Â Å¬¸¯À» Æ©Åä¸®¾ó ´ÙÀ½ ´Ü°è ÀÔ·ÂÀ¸·Î Ã³¸®ÇÏÁö ¾Ê½À´Ï´Ù.
-    // ¸¶¿ì½º ¹öÆ°ÀÌ ÇØÁ¦µÉ ¶§±îÁö ÀÔ·ÂÀ» Â÷´ÜÇÕ´Ï´Ù.
+    // í™•ì¸ì°½ì„ ë‹«ëŠ” í´ë¦­ì„ íŠœí† ë¦¬ì–¼ ë‹¤ìŒ ë‹¨ê³„ ì…ë ¥ìœ¼ë¡œ ì²˜ë¦¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // ë§ˆìš°ìŠ¤ ë²„íŠ¼ì´ í•´ì œë  ë•Œê¹Œì§€ ì…ë ¥ì„ ì°¨ë‹¨í•©ë‹ˆë‹¤.
     private static bool suppressAdvanceUntilRelease;
     private static int suppressAdvanceThroughFrame = -1;
     private static readonly List<RaycastResult> advancePointerHits = new List<RaycastResult>();
@@ -2088,7 +2109,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (Time.frameCount <= suppressAdvanceThroughFrame)
             return false;
 
-        // Æ÷Ä¿½º ¾È³»°¡ ³¡³ª±â Àü¿¡´Â È®ÀÎÃ¢ Å¬¸¯ÀÌ ´ÙÀ½ ´Ü°è ´ëÈ­¸¦ ÁøÇàÇÏÁö ¾Ê°Ô ÇÕ´Ï´Ù.
+        // í¬ì»¤ìŠ¤ ì•ˆë‚´ê°€ ëë‚˜ê¸° ì „ì—ëŠ” í™•ì¸ì°½ í´ë¦­ì´ ë‹¤ìŒ ë‹¨ê³„ ëŒ€í™”ë¥¼ ì§„í–‰í•˜ì§€ ì•Šê²Œ í•©ë‹ˆë‹¤.
         if (UIManager.Instance != null && UIManager.Instance.IsConfirmDialogOpen)
             return false;
 
@@ -2103,8 +2124,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (!pressed)
             return false;
 
-        // Button.onClickÀÌ Updateº¸´Ù ¸ÕÀú ½ÇÇàµÉ ¼ö ÀÖÀ¸¹Ç·Î ÀÔ·Â ¼ø¼­¸¦ °í·ÁÇÕ´Ï´Ù.
-        // Å¬¸¯ ÀÔ·ÂÀÌ Æ©Åä¸®¾óÀÇ ´ÙÀ½ ´Ü°è·Î Áßº¹ Àü´ŞµÇÁö ¾Êµµ·Ï ¹æÁöÇÕ´Ï´Ù.
+        // Button.onClickì´ Updateë³´ë‹¤ ë¨¼ì € ì‹¤í–‰ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì…ë ¥ ìˆœì„œë¥¼ ê³ ë ¤í•©ë‹ˆë‹¤.
+        // í´ë¦­ ì…ë ¥ì´ íŠœí† ë¦¬ì–¼ì˜ ë‹¤ìŒ ë‹¨ê³„ë¡œ ì¤‘ë³µ ì „ë‹¬ë˜ì§€ ì•Šë„ë¡ ë°©ì§€í•©ë‹ˆë‹¤.
         EventSystem eventSystem = EventSystem.current;
         if (eventSystem != null)
         {
@@ -2159,8 +2180,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             : serializedSoundId.Trim();
     }
 
-    // HUD ÁØºñ ½ÅÈ£¸¸À¸·Î´Â ±×¸®µå Ç¥½Ã°¡ ¿Ï·áµÆ´Ù°í ÆÇ´ÜÇÏÁö ¾Ê½À´Ï´Ù.
-    // GridManager ¹× GridCellÀÇ ÁØºñ »óÅÂ¸¦ ÇÔ²² È®ÀÎÇÕ´Ï´Ù.
+    // HUD ì¤€ë¹„ ì‹ í˜¸ë§Œìœ¼ë¡œëŠ” ê·¸ë¦¬ë“œ í‘œì‹œê°€ ì™„ë£Œëë‹¤ê³  íŒë‹¨í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    // GridManager ë° GridCellì˜ ì¤€ë¹„ ìƒíƒœë¥¼ í•¨ê»˜ í™•ì¸í•©ë‹ˆë‹¤.
     private IEnumerator WaitUntilGridRendered()
     {
         while (true)
@@ -2189,7 +2210,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             }
             if (ready)
             {
-                // ÇÊ¿äÇÑ ±×¸®µå¿Í UI°¡ ÁØºñµÉ ¶§±îÁö ÇÑ ÇÁ·¹ÀÓ¾¿ ´ë±âÇÕ´Ï´Ù.
+                // í•„ìš”í•œ ê·¸ë¦¬ë“œì™€ UIê°€ ì¤€ë¹„ë  ë•Œê¹Œì§€ í•œ í”„ë ˆì„ì”© ëŒ€ê¸°í•©ë‹ˆë‹¤.
                 yield return new WaitForEndOfFrame();
                 yield break;
             }
@@ -2197,8 +2218,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // HUD°¡ ÀÔ·ÂÀ» Â÷´ÜÇÒ ¼ö ÀÖÀ¸¹Ç·Î Äµ¹ö½ºÀÇ ±âÁ¸ »óÅÂ¸¦ È®ÀÎÇÕ´Ï´Ù.
-    // ÇØ´ç ÄÄÆ÷³ÍÆ®ÀÇ ¿ø·¡ È°¼º »óÅÂ´Â ´ëÈ­°¡ ³¡³­ µÚ º¹¿øÇÕ´Ï´Ù.
+    // HUDê°€ ì…ë ¥ì„ ì°¨ë‹¨í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ìº”ë²„ìŠ¤ì˜ ê¸°ì¡´ ìƒíƒœë¥¼ í™•ì¸í•©ë‹ˆë‹¤.
+    // í•´ë‹¹ ì»´í¬ë„ŒíŠ¸ì˜ ì›ë˜ í™œì„± ìƒíƒœëŠ” ëŒ€í™”ê°€ ëë‚œ ë’¤ ë³µì›í•©ë‹ˆë‹¤.
     private void SetBattleUiPointerBlocked(bool blocked)
     {
         if (!blocked)
@@ -2282,8 +2303,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         // The transparent screen sits over the battle UI but below the tutorial dialogue.
         dialogueInputBlocker = new GameObject("TutorialDialogueInputBlocker", typeof(RectTransform),
             typeof(Canvas), typeof(GraphicRaycaster), typeof(Image));
-        // ·çÆ® Canvas¸¦ ±âÁØÀ¸·Î È­¸é ÀüÃ¼ÀÇ ÀÔ·ÂÀ» Á¤È®È÷ Â÷´ÜÇÕ´Ï´Ù.
-        // BattleRoom ÇÏÀ§ ºÎ¸ğ RectTransformÀÇ Å©±â´Â È­¸é°ú ´Ù¸¦ ¼ö ÀÖ½À´Ï´Ù.
+        // ë£¨íŠ¸ Canvasë¥¼ ê¸°ì¤€ìœ¼ë¡œ í™”ë©´ ì „ì²´ì˜ ì…ë ¥ì„ ì •í™•íˆ ì°¨ë‹¨í•©ë‹ˆë‹¤.
+        // BattleRoom í•˜ìœ„ ë¶€ëª¨ RectTransformì˜ í¬ê¸°ëŠ” í™”ë©´ê³¼ ë‹¤ë¥¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
         dialogueInputBlocker.transform.SetParent(null, false);
         Canvas blockerCanvas = dialogueInputBlocker.GetComponent<Canvas>();
         blockerCanvas.renderMode = RenderMode.ScreenSpaceOverlay;

@@ -212,6 +212,12 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         if (isRunning || currentStep == TutorialStep.Completed)
             return false;
 
+        if (HasDataDrivenTutorialForCurrentMap())
+        {
+            enabled = false;
+            return false;
+        }
+
         if (!IsFirstTutorialBattle())
             return false;
 
@@ -1408,10 +1414,17 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         BattleRuntimeData battle = dataManager?.BattleRuntimeStore?.Get();
         MapRuntimeData map = dataManager?.MapRuntimeStore?.Get();
 
-        return (dataManager?.TutorialDatabase?.GetForMap(map?.CurrentMapId).Count ?? 0) == 0 &&
+        return dataManager?.TutorialDatabase?.HasForMap(map?.CurrentMapId) != true &&
                battle?.IsTutorialBattle == true &&
                map != null &&
                string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.FirstTutorialMapId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasDataDrivenTutorialForCurrentMap()
+    {
+        DataManager dataManager = DataManager.Instance;
+        string mapId = dataManager?.MapRuntimeStore?.Get()?.CurrentMapId;
+        return dataManager?.TutorialDatabase?.HasForMap(mapId) == true;
     }
 
     private static int GetVisibleStepIndex(TutorialStep step)
