@@ -29,6 +29,7 @@ public static class LocalizationWorkbookWriter
             UpdateExistingEntries(transactionPath, updates);
             MergeNewEntries(transactionPath, additions);
             RemoveEntries(transactionPath, removals);
+            SortTranslationRows(transactionPath);
 
             IReadOnlyList<IReadOnlyList<string>> rows = LocalizationXlsxReader.ReadSheet(
                 transactionPath,
@@ -36,12 +37,60 @@ public static class LocalizationWorkbookWriter
             LocalizationXlsxReader.ValidateHeaders(rows);
             ValidateWorkbookStructure(transactionPath);
 
-            File.Replace(transactionPath, workbookPath, null, true);
+            CommitSynchronizedWorkbook(transactionPath, workbookPath);
         }
         finally
         {
             if (File.Exists(transactionPath))
                 File.Delete(transactionPath);
+        }
+    }
+
+    /// <summary>
+    /// Commit a fully verified workbook. File.Replace may fail on some Windows file
+    /// systems even when a normal overwrite is permitted. Only fall back to Copy
+    /// when it can successfully open the destination for exclusive writing.
+    /// Never truncate the existing workbook before this check succeeds.
+    /// </summary>
+    private static void CommitSynchronizedWorkbook(string transactionPath, string workbookPath)
+    {
+        try
+        {
+            File.Replace(transactionPath, workbookPath, null, true);
+            return;
+        }
+        catch (IOException replaceError)
+        {
+            try
+            {
+                // A sharing violation must not cause the existing workbook to be deleted.
+                // File.Copy does not require the ReplaceFile Windows API, and works on
+                // file systems where ReplaceFile is unsupported.
+                using (var source = new FileStream(transactionPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var destination = new FileStream(workbookPath, FileMode.Open, FileAccess.Write, FileShare.None))
+                {
+                    // Do not change the existing file until exclusive access is acquired.
+                    destination.SetLength(0);
+                    source.CopyTo(destination);
+                    destination.Flush(true);
+                }
+                return;
+            }
+            catch (IOException copyError)
+            {
+                throw new IOException(
+                    "Localization.xlsx 파일을 저장할 수 없습니다. Excel 등에서 파일을 열어 두었거나 " +
+                    "동기화 프로그램(OneDrive 등)이 파일을 사용 중일 수 있습니다. " +
+                    "해당 파일을 닫고 다시 동기화해 주세요. 원본 파일 경로: " + workbookPath,
+                    new AggregateException(replaceError, copyError));
+            }
+            catch (UnauthorizedAccessException copyError)
+            {
+                throw new IOException(
+                    "Localization.xlsx 파일에 쓰기 권한이 없습니다. 읽기 전용 속성 및 " +
+                    "Excel/동기화 프로그램의 파일 점유를 확인해 주세요. 경로: " + workbookPath,
+                    new AggregateException(replaceError, copyError));
+            }
         }
     }
 
@@ -366,6 +415,97 @@ public static class LocalizationWorkbookWriter
         var result = new List<IReadOnlyList<string>> { rows[0] };
         result.AddRange(rows.Skip(1).Where(row => !keysToRemove.Contains(Value(row, keyIndex))));
         return result;
+    }
+
+    /// <summary>
+    /// Place rows with a missing locale at the bottom. Fully translated rows return
+    /// to their corresponding key family (without rearranging existing complete rows).
+    /// Key/Id/source/translations/styles are moved together as original XML row nodes.
+    /// </summary>
+    public static int SortTranslationRows(string workbookPath)
+    {
+        var values = LocalizationXlsxReader.ReadSheet(workbookPath, LocalizationExcelImporter.WorksheetName);
+        LocalizationXlsxReader.ValidateHeaders(values);
+        if (values.Count < 2) return 0;
+        var headers = values[0];
+        int keyColumn = FindHeader(headers, "Key");
+        int[] localeColumns = Enumerable.Range(0, headers.Count)
+            .Where(i => i != keyColumn &&
+                        !string.Equals(headers[i], "Id", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(headers[i], KoreanSourceHeader, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        if (localeColumns.Length == 0) return 0;
+
+        using var archive = ZipFile.Open(workbookPath, ZipArchiveMode.Update);
+        ZipArchiveEntry sheetEntry = FindTextSheet(archive);
+        var shared = ReadSharedStrings(archive);
+        XDocument document;
+        using (Stream stream = sheetEntry.Open()) document = XDocument.Load(stream);
+        XElement sheetData = document.Root?.Element(Spreadsheet + "sheetData")
+            ?? throw new InvalidDataException("Missing localization sheetData.");
+        var all = sheetData.Elements(Spreadsheet + "row").ToList();
+        if (all.Count < 2) return 0;
+
+        XElement headerRow = all[0];
+        var complete = new List<XElement>();
+        var incomplete = new List<XElement>();
+        foreach (XElement row in all.Skip(1))
+        {
+            string key = ReadCellValue(row, keyColumn, shared);
+            bool filled = !string.IsNullOrWhiteSpace(key) &&
+                localeColumns.All(column => !string.IsNullOrWhiteSpace(ReadCellValue(row, column, shared)));
+            if (filled) complete.Add(row);
+            else incomplete.Add(row);
+        }
+
+        // An item that has just acquired its final translation is placed alongside
+        // its matching source group, rather than remaining in the untranslated tail.
+        // Prefer the most specific dotted key family, then the top-level family.
+        var placed = new List<XElement>();
+        foreach (XElement row in complete)
+        {
+            string key = ReadCellValue(row, keyColumn, shared);
+            int insertAt = -1;
+            string[] pieces = key.Split('.');
+            for (int depth = pieces.Length - 1; depth >= 1 && insertAt < 0; depth--)
+            {
+                string prefix = string.Join(".", pieces.Take(depth)) + ".";
+                for (int i = placed.Count - 1; i >= 0; i--)
+                    if (ReadCellValue(placed[i], keyColumn, shared).StartsWith(prefix, StringComparison.Ordinal))
+                    { insertAt = i + 1; break; }
+            }
+            if (insertAt < 0) placed.Add(row);
+            else placed.Insert(insertAt, row);
+        }
+        var ordered = new List<XElement> { headerRow };
+        ordered.AddRange(placed);
+        ordered.AddRange(incomplete);
+        if (ordered.SequenceEqual(all) &&
+            ordered.Select((row, i) => (string)row.Attribute("r") == (i + 1).ToString(CultureInfo.InvariantCulture)).All(x => x))
+            return 0;
+
+        foreach (XElement row in all) row.Remove();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            XElement row = ordered[i];
+            int rowNumber = i + 1;
+            row.SetAttributeValue("r", rowNumber);
+            foreach (XElement cell in row.Elements(Spreadsheet + "c"))
+            {
+                int column = ParseColumnIndex((string)cell.Attribute("r"));
+                if (column >= 0) cell.SetAttributeValue("r", ColumnName(column) + rowNumber);
+            }
+            sheetData.Add(row);
+        }
+        string entryName = sheetEntry.FullName;
+        sheetEntry.Delete();
+        ZipArchiveEntry replacement = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+        using (Stream output = replacement.Open())
+        {
+            NormalizeWorksheet(document);
+            document.Save(output);
+        }
+        return ordered.Count - 1;
     }
 
     public static int CompactBlankRows(string workbookPath)

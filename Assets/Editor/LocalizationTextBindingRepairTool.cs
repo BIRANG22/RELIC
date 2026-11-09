@@ -77,10 +77,7 @@ public static class LocalizationTextBindingRepairTool
                 try { CollectMissingInHierarchy(root, path, maps, chosenBySource, claimedKeys, additions); }
                 finally { PrefabUtility.UnloadPrefabContents(root); }
             }
-            HashSet<string> configured = EditorBuildSettings.scenes
-                .Select(scene => (scene.path ?? string.Empty).Replace('\\', '/'))
-                .Where(path => !string.IsNullOrWhiteSpace(path))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> configured = LocalizationEditorSafetyPolicy.GetEnabledBuildScenePaths();
             foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -167,10 +164,7 @@ public static class LocalizationTextBindingRepairTool
     private static RepairSummary RepairScenes(LocalizationBindingResolver maps)
     {
         RepairSummary summary = default;
-        HashSet<string> configuredScenePaths = EditorBuildSettings.scenes
-            .Select(scene => (scene.path ?? string.Empty).Replace('\\', '/'))
-            .Where(path => !string.IsNullOrWhiteSpace(path))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> configuredScenePaths = LocalizationEditorSafetyPolicy.GetEnabledBuildScenePaths();
         foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);

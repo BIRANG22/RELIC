@@ -483,19 +483,6 @@ public static class LocalizationRuntimeSourceCatalog
         Entry(LocalizationKeys.Tutorial.Battle1EndTurnRepeat, "턴 엔드 버튼 또는 Space를 눌러 예약을 종료합니다."),
     };
 
-    public static IReadOnlyList<LocalizationWorkbookEntry> SkillSentenceEntries { get; } = new[]
-    {
-        Entry("skill.sentence.apply.tile.single.final", "{0}{1} {2}칸 적용한다"),
-        Entry("skill.sentence.deal.amount.multiple.final", "{0}{1} {2}만큼 {3}회 준다"),
-        Entry("skill.sentence.deal.amount.single.final", "{0}{1} {2}만큼 준다"),
-        Entry("skill.sentence.deal.amount.single.linked", "{0}{1} {2}만큼 주고"),
-        Entry("skill.sentence.gain.amount.single.final", "{0}{1} {2}만큼 획득한다"),
-        Entry("skill.sentence.gain.amount.single.linked", "{0}{1} {2}만큼 획득하고"),
-        Entry("skill.sentence.grant.amount.single.final", "{0}{1} {2}만큼 부여한다"),
-        Entry("skill.sentence.grant.amount.single.linked", "{0}{1} {2}만큼 부여하고"),
-        Entry("skill.sentence.restore.amount.single.final", "{0}{1} {2}만큼 회복한다"),
-    };
-
     // Keys read by runtime UI controllers must be explicit sources: script scans cannot
     // infer the Korean fallback from a separate GameLocalization.Get(key, fallback) call.
     // Adding entries here makes Full Scan & Apply register them before synchronization.
@@ -533,7 +520,7 @@ public static class LocalizationRuntimeSourceCatalog
     };
 
     public static IReadOnlyList<LocalizationWorkbookEntry> AllEntries { get; } =
-        BattleFirstTutorialEntries.Concat(SkillSentenceEntries).Concat(RuntimeUiEntries).ToArray();
+        BattleFirstTutorialEntries.Concat(RuntimeUiEntries).ToArray();
 
     private static LocalizationWorkbookEntry Entry(string key, string korean) => new(key, korean);
 }
