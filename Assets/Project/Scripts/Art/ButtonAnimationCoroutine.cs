@@ -1,11 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// 버튼에 마우스를 올리거나 클릭했을 때 위치/크기 애니메이션을 적용하고,
-/// 호버/클릭 SFX를 AudioManager의 DB ID로 재생합니다.
+/// 버튼에 마우스를 올리거나 클릭했을 때 위치/크기 애니메이션을 적용합니다.
 /// </summary>
 public class ButtonAnimationCoroutine :
     MonoBehaviour,
@@ -42,26 +41,6 @@ public class ButtonAnimationCoroutine :
 
     [Tooltip("호버 회전 및 원래 회전으로 복귀하는 시간입니다.")]
     [SerializeField] private float hoverRotationDuration = 0.2f;
-
-    [Header("Hover Sound")]
-    [Tooltip("마우스가 버튼 영역에 들어왔을 때 호버 사운드를 재생합니다.")]
-    [SerializeField] private bool playHoverSound = false;
-
-    [SerializeField, SoundId(SoundCategory.Sfx)]
-    private string hoverSoundId = AudioIds.Sfx.NormalButtonClick;
-
-    [SerializeField, Range(0f, 1f)]
-    private float hoverSoundVolume = 1f;
-
-    [Header("Click Sound")]
-    [Tooltip("버튼을 클릭했을 때 클릭 사운드를 재생합니다.")]
-    [SerializeField] private bool playClickSound = true;
-
-    [SerializeField, SoundId(SoundCategory.Sfx)]
-    private string clickSoundId = AudioIds.Sfx.NormalButtonClick;
-
-    [SerializeField, Range(0f, 1f)]
-    private float clickSoundVolume = 1f;
 
     [Header("Click State")]
     [Tooltip("같은 버튼을 다시 클릭하면 선택 상태를 해제합니다.")]
@@ -103,7 +82,7 @@ public class ButtonAnimationCoroutine :
 
     public void SetClickSoundEnabled(bool enabled)
     {
-        playClickSound = enabled;
+        // 이전 외부 호출과의 호환성을 유지합니다. 이 컴포넌트에서는 SFX를 재생하지 않습니다.
     }
 
     private Rect cachedHoverScreenRect;
@@ -182,7 +161,7 @@ public class ButtonAnimationCoroutine :
         }
 
         // ButtonAnimationCoroutine receives pointer events independently of Button.onClick.
-        // Do not play hover/click sounds while the owning button is disabled.
+        // 비활성화된 Button에서는 호버/클릭 애니메이션도 실행하지 않습니다.
         Button owningButton = GetComponent<Button>();
         if (owningButton == null)
         {
@@ -194,7 +173,7 @@ public class ButtonAnimationCoroutine :
     }
 
     /// <summary>
-    /// 외부 UI에서 Hover/Click 연출과 SFX를 포함한 입력 반응을 켜거나 끕니다.
+    /// 외부 UI에서 Hover/Click 입력 반응과 시각 연출을 켜거나 끕니다.
     /// 비활성화할 때 현재 Hover/Click 상태도 즉시 원래 상태로 되돌립니다.
     /// </summary>
     public void SetInteractionEnabled(bool enabled)
@@ -227,15 +206,7 @@ public class ButtonAnimationCoroutine :
             ClearOtherClickedButton();
         }
 
-        // 이미 호버 상태일 때 자식 UI의 이벤트 때문에 PointerEnter가 다시 들어오는 경우
-        // 사운드가 중복 재생되지 않도록 실제 진입 순간에만 재생합니다.
-        bool wasPointerInside = isPointerInside;
         isPointerInside = true;
-
-        if (!wasPointerInside)
-        {
-            PlayHoverSound();
-        }
 
         StartVisualAnimationIfNeeded();
     }
@@ -363,8 +334,6 @@ public class ButtonAnimationCoroutine :
             return;
         }
 
-        PlayClickSound();
-
         if (toggleClickState)
         {
             isClicked = !isClicked;
@@ -390,60 +359,6 @@ public class ButtonAnimationCoroutine :
         }
 
         StartVisualAnimationIfNeeded();
-    }
-
-    /// <summary>
-    /// 인스펙터에서 지정한 호버 SFX를 재생합니다.
-    /// </summary>
-    private void PlayHoverSound()
-    {
-        PlaySound(
-            playHoverSound,
-            hoverSoundId,
-            hoverSoundVolume
-        );
-    }
-
-    /// <summary>
-    /// 인스펙터에서 지정한 클릭 SFX를 재생합니다.
-    /// </summary>
-    private void PlayClickSound()
-    {
-        PlaySound(
-            playClickSound,
-            clickSoundId,
-            clickSoundVolume
-        );
-    }
-
-    /// <summary>
-    /// AudioManager에 등록된 SFX ID를 지정한 볼륨으로 재생합니다.
-    /// </summary>
-    private void PlaySound(bool enabled, string soundId, float volume)
-    {
-        if (!enabled)
-        {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(soundId))
-        {
-            return;
-        }
-
-        if (AudioManager.Instance == null)
-        {
-            Debug.LogWarning(
-                $"[{nameof(ButtonAnimationCoroutine)}] AudioManager.Instance를 찾지 못했습니다. Object: {name}",
-                this
-            );
-            return;
-        }
-
-        AudioManager.Instance.PlaySfx(
-            soundId,
-            Mathf.Clamp01(volume)
-        );
     }
 
     public void ForceSetClickedState(bool clicked, bool animate)

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 600000}
   - component: {fileID: 8433786057484953713}
   - component: {fileID: 6084329296516414614}
+  - component: {fileID: 7124546566207824566}
   m_Layer: 5
   m_Name: NextNodeChoicePrefab
   m_TagString: Untagged
@@ -180,12 +181,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 1
-  hoverSoundId: ui.flag.hover
-  hoverSoundVolume: 1
-  playClickSound: 1
-  clickSoundId: ui.flag.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -210,6 +205,31 @@ MonoBehaviour:
   fadeDuration: 0.8
   resetDelay: 3
   useUnscaledTime: 0
+--- !u!114 &7124546566207824566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 1
+  hoverSoundId: ui.flag.hover
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.flag.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &700000
 GameObject:
   m_ObjectHideFlags: 0

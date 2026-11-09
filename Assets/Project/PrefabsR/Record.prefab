@@ -112,12 +112,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 0
-  playClickSound: 1
-  clickSoundId: ui.back.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -212,6 +206,7 @@ GameObject:
   - component: {fileID: 4680522638850261846}
   - component: {fileID: 5775821375924963743}
   - component: {fileID: 6981716730426612126}
+  - component: {fileID: 4216591762182499937}
   m_Layer: 5
   m_Name: Item
   m_TagString: Untagged
@@ -342,14 +337,35 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 0
-  hoverSfx: ui.normal.hover
-  playClickSound: 1
-  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
+--- !u!114 &4216591762182499937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339732558358710920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.record.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &445910594345376023
 GameObject:
   m_ObjectHideFlags: 0
@@ -1004,12 +1020,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 0
-  playClickSound: 0
-  clickSoundId: ui.back.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -1686,6 +1696,7 @@ GameObject:
   - component: {fileID: 4393545617573556164}
   - component: {fileID: 1038522500040184554}
   - component: {fileID: 7901045318309493906}
+  - component: {fileID: 5146034944485616669}
   m_Layer: 5
   m_Name: Relic
   m_TagString: Untagged
@@ -1816,14 +1827,35 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 0
-  hoverSfx: ui.normal.hover
-  playClickSound: 1
-  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
+--- !u!114 &5146034944485616669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2025685511513434687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.record.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &2046250676289593671
 GameObject:
   m_ObjectHideFlags: 0
@@ -2759,6 +2791,7 @@ GameObject:
   - component: {fileID: 1204163120165795533}
   - component: {fileID: 174488669260118084}
   - component: {fileID: 926985020667080063}
+  - component: {fileID: 7684051488192917359}
   m_Layer: 5
   m_Name: Compound
   m_TagString: Untagged
@@ -2889,14 +2922,35 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 0
-  hoverSfx: ui.normal.hover
-  playClickSound: 1
-  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
+--- !u!114 &7684051488192917359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3881616975634622326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.record.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &3945987327368292131
 GameObject:
   m_ObjectHideFlags: 0
@@ -3346,6 +3400,7 @@ GameObject:
   - component: {fileID: 7451422211032980896}
   - component: {fileID: 4677089139157514476}
   - component: {fileID: 1395286058987132200}
+  - component: {fileID: 5808302534479882819}
   m_Layer: 5
   m_Name: Skill
   m_TagString: Untagged
@@ -3476,14 +3531,35 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 0
-  hoverSfx: ui.normal.hover
-  playClickSound: 1
-  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
+--- !u!114 &5808302534479882819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4782270874320670744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.record.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &5136886515215044446
 GameObject:
   m_ObjectHideFlags: 0
@@ -3496,6 +3572,7 @@ GameObject:
   - component: {fileID: 5373521291093867223}
   - component: {fileID: 2611644980184389082}
   - component: {fileID: 7329340257362456834}
+  - component: {fileID: 3476989416519980022}
   m_Layer: 5
   m_Name: Effect
   m_TagString: Untagged
@@ -3626,14 +3703,35 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 0
-  hoverSfx: ui.normal.hover
-  playClickSound: 1
-  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
+--- !u!114 &3476989416519980022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5136886515215044446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.record.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &5238181137247414607
 GameObject:
   m_ObjectHideFlags: 0
@@ -3954,6 +4052,7 @@ GameObject:
   - component: {fileID: 1471613741569646693}
   - component: {fileID: 8459693606058004735}
   - component: {fileID: 6613390206826067572}
+  - component: {fileID: 8711049142815974802}
   m_Layer: 5
   m_Name: Fragment
   m_TagString: Untagged
@@ -4084,14 +4183,35 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 0
-  hoverSfx: ui.normal.hover
-  playClickSound: 1
-  clickSfx: ui.record.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
   panelOpenCloseSfxVolume: 1
+--- !u!114 &8711049142815974802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5676587274551887251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.record.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &6213575960527738726
 GameObject:
   m_ObjectHideFlags: 0

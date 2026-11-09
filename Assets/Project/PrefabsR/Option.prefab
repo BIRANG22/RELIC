@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7002000000000002}
   - component: {fileID: 7002000000000003}
+  - component: {fileID: 5292260390937195187}
   m_Layer: 5
   m_Name: FullscreenToggle
   m_TagString: Untagged
@@ -85,6 +86,31 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 0
+--- !u!114 &5292260390937195187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7002000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &7002000000000011
 GameObject:
   m_ObjectHideFlags: 0
@@ -2007,6 +2033,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3761218695930569413}
   - component: {fileID: 8433766165162177416}
+  - component: {fileID: 6076241623787397160}
   m_Layer: 5
   m_Name: TutorialToggle1
   m_TagString: Untagged
@@ -2082,6 +2109,31 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 0
+--- !u!114 &6076241623787397160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2283882000440731908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &2417734967351433486
 GameObject:
   m_ObjectHideFlags: 0
@@ -2973,6 +3025,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3270094855283641728}
   - component: {fileID: 1122261909256586076}
+  - component: {fileID: 9004044330635323773}
   m_Layer: 5
   m_Name: BorderlessToggle
   m_TagString: Untagged
@@ -3048,6 +3101,31 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 0
+--- !u!114 &9004044330635323773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2966245198685748143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &3085560172252804265
 GameObject:
   m_ObjectHideFlags: 0
@@ -4504,6 +4582,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8794202475990681613}
   - component: {fileID: 1141341647238901989}
+  - component: {fileID: 3291071063401694266}
   m_Layer: 5
   m_Name: WindowedToggle
   m_TagString: Untagged
@@ -4579,6 +4658,31 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 0
+--- !u!114 &3291071063401694266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4914669211939526614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &4924327548028916420
 GameObject:
   m_ObjectHideFlags: 0
@@ -6717,6 +6821,7 @@ GameObject:
   - component: {fileID: 7001000000000000007}
   - component: {fileID: 7001000000000000008}
   - component: {fileID: 7001000000000000006}
+  - component: {fileID: 4733182809821736061}
   m_Layer: 5
   m_Name: BattleSpeedButton
   m_TagString: Untagged
@@ -6838,6 +6943,31 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &4733182809821736061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7001000000000000004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &7001000000000000011
 GameObject:
   m_ObjectHideFlags: 0
@@ -7812,12 +7942,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 0
-  playClickSound: 0
-  clickSoundId: ui.back.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -8836,6 +8960,7 @@ GameObject:
   - component: {fileID: 3104422833197501863}
   - component: {fileID: 392071472395678091}
   - component: {fileID: 4945722684164142549}
+  - component: {fileID: 4279059896162580055}
   m_Layer: 5
   m_Name: Dropdown
   m_TagString: Untagged
@@ -8961,6 +9086,31 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_AlphaFadeSpeed: 0.15
+--- !u!114 &4279059896162580055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8032272237700299305}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &8047114980391775562
 GameObject:
   m_ObjectHideFlags: 0
@@ -10019,6 +10169,7 @@ GameObject:
   - component: {fileID: 4903989919648661886}
   - component: {fileID: 1499533273733955959}
   - component: {fileID: 8842238045710423102}
+  - component: {fileID: 6678025149830469483}
   m_Layer: 5
   m_Name: Dropdown
   m_TagString: Untagged
@@ -10156,3 +10307,28 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_AlphaFadeSpeed: 0.15
+--- !u!114 &6678025149830469483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9188092128689818746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 1
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
