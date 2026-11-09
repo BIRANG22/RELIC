@@ -51,6 +51,16 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
     [SerializeField, Range(0f, 1f)]
     private float clickVolume = 1f;
 
+    [Header("Disable Sound")]
+    [Tooltip("오브젝트 또는 이 컴포넌트가 비활성화될 때 SFX를 재생합니다.")]
+    [SerializeField] private bool playOnDisable = false;
+
+    [SerializeField, SoundId(SoundCategory.Sfx)]
+    private string disableSoundId = AudioIds.Sfx.NormalButtonClick;
+
+    [SerializeField, Range(0f, 1f)]
+    private float disableVolume = 1f;
+
     private bool interactionEnabled = true;
 
     public void SetInteractionEnabled(bool allow)
@@ -86,6 +96,31 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
     {
         CancelDelayedPlay();
         StopLoopSounds();
+
+        // 비활성화된 MonoBehaviour에서는 코루틴을 사용할 수 없으므로 즉시 재생합니다.
+        // 오브젝트와 독립된 AudioManager를 통해 재생하여 오브젝트가 꺼져도 소리가 유지됩니다.
+        if (Application.isPlaying && playOnDisable)
+            PlayDisableSound();
+    }
+
+    private void PlayDisableSound()
+    {
+        if (string.IsNullOrWhiteSpace(disableSoundId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null ||
+            !audioManager.TryGetSfxData(disableSoundId, out SoundData soundData))
+            return;
+
+        // 비활성화 시 재생되는 SFX는 추적하여 정지할 수 없으므로 Loop는 재생하지 않습니다.
+        if (soundData.loop)
+        {
+            Debug.LogWarning($"[{nameof(DBAudioSource)}] Disable Sound에는 Loop SFX를 사용할 수 없습니다: {disableSoundId}", this);
+            return;
+        }
+
+        audioManager.PlaySfx(disableSoundId, Mathf.Clamp01(disableVolume));
     }
 
     private void OnDestroy()

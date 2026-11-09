@@ -2173,6 +2173,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &48986021
 GameObject:
   m_ObjectHideFlags: 0
@@ -3848,6 +3851,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &92390854
 GameObject:
   m_ObjectHideFlags: 0
@@ -4269,6 +4275,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &110533119
 GameObject:
   m_ObjectHideFlags: 0
@@ -4765,6 +4774,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!43 &119830918
 Mesh:
   m_ObjectHideFlags: 0
@@ -11770,6 +11782,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &176978857
 GameObject:
   m_ObjectHideFlags: 0
@@ -12584,7 +12599,7 @@ MonoBehaviour:
     \uB3CC\uC544\uAC08 \uC218 \uC788\uB3C4\uB85D \uD560\uAC8C\uC694.\u201D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -14194,6 +14209,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &228958800
 GameObject:
   m_ObjectHideFlags: 0
@@ -14389,6 +14407,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &230010010
 GameObject:
   m_ObjectHideFlags: 0
@@ -14667,6 +14688,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.relic.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!114 &230010030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14998,7 +15022,7 @@ MonoBehaviour:
   hoverSoundId: ui.move.hover
   hoverSoundVolume: 1
   playClickSound: 1
-  clickSoundId: ui.normal.click
+  clickSoundId: relic.root
   clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
@@ -15102,6 +15126,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.relic.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &230010300
 GameObject:
   m_ObjectHideFlags: 0
@@ -15145,6 +15172,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.relic.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!223 &230019990
 Canvas:
   m_ObjectHideFlags: 0
@@ -15352,7 +15382,7 @@ MonoBehaviour:
   m_text: 999
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15588,7 +15618,7 @@ MonoBehaviour:
   m_text: 999
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15824,7 +15854,7 @@ MonoBehaviour:
   m_text: 999
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15961,7 +15991,7 @@ MonoBehaviour:
   m_text: 999
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -21007,7 +21037,7 @@ MonoBehaviour:
   m_text: 999(+99)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -21222,6 +21252,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a54b6208dd6b58a41bb8b03eb17adb76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterChangeSfxId: lobby.character.selection.change
   characterSelectUsage: 0
   charBtns:
   - {fileID: 443209981}
@@ -22583,6 +22614,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!223 &397856617
 Canvas:
   m_ObjectHideFlags: 0
@@ -23049,7 +23083,7 @@ MonoBehaviour:
   m_text: 999(+99)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -24419,6 +24453,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &427861707
 GameObject:
   m_ObjectHideFlags: 0
@@ -26202,7 +26239,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.back.click
   clickSoundVolume: 1
   toggleClickState: 1
@@ -27907,7 +27944,7 @@ MonoBehaviour:
   m_text: "\uD2B9\uD654"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28252,7 +28289,7 @@ MonoBehaviour:
   m_text: "\uB8EC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -30158,7 +30195,7 @@ MonoBehaviour:
   m_text: "\uC720\uBB3C \uD6A8\uACFC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -30768,7 +30805,7 @@ MonoBehaviour:
   m_text: "\uC720\uBB3C \uD6A8\uACFC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -32763,6 +32800,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &607353063
 GameObject:
   m_ObjectHideFlags: 0
@@ -35667,6 +35707,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 751edabe34ebf13418fe69e5e3980906, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  equipmentEquipSfxId: lobby.equipment.equip
   panelRoot: {fileID: 669369268}
   characterSelectRoot: {fileID: 0}
   relicInventoryRoot: {fileID: 0}
@@ -37067,7 +37108,7 @@ MonoBehaviour:
   m_text: "\uC720\uBB3C\uC774\uB984\uCD5C\uB300\uAE38\uC774"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -38752,6 +38793,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &743031315
 GameObject:
   m_ObjectHideFlags: 0
@@ -39822,6 +39866,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &765114983
 GameObject:
   m_ObjectHideFlags: 0
@@ -39884,6 +39931,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &769871406
 GameObject:
   m_ObjectHideFlags: 0
@@ -40173,7 +40223,7 @@ MonoBehaviour:
   m_text: LV.5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -47142,6 +47192,8 @@ MonoBehaviour:
   completionIcon: {fileID: 2023525550}
   ingredientRegisterSoundId: add_Compound
   ingredientRegisterSoundVolume: 0.5
+  materialCombineSoundId: lobby.skill-material.combine
+  materialRemoveSoundId: lobby.skill-material.remove
   compoundTransferStartSoundId: effect_get
   compoundTransferStartSoundVolume: 0.5
   compoundTransferStartDelay: 0.5
@@ -47183,6 +47235,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!223 &821549312
 Canvas:
   m_ObjectHideFlags: 0
@@ -48309,7 +48364,7 @@ MonoBehaviour:
   m_text: "\uD574\uBC29"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -49398,6 +49453,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &866559622
 GameObject:
   m_ObjectHideFlags: 0
@@ -58356,6 +58414,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &967748541
 GameObject:
   m_ObjectHideFlags: 0
@@ -59516,7 +59577,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -60738,6 +60799,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1008704799
 GameObject:
   m_ObjectHideFlags: 0
@@ -61125,7 +61189,7 @@ MonoBehaviour:
   m_text: 999(+99)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -62069,6 +62133,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1049270235
 GameObject:
   m_ObjectHideFlags: 0
@@ -63877,6 +63944,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!199 &1114245349
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -69103,7 +69173,7 @@ MonoBehaviour:
   m_text: "\uC5F0\uC131\uC81C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -70807,6 +70877,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e38130338a375f409fc5f9c3dfd4a5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  equipmentEquipSfxId: lobby.equipment.equip
   panelRoot: {fileID: 1213641073}
   equipRect: {fileID: 669369269}
   charterRect: {fileID: 1175251468}
@@ -70890,6 +70961,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cells: []
+  gridSelectionSfxId: battle.grid-selection.drop
+  characterRemoveSfxId: lobby.character.remove
   autoBindReadyPanelGrid: 1
   clearSelectionWhenPointerPressedOutside: 0
   partySlotOrderIconObjects: []
@@ -71110,7 +71183,7 @@ MonoBehaviour:
   m_text: LV.10
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -73557,7 +73630,7 @@ MonoBehaviour:
     \uC774\uB8EC\uB2E4]"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -74779,6 +74852,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!43 &1302116304
 Mesh:
   m_ObjectHideFlags: 0
@@ -76071,6 +76147,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1353154813
 GameObject:
   m_ObjectHideFlags: 0
@@ -78044,6 +78123,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1385001660
 GameObject:
   m_ObjectHideFlags: 0
@@ -79414,6 +79496,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a54b6208dd6b58a41bb8b03eb17adb76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterChangeSfxId: lobby.character.selection.change
   characterSelectUsage: 0
   charBtns:
   - {fileID: 747892917}
@@ -80621,6 +80704,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1437903359
 GameObject:
   m_ObjectHideFlags: 0
@@ -82218,6 +82304,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1487820327
 GameObject:
   m_ObjectHideFlags: 0
@@ -82446,7 +82535,7 @@ MonoBehaviour:
   m_text: EXP 999999
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -83524,6 +83613,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1515559800
 GameObject:
   m_ObjectHideFlags: 0
@@ -84203,7 +84295,7 @@ MonoBehaviour:
   m_text: "\uC720\uBB3C\uCD5C\uB300\uC774\uB984\uAE38\uC774"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -91728,7 +91820,7 @@ MonoBehaviour:
   m_text: "\uC0C8\uB85C\uACE0\uCE68"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -93806,6 +93898,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1652417707
 GameObject:
   m_ObjectHideFlags: 0
@@ -99323,6 +99418,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!43 &1676651804
 Mesh:
   m_ObjectHideFlags: 0
@@ -102580,7 +102678,7 @@ MonoBehaviour:
   m_text: LV.99
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -103239,6 +103337,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1765896101
 GameObject:
   m_ObjectHideFlags: 0
@@ -109516,6 +109617,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1800649426
 GameObject:
   m_ObjectHideFlags: 0
@@ -109578,6 +109682,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1804452481
 GameObject:
   m_ObjectHideFlags: 0
@@ -110594,7 +110701,7 @@ MonoBehaviour:
   m_text: "\uC7AC\uB8CC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -111444,6 +111551,7 @@ GameObject:
   - component: {fileID: 1832086194}
   - component: {fileID: 1832086195}
   - component: {fileID: 1832086196}
+  - component: {fileID: 1832086197}
   m_Layer: 5
   m_Name: BackgroundPanel
   m_TagString: Untagged
@@ -111593,6 +111701,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fadeDuration: 0.35
   excludedObjects: []
+--- !u!114 &1832086197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832086188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: 
+  volume: 1
+  playDelay: 0
+  playOnEnable: 0
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 1
+  disableSoundId: ui.back.click
+  disableVolume: 1
 --- !u!1 &1835505987
 GameObject:
   m_ObjectHideFlags: 0
@@ -112866,6 +112999,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1863494938
 GameObject:
   m_ObjectHideFlags: 0
@@ -113670,6 +113806,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1885292121
 GameObject:
   m_ObjectHideFlags: 0
@@ -114699,7 +114838,7 @@ MonoBehaviour:
   m_text: "\uC720\uBB3C \uD6A8\uACFC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -115340,7 +115479,7 @@ MonoBehaviour:
   m_text: 999(+99)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -115739,7 +115878,7 @@ MonoBehaviour:
   m_text: "\uBBF8\uBC88\uC5ED"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -115982,6 +116121,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e2a090b9b03f6e48a9504c8d2d4c24f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  runeEquipSfxId: lobby.rune.equip
   runeSlotButtons:
   - {fileID: 179520014}
   - {fileID: 1693695441}
@@ -117173,7 +117313,7 @@ MonoBehaviour:
   m_text: "\uBCF8\uB2A5"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -120851,7 +120991,7 @@ MonoBehaviour:
   m_text: "\uC720\uBB3C\uCD5C\uB300\uC774\uB984\uAE38\uC774"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -122652,6 +122792,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d06a28bb7dd370e4b97121de69ce12b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  skillChangeSfxId: lobby.skill.change
   skillSlotButtons: []
   skillIconSelectPanels:
   - {fileID: 1263103059}
@@ -123059,6 +123200,9 @@ MonoBehaviour:
   playOnClick: 1
   clickSoundId: ui.move.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &2111906869
 GameObject:
   m_ObjectHideFlags: 0
@@ -123850,7 +123994,7 @@ MonoBehaviour:
   m_text: "\uD604\uC7AC\uD328\uB110"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -125582,6 +125726,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!114 &2300000148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126624,7 +126771,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playHoverSound: 1
   hoverSfx: ui.title.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.title.click
 --- !u!222 &4213001339977736617
 CanvasRenderer:
@@ -126996,7 +127143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playHoverSound: 1
   hoverSfx: ui.title.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.title.click
 --- !u!114 &5930738501957722326
 MonoBehaviour:
@@ -127151,7 +127298,7 @@ MonoBehaviour:
   m_text: "\uAE30\uB85D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -127364,7 +127511,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 400, y: -46}
-  m_SizeDelta: {x: 135.01, y: 90.01}
+  m_SizeDelta: {x: 90.01, y: 90.01}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6655812950650721483
 MonoBehaviour:
@@ -127681,7 +127828,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: ui.title.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.title.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -127843,6 +127990,7 @@ GameObject:
   - component: {fileID: 7849999999734284437}
   - component: {fileID: 7849999999734284436}
   - component: {fileID: 7849999999734284439}
+  - component: {fileID: 7849999999734284440}
   m_Layer: 5
   m_Name: MenuPanel
   m_TagString: Untagged
@@ -127952,6 +128100,31 @@ MonoBehaviour:
   - {fileID: 2088216233}
   - {fileID: 1780125778}
   - {fileID: 1373303975}
+--- !u!114 &7849999999734284440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7849999999734284433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: menu.open
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 1
+  disableSoundId: ui.back.click
+  disableVolume: 1
 --- !u!1 &7849999999796188312
 GameObject:
   m_ObjectHideFlags: 0
@@ -128046,7 +128219,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: ui.title.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -128180,7 +128353,7 @@ MonoBehaviour:
   m_text: "\uC77C\uC2DC\uC815\uC9C0"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -128448,7 +128621,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: ui.title.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.title.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -128721,7 +128894,7 @@ MonoBehaviour:
   m_text: "\uACC4\uC18D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -128859,7 +129032,7 @@ MonoBehaviour:
   m_text: "\uD3EC\uAE30"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -128972,7 +129145,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 400, y: -46}
-  m_SizeDelta: {x: 135.01, y: 120}
+  m_SizeDelta: {x: 270.01, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &7850000000799686697
 GameObject:
@@ -129025,7 +129198,7 @@ MonoBehaviour:
   m_text: "\uC800\uC7A5 \uD6C4 \uC885\uB8CC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -129163,7 +129336,7 @@ MonoBehaviour:
   m_text: "\uC124\uC815"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
