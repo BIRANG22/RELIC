@@ -236,13 +236,13 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.skill.reserve
     aliases: []
-    clip: {fileID: 8300000, guid: d73a42d2f4c3449eab261e629916465f, type: 3}
+    clip: {fileID: 8300000, guid: dcadae76e7c9eab4ba5c5d57acec1a0e, type: 3}
     volume: 0.5
-    pitch: 0.5
+    pitch: 1
     loop: 0
     useRandomPitch: 1
-    randomPitchMin: 0.5
-    randomPitchMax: 0.8
+    randomPitchMin: 0.9
+    randomPitchMax: 1.1
   - id: battle.action.reserve.text
     aliases: []
     clip: {fileID: 8300000, guid: 622685aba6ffb47928d0e20ae84be81b, type: 3}
@@ -255,7 +255,7 @@ MonoBehaviour:
   - id: battle.progress.text
     aliases: []
     clip: {fileID: 8300000, guid: 2c2818c3964034785904306ce99bc49b, type: 3}
-    volume: 0.8
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -471,7 +471,7 @@ MonoBehaviour:
   - id: ui.warning.text
     aliases: []
     clip: {fileID: 8300000, guid: e7cfa3e94e67c4769a1d84ec33416a8d, type: 3}
-    volume: 0.5
+    volume: 0.3
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -659,7 +659,7 @@ MonoBehaviour:
     randomPitchMax: 1.3
   - id: relic.equip
     aliases: []
-    clip: {fileID: 8300000, guid: 1916835e7b6e5b04f90e789a29b9532d, type: 3}
+    clip: {fileID: 8300000, guid: bb5b4b2aea1476a4b95ba96df2a36d03, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -731,17 +731,17 @@ MonoBehaviour:
     randomPitchMax: 1.3
   - id: ui.tutorial.text.advance
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    clip: {fileID: 8300000, guid: 2675381c214023d4d8b254b4d2a704b3, type: 3}
     volume: 1
     pitch: 1
     loop: 0
     useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.1
   - id: battle.move-flip.click
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -749,8 +749,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.skill.reset-cancel
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -767,8 +767,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.timeline.marker.click
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 57f1816a568354089a07eef6b2935351, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -776,8 +776,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.rune.equip
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 8e2bf3c27ae8be4458242e9a968b2a46, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -785,8 +785,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.skill.change
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -794,8 +794,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.skill-material.combine
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -803,8 +803,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.skill-material.remove
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: cb89ae6b350f9466bbde7ed956451b19, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -812,8 +812,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.character.remove
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -821,8 +821,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.grid-selection.drop
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: cf05ddb3e0f3a40299f6d29a004761b5, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -830,8 +830,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.equipment.equip
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: bb5b4b2aea1476a4b95ba96df2a36d03, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -839,8 +839,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.exploration-report.count-up
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: e929358d78e3aff4fbbe04d27f9ec91b, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
