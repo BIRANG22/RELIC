@@ -263,6 +263,9 @@ MonoBehaviour:
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
+  phaseTwoIdleVfxFirstSpawnDelay: 6
+  idleVfxSpriteRootOrder: 1
+  phaseTwoIdleVfxSpriteRootOrder: -1
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: f94cfdb990d214a48adce8f4af3baa01, type: 3}
     flipType: 2
@@ -1424,7 +1427,7 @@ MonoBehaviour:
       m_RotationOrder: 4
     shake: 1
     shakeDuration: 0.15
-    shakeStrength: 0.1
+    shakeStrength: 0.2
     shakeFrequency: 20
     holdDuration: 2
   - enabled: 1
@@ -1460,7 +1463,7 @@ MonoBehaviour:
       m_RotationOrder: 4
     shake: 1
     shakeDuration: 0.5
-    shakeStrength: 0.1
+    shakeStrength: 0.3
     shakeFrequency: 20
     holdDuration: 1
   autoReturnAfterSteps: 0

@@ -82,6 +82,9 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private BattleVfxEntry idleVfx;
     [Tooltip("Displayed continuously in phase 2 instead of Idle VFX. Empty uses the normal Idle VFX.")]
     [SerializeField] private BattleVfxEntry phaseTwoIdleVfx;
+    [Tooltip("Delay in seconds before the Phase Two Idle VFX first appears. Subsequent respawns are immediate.")]
+    [Min(0f)]
+    [SerializeField] private float phaseTwoIdleVfxFirstSpawnDelay = 0f;
 
     [Tooltip("Idle VFX render order relative to SpriteRoot (one lower or one higher).")]
     [SerializeField] private IdleVfxSpriteRootOrder idleVfxSpriteRootOrder = IdleVfxSpriteRootOrder.BelowSpriteRoot;
@@ -173,6 +176,8 @@ public class BattleUnitAnimator : MonoBehaviour
     private bool persistentIdleVfxIsPhaseTwo;
     private bool persistentIdleVfxFacingRight = true;
     private int persistentIdleVfxSuspendCount;
+    private bool phaseTwoIdleVfxFirstSpawnScheduled;
+    private float phaseTwoIdleVfxFirstSpawnTime;
 
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
@@ -1415,6 +1420,25 @@ public class BattleUnitAnimator : MonoBehaviour
         BattleVfxEntry desired = phaseTwo && HasVfx(phaseTwoIdleVfx)
             ? phaseTwoIdleVfx : idleVfx;
         bool facingRight = GetPersistentIdleVfxFacingRight();
+
+        // Schedule the delay only once per unit, on first entering phase 2.
+        // Changing facing or resuming the persistent effect must not restart it.
+        if (phaseTwo && HasVfx(phaseTwoIdleVfx))
+        {
+            if (!phaseTwoIdleVfxFirstSpawnScheduled)
+            {
+                phaseTwoIdleVfxFirstSpawnScheduled = true;
+                phaseTwoIdleVfxFirstSpawnTime = Time.time + Mathf.Max(0f, phaseTwoIdleVfxFirstSpawnDelay);
+            }
+
+            if (Time.time < phaseTwoIdleVfxFirstSpawnTime)
+            {
+                // The phase-1 effect must disappear as soon as phase 2 starts.
+                if (persistentIdleVfxInstance != null && !persistentIdleVfxIsPhaseTwo)
+                    StopPersistentIdleVfx();
+                return;
+            }
+        }
 
         if (persistentIdleVfxInstance != null &&
             activePersistentIdleVfxEntry == desired &&
