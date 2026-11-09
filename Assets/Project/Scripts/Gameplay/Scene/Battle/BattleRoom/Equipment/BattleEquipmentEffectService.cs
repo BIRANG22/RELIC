@@ -358,11 +358,21 @@ public static class BattleEquipmentEffectService
 
         BattleEffectUtility.HealPlayer(context.PlayerCaster, healAmount);
 
-        // Decrease E_Lifesteal by one only when its healing effect triggers.
-        // The Effect sheet must use EndTurn = DecreaseOnTrigger.
-        // A hit that deals no damage does not consume a stack.
+        // Lifesteal stacks are consumed once per executed attack action,
+        // not once per damaging hit. See ConsumePlayerLifestealOnAttack.
+    }
+
+    /// <summary>
+    /// 공격 행동 1회마다 흡혈을 1 감소시킵니다. 적중 및 실제 피해 여부와 무관합니다.
+    /// 다단히트 공격 중에는 회복 효과를 유지하고, 행동이 끝난 뒤 한 번 소모합니다.
+    /// </summary>
+    public static void ConsumePlayerLifestealOnAttack(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || runtime.StatusEffects == null)
+            return;
+
         BattleStatusEffectService.TryConsumeOnTrigger(
-            context.PlayerCaster.RuntimeData.StatusEffects,
+            runtime.StatusEffects,
             LifestealEffectId);
     }
 
@@ -1310,8 +1320,8 @@ public static class BattleEquipmentEffectService
         if (runtime == null || command == null || entry == null)
             return value;
 
-        int runeKnockbackValue = SumConfiguredRuneTargetEffectValues(
-            runtime, RuneTargetKnockbackValueDeltaEffectId, command.SkillId);
+        int runeKnockbackValue = SumConfiguredRuneEffectValues(
+            runtime, RuneTargetKnockbackValueDeltaEffectId);
 
         // 전용 룬의 넉백 값은 추가 수치가 아니라 최종 넉백 거리입니다.
         // 예: 기본 1칸인 대지가르기에 Rune_54 값 3이 적용되면 최종 3칸 넉백입니다.
@@ -1338,16 +1348,16 @@ public static class BattleEquipmentEffectService
         if (entry.EffectId == "E_Cure")
         {
             // 파편 보정을 먼저 확정한 뒤 유물 보정을 적용합니다.
-            value += SumConfiguredRuneTargetEffectValues(
-                runtime, RuneTargetHealValueDeltaEffectId, command.SkillId);
+            value += SumConfiguredRuneEffectValues(
+                runtime, RuneTargetHealValueDeltaEffectId);
             value += SumConfiguredRelicEffectValues(runtime, HealValueDeltaEffectId);
         }
 
         if (entry.EffectId == "E_Armor")
         {
             // 파편 배율도 유물보다 먼저 계산합니다.
-            int armorMultiplier = SumConfiguredRuneTargetEffectValues(
-                runtime, RuneTargetArmorMultiplierEffectId, command.SkillId);
+            int armorMultiplier = SumConfiguredRuneEffectValues(
+                runtime, RuneTargetArmorMultiplierEffectId);
             if (armorMultiplier > 1)
                 value *= armorMultiplier;
 
@@ -1362,14 +1372,14 @@ public static class BattleEquipmentEffectService
 
         if (entry.EffectId == "E_Boost")
         {
-            value += SumConfiguredRuneTargetEffectValues(
-                runtime, RuneTargetBoostValueDeltaEffectId, command.SkillId);
+            value += SumConfiguredRuneEffectValues(
+                runtime, RuneTargetBoostValueDeltaEffectId);
         }
 
         if (IsDamageEffect(entry.EffectId))
         {
-            value += SumConfiguredRuneTargetEffectValues(
-                runtime, RuneTargetDamageValueDeltaEffectId, command.SkillId);
+            value += SumConfiguredRuneEffectValues(
+                runtime, RuneTargetDamageValueDeltaEffectId);
         }
 
         value = Mathf.Max(
@@ -1454,8 +1464,8 @@ public static class BattleEquipmentEffectService
         {
             count = Mathf.Max(
                 0,
-                count + SumConfiguredRuneTargetEffectValues(
-                    runtime, RuneTargetAttackCountDeltaEffectId, command.SkillId));
+                count + SumConfiguredRuneEffectValues(
+                    runtime, RuneTargetAttackCountDeltaEffectId));
 
             count = Mathf.Max(
                 0,
@@ -1501,8 +1511,8 @@ public static class BattleEquipmentEffectService
         if (skillData == null)
             return string.Empty;
 
-        if (SumConfiguredRuneTargetEffectValues(
-                runtime, RuneTargetRangeExpandEffectId, skillData.SkillId) > 0 &&
+        if (SumConfiguredRuneEffectValues(
+                runtime, RuneTargetRangeExpandEffectId) > 0 &&
             skillData.RangeId == "Range_17")
         {
             return "Range_05";
@@ -2074,8 +2084,8 @@ public static class BattleEquipmentEffectService
 
         CharacterRuntimeData runtime = command.UserRuntime;
         SkillType skillType = command.SkillData.SkillType;
-        int delta = SumConfiguredRuneTargetEffectValues(
-            runtime, RuneTargetSkillCostDeltaEffectId, command.SkillId);
+        int delta = SumConfiguredRuneEffectValues(
+            runtime, RuneTargetSkillCostDeltaEffectId);
 
         if (skillType == SkillType.Attack)
             delta += SumConfiguredRelicEffectValues(runtime, AttackCostDeltaEffectId);
@@ -2296,14 +2306,14 @@ public static class BattleEquipmentEffectService
         return delta;
     }
 
-    private static int SumConfiguredRuneTargetEffectValues(
+    // Rune effects are matched by EffectIds rather than a removed TargetSkillId column.
+    // Callers are responsible for checking the appropriate skill/effect conditions.
+    private static int SumConfiguredRuneEffectValues(
         CharacterRuntimeData runtime,
-        string effectId,
-        string skillId)
+        string effectId)
     {
         if (runtime?.EquippedRuneIds == null ||
             string.IsNullOrWhiteSpace(effectId) ||
-            string.IsNullOrWhiteSpace(skillId) ||
             DataManager.Instance == null ||
             DataManager.Instance.RuneDatabase == null)
         {
@@ -2311,16 +2321,12 @@ public static class BattleEquipmentEffectService
         }
 
         int total = 0;
-        string normalizedSkillId = skillId.Trim();
-
         for (int i = 0; i < runtime.EquippedRuneIds.Length; i++)
         {
             string runeId = runtime.EquippedRuneIds[i];
-
             if (string.IsNullOrWhiteSpace(runeId) ||
                 !DataManager.Instance.RuneDatabase.TryGet(runeId, out RuneData rune) ||
-                rune == null ||
-                !RuneTargetsSkill(rune, normalizedSkillId))
+                rune == null)
             {
                 continue;
             }
@@ -2335,26 +2341,6 @@ public static class BattleEquipmentEffectService
         }
 
         return total;
-    }
-
-    private static bool RuneTargetsSkill(RuneData rune, string skillId)
-    {
-        if (rune == null ||
-            string.IsNullOrWhiteSpace(rune.TargetSkillId) ||
-            string.IsNullOrWhiteSpace(skillId))
-        {
-            return false;
-        }
-
-        string[] targetSkillIds = rune.TargetSkillId.Split(';');
-        for (int i = 0; i < targetSkillIds.Length; i++)
-        {
-            string targetSkillId = targetSkillIds[i]?.Trim();
-            if (!string.IsNullOrWhiteSpace(targetSkillId) && targetSkillId == skillId)
-                return true;
-        }
-
-        return false;
     }
 
     private static int SumConfiguredRelicEffectValues(

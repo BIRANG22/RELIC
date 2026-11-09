@@ -35,6 +35,9 @@ namespace Relic.Gameplay.Data
         public EndTurn EndTurn;
         public EffectValueDecreaseRule DecreaseRule => (EffectValueDecreaseRule)EndTurn;
 
+        // Display-only decrease/removal condition, independent of ToolTip.
+        public string Trigger;
+
         public string ToolTip;
 
         // Effect sheet: 1 = visible in Record Effect tab.

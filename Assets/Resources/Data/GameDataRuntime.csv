@@ -3,8 +3,8 @@
 CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,introduction
 Char_01,힐트,86,10,4,5,Karma,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_02,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,“강한 놈들이 득실거린다며? 그럼 내가 가야지.”
 Char_02,카야,77,12,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_03,S_Ability_04,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"""임무라면 완수합니다. 그뿐입니다."""
-Char_03,헤이즈,65,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"""정말 제가 가야 하나요…? 두렵지만 해볼게요."""
-Char_04,이네스,80,11,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정 마세요. 모두 제가 지킬게요.”
+Char_03,헤이즈,65,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"""정말 가야 하나요…? 두렵지만 해볼게요."""
+Char_04,이네스,80,11,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정 마세요. 제가 모두 지킬게요.”
 Char_05,Char_05,75,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_09,S_Ability_10,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,
 Char_06,Char_06,70,13,4,5,Karma,2,2,S_Passive_11,S_Passive_12,S_Unique_11,S_Unique_12,S_Ability_11,S_Ability_12,Rune_76,Rune_77,Rune_78,Rune_79,Rune_80,
 ,,,,,,,,
@@ -20,7 +20,7 @@ Char_06,Char_06,70,13,4,5,Karma,2,2,S_Passive_11,S_Passive_12,S_Unique_11,S_Uniq
 ,,,,,,
 
 # Monster
-몬스터ID,페이즈,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,이동범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID
+몬스터ID,페이즈,이름,등급,HP,방어도,최소 가격,최대 가격,고유아이템,고유 아이템 확률,이동범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID
 MonsterId,Phase,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05
 Mon_01,0,머크,Common,50,0,24,32,Item_001,0.35,Range_18,S_Monster_01,S_Monster_02,0,0,0
 Mon_02,0,블롭,Common,20,0,10,16,Item_002,0.35,Range_17,S_Monster_03,S_Monster_04,0,0,0
@@ -215,310 +215,310 @@ GR_Stigma,낙인,1,0,-1,0,1,1,Monster,0,None,사냥감에게 드리운 포식의
 ,,,,,,,,,
 
 # Effect
-효과ID,이름,효과타입,턴종료제거,툴팁,표시유무
-EffectId,Name,EffectType,EndTurn,ToolTip,Mark
-E_Max_HP,최대 HP,Neutral,0,생명력의 최대치.,0
-E_Max_Cost,최대 Cost,Neutral,0,마나의 최대치.,0
-E_Mana,마나,Neutral,0,마나를 수치만큼 즉시 회복한다.,0
-E_Karma,카르마,Neutral,0,카르마를 수치만큼 즉시 획득한다.,0
-E_Move,이동,Neutral,0,지정한 위치로 이동한다.,0
-E_Strike,피해,Neutral,0,대상에게 피해를 준다. 방어도가 있다면 방어도부터 감소한다.,1
-E_Pierce,관통피해,Neutral,0,방어도를 무시하고 대상의 생명력에 직접 피해를 준다.,1
-E_Rush,돌진,Neutral,0,"지정된 칸까지 전진하며, 충돌 시 대상 앞에서 멈춘다.",1
-E_Crash,충돌,Neutral,0,이동 중 유닛이나 장애물에 막히면 고정 피해를 받는다.,1
-E_Knockback,넉백,Neutral,0,대상을 시전자에게서 멀어지는 방향으로 밀어낸다.,1
-E_Grab,그랩,Neutral,0,대상을 시전자에게 가까워지는 방향으로 당겨온다.,1
-E_Boost,증폭,Beneficial,Remove,보유한 수치만큼 공격 수치가 증가한다. (턴 종료 시 소멸),1
-E_Smite,강타,Beneficial,Decrease,첫 공격의 피해가 50% 증가한다. (턴 종료 시 1 감소),1
-E_Blindside,기습,Beneficial,Decrease,후방 공격 시 피해가 50% 증가한다. (턴 종료 시 1 감소),1
-E_Grit,투지,Beneficial,Decrease,"주는 피해가 30% 증가한다. (효과 중첩 없음, 턴 종료 시 1 감소)",1
-AR_DamageBoostThisTurn,힘,Beneficial,Remove,"주는 피해가 100% 증가한다. (효과 중첩 없음, 턴 종료 시 소멸)",1
-E_Armor,방어도,Beneficial,Remove,보유한 수치만큼 피해를 막는다. (턴 종료 시 소멸),1
-E_Cure,치유,Neutral,0,생명력을 수치만큼 즉시 회복한다.,1
-E_Heal,재생,Beneficial,Decrease,턴 종료 시 보유한 수치만큼 생명력을 회복한다. (발동 후 1 감소),1
-E_Bond,유대,Beneficial,Decrease,유대를 보유한 아군끼리 피해를 분담한다. (턴 종료 시 1 감소),1
-AR_DamageReductionThisTurn,경화,Beneficial,Remove,"받는 피해가 50% 감소한다. (효과 중첩 없음, 턴 종료 시 소멸)",1
-E_Charge,충전,Beneficial,Remove,턴 종료 시 보유한 수치만큼 마나를 회복한다. (턴 종료 시 소멸),1
-E_Focus,집중,Beneficial,Remove,턴 종료 시 보유한 수치만큼 카르마를 획득한다. (턴 종료 시 소멸),1
-E_Swift,신속,Beneficial,Decrease,변이체보다 먼저 행동한다. (턴 종료 시 1 감소),1
-E_Lifesteal,흡혈,Beneficial,DecreaseOnTrigger,준 피해의 30%만큼 생명력을 회복한다. (발동 시 1 감소),1
-E_Ward,가시,Beneficial,DecreaseOnTrigger,피격 시 수치만큼 반격 피해를 준다. (발동 시 1 감소),1
-E_Poison,중독,Harmful,Decrease,"턴을 종료할 때 수치만큼 피해를 받고, 수치가 1 감소한다.",1
-E_Bleed,출혈,Harmful,DecreaseOnTrigger,"1칸 이동할 때마다 현재 수치만큼 피해를 받고, 수치가 1 감소한다.",1
-E_Vulnerable,취약,Harmful,Decrease,받는 피해가 50% 증가한다. 턴을 종료할 때 수치가 1 감소한다.,1
-E_Weaken,약화,Harmful,Decrease,주는 피해가 30% 감소한다. 턴을 종료할 때 수치가 1 감소한다.,1
-E_Fatigue,쇠약,Harmful,Decrease,수치 1마다 공격 수치가 1 감소한다. 턴을 종료할 때 수치가 1 감소한다.,1
-E_Bondage,속박,Harmful,DecreaseOnTrigger,"다음 이동 시도를 1회 막고, 수치가 1 감소한다.",1
-E_Grudge,원한,Beneficial,Maintain,공격 수치가 수치만큼 증가한다. 턴이 지나도 유지된다.,1
-E_Corrosion,침식,Harmful,Maintain,받는 모든 피해가 수치만큼 증가한다. 턴이 지나도 유지된다.,1
-E_Barrier,장막,Beneficial,Decrease,받는 피해를 1회 무시한다. 발동하거나 턴을 종료할 때 수치가 1 감소한다.,1
-E_Split,분열,Neutral,Maintain,직접 공격을 받을 때마다 수치가 1 감소한다. 수치가 0이 되면 블롭 2마리로 분열한다.,1
-E_Trail,흔적,Neutral,Maintain,이동할 때 원래 위치에 점액을 남긴다.,1
-E_DoubleMove,기동,Neutral,Maintain,매 턴 이동을 최대 2회 예약할 수 있다.,1
-E_Explode,폭발,Neutral,Decrease,턴을 종료할 때 수치가 1 감소한다. 수치가 0이 되면 대폭발을 사용한다.,1
-E_Counter,반격,Beneficial,Maintain,직접 공격으로 피해를 받을 때마다 내려찍기로 반격한다.,1
-E_Targeting,표적,Beneficial,Maintain,같은 라인에 캐릭터가 없으면 곡사를 예약한다.,1
-E_Fortress,철옹성,Neutral,Maintain,턴을 시작할 때 방어도를 10 획득한다.,1
-E_Ambush,암습,Neutral,Maintain,후방에서 공격할 때 피해가 30% 증가한다.,1
-E_Necromancy,사령술,Neutral,Maintain,유골이 된 변이체를 최대 생명력의 30%로 부활시킨다.,1
-E_WebCreation,사냥실,Neutral,Maintain,턴을 시작할 때 거미줄을 생성한다.,1
-E_Entanglement,뒤얽힘,Neutral,Maintain,턴을 시작할 때 무작위 타임라인 슬롯 1개를 거미줄로 막는다.,1
-E_Spider_Web,거미줄,Neutral,Maintain,이동에 필요한 마나 소모량이 2배가 된다.,1
-E_Spawn_Spider_Egg,거미알 생성,Neutral,None,지정한 위치에 고치를 생성한다.,None
-E_Spawn_Spider_Web,거미줄 생성,Neutral,None,지정한 위치에 거미줄을 생성한다.,None
-E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,마나 재생량을 수치만큼 변화시킨다.,0
-E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,카르마가 최대일 때 카르마를 회복하면 수치 배율만큼 마나를 회복한다.,0
-E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,카르마가 최대일 때 모든 스킬 마나 사용량을 수치만큼 변화시킨다.,0
-E_First_Move_Cost_Delta,첫 이동 코스트 변화,Neutral,0,첫 이동의 마나 사용량을 수치만큼 변화시킨다.,0
-E_Attack_Cost_Delta,공격 스킬 코스트 변화,Neutral,0,공격타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,Neutral,0,디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_Move_Cost_Zero,이동 코스트 제거,Neutral,0,이동이 코스트를 소모하지 않는다.,0
-E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,Neutral,0,마스크에 포함된 슬롯에 기억을 등록할 수 없다.,0
-E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,Neutral,0,기억을 등록할 수 있는 슬롯 수를 수치로 제한한다.,0
-E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,Neutral,0,해당 슬롯에서 이동하지 않았다면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,Neutral,0,1번 슬롯에 등록하는 첫 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,Neutral,0,5번 슬롯에 등록하는 모든 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,Neutral,0,현재 체력이 30% 이하라면 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,Neutral,0,현재 체력이 90% 이상이라면 마나 재생량을 수치만큼 변화시킨다.,0
-E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,Neutral,0,현재 체력이 90% 이상이라면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
-E_Attack_Value_Delta,공격 스킬 피해량 변화,Neutral,0,공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
-E_Attack_Count_Delta,공격 스킬 횟수 변화,Neutral,0,공격타입 기억의 피해 횟수를 수치만큼 변화시킨다.,0
-E_Debuff_Value_Delta,디버프 스킬 수치 변화,Neutral,0,디버프타입 기억의 효과 수치를 수치만큼 변화시킨다.,0
-E_Heal_Value_Delta,기억 치유량 변화,Neutral,0,기억으로 회복하는 생명력을 수치만큼 변화시킨다.,0
-E_Skill_Armor_Value_Delta,기억 방어도 변화,Neutral,0,기억으로 부여하는 방어도를 수치만큼 변화시킨다.,0
-E_Poison_Value_Delta,기억 중독 부여량 변화,Neutral,0,기억으로 부여하는 중독 수치를 수치만큼 변화시킨다.,0
-E_Bleed_Value_Delta,기억 출혈 부여량 변화,Neutral,0,기억으로 부여하는 출혈 수치를 수치만큼 변화시킨다.,0
-E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,Neutral,0,방어도 획득량을 퍼센트로 변화시킨다.,0
-E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0
-E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,Neutral,0,해당 슬롯에서 이동에 소모한 마나만큼 공격 피해량을 증가시킨다.,0
-E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,Neutral,0,1번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
-E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,Neutral,0,1번 슬롯 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0
-E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,Neutral,0,5번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
-E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,Neutral,0,현재 체력이 30% 이하라면 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
-E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,Neutral,0,자신에게 버프를 부여할 수 없는 대신 버프타입 기억의 효과수치를 수치만큼 증가시킨다.,0
-E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,Neutral,0,체력이 최대라면 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0
-E_Unique_Skill_Value_Percent,발현 기억 수치 퍼센트 변화,Neutral,0,발현 기억의 효과 수치를 퍼센트로 변화시킨다.,0
-E_Unique_Skill_Count_Delta,발현 기억 횟수 변화,Neutral,0,발현 기억의 횟수를 수치만큼 변화시킨다.,0
-E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,Neutral,0,5번 슬롯 공격타입 기억의의 피해를 관통 피해로 변경한다.,0
-E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,Neutral,0,1번 슬롯 공격타입 기억으로 적 처치 시 집중을 수치만큼 얻는다.,0
-E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,Neutral,0,5번 슬롯 공격타입 기억으로 적 처치 시 해당 스킬 사용 마나를 돌려받는다.,0
-E_Unique_Skill_Kill_Focus,발현 기억 처치 집중,Neutral,0,발현 기억으로 적 처치 시 집중을 수치만큼 얻는다.,0
-E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,Neutral,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,0
-E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,Neutral,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,0
-E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,Neutral,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,0
-E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,Neutral,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,0
-E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,Neutral,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.,0
-E_Ally_Buff_Charge,아군 버프 충전 획득,Neutral,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.,0
-E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,Neutral,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.,0
-E_Forced_Move_Immune,강제이동 면역,Neutral,0,넉백과 그랩으로 이동하지 않는다.,0
-E_Crash_Damage_Immune,충돌 피해 면역,Neutral,0,충돌로 인한 피해를 받지 않는다.,0
-E_Grid_Effect_Immune,그리드 효과 면역,Neutral,0,그리드 효과를 받지 않는다.,0
-E_Overheal_To_Armor,최대 체력 회복 방어도 전환,Neutral,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.,0
-E_Healing_Blocked,회복 차단,Neutral,0,체력을 회복할 수 없다.,0
-E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,Neutral,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.,0
-E_Once_Battle_End_Turn_Zero_Cost_Charge,턴 종료 마나 0 회복,Neutral,0,턴 종료 시 남은 마나가 0이면 마나를 수치만큼 회복한다.,0
-E_Once_Battle_Attack_Miss_Charge,공격 실패 마나 회복,Neutral,0,공격이 적중하지 않았을 때마다 마나를 수치만큼 회복한다.,0
-E_Once_Battle_Full_HP_Target_Damage_Percent,최대 생명력 대상 피해 배율,Neutral,0,생명력이 최대인 적에게 피해를 줄 때 피해량을 수치 배로 적용한다.,0
-E_Turn_Start_Cost_Recovery,지정 턴 마나 회복,Neutral,0,지정 턴 시작 시 마나를 수치만큼 회복한다.,0
-E_Turn_Start_Unique_Resource_Recovery,지정 턴 카르마 회복,Neutral,0,지정 턴 시작 시 카르마를 수치만큼 회복한다. 최대치를 초과하지 않는다.,0
-E_Turn_Start_Armor,지정 턴 방어도,Neutral,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.,0
-E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,Neutral,0,등록된 슬롯 수에 비례해 방어도를 얻는다.,0
-E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,Neutral,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.,0
-E_Turn_Start_Swift,지정 턴 신속,Neutral,0,지정 턴 시작 시 신속을 수치만큼 얻는다.,0
-E_Turn_Start_Boost,지정 턴 증폭,Neutral,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.,0
-E_Turn_Start_Smite,지정 턴 강타,Neutral,0,지정 턴 시작 시 강타를 수치만큼 얻는다.,0
-E_Turn_Start_Lifesteal,지정 턴 흡혈,Neutral,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.,0
-E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.,0
-E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.,0
-E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,Neutral,0,등록한 공격타입 기억이 하나뿐이면 증폭을 수치만큼 얻는다.,0
-E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,Neutral,0,등록한 공격타입 기억의 수가 기준 이상이면 증폭을 수치만큼 얻는다.,0
-E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,Neutral,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.,0
-E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,Neutral,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.,0
-E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,Neutral,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.,0
-E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,Neutral,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.,0
-E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,Neutral,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.,0
-E_Collision_Charge,충돌 충전 획득,Neutral,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.,0
-E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.,0
-E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.,0
-E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,상점 판매 가격을 퍼센트로 감소시킨다.,0
-E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.,0
-E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.,0
-E_Exploration_Start_Unique_Resource,탐사 시작 카르마 회복,Neutral,0,탐사 시작 시 1회 카르마를 수치만큼 회복한다.,0
-E_Unique_Resource_Max_Reached_Boost,카르마 최대 도달 증폭,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 증폭을 수치만큼 얻는다.,0
-E_Unique_Resource_Max_Reached_Smite,카르마 최대 도달 강타,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 강타를 수치만큼 얻는다.,0
-E_Unique_Resource_Max_Reached_Cost_Recovery,카르마 최대 도달 마나 회복,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 마나를 수치만큼 회복한다.,0
-E_Unique_Resource_Max_Reached_Armor,카르마 최대 도달 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 방어도를 수치만큼 얻는다.,0
-E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,카르마 최대 도달 아군 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 자신과 생명력 비율이 가장 낮은 다른 아군에게 방어도를 수치만큼 부여한다.,0
-E_Rune_Target_Damage_Value_Delta,룬 대상 기억 피해 변화,Neutral,0,룬의 대상 기억이 주는 피해를 수치만큼 변화시킨다.,0
-E_Rune_Target_Attack_Count_Delta,룬 대상 기억 공격 횟수 변화,Neutral,0,룬의 대상 기억 공격 횟수를 수치만큼 변화시킨다.,0
-E_Rune_Target_Skill_Cost_Delta,룬 대상 기억 마나 소모 변화,Neutral,0,룬의 대상 기억 마나 소모량을 수치만큼 변화시킨다.,0
-E_Rune_Target_Armor_Multiplier,룬 대상 기억 방어도 배율,Neutral,0,룬의 대상 기억이 부여하는 방어도를 수치 배율로 적용한다.,0
-E_Rune_Target_Boost_Value_Delta,룬 대상 기억 증폭 변화,Neutral,0,룬의 대상 기억이 부여하는 증폭을 수치만큼 변화시킨다.,0
-E_Rune_Target_Heal_Value_Delta,룬 대상 기억 치유 변화,Neutral,0,룬의 대상 기억이 회복하는 생명력을 수치만큼 변화시킨다.,0
-E_Rune_Target_Knockback_Value_Delta,룬 대상 기억 넉백 변화,Neutral,0,룬의 대상 기억이 부여하는 넉백 거리를 수치만큼 변화시킨다.,0
-E_Rune_Target_Range_Expand,룬 대상 기억 범위 확장,Neutral,0,룬의 대상 기억 범위를 한 단계 확장한다.,0
-AR_RecoverUniqueResourceToMax,응축된 카르마,Neutral,0,카르마를 3 회복한다.,0
-AR_RecoverCostToMax,마력 플라스크,Neutral,0,마나를 10 회복한다.,0
-AR_GrantSwift,각성,Neutral,0,신속을 2 부여한다.,0
-AR_CleanseDebuffs,맑은 물,Neutral,0,모든 디버프를 제거한다.,0
-AR_MoveToGrid,위치 이동,Neutral,0,선택한 빈 그리드로 이동한다.,0
-AR_SwapAlly,위치 변경,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.,0
-AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 그리드에 독 장판을 생성한다.,0
-AR_SpawnThornGridEffect,가시 생성,Neutral,0,선택한 그리드에 가시를 생성한다.,0
-AR_SpawnObstacleGridEffect,잔해 생성,Neutral,0,선택한 그리드에 잔해를 생성한다.,0
-AR_RemoveGridEffect,장애물 제거,Neutral,0,선택한 그리드의 장애물을 제거한다.,0
-AR_SpawnDummyGridEffect,호문쿨루스 루어,Neutral,0,선택한 빈 그리드에 루어를 생성한다.,0
-AR_SpawnExplosiveDollGridEffect,호문쿨루스 브룸,Neutral,0,선택한 빈 그리드에 브룸을 생성한다.,0
-E_MissingHPStrike,잃은 생명력의 {ValueRate}%,Neutral,0,잃은 체력의 ValueRate%만큼 피해 계산,0
-E_PoisonTrigger,중독 즉시 발동,Neutral,0,중독을 ValueRate 부여한 뒤 중독 효과를 즉시 1회 발동,0
-E_DebuffIncrease,디버프 수치 증가,Neutral,0,대상이 현재 보유한 모든 Harmful 디버프 수치를 ValueRate만큼 증가,0
-E_DebuffDouble,디버프 증폭,Neutral,0,대상이 보유한 디버프 중 현재 수치가 가장 높은 1종의 수치를 2배,0
-E_RemoveArmor,방어도 제거,Neutral,0,현재 방어도와 동일한 양의 방어도 피해를 주어 방어도를 0으로 만듦,0
-E_ArmorStrike,보유한 방어도,Neutral,0,시전자의 현재 방어도에 수치계수를 곱한 피해를 준다.,0
-E_MissSelfDamage,빗나감 자해,Neutral,0,유효한 적을 맞히지 못하면 자신에게 수치만큼 피해를 준다.,0
-E_ValueUpOnKill,처치 시 영구 피해 증가,Neutral,0,이 스킬로 처치한 적 하나당 다음 사용부터 피해 수치가 증가한다.,0
-E_ValueUpOnHit,명중 시 전투 피해 증가,Neutral,0,성공한 타격마다 이 전투 동안 다음 사용부터 피해 수치가 증가한다.,0
-E_DamageUpIfBleeding,출혈 대상 피해 증가,Neutral,0,출혈이 있는 대상에게 주는 피해가 50% 증가한다.,0
-E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,0
-E_TriggerPoison,중독 즉시 발동,Neutral,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,0
-E_RestoreManaPerHitTarget,타격당 마나 회복,Neutral,0,성공한 총 타격 수에 비례해 마나를 회복한다.,0
-E_RandomStrike,무작위 연속 타격,Neutral,0,범위 내 살아 있는 적을 매 타격마다 다시 추첨해 피해를 준다.,0
-E_StrikeByVulnerable,취약 비례 피해,Neutral,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,0
-E_StrikeCountByBuff,버프 종류 비례 타격,Neutral,0,시전자의 서로 다른 이로운 효과 종류 수만큼 타격 횟수가 증가한다.,0
-E_StrikeCountByDebuff,디버프 종류 비례 타격,Neutral,0,대상의 서로 다른 해로운 효과 종류 수만큼 타격 횟수가 증가한다.,0
-E_StrikeByTargetPoison,중독 비례 피해,Neutral,0,대상이 보유한 중독 수치만큼 피해를 준다.,0
-E_Rune_Turn1_Ward,1턴 시작 시 장막을 수치 획득한다.,Neutral,0,1턴 시작 시 장막을 {ValueRate1} 획득한다.,0
-E_Rune_Armor10_Smite,턴 시작 시 방어도가 수치 이상이라면 강타 1을 획득한다.,Neutral,0,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,0
-E_Rune_Turn_Start_Lose_HP_Boost,매 턴 시작 시 생명력 3을 잃고 증폭 수치을 획득한다.,Neutral,0,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,0
-E_Rune_Low_HP_Damage_Percent,현재 생명력이 50% 이하라면 주는 피해가 수치% 증가한다.,Neutral,0,현재 생명력이 50% 이하라면 주는 피해가 {ValueRate1}% 증가한다.,0
-E_Rune_First_Registered_Skill_Attack_Count,전투에서 처음 등록한 공격 기억의 공격 횟수가 수치회 증가한다.,Neutral,0,전투에서 처음 등록한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,0
-E_Rune_Consecutive_Attack_Final_Pierce,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,Neutral,0,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,0
-E_Rune_Multi_Hit_Damage_Delta,공격 횟수가 횟수회 이상인 기억의 피해가 수치 증가한다.,Neutral,0,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,0
-E_Rune_Pierce_Hit_Bleed,관통 피해 적중 시 대상에게 출혈을 수치 부여한다.,Neutral,0,관통 피해 적중 시 대상에게 출혈을 {ValueRate1} 부여한다.,0
-E_Rune_Single_Target_Damage_Delta,공격 대상이 적 1명뿐이라면 피해가 수치 증가한다.,Neutral,0,공격 대상이 적 1명뿐이라면 피해가 {ValueRate1} 증가한다.,0
-E_Rune_Status_Apply_Armor,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,Neutral,0,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,0
-E_Rune_Adjacent_Ally_Buff_Delta,자신과 인접한 아군에게 부여하는 버프 수치가 수치 증가한다.,Neutral,0,자신과 인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,0
-E_Rune_Debuff_Apply_Poison,적에게 디버프 부여 시 추가로 중독을 수치 부여한다.,Neutral,0,적에게 디버프 부여 시 추가로 중독을 {ValueRate1} 부여한다.,0
-E_Rune_Zero_Mana_Next_First_Skill_Free,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,Neutral,0,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,0
-E_Rune_Turn_Start_Adjacent_Ally_Heal,매 턴 시작 시 인접한 아군에게 재생을 수치 부여한다.,Neutral,0,매 턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,0
-E_Rune_Kill_Unique_Resource,처치한 적 1명당 카르마를 수치 획득한다.,Neutral,0,처치한 적 1명당 카르마를 {ValueRate1} 획득한다.,0
-E_Rune_High_HP_Heal_Remove_First_Debuff,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 수치 감소한다.,Neutral,0,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,0
-E_Rune_Vulnerable_Bonus_Percent,자신이 공격할 때 취약의 피해 증가율이 수치%로 증가한다.,Neutral,0,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,0
-E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,카르마가 최대치에 도달하면 모든 적에게 취약을 수치 부여한다.,Neutral,0,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,0
-E_PoisonEqualTargetPoison,대상 중독만큼 중독 부여,Harmful,0,대상이 보유한 중독 수치만큼 중독을 추가로 부여한다.,0
-E_Passive_Lose_HP,생명력 감소,Neutral,0,,0
-,,,,
-,,,,
+효과ID,이름,효과타입,턴종료제거,감소 조건,툴팁,표시유무
+EffectId,Name,EffectType,EndTurn,Trigger,ToolTip,Mark
+E_Max_HP,최대 HP,Neutral,0,0,생명력의 최대치.,0
+E_Max_Cost,최대 Cost,Neutral,0,0,마나의 최대치.,0
+E_Mana,마나,Neutral,0,0,마나를 수치만큼 즉시 회복한다.,0
+E_Karma,카르마,Neutral,0,0,카르마를 수치만큼 즉시 획득한다.,0
+E_Move,이동,Neutral,0,0,지정한 위치로 이동한다.,0
+E_Strike,피해,Neutral,0,0,대상에게 피해를 준다. 방어도가 있다면 방어도부터 감소한다.,1
+E_Pierce,관통피해,Neutral,0,0,방어도를 무시하고 대상의 생명력에 직접 피해를 준다.,1
+E_Rush,돌진,Neutral,0,0,"지정된 칸까지 전진하며, 충돌 시 대상 앞에서 멈춘다.",1
+E_Crash,충돌,Neutral,0,0,이동 중 유닛이나 장애물에 막히면 고정 피해를 받는다.,1
+E_Knockback,넉백,Neutral,0,0,대상을 시전자에게서 멀어지는 방향으로 밀어낸다.,1
+E_Grab,그랩,Neutral,0,0,대상을 시전자에게 가까워지는 방향으로 당겨온다.,1
+E_Boost,증폭,Beneficial,Remove,턴 종료 시 소멸,수치만큼 공격의 피해량이 증가한다.,1
+E_Smite,강타,Beneficial,Decrease,턴 종료 시 1 감소,첫 공격의 피해가 50% 증가한다.,1
+E_Blindside,기습,Beneficial,Decrease,턴 종료 시 1 감소,후방 공격 시 피해가 50% 증가한다. ,1
+E_Grit,투지,Beneficial,Decrease,턴 종료 시 1 감소,주는 피해가 30% 증가한다.,1
+AR_DamageBoostThisTurn,힘,Beneficial,Decrease,턴 종료 시 1 감소,주는 피해가 100% 증가한다.,1
+E_Armor,방어도,Beneficial,Remove,턴 종료 시 소멸,보유한 수치만큼 피해를 막는다.,1
+E_Cure,치유,Neutral,0,0,생명력을 수치만큼 즉시 회복한다.,1
+E_Heal,재생,Beneficial,Decrease,턴 종료 시 1 감소,턴 종료 시 수치만큼 생명력을 회복한다.,1
+E_Bond,유대,Beneficial,Decrease,턴 종료 시 1 감소,유대를 보유한 아군끼리 피해를 분담한다.,1
+AR_DamageReductionThisTurn,경화,Beneficial,Decrease,턴 종료 시 1 감소,받는 피해가 50% 감소한다.,1
+E_Charge,충전,Beneficial,Remove,턴 종료 시 소멸,턴 종료 시 수치만큼 마나를 회복한다.,1
+E_Focus,집중,Beneficial,Remove,턴 종료 시 소멸,턴 종료 시 수치만큼 카르마를 회복한다.,1
+E_Swift,신속,Beneficial,Decrease,턴 종료 시 1 감소,행동 예약 시 슬롯의 앞순서에 배치할 수 있다.,1
+E_Lifesteal,흡혈,Beneficial,DecreaseOnTrigger,공격 시 1 감소,준 피해의 30%만큼 생명력을 회복한다.,1
+E_Ward,가시,Beneficial,DecreaseOnTrigger,피격 시 1 감소,피격 시 수치만큼 반격 피해를 준다.,1
+E_Poison,중독,Harmful,Decrease,턴 종료 시 1 감소,턴 종료 시 수치만큼 피해를 받는다.,1
+E_Bleed,출혈,Harmful,DecreaseOnTrigger,이동 시 1 감소,1칸 이동 시 수치만큼 피해를 받는다.,1
+E_Vulnerable,취약,Harmful,DecreaseOnTrigger,피격 시 1 감소,받는 피해가 50% 증가한다.,1
+E_Weaken,약화,Harmful,DecreaseOnTrigger,공격 시 1 감소,주는 피해가 30% 감소한다.,1
+E_Fatigue,쇠약,Harmful,Decrease,턴 종료 시 1 감소,수치만큼 공격 수치가 감소한다.,1
+E_Bondage,속박,Harmful,DecreaseOnTrigger,이동 시 1 감소,이동을 시도하면 행동이 취소된다.,1
+E_Grudge,원한,Beneficial,Maintain,0,수치만큼 공격 피해량이 증가한다.,1
+E_Corrosion,침식,Harmful,Maintain,0,받는 모든 피해가 수치만큼 증가한다.,1
+E_Barrier,장막,Beneficial,DecreaseOnTrigger,피격 시 1 감소,받는 피해를 무효화한다.,1
+E_Split,분열,Neutral,DecreaseOnTrigger,피격 시 1 감소,효과 제거 시 블롭 2마리로 분열한다.,1
+E_Trail,흔적,Neutral,Maintain,0,이동 시 기존 위치에 점액을 남긴다.,1
+E_DoubleMove,기동,Neutral,Maintain,0,매 턴 이동을 최대 2회 예약한다.,1
+E_Explode,폭발,Neutral,Decrease,턴 종료 시 1 감소,효과 제거 시 대폭발을 사용한다.,1
+E_Counter,반격,Neutral,Maintain,0,직접 공격에 피격 시 내려찍기로 반격한다.,1
+E_Targeting,표적,Neutral,Maintain,0,같은 라인에 캐릭터가 없으면 곡사를 예약한다.,1
+E_Fortress,철옹성,Neutral,Maintain,0,턴 시작 시 방어도 10을 획득한다.,1
+E_Ambush,암습,Neutral,Maintain,0,후방 공격 시 피해가 100% 증가한다.,1
+E_Necromancy,사령술,Neutral,Maintain,0,유골 상태의 변이체를 최대 생명력의 50%로 부활시킨다.,1
+E_WebCreation,사냥실,Neutral,Maintain,0,턴 시작 시 거미줄을 생성한다.,1
+E_Entanglement,뒤얽힘,Neutral,Maintain,0,턴 시작 시 무작위 타임라인 슬롯 1개를 거미줄로 막는다.,1
+E_Spider_Web,거미줄,Neutral,Maintain,0,이동 마나 소모량이 2배 증가한다.,1
+E_Spawn_Spider_Egg,거미알 생성,Neutral,None,0,지정 위치에 고치를 생성한다.,1
+E_Spawn_Spider_Web,거미줄 생성,Neutral,None,0,지정 위치에 거미줄을 생성한다.,1
+E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,0,마나 재생량을 수치만큼 변화시킨다.,0
+E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,0,카르마가 최대일 때 카르마를 회복하면 수치 배율만큼 마나를 회복한다.,0
+E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,0,카르마가 최대일 때 모든 스킬 마나 사용량을 수치만큼 변화시킨다.,0
+E_First_Move_Cost_Delta,첫 이동 코스트 변화,Neutral,0,0,첫 이동의 마나 사용량을 수치만큼 변화시킨다.,0
+E_Attack_Cost_Delta,공격 스킬 코스트 변화,Neutral,0,0,공격타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,Neutral,0,0,디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_Move_Cost_Zero,이동 코스트 제거,Neutral,0,0,이동이 코스트를 소모하지 않는다.,0
+E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,Neutral,0,0,마스크에 포함된 슬롯에 기억을 등록할 수 없다.,0
+E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,Neutral,0,0,기억을 등록할 수 있는 슬롯 수를 수치로 제한한다.,0
+E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,Neutral,0,0,해당 슬롯에서 이동하지 않았다면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,Neutral,0,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,Neutral,0,0,1번 슬롯에 등록하는 첫 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,Neutral,0,0,5번 슬롯에 등록하는 모든 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,Neutral,0,0,현재 체력이 30% 이하라면 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,Neutral,0,0,현재 체력이 90% 이상이라면 마나 재생량을 수치만큼 변화시킨다.,0
+E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,Neutral,0,0,현재 체력이 90% 이상이라면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0
+E_Attack_Value_Delta,공격 스킬 피해량 변화,Neutral,0,0,공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
+E_Attack_Count_Delta,공격 스킬 횟수 변화,Neutral,0,0,공격타입 기억의 피해 횟수를 수치만큼 변화시킨다.,0
+E_Debuff_Value_Delta,디버프 스킬 수치 변화,Neutral,0,0,디버프타입 기억의 효과 수치를 수치만큼 변화시킨다.,0
+E_Heal_Value_Delta,기억 치유량 변화,Neutral,0,0,기억으로 회복하는 생명력을 수치만큼 변화시킨다.,0
+E_Skill_Armor_Value_Delta,기억 방어도 변화,Neutral,0,0,기억으로 부여하는 방어도를 수치만큼 변화시킨다.,0
+E_Poison_Value_Delta,기억 중독 부여량 변화,Neutral,0,0,기억으로 부여하는 중독 수치를 수치만큼 변화시킨다.,0
+E_Bleed_Value_Delta,기억 출혈 부여량 변화,Neutral,0,0,기억으로 부여하는 출혈 수치를 수치만큼 변화시킨다.,0
+E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,Neutral,0,0,방어도 획득량을 퍼센트로 변화시킨다.,0
+E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,Neutral,0,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0
+E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,Neutral,0,0,해당 슬롯에서 이동에 소모한 마나만큼 공격 피해량을 증가시킨다.,0
+E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,Neutral,0,0,1번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
+E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,Neutral,0,0,1번 슬롯 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0
+E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,Neutral,0,0,5번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
+E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,Neutral,0,0,현재 체력이 30% 이하라면 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0
+E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,Neutral,0,0,자신에게 버프를 부여할 수 없는 대신 버프타입 기억의 효과수치를 수치만큼 증가시킨다.,0
+E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,Neutral,0,0,체력이 최대라면 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0
+E_Unique_Skill_Value_Percent,발현 기억 수치 퍼센트 변화,Neutral,0,0,발현 기억의 효과 수치를 퍼센트로 변화시킨다.,0
+E_Unique_Skill_Count_Delta,발현 기억 횟수 변화,Neutral,0,0,발현 기억의 횟수를 수치만큼 변화시킨다.,0
+E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,Neutral,0,0,5번 슬롯 공격타입 기억의의 피해를 관통 피해로 변경한다.,0
+E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,Neutral,0,0,1번 슬롯 공격타입 기억으로 적 처치 시 집중을 수치만큼 얻는다.,0
+E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,Neutral,0,0,5번 슬롯 공격타입 기억으로 적 처치 시 해당 스킬 사용 마나를 돌려받는다.,0
+E_Unique_Skill_Kill_Focus,발현 기억 처치 집중,Neutral,0,0,발현 기억으로 적 처치 시 집중을 수치만큼 얻는다.,0
+E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,Neutral,0,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,0
+E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,Neutral,0,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,0
+E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,Neutral,0,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,0
+E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,Neutral,0,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,0
+E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,Neutral,0,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.,0
+E_Ally_Buff_Charge,아군 버프 충전 획득,Neutral,0,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.,0
+E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,Neutral,0,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.,0
+E_Forced_Move_Immune,강제이동 면역,Neutral,0,0,넉백과 그랩으로 이동하지 않는다.,0
+E_Crash_Damage_Immune,충돌 피해 면역,Neutral,0,0,충돌로 인한 피해를 받지 않는다.,0
+E_Grid_Effect_Immune,그리드 효과 면역,Neutral,0,0,그리드 효과를 받지 않는다.,0
+E_Overheal_To_Armor,최대 체력 회복 방어도 전환,Neutral,0,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.,0
+E_Healing_Blocked,회복 차단,Neutral,0,0,체력을 회복할 수 없다.,0
+E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,Neutral,0,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.,0
+E_Once_Battle_End_Turn_Zero_Cost_Charge,턴 종료 마나 0 회복,Neutral,0,0,턴 종료 시 남은 마나가 0이면 마나를 수치만큼 회복한다.,0
+E_Once_Battle_Attack_Miss_Charge,공격 실패 마나 회복,Neutral,0,0,공격이 적중하지 않았을 때마다 마나를 수치만큼 회복한다.,0
+E_Once_Battle_Full_HP_Target_Damage_Percent,최대 생명력 대상 피해 배율,Neutral,0,0,생명력이 최대인 적에게 피해를 줄 때 피해량을 수치 배로 적용한다.,0
+E_Turn_Start_Cost_Recovery,지정 턴 마나 회복,Neutral,0,0,지정 턴 시작 시 마나를 수치만큼 회복한다.,0
+E_Turn_Start_Unique_Resource_Recovery,지정 턴 카르마 회복,Neutral,0,0,지정 턴 시작 시 카르마를 수치만큼 회복한다. 최대치를 초과하지 않는다.,0
+E_Turn_Start_Armor,지정 턴 방어도,Neutral,0,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.,0
+E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,Neutral,0,0,등록된 슬롯 수에 비례해 방어도를 얻는다.,0
+E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,Neutral,0,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.,0
+E_Turn_Start_Swift,지정 턴 신속,Neutral,0,0,지정 턴 시작 시 신속을 수치만큼 얻는다.,0
+E_Turn_Start_Boost,지정 턴 증폭,Neutral,0,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.,0
+E_Turn_Start_Smite,지정 턴 강타,Neutral,0,0,지정 턴 시작 시 강타를 수치만큼 얻는다.,0
+E_Turn_Start_Lifesteal,지정 턴 흡혈,Neutral,0,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.,0
+E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,Neutral,0,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.,0
+E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,Neutral,0,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.,0
+E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,Neutral,0,0,등록한 공격타입 기억이 하나뿐이면 증폭을 수치만큼 얻는다.,0
+E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,Neutral,0,0,등록한 공격타입 기억의 수가 기준 이상이면 증폭을 수치만큼 얻는다.,0
+E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,Neutral,0,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.,0
+E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,Neutral,0,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.,0
+E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,Neutral,0,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.,0
+E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,Neutral,0,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.,0
+E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,Neutral,0,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.,0
+E_Collision_Charge,충돌 충전 획득,Neutral,0,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.,0
+E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.,0
+E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.,0
+E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,0,상점 판매 가격을 퍼센트로 감소시킨다.,0
+E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.,0
+E_Battle_End_Heal,전투 종료 회복,Neutral,0,0,전투 종료 후 체력을 수치만큼 회복한다.,0
+E_Exploration_Start_Unique_Resource,탐사 시작 카르마 회복,Neutral,0,0,탐사 시작 시 1회 카르마를 수치만큼 회복한다.,0
+E_Unique_Resource_Max_Reached_Boost,카르마 최대 도달 증폭,Neutral,0,0,카르마가 최대치에 도달하면 다음 턴 시작 시 증폭을 수치만큼 얻는다.,0
+E_Unique_Resource_Max_Reached_Smite,카르마 최대 도달 강타,Neutral,0,0,카르마가 최대치에 도달하면 다음 턴 시작 시 강타를 수치만큼 얻는다.,0
+E_Unique_Resource_Max_Reached_Cost_Recovery,카르마 최대 도달 마나 회복,Neutral,0,0,카르마가 최대치에 도달하면 다음 턴 시작 시 마나를 수치만큼 회복한다.,0
+E_Unique_Resource_Max_Reached_Armor,카르마 최대 도달 방어도,Neutral,0,0,카르마가 최대치에 도달하면 다음 턴 시작 시 방어도를 수치만큼 얻는다.,0
+E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,카르마 최대 도달 아군 방어도,Neutral,0,0,카르마가 최대치에 도달하면 다음 턴 시작 시 자신과 생명력 비율이 가장 낮은 다른 아군에게 방어도를 수치만큼 부여한다.,0
+E_Rune_Target_Damage_Value_Delta,룬 대상 기억 피해 변화,Neutral,0,0,룬의 대상 기억이 주는 피해를 수치만큼 변화시킨다.,0
+E_Rune_Target_Attack_Count_Delta,룬 대상 기억 공격 횟수 변화,Neutral,0,0,룬의 대상 기억 공격 횟수를 수치만큼 변화시킨다.,0
+E_Rune_Target_Skill_Cost_Delta,룬 대상 기억 마나 소모 변화,Neutral,0,0,룬의 대상 기억 마나 소모량을 수치만큼 변화시킨다.,0
+E_Rune_Target_Armor_Multiplier,룬 대상 기억 방어도 배율,Neutral,0,0,룬의 대상 기억이 부여하는 방어도를 수치 배율로 적용한다.,0
+E_Rune_Target_Boost_Value_Delta,룬 대상 기억 증폭 변화,Neutral,0,0,룬의 대상 기억이 부여하는 증폭을 수치만큼 변화시킨다.,0
+E_Rune_Target_Heal_Value_Delta,룬 대상 기억 치유 변화,Neutral,0,0,룬의 대상 기억이 회복하는 생명력을 수치만큼 변화시킨다.,0
+E_Rune_Target_Knockback_Value_Delta,룬 대상 기억 넉백 변화,Neutral,0,0,룬의 대상 기억이 부여하는 넉백 거리를 수치만큼 변화시킨다.,0
+E_Rune_Target_Range_Expand,룬 대상 기억 범위 확장,Neutral,0,0,룬의 대상 기억 범위를 한 단계 확장한다.,0
+AR_RecoverUniqueResourceToMax,응축된 카르마,Neutral,0,0,카르마를 3 회복한다.,0
+AR_RecoverCostToMax,마력 플라스크,Neutral,0,0,마나를 10 회복한다.,0
+AR_GrantSwift,각성,Neutral,0,0,신속을 2 부여한다.,0
+AR_CleanseDebuffs,맑은 물,Neutral,0,0,모든 디버프를 제거한다.,0
+AR_MoveToGrid,위치 이동,Neutral,0,0,선택한 빈 그리드로 이동한다.,0
+AR_SwapAlly,위치 변경,Neutral,0,0,선택한 그리드의 아군과 위치를 교환한다.,0
+AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,0,선택한 그리드에 독 장판을 생성한다.,0
+AR_SpawnThornGridEffect,가시 생성,Neutral,0,0,선택한 그리드에 가시를 생성한다.,0
+AR_SpawnObstacleGridEffect,잔해 생성,Neutral,0,0,선택한 그리드에 잔해를 생성한다.,0
+AR_RemoveGridEffect,장애물 제거,Neutral,0,0,선택한 그리드의 장애물을 제거한다.,0
+AR_SpawnDummyGridEffect,호문쿨루스 루어,Neutral,0,0,선택한 빈 그리드에 루어를 생성한다.,0
+AR_SpawnExplosiveDollGridEffect,호문쿨루스 브룸,Neutral,0,0,선택한 빈 그리드에 브룸을 생성한다.,0
+E_MissingHPStrike,잃은 생명력의 {ValueRate}%,Neutral,0,0,잃은 체력의 ValueRate%만큼 피해 계산,0
+E_PoisonTrigger,중독 즉시 발동,Neutral,0,0,중독을 ValueRate 부여한 뒤 중독 효과를 즉시 1회 발동,0
+E_DebuffIncrease,디버프 수치 증가,Neutral,0,0,대상이 현재 보유한 모든 Harmful 디버프 수치를 ValueRate만큼 증가,0
+E_DebuffDouble,디버프 증폭,Neutral,0,0,대상이 보유한 디버프 중 현재 수치가 가장 높은 1종의 수치를 2배,0
+E_RemoveArmor,방어도 제거,Neutral,0,0,현재 방어도와 동일한 양의 방어도 피해를 주어 방어도를 0으로 만듦,0
+E_ArmorStrike,보유한 방어도,Neutral,0,0,시전자의 현재 방어도에 수치계수를 곱한 피해를 준다.,0
+E_MissSelfDamage,빗나감 자해,Neutral,0,0,유효한 적을 맞히지 못하면 자신에게 수치만큼 피해를 준다.,0
+E_ValueUpOnKill,처치 시 영구 피해 증가,Neutral,0,0,이 스킬로 처치한 적 하나당 다음 사용부터 피해 수치가 증가한다.,0
+E_ValueUpOnHit,명중 시 전투 피해 증가,Neutral,0,0,성공한 타격마다 이 전투 동안 다음 사용부터 피해 수치가 증가한다.,0
+E_DamageUpIfBleeding,출혈 대상 피해 증가,Neutral,0,0,출혈이 있는 대상에게 주는 피해가 50% 증가한다.,0
+E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,0
+E_TriggerPoison,중독 즉시 발동,Neutral,0,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,0
+E_RestoreManaPerHitTarget,타격당 마나 회복,Neutral,0,0,성공한 총 타격 수에 비례해 마나를 회복한다.,0
+E_RandomStrike,무작위 연속 타격,Neutral,0,0,범위 내 살아 있는 적을 매 타격마다 다시 추첨해 피해를 준다.,0
+E_StrikeByVulnerable,취약 비례 피해,Neutral,0,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,0
+E_StrikeCountByBuff,버프 종류 비례 타격,Neutral,0,0,시전자의 서로 다른 이로운 효과 종류 수만큼 타격 횟수가 증가한다.,0
+E_StrikeCountByDebuff,디버프 종류 비례 타격,Neutral,0,0,대상의 서로 다른 해로운 효과 종류 수만큼 타격 횟수가 증가한다.,0
+E_StrikeByTargetPoison,중독 비례 피해,Neutral,0,0,대상이 보유한 중독 수치만큼 피해를 준다.,0
+E_Rune_Turn1_Ward,1턴 시작 시 장막을 수치 획득한다.,Neutral,0,0,1턴 시작 시 장막을 {ValueRate1} 획득한다.,0
+E_Rune_Armor10_Smite,턴 시작 시 방어도가 수치 이상이라면 강타 1을 획득한다.,Neutral,0,0,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,0
+E_Rune_Turn_Start_Lose_HP_Boost,매 턴 시작 시 생명력 3을 잃고 증폭 수치을 획득한다.,Neutral,0,0,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,0
+E_Rune_Low_HP_Damage_Percent,현재 생명력이 50% 이하라면 주는 피해가 수치% 증가한다.,Neutral,0,0,현재 생명력이 50% 이하라면 주는 피해가 {ValueRate1}% 증가한다.,0
+E_Rune_First_Registered_Skill_Attack_Count,전투에서 처음 등록한 공격 기억의 공격 횟수가 수치회 증가한다.,Neutral,0,0,전투에서 처음 등록한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,0
+E_Rune_Consecutive_Attack_Final_Pierce,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,Neutral,0,0,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,0
+E_Rune_Multi_Hit_Damage_Delta,공격 횟수가 횟수회 이상인 기억의 피해가 수치 증가한다.,Neutral,0,0,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,0
+E_Rune_Pierce_Hit_Bleed,관통 피해 적중 시 대상에게 출혈을 수치 부여한다.,Neutral,0,0,관통 피해 적중 시 대상에게 출혈을 {ValueRate1} 부여한다.,0
+E_Rune_Single_Target_Damage_Delta,공격 대상이 적 1명뿐이라면 피해가 수치 증가한다.,Neutral,0,0,공격 대상이 적 1명뿐이라면 피해가 {ValueRate1} 증가한다.,0
+E_Rune_Status_Apply_Armor,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,Neutral,0,0,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,0
+E_Rune_Adjacent_Ally_Buff_Delta,자신과 인접한 아군에게 부여하는 버프 수치가 수치 증가한다.,Neutral,0,0,자신과 인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,0
+E_Rune_Debuff_Apply_Poison,적에게 디버프 부여 시 추가로 중독을 수치 부여한다.,Neutral,0,0,적에게 디버프 부여 시 추가로 중독을 {ValueRate1} 부여한다.,0
+E_Rune_Zero_Mana_Next_First_Skill_Free,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,Neutral,0,0,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,0
+E_Rune_Turn_Start_Adjacent_Ally_Heal,매 턴 시작 시 인접한 아군에게 재생을 수치 부여한다.,Neutral,0,0,매 턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,0
+E_Rune_Kill_Unique_Resource,처치한 적 1명당 카르마를 수치 획득한다.,Neutral,0,0,처치한 적 1명당 카르마를 {ValueRate1} 획득한다.,0
+E_Rune_High_HP_Heal_Remove_First_Debuff,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 수치 감소한다.,Neutral,0,0,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,0
+E_Rune_Vulnerable_Bonus_Percent,자신이 공격할 때 취약의 피해 증가율이 수치%로 증가한다.,Neutral,0,0,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,0
+E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,카르마가 최대치에 도달하면 모든 적에게 취약을 수치 부여한다.,Neutral,0,0,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,0
+E_PoisonEqualTargetPoison,대상 중독만큼 중독 부여,Harmful,0,0,대상이 보유한 중독 수치만큼 중독을 추가로 부여한다.,0
+E_Passive_Lose_HP,생명력 감소,Neutral,0,0,자신의 생명력을 감소시킨다.,0
+,,,,,
+,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
 ,,,,,
 ,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,
-,,,,
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치,전투난이도
@@ -586,7 +586,7 @@ Battlemap_12,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,,,,,,,,
 Battlemap_13,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15,,,,,,,,,,
 Battlemap_13,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,,,,,,,,
 Battlemap_14,Mon_12_1,27,-1,-1,-1,아라벨라,100,5,15,50,30,0,10,60,30,,,,,,,,,,
-Battlemap_T_01,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,0,100,0,0,0,0,0,0,,,,,,,,,,
+Battlemap_T_01,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,100,0,0,0,0,0,0,0,,,,,,,,,,
 Battlemap_T_02,Mon_07,21,-1,-1,-1,"튜토리얼(드라우그, 블라이트)",0,0,100,0,0,0,0,0,0,,,,,,,,,,
 Battlemap_T_02,Mon_04,28,-1,-1,-1,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
@@ -698,7 +698,6 @@ Event_10_D,,"""침식의 기운을 바라보며 만족스럽게 웃었다.""",,,
 Event_T_01,뜻밖의 합류,"""거점으로 향하는 길목, 한 탐사자가 휴식하고 있다.""",1,함께 휴식한다.,"전체 생명력 15 회복
 헤이즈 합류",,Immediate,,,,,,Heal,PartyAll,,15,,Event_T_01_A,,,,,event_tutorial,event_choice_01_success,event_tutorial,event_choice_01_failure
 Event_T_01_A,,"""잠시 휴식을 취한 일행은 기운을 되찾았다.""",,,,,,,,,,,,,,,,,,,,,event_tutorial,,event_tutorial,
-,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 # SkillRange
 범위ID,이름,범위1,범위2,범위3,범위4,범위5,범위6,범위7,범위8,범위9,범위10,범위11,범위12,범위13,범위14,범위15,범위16,범위17,범위18,범위19,범위20,범위21,범위22,범위23,범위24,범위25,범위26,범위27,범위28,범위29,범위30
@@ -759,53 +758,58 @@ Range_m_02,-,0;0,0;1,1;0,0;-1,-1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 
 # Rune
-룬ID,이름,대상캐릭터ID,대상스킬ID,효과ID,수치계수,횟수계수,해금가격,해금레벨,효과설명,레어도
-RuneId,Name,TargetCharacterId,TargetSkillId,EffectIds,ValueRate,CountRate,BlueDustiumCost,UnlockLevel,EffectDesc,Rarity
-Rune_51,용린·분기,Char_01,0,E_Rune_Turn1_Ward,1,1,0,9,1턴 시작 시 장막을 {ValueRate1} 획득한다.,Exclusive
-Rune_52,용린·격앙,Char_01,0,E_Overheal_To_Armor,1,1,0,12,생명력 회복 시 초과한 수치만큼 방어도를 획득한다.,Exclusive
-Rune_53,용린·수호,Char_01,0,E_Rune_Armor10_Smite,10,1,0,6,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,Exclusive
-Rune_54,용린·격진,Char_01,0,E_Rune_Turn_Start_Lose_HP_Boost,1,1,0,15,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,Exclusive
-Rune_55,용린·맹격,Char_01,0,E_Rune_Low_HP_Damage_Percent,30,1,0,3,현재 생명력이 50% 이하라면 주는 피해가 {ValueRate1}% 증가한다.,Exclusive
-Rune_56,검심·예기,Char_02,0,E_Rune_First_Registered_Skill_Attack_Count,1,1,0,9,전투에서 처음 등록한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,Exclusive
-Rune_57,검심·절정,Char_02,0,E_Rune_Consecutive_Attack_Final_Pierce,1,1,0,12,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,Exclusive
-Rune_58,검심·연무,Char_02,0,E_Rune_Multi_Hit_Damage_Delta,1,3,0,6,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,Exclusive
-Rune_59,검심·일섬,Char_02,0,E_Rune_Pierce_Hit_Bleed,2,1,0,15,관통 피해 적중 시 대상에게 출혈을 {ValueRate1} 부여한다.,Exclusive
-Rune_60,검심·질풍,Char_02,0,E_Rune_Single_Target_Damage_Delta,1,1,0,3,공격 대상이 적 1명뿐이라면 피해가 {ValueRate1} 증가한다.,Exclusive
-Rune_61,불씨·점화,Char_03,0,E_Turn_Start_All_Enemy_Weaken,1,1,0,9,1턴 시작 시 모든 적에게 약화를 {ValueRate1} 부여한다.,Exclusive
-Rune_62,불씨·온기,Char_03,0,E_Rune_Status_Apply_Armor,1,1,0,12,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,Exclusive
-Rune_63,불씨·광휘,Char_03,0,E_Rune_Adjacent_Ally_Buff_Delta,1,1,0,6,자신과 인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,Exclusive
-Rune_64,불씨·의지,Char_03,0,E_Rune_Debuff_Apply_Poison,1,1,0,15,적에게 디버프 부여 시 추가로 중독을 {ValueRate1} 부여한다.,Exclusive
-Rune_65,불씨·확산,Char_03,0,E_Rune_Zero_Mana_Next_First_Skill_Free,1,1,0,3,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,Exclusive
-Rune_66,은총·신심,Char_04,0,E_Rune_Turn_Start_Adjacent_Ally_Heal,1,1,0,9,매 턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,Exclusive
-Rune_67,은총·가호,Char_04,0,E_Rune_Kill_Unique_Resource,1,1,0,12,처치한 적 1명당 카르마를 {ValueRate1} 획득한다.,Exclusive
-Rune_68,은총·구원,Char_04,0,E_Rune_High_HP_Heal_Remove_First_Debuff,1,1,0,6,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,Exclusive
-Rune_69,은총·심판,Char_04,0,E_Rune_Vulnerable_Bonus_Percent,75,1,0,15,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,Exclusive
-Rune_70,은총·헌신,Char_04,0,E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,1,1,0,3,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,Exclusive
-Rune_71,해방·갈증,Char_05,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
-Rune_72,해방·격정,Char_05,0,E_Unique_Resource_Max_Reached_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 방어도를 {ValueRate1} 얻는다.,Exclusive
-Rune_73,해방·사신,Char_05,0,E_Rune_Target_Damage_Value_Delta,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_74,해방·혈화,Char_05,0,E_Rune_Target_Damage_Value_Delta,2,1,0,15,스칼렛노바의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_75,해방·참월,Char_05,0,E_Rune_Target_Damage_Value_Delta,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_01,각인·불안정한 원천,All,0,E_Max_HP;E_Max_Cost,-3;1,1;1,60,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 최대 마나가 {ValueRate2} 증가한다.",Common
-Rune_02,각인·메마른 고동,All,0,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,80,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가한다.",Common
-Rune_03,각인·굳어진 육신,All,0,E_Max_Cost;E_Max_HP,-1;4,1;1,65,0,"최대 마나가 {ValueRate1} 감소하는 대신, 최대 생명력이 {ValueRate2} 증가한다.",Common
-Rune_04,각인·잃어버린 숨결,All,0,E_Max_HP;E_Battle_End_Heal,-15;3,1;1,105,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 전투 종료 후 생명력을 {ValueRate2} 회복한다.",Common
-Rune_05,각인·뒤틀린 격류,All,0,E_Max_Cost;E_Cost_Recovery_Delta,-3;2,1;1,145,0,"최대 마나가 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가한다.",Common
-Rune_06,넘치는 생명,All,0,E_Max_HP,6,1,80,0,최대 생명력이 {ValueRate1} 증가한다.,Rare
-Rune_07,깊어진 그릇,All,0,E_Max_Cost,1,1,80,0,최대 마나가 {ValueRate1} 증가한다.,Rare
-Rune_08,끊임없는 순환,All,0,E_Cost_Recovery_Delta,1,1,100,0,마나 재생량이 {ValueRate1} 증가한다.,Rare
-Rune_09,완전한 균형,All,0,E_Max_HP;E_Max_Cost;E_Cost_Recovery_Delta,1,1,200,0,"최대 생명력, 최대 마나, 마나 재생량이 각각 {ValueRate1} 증가한다.",Rare
-Rune_10,가벼운 발걸음,All,0,E_First_Move_Cost_Delta,-1,1,150,0,첫 이동의 마나 소모량이 {ValueRate1} 감소한다.,Rare
-Rune_11,강렬한 파동,All,0,E_Attack_Value_Delta,1,1,120,0,공격타입 기억의 피해량이 {ValueRate1} 증가한다.,Rare
-Rune_12,온전한 회복,All,0,E_Heal_Value_Delta,1,1,125,0,기억으로 회복하는 생명력이 {ValueRate1} 증가한다.,Rare
-Rune_13,굳건한 방벽,All,0,E_Skill_Armor_Value_Delta,2,1,125,0,기억으로 부여하는 방어도가 {ValueRate1} 증가한다.,Rare
-Rune_14,짙은 독기,All,0,E_Poison_Value_Delta,1,1,180,0,기억으로 부여하는 중독이 {ValueRate1} 증가한다.,Rare
-Rune_15,선명한 혈흔,All,0,E_Bleed_Value_Delta,1,1,180,0,기억으로 부여하는 출혈이 {ValueRate1} 증가한다.,Rare
-Rune_16,축복·신속,All,0,E_Turn_Start_Swift,1,1,350,0,전투 시작 시 신속을 {ValueRate1} 얻는다.,Unique
-Rune_17,축복·강타,All,0,E_Turn_Start_Smite,1,1,350,0,전투 시작 시 강타를 {ValueRate1} 얻는다.,Unique
-Rune_18,축복·증폭,All,0,E_Turn_Start_Boost,1,1,350,0,전투 시작 시 증폭을 {ValueRate1} 얻는다.,Unique
-Rune_19,축복·풍요,All,0,E_Battle_Reward_Currency_Percent,5,1,500,0,전투 보상으로 획득하는 재화의 양이 {ValueRate1}% 증가한다.,Unique
-Rune_20,축복·재생,All,0,E_Battle_End_Heal,1,1,300,0,전투 종료 후 생명력을 {ValueRate1} 회복한다.,Unique
+룬ID,이름,대상캐릭터ID,효과ID,수치계수,횟수계수,해금가격,해금레벨,효과설명,레어도
+RuneId,Name,TargetCharacterId,EffectIds,ValueRate,CountRate,BlueDustiumCost,UnlockLevel,EffectDesc,Rarity
+Rune_51,투혼,Char_01,E_Rune_Low_HP_Damage_Percent,30,1,0,3,생명력이 50% 이하일 때 주는 피해가 {ValueRate1}% 증가한다.,Exclusive
+Rune_52,기세,Char_01,E_Rune_Armor10_Smite,10,1,0,6,턴 시작 시 방어도가 {ValueRate1} 이상이면 강타 1을 획득한다.,Exclusive
+Rune_53,수호,Char_01,E_Rune_Turn1_Ward,1,1,0,9,첫 턴 시작 시 장막 {ValueRate1}을 획득한다.,Exclusive
+Rune_54,충만,Char_01,E_Overheal_To_Armor,1,1,0,12,생명력 초과 회복량만큼 방어도를 획득한다.,Exclusive
+Rune_55,격진,Char_01,E_Rune_Turn_Start_Lose_HP_Boost,1,1,0,15,턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,Exclusive
+Rune_56,쾌검,Char_02,E_Rune_Single_Target_Damage_Delta,1,1,0,3,공격 대상이 1명일 때 공격 수치가 {ValueRate1} 증가한다.,Exclusive
+Rune_57,연무,Char_02,E_Rune_Multi_Hit_Damage_Delta,1,3,0,6,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,Exclusive
+Rune_58,섬광,Char_02,E_Rune_First_Registered_Skill_Attack_Count,1,1,0,9,첫 번째로 예약한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,Exclusive
+Rune_59,극의,Char_02,E_Rune_Consecutive_Attack_Final_Pierce,1,1,0,12,마지막 공격 후 연속 예약한 공격 수만큼 관통 피해를 준다.,Exclusive
+Rune_60,절개,Char_02,E_Rune_Pierce_Hit_Bleed,2,1,0,15,관통 피해 적중 시 대상에게 출혈 {ValueRate1}을 부여한다.,Exclusive
+Rune_61,해방,Char_03,E_Rune_Zero_Mana_Next_First_Skill_Free,1,1,0,3,턴 종료 시 마나가 0이면 다음 턴 첫 예약 기억의 마나 소모량이 0이 된다.,Exclusive
+Rune_62,광휘,Char_03,E_Rune_Adjacent_Ally_Buff_Delta,1,1,0,6,인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,Exclusive
+Rune_63,위축,Char_03,E_Turn_Start_All_Enemy_Weaken,1,1,0,9,첫 턴 시작 시 모든 적에게 약화 {ValueRate1}을 부여한다.,Exclusive
+Rune_64,온기,Char_03,E_Rune_Status_Apply_Armor,1,1,0,12,버프 또는 디버프 부여 시 실제 부여량만큼 방어도를 획득한다.,Exclusive
+Rune_65,독성,Char_03,E_Rune_Debuff_Apply_Poison,1,1,0,15,적에게 디버프 부여 시 중독을 추가로 {ValueRate1} 부여한다.,Exclusive
+Rune_66,헌신,Char_04,E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,1,1,0,3,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,Exclusive
+Rune_67,정화,Char_04,E_Rune_High_HP_Heal_Remove_First_Debuff,1,1,0,6,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,Exclusive
+Rune_68,온정,Char_04,E_Rune_Turn_Start_Adjacent_Ally_Heal,1,1,0,9,턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,Exclusive
+Rune_69,수확,Char_04,E_Rune_Kill_Unique_Resource,1,1,0,12,적 처치 시 대상 1명당 카르마 {ValueRate1}을 획득한다.,Exclusive
+Rune_70,심판,Char_04,E_Rune_Vulnerable_Bonus_Percent,75,1,0,15,공격 시 취약으로 인한 피해 증가율이 {ValueRate1}%로 변경된다.,Exclusive
+,,Char_05,,,,,,,Exclusive
+,,Char_05,,,,,,,Exclusive
+,,Char_05,,,,,,,Exclusive
+,,Char_05,,,,,,,Exclusive
+,,Char_05,,,,,,,Exclusive
+,,Char_06,,,,,,,Exclusive
+,,Char_06,,,,,,,Exclusive
+,,Char_06,,,,,,,Exclusive
+,,Char_06,,,,,,,Exclusive
+,,Char_06,,,,,,,Exclusive
+Rune_01,불안정한 원천,All,E_Max_HP;E_Max_Cost,-3;1,1;1,60,0,최대 생명력이 {ValueRate1} 감소하지만 최대 마나가 {ValueRate2} 증가한다.,Common
+Rune_02,메마른 고동,All,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,80,0,최대 생명력이 {ValueRate1} 감소하지만 마나 재생량이 {ValueRate2} 증가한다.,Common
+Rune_03,굳어진 육신,All,E_Max_Cost;E_Max_HP,-1;4,1;1,65,0,최대 마나가 {ValueRate1} 감소하지만 최대 생명력이 {ValueRate2} 증가한다.,Common
+Rune_04,잃어버린 숨결,All,E_Max_HP;E_Battle_End_Heal,-15;3,1;1,105,0,최대 생명력이 {ValueRate1} 감소하지만 전투 종료 시 생명력을 {ValueRate2} 회복한다.,Common
+Rune_05,뒤틀린 격류,All,E_Max_Cost;E_Cost_Recovery_Delta,-3;2,1;1,145,0,최대 마나가 {ValueRate1} 감소하지만 마나 재생량이 {ValueRate2} 증가한다.,Common
+Rune_06,넘치는 생명,All,E_Max_HP,6,1,0,0,최대 생명력이 {ValueRate1} 증가한다.,Rare
+Rune_07,깊어진 그릇,All,E_Max_Cost,1,1,0,0,최대 마나가 {ValueRate1} 증가한다.,Rare
+Rune_08,끊임없는 순환,All,E_Cost_Recovery_Delta,1,1,0,0,마나 재생량이 {ValueRate1} 증가한다.,Rare
+Rune_09,완전한 균형,All,E_Max_HP;E_Max_Cost;E_Cost_Recovery_Delta,1,1,200,0,"최대 생명력, 최대 마나, 마나 재생량이 각각 {ValueRate1} 증가한다.",Rare
+Rune_10,가벼운 발걸음,All,E_First_Move_Cost_Delta,-1,1,150,0,첫 이동의 마나 소모량이 {ValueRate1} 감소한다.,Rare
+Rune_11,강렬한 파동,All,E_Attack_Value_Delta,1,1,120,0,공격 기억의 피해량이 {ValueRate1} 증가한다.,Epic
+Rune_12,온전한 회복,All,E_Heal_Value_Delta,1,1,125,0,기억의 생명력 회복량이 {ValueRate1} 증가한다.,Epic
+Rune_13,굳건한 방벽,All,E_Skill_Armor_Value_Delta,2,1,125,0,기억의 방어도 부여량이 {ValueRate1} 증가한다.,Epic
+Rune_14,짙은 독기,All,E_Poison_Value_Delta,1,1,180,0,기억의 중독 부여량이 {ValueRate1} 증가한다.,Epic
+Rune_15,선명한 혈흔,All,E_Bleed_Value_Delta,1,1,180,0,기억의 출혈 부여량이 {ValueRate1} 증가한다.,Epic
+Rune_16,날렵한 움직임,All,E_Turn_Start_Swift,1,1,350,0,전투 시작 시 신속 {ValueRate1}을 획득한다.,Unique
+Rune_17,거센 일격,All,E_Turn_Start_Smite,1,1,350,0,전투 시작 시 강타 {ValueRate1}을 획득한다.,Unique
+Rune_18,솟구치는 힘,All,E_Turn_Start_Boost,1,1,350,0,전투 시작 시 증폭 {ValueRate1}을 획득한다.,Unique
+Rune_19,풍성한 결실,All,E_Battle_Reward_Currency_Percent,5,1,500,0,전투 보상 재화 획득량이 {ValueRate1}% 증가한다.,Unique
+Rune_20,끈질긴 생명,All,E_Battle_End_Heal,1,1,300,0,전투 종료 시 생명력 {ValueRate1}을 회복한다.,Unique
 
 # Relic
 유물 ID,이름,효과ID,수치계수,횟수계수,효과설명,레어도,로비가격,상점가격
@@ -882,21 +886,21 @@ Relic_P_68,붕대,E_Battle_End_Heal,2,1,전투 종료 후 생명력을 {ValueRat
 # Compound
 연성제 ID,이름,레어도,효과ID,수치계수,횟수계수,타입,내구도,효과설명,조합1,조합2,조합3
 CompoundId,Name,Rarity,EffectIds,ValueRate,CountRate,TargetType,Durability,EffectDesc,MaterialId1,MaterialId2,MaterialId3
-Compound_01,아드레날린,Epic,AR_DamageBoostThisTurn,100,1,Self,1,이번 턴 동안 공격 기억의 피해량이 100% 증가한다.,Item_003,Item_005,Item_007
-Compound_02,경화제 앰플,Common,AR_DamageReductionThisTurn,50,1,Self,1,이번 턴 동안 받는 피해가 50% 감소한다.,Item_001,Item_005,Item_009
-Compound_03,응축 에테르,Rare,AR_RecoverUniqueResourceToMax,3,1,Self,1,카르마를 3 회복한다. 현재 카르마와 예약된 카르마를 합한 값은 최대치를 초과할 수 없다.,Item_002,Item_010,Item_011
-Compound_04,마력 플라스크,Rare,AR_RecoverCostToMax,10,1,Self,1,"마나를 10 회복한다. 최대치를 초과하여 보유할 수 있으며, 초과한 마나는 다음 턴에 사라진다.",Item_002,Item_003,Item_004
-Compound_05,각성제,Epic,AR_GrantSwift,2,1,Self,1,자신에게 신속 2를 부여한다.,Item_003,Item_011,Item_012
-Compound_06,맑은 물병,Common,AR_CleanseDebuffs,1,1,Self,1,자신에게 부여된 모든 디버프를 제거한다.,Item_002,Item_009,Item_011
-Compound_07,차원 촉매,Common,AR_MoveToGrid,1,1,Grid,3,선택한 빈 그리드로 이동한다. 이동 후 예약한 이동 및 공격 행동은 취소된다.,Item_008,Item_010,Item_012
-Compound_08,공명 전이제,Epic,AR_SwapAlly,1,1,Grid,3,선택한 그리드의 아군과 위치를 변경한다. 위치가 변경된 두 캐릭터가 예약한 이동 및 공격 행동은 취소된다.,Item_007,Item_009,Item_010
-Compound_09,독성 배양액,Common,AR_SpawnPoisonGridEffect,2,1,Grid,3,선택한 그리드에 독 장판을 생성한다.,Item_004,Item_005,Item_006
-Compound_10,가시 증식제,Common,AR_SpawnThornGridEffect,3,1,Grid,3,선택한 그리드에 가시를 생성한다.,Item_001,Item_005,Item_006
-Compound_11,쇠약 저주제,Rare,AR_TargetOutgoingDamageReductionThisTurn,50,1,Grid,3,선택한 적은 이번 턴 동안 주는 피해가 50% 감소한다.,Item_004,Item_011,Item_012
-Compound_12,응고 발포제,Common,AR_SpawnObstacleGridEffect,1,1,Grid,3,선택한 빈 그리드에 잔해를 생성한다.,Item_001,Item_008,Item_009
-Compound_13,분해 용해제,Common,AR_RemoveGridEffect,1,1,Grid,3,선택한 그리드의 장애물을 제거한다.,Item_004,Item_007,Item_008
-Compound_14,호문쿨루스 루어,Rare,AR_SpawnDummyGridEffect,1,1,Grid,3,선택한 빈 그리드에 루어를 생성한다.,Item_002,Item_006,Item_007
-Compound_15,호문쿨루스 브룸,Rare,AR_SpawnExplosiveDollGridEffect,4,1,Grid,3,선택한 빈 그리드에 브룸을 생성한다.,Item_001,Item_003,Item_006
+Compound_01,아드레날린,Epic,AR_DamageBoostThisTurn,100,1,Self,1,이번 턴 공격 기억의 피해량이 100% 증가한다.,Item_003,Item_005,Item_007
+Compound_02,경화제 앰플,Common,AR_DamageReductionThisTurn,50,1,Self,1,이번 턴 받는 피해가 50% 감소한다.,Item_001,Item_005,Item_009
+Compound_03,응축 에테르,Rare,AR_RecoverUniqueResourceToMax,3,1,Self,1,카르마를 3 회복한다. 현재 및 예약된 카르마의 합은 최대치를 초과할 수 없다.,Item_002,Item_010,Item_011
+Compound_04,마력 플라스크,Rare,AR_RecoverCostToMax,10,1,Self,1,마나를 10 회복한다. 최대치를 초과한 마나는 다음 턴에 소멸한다.,Item_002,Item_003,Item_004
+Compound_05,각성제,Epic,AR_GrantSwift,2,1,Self,1,신속 2를 획득한다.,Item_003,Item_011,Item_012
+Compound_06,맑은 물병,Common,AR_CleanseDebuffs,1,1,Self,1,보유한 모든 디버프를 제거한다.,Item_002,Item_009,Item_011
+Compound_07,차원 촉매,Common,AR_MoveToGrid,1,1,Grid,3,선택한 빈 칸으로 이동한다. 이후 예약된 이동 및 공격은 취소된다.,Item_008,Item_010,Item_012
+Compound_08,공명 전이제,Epic,AR_SwapAlly,1,1,Grid,3,선택한 아군과 위치를 교환한다. 두 캐릭터의 예약된 이동 및 공격은 취소된다.,Item_007,Item_009,Item_010
+Compound_09,독성 배양액,Common,AR_SpawnPoisonGridEffect,2,1,Grid,3,선택한 칸에 독 장판을 생성한다.,Item_004,Item_005,Item_006
+Compound_10,가시 증식제,Common,AR_SpawnThornGridEffect,3,1,Grid,3,선택한 칸에 가시를 생성한다.,Item_001,Item_005,Item_006
+Compound_11,쇠약 저주제,Rare,AR_TargetOutgoingDamageReductionThisTurn,50,1,Grid,3,선택한 적이 이번 턴 주는 피해가 50% 감소한다.,Item_004,Item_011,Item_012
+Compound_12,응고 발포제,Common,AR_SpawnObstacleGridEffect,1,1,Grid,3,선택한 빈 칸에 잔해를 생성한다.,Item_001,Item_008,Item_009
+Compound_13,분해 용해제,Common,AR_RemoveGridEffect,1,1,Grid,3,선택한 칸의 장애물을 제거한다.,Item_004,Item_007,Item_008
+Compound_14,호문쿨루스 루어,Rare,AR_SpawnDummyGridEffect,1,1,Grid,3,선택한 빈 칸에 루어를 생성한다.,Item_002,Item_006,Item_007
+Compound_15,호문쿨루스 브룸,Rare,AR_SpawnExplosiveDollGridEffect,4,1,Grid,3,선택한 빈 칸에 브룸을 생성한다.,Item_001,Item_003,Item_006
 
 # Item
 아이템ID,레어도,이름,설명,조건
@@ -921,70 +925,70 @@ Item_013,Unique,각성핵,강렬한 붉은 빛과 불안정한 힘이 응축된 
 # Erosion
 난이도 ID,난이도이름,UI 슬롯,단계,점수,선택 그룹,선택 방식,효과 항목,효과 타입,효과 수치,선택 가능,설명
 DifficultyId,ErosionName,SlotName,Tier,Score,GroupId,SelectionMode,EffectName,EffectType,EffectValue,Selectable,Description
-Erosion_01_01,강인한 변이체,Level01_1,1,1,Group_01,Exclusive,몬스터 최대 생명력 10% 증가,MonsterMaxHPPercent,10,1,변이체의 최대 생명력이 10% 증가한다.
-Erosion_01_02,흉포한 변이체,Level01_2,1,1,Group_02,Exclusive,몬스터 피해량 25% 증가,MonsterDamagePercent,25,1,변이체가 주는 피해가 25% 증가한다.
-Erosion_01_03,쇠약한 육체,Level01_3,1,1,Group_03,Exclusive,모든 캐릭터 최대 생명력 5% 감소,PartyMaxHPPercent,-5,1,모든 캐릭터의 최대 생명력이 5% 감소한다.
-Erosion_01_04,불길한 징후,Level01_4,1,1,Group_04,Exclusive,5턴마다 무작위 디버프 1개 부여,PeriodicRandomDebuffTurns,5,1,5턴마다 파티에 무작위 디버프 1개를 부여한다.
-Erosion_01_05,메마른 보급,Level01_5,1,1,Group_05,Exclusive,상점 가격 15% 증가,ShopPricePercent,15,1,상점 가격이 15% 증가한다.
-Erosion_01_06,뒤틀린 운명,Level01_6,1,0,Group_06,Exclusive,,,,0,난이도 없음
-Erosion_01_07,휴식방 제거,Level01_7,1,1,Erosion_01_07,Independent,휴식방 제거,RemoveRestRoom,1,1,보스방 입장 전에 배치되는 휴식방을 제거한다.
-Erosion_01_08,시야 제한,Level01_8,1,1,Erosion_01_08,Independent,지도 시야 제한,MapVisionLimit,1,1,지도에서 다음 방의 종류를 확인할 수 없게 된다.
-Erosion_02_01,강인한 변이체,Level02_1,2,2,Group_01,Exclusive,몬스터 최대 생명력 20% 증가,MonsterMaxHPPercent,20,1,변이체의 최대 생명력이 20% 증가한다.
-Erosion_02_02,흉포한 변이체,Level02_2,2,2,Group_02,Exclusive,몬스터 피해량 50% 증가,MonsterDamagePercent,50,1,변이체가 주는 피해가 50% 증가한다.
-Erosion_02_03,쇠약한 육체,Level02_3,2,2,Group_03,Exclusive,모든 캐릭터 최대 생명력 10% 감소,PartyMaxHPPercent,-10,1,모든 캐릭터의 최대 생명력이 10% 감소한다.
-Erosion_02_04,불길한 징후,Level02_4,2,0,Group_04,Exclusive,,,,0,난이도 없음
-Erosion_02_05,메마른 보급,Level02_5,2,2,Group_05,Exclusive,상점 가격 30% 증가,ShopPricePercent,30,1,상점 가격이 30% 증가한다.
-Erosion_02_06,뒤틀린 운명,Level02_6,2,2,Group_06,Exclusive,주사위 판정 난이도 1 증가,DiceDifficultyAdd,1,1,주사위 판정 난이도가 1 증가한다.
-Erosion_02_07,레어도 감소,Level02_7,2,2,Erosion_02_07,Independent,희귀도 확률 감소,RarityChanceReduction,1,1,높은 레어도의 등장 확률을 감소시킨다.
-Erosion_02_08,연성제 제한,Level02_8,2,2,Erosion_02_08,Independent,연성제 사용 제한,CompoundUseLimit,1,1,연성제를 사용할 수 없다.
-Erosion_03_01,강인한 변이체,Level03_1,3,3,Group_01,Exclusive,몬스터 최대 생명력 30% 증가,MonsterMaxHPPercent,30,1,변이체의 최대 생명력이 30% 증가한다.
-Erosion_03_02,흉포한 변이체,Level03_2,3,0,Group_02,Exclusive,,,,0,난이도 없음
-Erosion_03_03,쇠약한 육체,Level03_3,3,3,Group_03,Exclusive,모든 캐릭터 최대 생명력 20% 감소,PartyMaxHPPercent,-15,1,모든 캐릭터의 최대 생명력이 20% 감소한다.
-Erosion_03_04,불길한 징후,Level03_4,3,3,Group_04,Exclusive,3턴마다 무작위 디버프 1개 부여,PeriodicRandomDebuffTurns,3,1,3턴마다 파티에 무작위 디버프 1개를 부여한다.
-Erosion_03_05,메마른 보급,Level03_5,3,0,Group_05,Exclusive,,,,0,난이도 없음
-Erosion_03_06,뒤틀린 운명,Level03_6,3,3,Group_06,Exclusive,주사위 판정 난이도 2 증가,DiceDifficultyAdd,2,1,주사위 판정 난이도가 2 증가한다.
-Erosion_03_07,유물 슬롯 잠금,Level03_7,3,3,Erosion_03_07,Independent,마지막 유물칸 잠금,LockLastRelicSlot,1,1,캐릭터의 마지막 유물 슬롯을 잠근다.
-Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동 최종 마나 소모 +1,MoveFinalManaCostAdd,1,1,이동에 필요한 최종 마나 소모가 1 증가한다.
+Erosion_01_01,강인한 변이체,Level01_1,1,1,Group_01,Exclusive,변이체 최대 생명력 +10%,MonsterMaxHPPercent,10,1,변이체의 최대 생명력이 10% 증가한다.
+Erosion_01_02,흉포한 변이체,Level01_2,1,1,Group_02,Exclusive,주는 피해 +25%,MonsterDamagePercent,25,1,변이체가 주는 피해가 25% 증가한다.
+Erosion_01_03,쇠약한 육체,Level01_3,1,1,Group_03,Exclusive,캐릭터 최대 생명력 -5%,PartyMaxHPPercent,-5,1,모든 캐릭터의 최대 생명력이 5% 감소한다.
+Erosion_01_04,불길한 징후,Level01_4,1,1,Group_04,Exclusive,5턴마다 무작위 디버프,PeriodicRandomDebuffTurns,5,1,5턴마다 파티에 무작위 디버프 1개를 부여한다.
+Erosion_01_05,메마른 보급,Level01_5,1,1,Group_05,Exclusive,상점 가격 +15%,ShopPricePercent,15,1,상점 가격이 15% 증가한다.
+Erosion_01_06,뒤틀린 운명,Level01_6,1,0,Group_06,Exclusive,0,,,0,난이도 없음
+Erosion_01_07,휴식방 제거,Level01_7,1,1,Erosion_01_07,Independent,휴식방 제거,RemoveRestRoom,1,1,보스방 진입 전 휴식방이 제거된다.
+Erosion_01_08,시야 제한,Level01_8,1,1,Erosion_01_08,Independent,지도 시야 제한,MapVisionLimit,1,1,지도에서 다음 방의 종류를 확인할 수 없다.
+Erosion_02_01,강인한 변이체,Level02_1,2,2,Group_01,Exclusive,변이체 최대 생명력 +20%,MonsterMaxHPPercent,20,1,변이체의 최대 생명력이 20% 증가한다.
+Erosion_02_02,흉포한 변이체,Level02_2,2,2,Group_02,Exclusive,주는 피해 +50%,MonsterDamagePercent,50,1,변이체가 주는 피해가 50% 증가한다.
+Erosion_02_03,쇠약한 육체,Level02_3,2,2,Group_03,Exclusive,캐릭터 최대 생명력 -10%,PartyMaxHPPercent,-10,1,모든 캐릭터의 최대 생명력이 10% 감소한다.
+Erosion_02_04,불길한 징후,Level02_4,2,0,Group_04,Exclusive,0,,,0,난이도 없음
+Erosion_02_05,메마른 보급,Level02_5,2,2,Group_05,Exclusive,상점 가격 +30%,ShopPricePercent,30,1,상점 가격이 30% 증가한다.
+Erosion_02_06,뒤틀린 운명,Level02_6,2,2,Group_06,Exclusive,주사위 난이도 +1	,DiceDifficultyAdd,1,1,주사위 판정 난이도가 1 증가한다.
+Erosion_02_07,레어도 감소,Level02_7,2,2,Erosion_02_07,Independent,고등급 등장 확률 감소,RarityChanceReduction,1,1,높은 레어도의 등장 확률이 감소한다.
+Erosion_02_08,연성제 제한,Level02_8,2,2,Erosion_02_08,Independent,연성제 사용 불가,CompoundUseLimit,1,1,연성제를 사용할 수 없다.
+Erosion_03_01,강인한 변이체,Level03_1,3,3,Group_01,Exclusive,변이체 최대 생명력 +30%,MonsterMaxHPPercent,30,1,변이체의 최대 생명력이 30% 증가한다.
+Erosion_03_02,흉포한 변이체,Level03_2,3,0,Group_02,Exclusive,0,,,0,난이도 없음
+Erosion_03_03,쇠약한 육체,Level03_3,3,3,Group_03,Exclusive,캐릭터 최대 생명력 -15%,PartyMaxHPPercent,-15,1,모든 캐릭터의 최대 생명력이 15% 감소한다.
+Erosion_03_04,불길한 징후,Level03_4,3,3,Group_04,Exclusive,3턴마다 무작위 디버프,PeriodicRandomDebuffTurns,3,1,3턴마다 파티에 무작위 디버프 1개를 부여한다.
+Erosion_03_05,메마른 보급,Level03_5,3,0,Group_05,Exclusive,0,,,0,난이도 없음
+Erosion_03_06,뒤틀린 운명,Level03_6,3,3,Group_06,Exclusive,주사위 난이도 +2,DiceDifficultyAdd,2,1,주사위 판정 난이도가 2 증가한다.
+Erosion_03_07,유물 슬롯 잠금,Level03_7,3,3,Erosion_03_07,Independent,유물 슬롯 잠금,LockLastRelicSlot,1,1,캐릭터의 마지막 유물 슬롯이 잠긴다.
+Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동 마나 소모 +1,MoveFinalManaCostAdd,1,1,이동 시 최종 마나 소모량이 1 증가한다.
 
 # Tutorial
 튜토리얼ID,진행순서,맵ID,시작 파티,시작 침식도,시작 생명력(%),몬스터 생성 지연,단계,대화 캐릭터ID,출력,문구 키,한국어 대사/안내,넘김 방식,강조 UI,완료 안내 키,완료 안내,툴팁 위치
 TutorialId,Order,MapId,StartParty,InitialErosion,InitialHpPercent,DeferMonsterSpawn,Phase,SpeakerId,Text output,TextKey,TextKO,Advance,HighlightTarget,CompleteTextKey,CompleteTextKO,TooltipPosition
 Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,70",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점 인근,Auto
-Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후아! 생각보다 먼 길인데? 슬슬 몸이 무거워지는걸.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후... 생각보다 먼 길인데? 슬슬 몸이 무거워지는걸.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,이러다 거점에 도착하기도 전에 지치겠어!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,4,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.03,불필요한 체력 소모는 피하시죠. 거점까지 얼마 남지 않았습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,5,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.01,탐사 중에는 침식도가 누적됩니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
-Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"침식도는 새로운 방에 진입하면 3, 턴이 진행되거나 피해를 받을 때마다 1, 전투불능이 되면 10 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
-Tutorial_01,7,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.03,침식도가 최대치인 100에 도달하면 매 턴 생명력이 10씩 감소합니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_01,5,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.01,탐사 중에는 침식도가 증가합니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"침식도는 방 진입 시 3, 턴 종료 및 피격 시 1, 전투불능 시 10 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_01,7,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.03,침식도가 100에 도달하면 턴마다 10의 피해를 받습니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto
 Tutorial_01,9,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.04,변이체군요. 아무래도 그냥 지나가긴 어렵겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,10,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.05,그럼 녀석부터 처리하고 가자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,11,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.01,"캐릭터 상태창에서는 생명력과 마나, 카르마를 비롯한 다양한 전투 정보를 확인할 수 있습니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,11,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.01,"캐릭터 상태창에서 생명력, 마나, 카르마 등 전투 정보를 확인할 수 있습니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
 Tutorial_01,12,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.02,"마나와 카르마는 행동에 필요한 자원입니다. 마나는 재생량에 따라, 카르마는 매 턴 1씩 회복됩니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
-Tutorial_01,13,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.03,캐릭터가 장착한 유물과 룬의 정보도 각 슬롯에서 살펴볼 수 있습니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
-Tutorial_01,14,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.04,현재 캐릭터에게 적용된 버프와 디버프도 상태창에 표시됩니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,13,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.03,장착한 유물과 룬의 정보도 각 슬롯에서 확인할 수 있습니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,14,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.04,현재 캐릭터에게 적용 중인 버프와 디버프도 상태창에서 확인할 수 있습니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
 Tutorial_01,15,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.06,좋아! 녀석이 움직이기 전에 먼저 처리해 버릴까?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,16,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.07,무작정 달려들기보다는 신중하게 움직이는 편이 좋겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,17,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.08,일단 녀석에게 접근해서 제대로 한 방 먹여주겠어!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,18,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.09,하아… 어쩔 수 없군요. 뒤는 제가 마무리하겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,19,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.battleslot.01,"타임라인은 총 5개의 슬롯으로 구성되며, 각 슬롯은 5칸으로 이루어져 있습니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
-Tutorial_01,20,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.battleslot.02,"변이체가 먼저 행동을 예약하며, 하나의 슬롯에는 서로 다른 캐릭터의 행동을 등록할 수 없습니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
-Tutorial_01,21,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.01,"행동에 따라 1칸에서 3칸을 사용하며, 턴을 종료하면 첫 번째 슬롯부터 순서대로 실행됩니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,19,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.battleslot.01,"타임라인은 5개의 슬롯으로 구성되며, 각 슬롯은 5칸으로 나뉩니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,20,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.battleslot.02,"변이체가 먼저 행동을 예약하며, 각 슬롯에는 한 캐릭터의 행동만 예약할 수 있습니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,21,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.01,"행동은 1~3칸을 사용하며, 턴 종료 시 첫 번째 슬롯부터 순서대로 실행됩니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
 Tutorial_01,22,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.02,캐릭터는 이동과 방향 전환 등의 기본 행동을 사용할 수 있습니다.,ClickAny,BattleCharacterPanel/Active,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
-Tutorial_01,23,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.03,"이외에도 피해를 주거나 버프, 디버프 등의 효과를 가진 행동인 '기억'을 사용할 수 있습니다.",ClickAny,BattleCharacterPanel/Active,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
-Tutorial_01,24,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.04,"이동은 1칸을 사용하는 행동으로, 예약한 거리에 따라 마나를 소모합니다.",ClickTarget,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above
-Tutorial_01,25,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.05,이동할 위치를 선택하면 해당 행동이 타임라인에 예약됩니다.,ReserveMove,Grid_16,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Above
-Tutorial_01,26,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,기억의 범위는 캐릭터가 바라보는 방향을 기준으로 자동 설정됩니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
-Tutorial_01,27,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,캐릭터를 변경하면 예약할 슬롯도 자동으로 변경됩니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,Tab 또는 버튼을 클릭하여 계속,Above
-Tutorial_01,28,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,"같은 기억을 여러 번 등록할 수도 있으며, 각각의 행동이 타임라인에 예약됩니다.",ReserveActionTwice,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory_twice,Q 또는 버튼을 두 번 클릭하여 계속,Above
-Tutorial_01,29,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.09,행동 예약을 마쳤다면 턴을 종료합니다. 그러면 등록한 행동이 순서대로 실행되며 전투가 진행됩니다.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,23,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.03,"피해, 버프, 디버프 등 다양한 효과를 가진 '기억'도 사용할 수 있습니다.",ClickAny,BattleCharacterPanel/Active,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,24,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.04,"이동은 1칸을 차지하며, 이동 거리에 따라 마나를 소모합니다.",ClickTarget,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,25,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.05,이동 위치를 선택하면 타임라인에 행동이 예약됩니다.,ReserveMove,Grid_16,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Above
+Tutorial_01,26,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,기억의 범위는 캐릭터가 바라보는 방향에 따라 결정됩니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,27,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,캐릭터 선택 시 예약 슬롯도 자동으로 변경됩니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,Tab 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,28,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,같은 기억도 여러 번 예약할 수 있습니다.,ReserveActionTwice,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory_twice,Q 또는 버튼을 두 번 클릭하여 계속,Above
+Tutorial_01,29,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.09,예약을 마쳤다면 턴을 종료하세요. 예약한 행동이 순서대로 실행됩니다.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Above
 Tutorial_01,30,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.reward.dialogue.01,이 정도 녀석이라면 몇 마리가 덤벼도 문제없지!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,31,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.reward.dialogue.02,생각보다 수월하게 끝났군요. 유물도 챙겨 가시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,32,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.reward.dialogue.03,좋았어! 이번엔 쓸 만한 게 나왔으려나?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,33,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.reward.guide.01,"전투 종료 시 다양한 보상을 획득할 수 있으며, 유물은 캐릭터에게 장착하여 특별한 효과를 얻을 수 있습니다.",ClickTarget,BattleRewardCanvas/BattleRewardPanelUI/Contant/RewardSlot,tutorial.prompt.continue,버튼을 클릭하여 계속,Below
+Tutorial_01,33,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.reward.guide.01,전투 종료 시 보상을 획득합니다. 유물은 캐릭터에게 장착해 특별한 효과를 얻을 수 있습니다.,ClickTarget,BattleRewardCanvas/BattleRewardPanelUI/Contant/RewardSlot,tutorial.prompt.continue,버튼을 클릭하여 계속,Below
 Tutorial_01,34,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.relic.dialogue.01,"오, 이거 꽤 쓸만하겠는데? 이번엔 내가 챙길게!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,35,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.relic.dialogue.02,그러시죠. 제법 어울릴 것 같군요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,36,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.01,"캐릭터의 장착 슬롯에 유물을 장착할 수 있으며, 제한된 슬롯 안에서 유물을 조합하여 다양한 전투 전략을 구성할 수 있습니다.",ClickTarget,BattleRewardEquipPanel/Char01,tutorial.prompt.continue,버튼을 클릭하여 계속,Below
+Tutorial_01,36,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.01,"유물은 제한된 장착 슬롯에 배치하며, 조합에 따라 다양한 효과를 얻을 수 있습니다.",ClickTarget,BattleRewardEquipPanel/Char01,tutorial.prompt.continue,버튼을 클릭하여 계속,Below
 Tutorial_02,1,Map_28,,,,,Dialogue,Char_03,Dialogbox,tutorial.t02.dialogue.01,저기… 혹시 어디로 가시는 길인가요?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_02,2,Map_28,,,,,Dialogue,Char_01,Dialogbox,tutorial.t02.dialogue.02,우린 거점으로 가는 길이야!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_02,3,Map_28,,,,,Dialogue,Char_02,Dialogbox,tutorial.t02.dialogue.03,같은 방향이라면 함께 가시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
@@ -994,15 +998,15 @@ Tutorial_03,1,Map_27,,,,,Dialogue,Char_03,Dialogbox,tutorial.t03.dialogue.01,"�
 Tutorial_03,2,Map_27,,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.dialogue.02,뭘 고민해? 그냥 덤비면 되는 거 아니야?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_03,3,Map_27,,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.dialogue.03,무작정 덤비는 건 위험해요. 우선 상대의 정보를 파악해야겠어요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_03,4,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.01,변이체를 클릭하여 정보를 확인할 수 있습니다.,ClickTarget,Monster_Root/드라우그_RuntimeMonster_0002,tutorial.prompt.click_monster,변이체를 클릭하여 계속,Below
-Tutorial_03,5,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.02,행동 목록에서는 변이체가 예약할 행동들을 확인할 수 있습니다.,ClickAny,MonsterInfoPanel/SkillList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
-Tutorial_03,6,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.03,상태 목록에서는 변이체가 보유한 특수 효과와 버프 및 디버프를 확인할 수 있습니다.,ClickAny,MonsterInfoPanel/StatusEffectList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_03,5,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.02,행동 목록에서 변이체의 예약 예정 행동을 확인할 수 있습니다.,ClickAny,MonsterInfoPanel/SkillList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_03,6,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.03,"상태 목록에서 변이체의 특수효과, 버프, 디버프를 확인할 수 있습니다.",ClickAny,MonsterInfoPanel/StatusEffectList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_03,7,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.04,전투 중 변이체를 클릭하면 언제든지 정보를 확인할 수 있습니다.,ClickTarget,MonsterInfoPanel/BackButton,tutorial.prompt.continue,버튼을 클릭하여 계속,Above
 Tutorial_03,8,Map_27,,,,,Dialogue,Char_03,Dialogbox,tutorial.t03.dialogue.04,"저, 저도 도움이 될 수 있을 것 같아요…!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_03,9,Map_27,,,,,Dialogue,Char_03,Dialogbox,tutorial.t03.dialogue.05,연성제를 사용해서… 여러분의 공격에 힘을 보탤게요!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_03,10,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.05,캐릭터를 직접 클릭하여 선택을 전환할 수도 있습니다.,ClickTarget,UnitRoot/Player_Root/C_BattlePrefab(Clone),tutorial.prompt.select_character,캐릭터를 클릭하여 계속,Below
+Tutorial_03,10,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.05,캐릭터를 직접 클릭하여 선택을 변경할 수도 있습니다.,ClickTarget,UnitRoot/Player_Root/C_BattlePrefab(Clone),tutorial.prompt.select_character,캐릭터를 클릭하여 계속,Below
 Tutorial_03,11,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.06,연성제는 행동을 예약하지 않고 즉시 사용됩니다.,ReserveAction,BattleCharacterPanel/Active/Compound,tutorial.prompt.use_compound,D 또는 버튼을 클릭하여 계속,Above
-Tutorial_03,12,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.07,증폭 효과는 수치만큼 아군의 공격력을 증가시킵니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
-Tutorial_03,13,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.08,카르마를 소모하여 강력한 기억을 사용할 수 있습니다. 투지 효과는 아군의 공격력을 30% 증가시킵니다.,ReserveAction,BattleCharacterPanel/Active/Ultimate,tutorial.prompt.click_ultimate,R 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,12,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.07,증폭은 수치만큼 공격의 피해량을 증가시킵니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,13,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.08,카르마로 강력한 기억을 사용할 수 있습니다. 투지는 주는 피해를 30% 증가시킵니다.,ReserveAction,BattleCharacterPanel/Active/Ultimate,tutorial.prompt.click_ultimate,R 또는 버튼을 클릭하여 계속,Above
 Tutorial_03,14,Map_27,,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.dialogue.06,제가 뒤로 돌아가 변이체의 움직임을 제한하겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_03,15,Map_27,,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.dialogue.07,그럼 내가 정면에서 몰아붙일게!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_03,16,Map_27,,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.dialogue.08,다만 정면에서의 반격에는 주의하세요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
@@ -1010,7 +1014,7 @@ Tutorial_03,17,Map_27,,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.dialogue.09,"�
 Tutorial_03,18,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.09,"여러 캐릭터의 행동을 각각 예약하고, 하나의 턴에서 함께 실행할 수 있습니다.",ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,버튼을 클릭하여 계속,Above
 Tutorial_03,19,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.10,이동은 적의 공격을 피하거나 유리한 위치를 선점하는 데 활용할 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above
 Tutorial_03,20,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.11,"변이체의 이동을 예측해 자리를 잡으면, 다음 턴의 이동을 유도할 수 있습니다.",ReserveMove,Grid_32,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Below
-Tutorial_03,21,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.12,"방향 전환은 행동 슬롯 1칸을 소모하며, 이동하지 않고 바라보는 방향을 변경할 수 있습니다.",ReserveAction,BattleCharacterPanel/Active/Flip,tutorial.prompt.click_flip,S 또는 버튼을 클릭하여 계속,Above
+Tutorial_03,21,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.12,"방향 전환은 1칸을 사용하며, 이동 없이 바라보는 방향을 변경합니다.",ReserveAction,BattleCharacterPanel/Active/Flip,tutorial.prompt.click_flip,S 또는 버튼을 클릭하여 계속,Above
 Tutorial_03,22,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.13,변이체의 후방을 공격하면 방향을 전환시킬 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Above
 Tutorial_03,23,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.14,캐릭터의 행동을 연계하면 다양한 전술을 펼칠 수 있습니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char01,tutorial.prompt.select_char01,버튼을 클릭하여 계속,Above
 Tutorial_03,24,Map_27,,,,,Guide,,TutorialTooltip,tutorial.t03.guide.15,변이체의 반격 방향을 파악하면 이동으로 반격을 피할 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above

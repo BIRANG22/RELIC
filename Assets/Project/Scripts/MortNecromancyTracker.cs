@@ -172,11 +172,11 @@ public static class MortNecromancyTracker
             return false;
         }
 
-        // 사령술로 부활한 병사는 최대 체력의 30% 체력으로 돌아옵니다.
+        // 사령술로 부활한 병사는 최대 체력의 50% 체력으로 돌아옵니다.
         // HUD/룸 등록 전에 체력을 먼저 적용해 처음부터 부활 체력으로 표시되게 합니다.
         result.RuntimeData.CurrentHP = Mathf.Max(
             1,
-            Mathf.CeilToInt(result.RuntimeData.MaxHP * 0.3f));
+            Mathf.CeilToInt(result.RuntimeData.MaxHP * 0.5f));
 
         BattleRoomLoader roomLoader = Object.FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
 

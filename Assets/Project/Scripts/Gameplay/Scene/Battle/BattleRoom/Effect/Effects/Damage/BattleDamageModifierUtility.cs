@@ -10,6 +10,7 @@ public static class BattleDamageModifierUtility
     private const string VulnerableEffectId = "E_Vulnerable";
     private const string GrudgeEffectId = "E_Grudge";
     private const string BlindsideEffectId = "E_Blindside";
+    private const string AmbushEffectId = "E_Ambush";
     private const string GritEffectId = "E_Grit";
     private const string MoveFirstAttackPowerEffectId = "E_Move_First_Attack_Power";
     private const string LowHpPowerEffectId = "E_Low_HP_Power";
@@ -34,6 +35,15 @@ public static class BattleDamageModifierUtility
             IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget))
         {
             damage *= 1.5f;
+        }
+
+        // Monster passive: rear attacks gain 100% damage while E_Ambush is active.
+        if (context?.MonsterCaster != null &&
+            context.PlayerTarget != null &&
+            HasStatus(context.MonsterCaster.RuntimeData.StatusEffects, AmbushEffectId) &&
+            IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget))
+        {
+            damage *= 2f;
         }
 
         if (context?.PlayerTarget != null)
