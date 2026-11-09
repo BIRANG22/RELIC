@@ -379,18 +379,22 @@ public static class StaticLocalizationMigration
         int changed = 0;
         try
         {
-            Scene battleScene = EditorSceneManager.OpenScene(battlePath, OpenSceneMode.Single);
-            TMP_Text characterText = battleScene.GetRootGameObjects()
-                .SelectMany(root => root.GetComponentsInChildren<TMP_Text>(true))
-                .FirstOrDefault(text => text.gameObject.name == "Character_Text" &&
-                                        HasAncestorNamed(text.transform, "Equip_panel"));
-            if (characterText != null)
+            if (LocalizationEditorSafetyPolicy.GetEnabledBuildScenePaths().Contains(battlePath))
             {
-                characterText.text = characterSource;
-                if (ConfigureText(characterText, characterKey, true))
-                    changed++;
-                EditorSceneManager.MarkSceneDirty(battleScene);
-                EditorSceneManager.SaveScene(battleScene);
+                Scene battleScene = EditorSceneManager.OpenScene(battlePath, OpenSceneMode.Single);
+                TMP_Text characterText = battleScene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<TMP_Text>(true))
+                    .FirstOrDefault(text => text.gameObject.name == "Character_Text" &&
+                                            HasAncestorNamed(text.transform, "Equip_panel"));
+                if (characterText != null)
+                {
+                    characterText.text = characterSource;
+                    if (ConfigureText(characterText, characterKey, true))
+                        changed++;
+                    EditorSceneManager.MarkSceneDirty(battleScene);
+                    EditorSceneManager.SaveScene(battleScene);
+                }
+
             }
 
             GameObject checkRoot = PrefabUtility.LoadPrefabContents(checkPrefabPath);
@@ -463,9 +467,11 @@ public static class StaticLocalizationMigration
                 finally { PrefabUtility.UnloadPrefabContents(root); }
             }
 
+            HashSet<string> enabledScenePaths = LocalizationEditorSafetyPolicy.GetEnabledBuildScenePaths();
             foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, enabledScenePaths)) continue;
                 Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
                 if (scene.GetRootGameObjects().Sum(root => ApplyToHierarchy(root, sourceToKey)) > 0)
                 {
@@ -665,8 +671,10 @@ public static class StaticLocalizationMigration
     private static int ApplyToScenes(LocalizationBindingResolver sourceToKey)
     {
         int changedTextCount = 0;
+        HashSet<string> enabledScenePaths = LocalizationEditorSafetyPolicy.GetEnabledBuildScenePaths();
         foreach (string path in TargetScenePaths)
         {
+            if (!LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, enabledScenePaths)) continue;
             if (!File.Exists(path))
                 throw new FileNotFoundException("Target localization scene was not found.", path);
 

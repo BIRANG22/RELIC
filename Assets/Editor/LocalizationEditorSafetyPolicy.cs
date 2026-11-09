@@ -74,6 +74,16 @@ public static class LocalizationEditorSafetyPolicy
                !normalized.StartsWith(DownloadRoot, StringComparison.OrdinalIgnoreCase);
     }
 
+    // Only checked scenes in Unity Build Settings are eligible for localization scene operations.
+    public static HashSet<string> GetEnabledBuildScenePaths()
+    {
+        return EditorBuildSettings.scenes
+            .Where(scene => scene.enabled)
+            .Select(scene => NormalizeAssetPath(scene.path))
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
     public static bool ShouldScanSceneAsset(
         string assetPath,
         ISet<string> configuredScenePaths)
