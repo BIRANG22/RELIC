@@ -878,10 +878,7 @@ public class RuneSettingPanel : MonoBehaviour
             sourceSlot.SetRune(replacedRune);
 
         targetSlot.SetRune(draggedRune);
-        SaveCurrentRuneSetting();
-        RefreshRuneIconEquippedStates();
-        OnRuneChanged?.Invoke();
-        AudioManager.Instance?.PlaySfx(runeEquipSfxId);
+        CompleteRuneEquipChange(replacedRune?.RuneId, draggedRune);
     }
 
     public void EndRuneDrag(PointerEventData eventData)
@@ -1055,17 +1052,28 @@ public class RuneSettingPanel : MonoBehaviour
         }
 
         emptySlot.SetRune(runeData);
-        SetRuntimeRuneId(emptySlot.SlotIndex, runeData.RuneId);
+        CompleteRuneEquipChange(null, runeData);
+    }
 
-        if (DataManager.Instance != null)
-        {
-            RecordDiscoveryService.RegisterRune(DataManager.Instance, runeData.RuneId);
-            DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
-        }
+    private void CompleteRuneEquipChange(string previousRuneId, RuneData equippedRune)
+    {
+        if (!ShouldPlayRuneEquipSound(previousRuneId, equippedRune?.RuneId))
+            return;
+
+        SaveCurrentRuneSetting();
+
+        if (DataManager.Instance != null && equippedRune != null)
+            RecordDiscoveryService.RegisterRune(DataManager.Instance, equippedRune.RuneId);
 
         RefreshRuneIconEquippedStates();
-
         OnRuneChanged?.Invoke();
+        AudioManager.Instance?.PlaySfx(runeEquipSfxId);
+    }
+
+    public static bool ShouldPlayRuneEquipSound(string previousRuneId, string nextRuneId)
+    {
+        return !string.IsNullOrWhiteSpace(nextRuneId) &&
+               !string.Equals(previousRuneId, nextRuneId, StringComparison.OrdinalIgnoreCase);
     }
 
     private RuneSlotButton GetRuneEquipDestinationSlot()

@@ -6355,6 +6355,58 @@ MonoBehaviour:
     m_Key: battle.resource.shortage
     m_Metadata:
       m_Items: []
+  - m_Id: 31947563796242435
+    m_Key: system.expedition.abandoned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242436
+    m_Key: system.expedition.missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823346028544
+    m_Key: data.monster_skill.s_monster_08.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194368
+    m_Key: data.monster_skill.s_monster_09.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194369
+    m_Key: data.monster_skill.s_monster_17.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194370
+    m_Key: data.monster_skill.s_monster_18.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194371
+    m_Key: data.monster_skill.s_monster_22.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194372
+    m_Key: data.monster_skill.s_monster_27.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194373
+    m_Key: data.monster_skill.s_monster_30.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194374
+    m_Key: data.monster_skill.s_monster_31.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194375
+    m_Key: data.monster_skill.s_monster_33.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194376
+    m_Key: data.monster_skill.s_monster_35.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194377
+    m_Key: data.effect.e_passive_lose_hp.name
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

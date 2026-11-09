@@ -1119,6 +1119,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
             // 선택 표시와 카메라 포커스는 SelectPartyIndex에서 처리합니다.
             if (partySlots[i]?.Root != null)
             {
+                DBAudioSource directClickAudio = partySlots[i].Root.GetComponent<DBAudioSource>();
+                directClickAudio?.SetClickSoundEnabled(false);
+
                 Transform back = FindDirectChild(partySlots[i].Root, "Back");
                 if (back != null)
                 {

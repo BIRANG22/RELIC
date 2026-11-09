@@ -6705,6 +6705,14 @@ MonoBehaviour:
     m_Localized: No queda suficiente espacio en esta ranura.
     m_Metadata:
       m_Items: []
+  - m_Id: 31947563796242435
+    m_Localized: "Expedici\xF3n abandonada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242436
+    m_Localized: "No hay ninguna expedici\xF3n en curso."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
