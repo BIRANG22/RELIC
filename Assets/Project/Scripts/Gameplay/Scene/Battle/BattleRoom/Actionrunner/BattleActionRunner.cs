@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Monster;
 using System.Collections;
@@ -3728,8 +3728,8 @@ public class BattleActionRunner
         Vector3 departure = visual.position;
         Vector3 visualOffset = departure - root.position;
         const float riseHeight = 4.5f;
-        const float fadeOutSeconds = 0.52f;
-        const float fadeInSeconds = 0.48f;
+        const float fadeOutSeconds = 0.4f;
+        const float fadeInSeconds = 0.3f;
         SpriteRenderer[] sprites = visual.GetComponentsInChildren<SpriteRenderer>(true);
         Color[] colors = new Color[sprites.Length];
         for (int i = 0; i < sprites.Length; i++)
