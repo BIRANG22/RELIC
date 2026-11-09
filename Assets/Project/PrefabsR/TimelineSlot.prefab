@@ -277,7 +277,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 0.3
 --- !u!1 &225382797721621842
@@ -502,7 +502,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 0.3
 --- !u!1 &507808836587625279
@@ -941,7 +941,7 @@ MonoBehaviour:
   m_text: 99
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -6587521634390292502, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1535,7 +1535,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 0.3
 --- !u!1 &2477298944245635869
@@ -1606,7 +1606,7 @@ MonoBehaviour:
   m_text: 99
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -6587521634390292502, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1818,7 +1818,7 @@ MonoBehaviour:
   m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -6587521634390292502, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2432,7 +2432,7 @@ MonoBehaviour:
   m_text: 99
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -6587521634390292502, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2647,7 +2647,7 @@ MonoBehaviour:
   m_text: 99
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -6587521634390292502, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2862,7 +2862,7 @@ MonoBehaviour:
   m_text: 99
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: -6587521634390292502, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3350,7 +3350,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 0.3
 --- !u!1 &4452384236504231927
@@ -5040,6 +5040,7 @@ MonoBehaviour:
   turnMarkFront: {fileID: 4979701311912786871}
   turnMarkLine: {fileID: 2793501172467233148}
   turnMarkGlowImage: {fileID: 507808836587625279}
+  markerClickSfxId: battle.timeline.marker.click
   cancelledOrderMoveDown: 70
   cancelledOrderFadeDuration: 0.2
   orderValuePulseScale: 1.1
@@ -6301,6 +6302,6 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 0.3

@@ -963,7 +963,9 @@ public sealed class AudioSourcePlaybackSettings
             Volume = Mathf.Clamp01(cue.volume),
             Pitch = cue.GetPlaybackPitch(),
             PanStereo = template != null ? template.panStereo : 0f,
-            SpatialBlend = template != null ? template.spatialBlend : 0f,
+            SpatialBlend = cue.overrideSpatialBlend
+                ? Mathf.Clamp01(cue.spatialBlend)
+                : template != null ? template.spatialBlend : 0f,
             ReverbZoneMix = template != null ? template.reverbZoneMix : 1f,
             DopplerLevel = template != null ? template.dopplerLevel : 1f,
             Spread = template != null ? template.spread : 0f,

@@ -144,6 +144,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: ui.back.click
+    aliases: []
+    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   - id: scene.transition
     aliases: []
     clip: {fileID: 8300000, guid: fd08058bf33de4c60adeb6108f4b7fb0, type: 3}
@@ -236,13 +245,13 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.skill.reserve
     aliases: []
-    clip: {fileID: 8300000, guid: d73a42d2f4c3449eab261e629916465f, type: 3}
+    clip: {fileID: 8300000, guid: dcadae76e7c9eab4ba5c5d57acec1a0e, type: 3}
     volume: 0.5
-    pitch: 0.5
+    pitch: 1
     loop: 0
-    useRandomPitch: 1
-    randomPitchMin: 0.5
-    randomPitchMax: 0.8
+    useRandomPitch: 0
+    randomPitchMin: 0.9
+    randomPitchMax: 1.1
   - id: battle.action.reserve.text
     aliases: []
     clip: {fileID: 8300000, guid: 622685aba6ffb47928d0e20ae84be81b, type: 3}
@@ -255,7 +264,7 @@ MonoBehaviour:
   - id: battle.progress.text
     aliases: []
     clip: {fileID: 8300000, guid: 2c2818c3964034785904306ce99bc49b, type: 3}
-    volume: 0.8
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -414,15 +423,6 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: ui.back.click
-    aliases: []
-    clip: {fileID: 8300000, guid: cf05ddb3e0f3a40299f6d29a004761b5, type: 3}
-    volume: 0.5
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
   - id: ui.record.open
     aliases: []
     clip: {fileID: 8300000, guid: 5dd444ef4e8264876aaf05afb792355d, type: 3}
@@ -471,7 +471,7 @@ MonoBehaviour:
   - id: ui.warning.text
     aliases: []
     clip: {fileID: 8300000, guid: e7cfa3e94e67c4769a1d84ec33416a8d, type: 3}
-    volume: 0.5
+    volume: 0.3
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -632,7 +632,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: skill.root
     aliases: []
-    clip: {fileID: 8300000, guid: 3eefd4351369d4c07a2a8c15f01c5b0a, type: 3}
+    clip: {fileID: 8300000, guid: ca3b3e4f7c120454ca82321e3b517b60, type: 3}
     volume: 0.7
     pitch: 1
     loop: 0
@@ -651,7 +651,7 @@ MonoBehaviour:
   - id: relic.root
     aliases: []
     clip: {fileID: 8300000, guid: 9ebd67a496e154865b4cb3db7e72cc55, type: 3}
-    volume: 0.5
+    volume: 0.4
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -660,7 +660,7 @@ MonoBehaviour:
   - id: relic.equip
     aliases: []
     clip: {fileID: 8300000, guid: 1916835e7b6e5b04f90e789a29b9532d, type: 3}
-    volume: 0.5
+    volume: 0.3
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -724,24 +724,24 @@ MonoBehaviour:
     aliases: []
     clip: {fileID: 8300000, guid: ffed50ebe13e94753a7b51500f0a909f, type: 3}
     volume: 0.3
-    pitch: 1.5
+    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0.7
     randomPitchMax: 1.3
   - id: ui.tutorial.text.advance
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    clip: {fileID: 8300000, guid: 2675381c214023d4d8b254b4d2a704b3, type: 3}
     volume: 1
     pitch: 1
     loop: 0
     useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.1
   - id: battle.move-flip.click
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -749,8 +749,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.skill.reset-cancel
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -767,8 +767,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.timeline.marker.click
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 7f7f2003f18fd4f6a9b31445986ac291, type: 3}
+    volume: 0.4
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -776,8 +776,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.rune.equip
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 8e2bf3c27ae8be4458242e9a968b2a46, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -785,8 +785,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.skill.change
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -794,8 +794,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.skill-material.combine
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -803,8 +803,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.skill-material.remove
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: cb89ae6b350f9466bbde7ed956451b19, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -812,8 +812,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.character.remove
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -821,8 +821,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.grid-selection.drop
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: cf05ddb3e0f3a40299f6d29a004761b5, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -830,8 +830,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: lobby.equipment.equip
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: bb5b4b2aea1476a4b95ba96df2a36d03, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -839,8 +839,26 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.exploration-report.count-up
     aliases: []
-    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: e929358d78e3aff4fbbe04d27f9ec91b, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: option.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 6f5ea4a51440e4b7595865cdf64f8556, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: menu.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 7ec90ab715897407d87173f709961418, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -1020,6 +1038,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
   - displayName: S_Unique_01
@@ -1032,6 +1052,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 52d574414f9041846b1cd1cfd794c899, type: 3}
@@ -1041,6 +1063,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 3d949d5276ffa654ba016bb2dc99a963, type: 3}
@@ -1050,6 +1074,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_02
@@ -1062,6 +1088,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 0188b7fc9322d2447afb9ffc6965b402, type: 3}
@@ -1071,6 +1099,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 05528b052e0a4ba4a8004a5d700d83ba, type: 3}
@@ -1080,6 +1110,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_03
@@ -1092,6 +1124,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: fe52aae0ff84e43fabc86d3c14f5d35a, type: 3}
@@ -1101,6 +1135,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1110,6 +1146,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_04
@@ -1122,6 +1160,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ec26f121419304c98983c59863328b0d, type: 3}
@@ -1131,6 +1171,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 8f9d996f5c04f4cd981d33f5ecc4e11f, type: 3}
@@ -1140,6 +1182,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: f5bb2da2f813545e69c4424a96f39522, type: 3}
@@ -1149,6 +1193,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_05
@@ -1161,6 +1207,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -1170,6 +1218,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ba0e2b169cfab4a7997985a03439088f, type: 3}
@@ -1179,6 +1229,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Unique_06
@@ -1191,6 +1243,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 6afbeff885dd3d040a27489de3283a89, type: 3}
@@ -1200,6 +1254,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1209,6 +1265,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_07
@@ -1221,6 +1279,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1230,6 +1290,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_08
@@ -1242,6 +1304,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 0188b7fc9322d2447afb9ffc6965b402, type: 3}
@@ -1251,6 +1315,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ba0e2b169cfab4a7997985a03439088f, type: 3}
@@ -1260,6 +1326,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1269,6 +1337,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_01
@@ -1281,6 +1351,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 6e0bdec41ec14d5418e3fe352d1d6e48, type: 3}
@@ -1290,6 +1362,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 8a61b882716654b9aa3d20f57413cca1, type: 3}
@@ -1299,6 +1373,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_02
@@ -1311,6 +1387,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 3989b987d2b839448a485c420a838652, type: 3}
@@ -1320,6 +1398,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ee060846d45195c49a5a8433af643050, type: 3}
@@ -1329,6 +1409,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_03
@@ -1341,6 +1423,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: fe52aae0ff84e43fabc86d3c14f5d35a, type: 3}
@@ -1350,6 +1434,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1359,6 +1445,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_04
@@ -1371,6 +1459,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: 8956019c2fc45704b81ea602a14405fb, type: 3}
@@ -1380,6 +1470,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1389,6 +1481,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_05
@@ -1401,6 +1495,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -1410,6 +1506,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_06
@@ -1422,6 +1520,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -1431,6 +1531,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c7ecb118defccbf4fbac913c34a210ac, type: 3}
@@ -1440,6 +1542,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_07
@@ -1452,6 +1556,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c98c96edf95f2456ca2d67683712cd46, type: 3}
@@ -1461,6 +1567,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_08
@@ -1473,6 +1581,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: a9d2efe49badf4f95b320ff0b0f84f6f, type: 3}
@@ -1482,6 +1592,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 0188b7fc9322d2447afb9ffc6965b402, type: 3}
@@ -1491,6 +1603,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_01
@@ -1503,6 +1617,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 52d574414f9041846b1cd1cfd794c899, type: 3}
@@ -1512,6 +1628,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_02
@@ -1524,6 +1642,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 6eb6bf28661c7334daaf6bc253eb638c, type: 3}
@@ -1533,6 +1653,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 52d574414f9041846b1cd1cfd794c899, type: 3}
@@ -1542,6 +1664,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_03
@@ -1554,6 +1678,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 37239b9b36f5f49398a8d8d062b4201c, type: 3}
@@ -1563,6 +1689,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d569393dfcbfe46ceb38cb5cf10f7c93, type: 3}
@@ -1572,6 +1700,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_04
@@ -1584,6 +1714,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 3989b987d2b839448a485c420a838652, type: 3}
@@ -1593,6 +1725,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 2cfe73e4255126643ab471a33f98663a, type: 3}
@@ -1602,6 +1736,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_05
@@ -1614,6 +1750,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 52d574414f9041846b1cd1cfd794c899, type: 3}
@@ -1623,6 +1761,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d62b10f1d56e5a046a9f3491445c7dcf, type: 3}
@@ -1632,6 +1772,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_06
@@ -1644,6 +1786,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 52d574414f9041846b1cd1cfd794c899, type: 3}
@@ -1653,6 +1797,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 6a9114cde6bf1c5429d34f3f8316c823, type: 3}
@@ -1662,6 +1808,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_07
@@ -1674,6 +1822,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 39f07e1f5c97840beb02b55da30b7367, type: 3}
@@ -1683,6 +1833,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: de6e63aaa448e2e479d203b94e56b970, type: 3}
@@ -1692,6 +1844,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_08
@@ -1704,6 +1858,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 52d574414f9041846b1cd1cfd794c899, type: 3}
@@ -1713,6 +1869,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 3d949d5276ffa654ba016bb2dc99a963, type: 3}
@@ -1722,6 +1880,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 3d949d5276ffa654ba016bb2dc99a963, type: 3}
@@ -1731,6 +1891,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_09
@@ -1743,6 +1905,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d24032b2a0136ee4cb31cf58c810b138, type: 3}
@@ -1752,6 +1916,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 395bcaa7bc3a8408cb6dd1713d3b06fa, type: 3}
@@ -1761,6 +1927,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_10
@@ -1773,6 +1941,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 0188b7fc9322d2447afb9ffc6965b402, type: 3}
@@ -1782,6 +1952,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 05528b052e0a4ba4a8004a5d700d83ba, type: 3}
@@ -1791,6 +1963,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_11
@@ -1803,6 +1977,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 8f172323ddfece946a766db423fd40f8, type: 3}
@@ -1812,6 +1988,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 15f200d49df29194eaaf6a403cf1f8d2, type: 3}
@@ -1821,6 +1999,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_12
@@ -1833,6 +2013,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d769fbbf2229323439b901ed33f6fe6f, type: 3}
@@ -1842,6 +2024,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
     - clip: {fileID: 8300000, guid: 69ff91372fde648479a99dbb0c3e5d7b, type: 3}
@@ -1851,6 +2035,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: fe52aae0ff84e43fabc86d3c14f5d35a, type: 3}
@@ -1860,6 +2046,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
   - displayName: S_Core_13
@@ -1872,6 +2060,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d769fbbf2229323439b901ed33f6fe6f, type: 3}
@@ -1881,6 +2071,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
     - clip: {fileID: 8300000, guid: 69ff91372fde648479a99dbb0c3e5d7b, type: 3}
@@ -1890,6 +2082,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: fe52aae0ff84e43fabc86d3c14f5d35a, type: 3}
@@ -1899,6 +2093,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
   - displayName: S_Core_14
@@ -1911,6 +2107,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: bccfcd3177b058544a747631db342779, type: 3}
@@ -1920,6 +2118,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 15f200d49df29194eaaf6a403cf1f8d2, type: 3}
@@ -1929,6 +2129,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_15
@@ -1941,6 +2143,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: cf61ffb1f8ecb496886da1d7eaeb3082, type: 3}
@@ -1950,6 +2154,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: fe52aae0ff84e43fabc86d3c14f5d35a, type: 3}
@@ -1959,6 +2165,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: a3cb1b1c167444eba9aa4b3086c7de2e, type: 3}
@@ -1968,6 +2176,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_16
@@ -1980,6 +2190,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: cf61ffb1f8ecb496886da1d7eaeb3082, type: 3}
@@ -1989,6 +2201,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 9e6759f123aa15d42a35d91caaa273f2, type: 3}
@@ -1998,6 +2212,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: cc22815f0642f4041b833bf177ab549f, type: 3}
@@ -2007,6 +2223,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_17
@@ -2019,6 +2237,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 69ff91372fde648479a99dbb0c3e5d7b, type: 3}
@@ -2028,6 +2248,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: c867713aa1957de459d8ca4dfe182498, type: 3}
@@ -2037,6 +2259,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: b0b3c55f5134848bb941b9e99c52bca0, type: 3}
@@ -2046,6 +2270,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Core_18
@@ -2058,6 +2284,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 69ff91372fde648479a99dbb0c3e5d7b, type: 3}
@@ -2067,6 +2295,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: fe52aae0ff84e43fabc86d3c14f5d35a, type: 3}
@@ -2076,6 +2306,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.2
     - clip: {fileID: 8300000, guid: 0e7a01e143f4e27439f1ec7de1bfed57, type: 3}
@@ -2085,6 +2317,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_19
@@ -2097,6 +2331,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 351635aa8639a4326852038233c8a333, type: 3}
@@ -2106,6 +2342,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 69ff91372fde648479a99dbb0c3e5d7b, type: 3}
@@ -2115,6 +2353,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 9e6759f123aa15d42a35d91caaa273f2, type: 3}
@@ -2124,6 +2364,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Core_20
@@ -2136,6 +2378,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 7a7e58c405d79cd4e856ca65c05f047d, type: 3}
@@ -2145,6 +2389,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 351635aa8639a4326852038233c8a333, type: 3}
@@ -2154,6 +2400,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: eb4fed2bc599c4d51874a05d129e21f3, type: 3}
@@ -2163,6 +2411,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
   - displayName: S_Core_21
@@ -2175,6 +2425,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -2184,6 +2436,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 65737576388e94cd9a7444a00ee6d836, type: 3}
@@ -2193,6 +2447,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Core_22
@@ -2205,6 +2461,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -2214,6 +2472,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: e78ee39c4d8316c4999ad3df556acdf3, type: 3}
@@ -2223,6 +2483,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_23
@@ -2235,6 +2497,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -2244,6 +2508,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: e79916dd3c45d32498dc10be254c166d, type: 3}
@@ -2253,6 +2519,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_24
@@ -2265,6 +2533,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -2274,6 +2544,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 7a121435da2fee6479e5c533dd6604bc, type: 3}
@@ -2283,6 +2555,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_25
@@ -2295,6 +2569,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
@@ -2304,6 +2580,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: f27702e9f64cb44e384583c02ae308cc, type: 3}
@@ -2313,6 +2591,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_26
@@ -2325,6 +2605,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
@@ -2334,6 +2616,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 77c2c4c92513c42719323672dc632e4f, type: 3}
@@ -2343,6 +2627,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_27
@@ -2355,6 +2641,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -2364,6 +2652,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 112649944d6114ce09e0b8860d3ec7de, type: 3}
@@ -2373,6 +2663,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_28
@@ -2385,6 +2677,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: b1977313535064e1ea47ed263f94a095, type: 3}
@@ -2394,6 +2688,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 375411ced710e49ca844b10cd90f91bf, type: 3}
@@ -2403,6 +2699,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_29
@@ -2415,6 +2713,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 65737576388e94cd9a7444a00ee6d836, type: 3}
@@ -2424,6 +2724,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_30
@@ -2436,6 +2738,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 61d7ea88c978ce04bb497097a7a96bf8, type: 3}
@@ -2445,6 +2749,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 9be06d1ef9bd54e18a296563a14d533e, type: 3}
@@ -2454,6 +2760,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: eee5204891036a74a83240647dd35c9a, type: 3}
@@ -2463,6 +2771,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_31
@@ -2475,6 +2785,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: dafe33d88ed91a94e8838ce36188ade2, type: 3}
@@ -2484,6 +2796,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_32
@@ -2496,6 +2810,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 9be06d1ef9bd54e18a296563a14d533e, type: 3}
@@ -2505,6 +2821,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 3c73c5023b3e04c3880d8edd3f8f6f80, type: 3}
@@ -2514,6 +2832,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2523,6 +2843,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_33
@@ -2535,6 +2857,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c98c96edf95f2456ca2d67683712cd46, type: 3}
@@ -2544,6 +2868,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_34
@@ -2556,6 +2882,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 748d154eee375464da0de3ba8a7bbb7d, type: 3}
@@ -2565,6 +2893,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_35
@@ -2577,6 +2907,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
@@ -2586,6 +2918,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
@@ -2595,6 +2929,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1.2
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
@@ -2604,6 +2940,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
@@ -2613,6 +2951,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 5e0c71a0cf6a84486b343fdaedfffebe, type: 3}
@@ -2622,6 +2962,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 88a7e6f964ae7b84baa612d0cc643443, type: 3}
@@ -2631,6 +2973,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Core_36
@@ -2643,6 +2987,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: a93dd01e82d81454b989dbe9e943cc87, type: 3}
@@ -2652,6 +2998,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
   - displayName: S_Core_37
@@ -2664,6 +3012,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: b150f25bc4eef4ff8b286c3fa842e9c3, type: 3}
@@ -2673,6 +3023,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_38
@@ -2685,6 +3037,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
@@ -2694,6 +3048,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 5beec73530d1f4519a705f7034837d1a, type: 3}
@@ -2703,6 +3059,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
@@ -2712,6 +3070,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 88a7e6f964ae7b84baa612d0cc643443, type: 3}
@@ -2721,6 +3081,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Core_39
@@ -2733,6 +3095,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: a125a2873ab4e4d5593071c06702e9a2, type: 3}
@@ -2742,6 +3106,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 351635aa8639a4326852038233c8a333, type: 3}
@@ -2751,6 +3117,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Core_40
@@ -2763,6 +3131,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: eb4fed2bc599c4d51874a05d129e21f3, type: 3}
@@ -2772,6 +3142,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: 5106cd8bba69b4c6bac0667dfa2ccf50, type: 3}
@@ -2781,6 +3153,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
     - clip: {fileID: 8300000, guid: e5a3625fcbfc38f45a2a7e480df231f0, type: 3}
@@ -2790,9 +3164,54 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
+  gridEffectVfxSfxList:
+  - displayName: GR_Residue
+    vfxPrefab: {fileID: 6416350362071025190, guid: 29e413fcd251b764daf2b40f112d6b53, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 708dcfe786a83e748840fceff9bc0a26, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 1
+      spatialBlend: 1
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: Vfx_Gr_poisson
+    vfxPrefab: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 708dcfe786a83e748840fceff9bc0a26, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 1
+      spatialBlend: 1
+      randomPitchMin: 1
+      randomPitchMax: 1
   monsterSkillVfxSfxList:
+  - displayName: Arabella.attack.02.prepare
+    vfxPrefab: {fileID: 6287963228254279517, guid: 148ec99a4ab2ab64cae37540118ff5ca, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 6e22c23e3d58fda4db1a40d49a979a56, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 1
+      spatialBlend: 1
+      randomPitchMin: 1
+      randomPitchMax: 1
   - displayName: move.muck,blob
     vfxPrefab: {fileID: 4145361429921181282, guid: 14446538ebfd3ff4890ea1f5dd834341, type: 3}
     cues:
@@ -2803,6 +3222,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
     - clip: {fileID: 8300000, guid: 16ab2edc37cd743f2ba4dddfa87ac107, type: 3}
@@ -2812,6 +3233,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
   - displayName: hit.muck.blob
@@ -2824,6 +3247,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: guard..muck.blob
@@ -2836,6 +3261,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: muck.missile
@@ -2848,6 +3275,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 9b02f295ba2434817a92492a2aed4b88, type: 3}
@@ -2857,6 +3286,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: muck.attack
@@ -2869,6 +3300,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 9083ef15361d819409bb8512758200b4, type: 3}
@@ -2878,6 +3311,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: muck.dead
@@ -2890,6 +3325,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
   - displayName: blob.dead
@@ -2902,6 +3339,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
   - displayName: blob.attack
@@ -2914,6 +3353,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c540d97b531a3401f8fc577ff5f9bf92, type: 3}
@@ -2923,6 +3364,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c7905a18f5ce0f340bf06548844b29be, type: 3}
@@ -2932,6 +3375,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: move.rancor,blight
@@ -2944,6 +3389,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
     - clip: {fileID: 8300000, guid: 03735ec227f1f4fc79c9074a1ce65f73, type: 3}
@@ -2953,6 +3400,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
   - displayName: hit.rancor.blight
@@ -2965,6 +3414,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: guard.rancor.blight
@@ -2977,6 +3428,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: racor.blight.dead
@@ -2989,6 +3442,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
   - displayName: rancor.attack.01
@@ -3001,6 +3456,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 5c0d51bb2410941c0b84a733863c70f5, type: 3}
@@ -3010,6 +3467,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 7b853722a280e466f8fc0bb615044a73, type: 3}
@@ -3019,6 +3478,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: rancor.attack.02
@@ -3031,6 +3492,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 4849ef08b472b48dfb65024a8156e50d, type: 3}
@@ -3040,6 +3503,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c68e0bada716d4993bbbc8f2013f1a71, type: 3}
@@ -3049,6 +3514,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: blight.attack.01
@@ -3061,6 +3528,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 5c0d51bb2410941c0b84a733863c70f5, type: 3}
@@ -3070,6 +3539,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 7b853722a280e466f8fc0bb615044a73, type: 3}
@@ -3079,6 +3550,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: blight.attack.02
@@ -3091,6 +3564,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 4849ef08b472b48dfb65024a8156e50d, type: 3}
@@ -3100,6 +3575,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c68e0bada716d4993bbbc8f2013f1a71, type: 3}
@@ -3109,6 +3586,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: move.vespa
@@ -3121,6 +3600,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
     - clip: {fileID: 8300000, guid: 592a366c294e1824596721fdceb836e4, type: 3}
@@ -3130,6 +3611,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.3
   - displayName: sinder.dead
@@ -3142,6 +3625,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
   - displayName: vespa.dead
@@ -3154,6 +3639,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
   - displayName: hit.sinder.vespa
@@ -3166,6 +3653,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: guard.sinder.vespa
@@ -3178,6 +3667,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: vespa.attack
@@ -3190,6 +3681,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: f00737831b0e645bdb1a303c22981ae6, type: 3}
@@ -3199,6 +3692,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: da9151920998742508acb66cf5d35e92, type: 3}
@@ -3208,6 +3703,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 3754d8ef0078d1c498a51a8e0cf9f255, type: 3}
@@ -3217,6 +3714,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: move.sinder
@@ -3229,6 +3728,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
     - clip: {fileID: 8300000, guid: 1142b3b6e8e9de24c8fff70bd97da2f1, type: 3}
@@ -3238,6 +3739,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
   - displayName: sinder.attack
@@ -3250,6 +3753,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
@@ -3259,6 +3764,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: move.draugr,barrow
@@ -3271,6 +3778,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
     - clip: {fileID: 8300000, guid: 1ec8ff0a2496dbe4e8aceba9ab8709ea, type: 3}
@@ -3280,6 +3789,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
   - displayName: hit.draugr,barrow
@@ -3292,6 +3803,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: guard.draugr,barrow
@@ -3304,6 +3817,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: dead.drautr,barrow
@@ -3316,6 +3831,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: draugr.attack.01
@@ -3328,6 +3845,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 29588e828421ac64ba79514489070bb2, type: 3}
@@ -3337,6 +3856,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: dd84d8740aedacb47b1f3777dde12041, type: 3}
@@ -3346,6 +3867,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 74357a3a97506df4fa52b8bf92381b9f, type: 3}
@@ -3355,6 +3878,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.7
       randomPitchMax: 1.3
   - displayName: draugr.attack.02
@@ -3367,6 +3892,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 7429bac7f2c56af4ba480b7d7b5c442f, type: 3}
@@ -3376,6 +3903,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 58e3da9437751c548a97d59281ca1cdd, type: 3}
@@ -3385,6 +3914,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: b2be7148e41643e4eb1c34040bc618d7, type: 3}
@@ -3394,6 +3925,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: barrow.attack.01
@@ -3406,6 +3939,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 979c8088438b44b45a63851c8e2398e8, type: 3}
@@ -3415,6 +3950,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 29588e828421ac64ba79514489070bb2, type: 3}
@@ -3424,6 +3961,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: barrow.attack.02
@@ -3436,6 +3975,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 044d443c38b194b1ab87c864f94b5cd9, type: 3}
@@ -3445,6 +3986,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 979c8088438b44b45a63851c8e2398e8, type: 3}
@@ -3454,6 +3997,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 29588e828421ac64ba79514489070bb2, type: 3}
@@ -3463,6 +4008,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: barrow.missile
@@ -3475,6 +4022,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 108b562eaeb054ab0b1e6db666b9485f, type: 3}
@@ -3484,6 +4033,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: nocturne.move
@@ -3496,6 +4047,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: a158aa4edccf10b4ca0d2ab92535d69c, type: 3}
@@ -3505,6 +4058,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: nocturne.dead
@@ -3517,6 +4072,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
   - displayName: nocturne_hit
@@ -3529,6 +4086,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: nocturne_guard
@@ -3541,6 +4100,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 487dd4d40dd6c0a42872ab06d2a6f3e3, type: 3}
@@ -3550,6 +4111,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: nocturne.attack.01
@@ -3562,6 +4125,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: a1138f92aa57f0647b24e8e2814ac956, type: 3}
@@ -3571,6 +4136,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c7af2ca8f52b74f4db1233aa62aed932, type: 3}
@@ -3580,6 +4147,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ea85ae0197aac724684b4e2eb4fe4b14, type: 3}
@@ -3589,6 +4158,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.6
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: beb94f4e353a72c4081ba43cf86a402d, type: 3}
@@ -3598,6 +4169,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.6
       randomPitchMax: 1
   - displayName: nocturne.attack.02
@@ -3610,6 +4183,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 507c2a2902e57814f9207ebdc9e49da6, type: 3}
@@ -3619,6 +4194,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 2a13a04e8ecc7c6468cb3cb37e4545c0, type: 3}
@@ -3628,6 +4205,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ea85ae0197aac724684b4e2eb4fe4b14, type: 3}
@@ -3637,6 +4216,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.6
       randomPitchMax: 1
   - displayName: nocturne.attack.03
@@ -3649,6 +4230,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: e7c22eb32fab746aca7defcd157696c2, type: 3}
@@ -3658,6 +4241,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ea85ae0197aac724684b4e2eb4fe4b14, type: 3}
@@ -3667,6 +4252,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0.6
       randomPitchMax: 1
   - displayName: mort.attack.01
@@ -3679,6 +4266,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 7b853722a280e466f8fc0bb615044a73, type: 3}
@@ -3688,6 +4277,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 4d0e4f54c48acb34b888c02346d06944, type: 3}
@@ -3697,6 +4288,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: mort.attack.02
@@ -3709,6 +4302,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 85f156dde302e41c2a5a9ae5ea2a76e0, type: 3}
@@ -3718,6 +4313,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d8ea01e02101f6346bc34ca59b604d87, type: 3}
@@ -3727,6 +4324,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: mort.attack.03
@@ -3739,6 +4338,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 87fd491f0c3290f448e4f254c98243fd, type: 3}
@@ -3748,6 +4349,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d8ea01e02101f6346bc34ca59b604d87, type: 3}
@@ -3757,6 +4360,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: mort.attack.04
@@ -3769,6 +4374,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 87fd491f0c3290f448e4f254c98243fd, type: 3}
@@ -3778,6 +4385,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 6be00f0ddb3896246b6964615d92ea9b, type: 3}
@@ -3787,6 +4396,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.move
@@ -3799,6 +4410,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 519ec4730c3226841a17a3e53f996cbf, type: 3}
@@ -3808,6 +4421,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke_hit
@@ -3820,6 +4435,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.dead
@@ -3832,6 +4449,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 0
       randomPitchMax: 0
   - displayName: ruke_guard
@@ -3844,6 +4463,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: da65251c303df5449a47923b61b71094, type: 3}
@@ -3853,6 +4474,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.attack.01
@@ -3865,6 +4488,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 55e46a78bf935ff4c840aa490b913026, type: 3}
@@ -3874,6 +4499,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 31dccb5959690c44f8b5e2bb3af661a4, type: 3}
@@ -3883,6 +4510,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.attack.02
@@ -3895,6 +4524,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 37fa1d21b3607bd48bd5b2247ea7d7c4, type: 3}
@@ -3904,6 +4535,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: f3fa2bb1baec1cf49aa102b73b0513a6, type: 3}
@@ -3913,6 +4546,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.attack.03
@@ -3925,6 +4560,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 9b02f295ba2434817a92492a2aed4b88, type: 3}
@@ -3934,6 +4571,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 8ad445a4fd5e08f4ea5dd5d8a6d8fbdf, type: 3}
@@ -3943,6 +4582,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke_skill_04
@@ -3955,6 +4596,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
@@ -3964,6 +4607,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.move
@@ -3976,6 +4621,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.hit
@@ -3988,6 +4635,22 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: arabella.dead
+    vfxPrefab: {fileID: 8742623472407098105, guid: 9fa15bf69b99b5f42b201ca5bbe156cc, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: efb678d73eacd6d4e8e92acfe590a3d2, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.guard
@@ -4000,6 +4663,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.01
@@ -4012,6 +4677,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 6fe7c8d23d32943a783119d6e0c38b05, type: 3}
@@ -4021,6 +4688,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: bab4a55ee83d64dada13ea8bdc94fce2, type: 3}
@@ -4030,6 +4699,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d569393dfcbfe46ceb38cb5cf10f7c93, type: 3}
@@ -4039,6 +4710,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 50f97f93fb998e346b5a3caa7f56fefc, type: 3}
@@ -4048,6 +4721,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.02
@@ -4060,6 +4735,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: e78ee39c4d8316c4999ad3df556acdf3, type: 3}
@@ -4067,8 +4744,10 @@ MonoBehaviour:
       volume: 0.5
       pitch: 1
       loop: 0
-      playOncePerAction: 0
+      playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 41858faa25822c849b8c5cd70cf52a4a, type: 3}
@@ -4076,8 +4755,10 @@ MonoBehaviour:
       volume: 0.3
       pitch: 1
       loop: 0
-      playOncePerAction: 0
+      playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.03
@@ -4090,6 +4771,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 281f8b8527d327e44a5b8c14ab490ff9, type: 3}
@@ -4099,6 +4782,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 4264d87376404944895941b3fec7e7c1, type: 3}
@@ -4108,6 +4793,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.04
@@ -4120,6 +4807,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: fa78e85cff35cfe44847a4559dcca7ff, type: 3}
@@ -4129,6 +4818,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 4264d87376404944895941b3fec7e7c1, type: 3}
@@ -4138,6 +4829,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.05
@@ -4150,6 +4843,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ec7482086d744ae44b448e2cc3e1707c, type: 3}
@@ -4159,6 +4854,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.06
@@ -4171,6 +4868,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 6fe7c8d23d32943a783119d6e0c38b05, type: 3}
@@ -4180,6 +4879,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: bab4a55ee83d64dada13ea8bdc94fce2, type: 3}
@@ -4189,6 +4890,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: d569393dfcbfe46ceb38cb5cf10f7c93, type: 3}
@@ -4198,6 +4901,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 50f97f93fb998e346b5a3caa7f56fefc, type: 3}
@@ -4207,6 +4912,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 9941028263cee734cacbfc3397fc42eb, type: 3}
@@ -4216,6 +4923,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.07
@@ -4228,6 +4937,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 37fa1d21b3607bd48bd5b2247ea7d7c4, type: 3}
@@ -4237,6 +4948,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.07_1
@@ -4249,6 +4962,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 0188b7fc9322d2447afb9ffc6965b402, type: 3}
@@ -4258,6 +4973,8 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: ec7482086d744ae44b448e2cc3e1707c, type: 3}
@@ -4267,5 +4984,7 @@ MonoBehaviour:
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1

@@ -4,6 +4,26 @@ using System.Linq;
 
 namespace Relic.Gameplay.Data
 {
+    public static class TutorialPresentationRefreshPolicy
+    {
+        public static bool ShouldRefreshButtons(int lastStage, int currentStage)
+        {
+            return lastStage != currentStage;
+        }
+
+        public static bool ShouldRefreshTooltip(
+            bool contentDirty,
+            int lastScreenWidth,
+            int lastScreenHeight,
+            int currentScreenWidth,
+            int currentScreenHeight)
+        {
+            return contentDirty ||
+                   lastScreenWidth != currentScreenWidth ||
+                   lastScreenHeight != currentScreenHeight;
+        }
+    }
+
     public sealed class TutorialData
     {
         public string TutorialId;
@@ -40,6 +60,20 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(mapId)) return Array.Empty<TutorialData>();
             return steps.Where(x => string.Equals(x.MapId, mapId, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
+
+        public bool HasForMap(string mapId)
+        {
+            if (string.IsNullOrWhiteSpace(mapId)) return false;
+
+            for (int i = 0; i < steps.Count; i++)
+            {
+                if (string.Equals(steps[i].MapId, mapId, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
         public TutorialData GetFirstEntry()
         {
             return steps.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.MapId) && !string.IsNullOrWhiteSpace(x.StartParty));
