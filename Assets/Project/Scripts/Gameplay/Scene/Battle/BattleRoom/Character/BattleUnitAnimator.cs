@@ -152,7 +152,6 @@ public class BattleUnitAnimator : MonoBehaviour
     private MaterialPropertyBlock hitFlashPropertyBlock;
     private int hitFlashPropertyId;
     private Coroutine hitFlashCoroutine;
-    private Coroutine deathVfxCoroutine;
     private bool deathPresentationPlayed;
     private bool phaseTransitionPresentationPlayed;
     private GameObject persistentIdleVfxInstance;
@@ -200,12 +199,6 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             StopCoroutine(hitFlashCoroutine);
             hitFlashCoroutine = null;
-        }
-
-        if (deathVfxCoroutine != null)
-        {
-            StopCoroutine(deathVfxCoroutine);
-            deathVfxCoroutine = null;
         }
 
         SetHitFlash(defaultHitFlashValue);
@@ -382,54 +375,7 @@ public class BattleUnitAnimator : MonoBehaviour
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
 
-        // Dead 애니메이션이 종료된 다음 Death VFX를 한 번만 생성합니다.
-        if (isActiveAndEnabled)
-            deathVfxCoroutine = StartCoroutine(SpawnDeathVfxAfterAnimation());
-    }
-
-    private IEnumerator SpawnDeathVfxAfterAnimation()
-    {
-        if (!HasVfx(deathVfx))
-        {
-            deathVfxCoroutine = null;
-            yield break;
-        }
-
-        // 애니메이터 상태가 반영될 시간을 줍니다.
-        yield return null;
-
-        string deathStateName = ResolveRuntimeStateName(deadStateName);
-        bool hasDeadState = TryResolveAnimatorStateName(deathStateName, out string resolvedDeadState);
-        float fallbackDuration = DeadAnimationDuration;
-        float elapsed = 0f;
-
-        if (hasDeadState && animator != null && animator.isActiveAndEnabled)
-        {
-            // 전환 중에는 Dead 상태가 Current가 아니라 Next로 잡힐 수 있습니다.
-            while (elapsed < fallbackDuration + 0.5f)
-            {
-                if (animator == null || !animator.isActiveAndEnabled)
-                    break;
-
-                AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(animatorLayer);
-                bool isDead = state.IsName(deathStateName) || state.IsName(resolvedDeadState);
-                if (isDead && !animator.IsInTransition(animatorLayer) && state.normalizedTime >= 1f)
-                    break;
-
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-        }
-        else
-        {
-            // Dead 상태가 설정되지 않은 프리팹은 기존 시간 설정을 사용합니다.
-            float speed = animator != null ? Mathf.Max(0.01f, Mathf.Abs(animator.speed)) : 1f;
-            float waitDuration = fallbackDuration / speed;
-            if (waitDuration > 0f)
-                yield return new WaitForSeconds(waitDuration);
-        }
-
-        deathVfxCoroutine = null;
+        // Dead 애니메이션 시작과 동시에 Death VFX를 한 번만 생성합니다.
         SpawnVfx(deathVfx);
     }
 
