@@ -91,6 +91,32 @@ public sealed class PlaceholderInteractionSfxTests
     }
 
     [Test]
+    public void RuneEquipSound_PlaysOnlyAfterEquipmentActuallyChanges()
+    {
+        Assert.That(RuneSettingPanel.ShouldPlayRuneEquipSound(null, "Rune_01"), Is.True);
+        Assert.That(RuneSettingPanel.ShouldPlayRuneEquipSound("Rune_01", "Rune_02"), Is.True);
+        Assert.That(RuneSettingPanel.ShouldPlayRuneEquipSound("Rune_01", "RUNE_01"), Is.False);
+        Assert.That(RuneSettingPanel.ShouldPlayRuneEquipSound("Rune_01", null), Is.False);
+    }
+
+    [Test]
+    public void BattleCharacterChangeSound_RequiresTwoDifferentCharacterIds()
+    {
+        Assert.That(
+            BattleTimelineController.ShouldPlayCharacterChangeSound("Char_01", "Char_02"),
+            Is.True);
+        Assert.That(
+            BattleTimelineController.ShouldPlayCharacterChangeSound("Char_01", "CHAR_01"),
+            Is.False);
+        Assert.That(
+            BattleTimelineController.ShouldPlayCharacterChangeSound(null, "Char_01"),
+            Is.False);
+        Assert.That(
+            BattleTimelineController.ShouldPlayCharacterChangeSound("Char_01", null),
+            Is.False);
+    }
+
+    [Test]
     public void EquipmentAreaClick_IsConsumedEvenWhenSlotActionDoesNothing()
     {
         Assert.That(CharBtn.ShouldConsumeInfoEquipmentAreaClick(true, true), Is.True);

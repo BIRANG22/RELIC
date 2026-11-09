@@ -11,6 +11,8 @@ public class BattleTimelineController : MonoBehaviour
 {
     [Header("Selection Cancel Sound")]
     [SerializeField, SoundId(SoundCategory.Sfx)] private string selectionCancelSfxId = AudioIds.Sfx.BattleSkillResetCancel;
+    [Header("Character Change Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string characterChangeSfxId = AudioIds.Sfx.NormalButtonClick;
     private const int MaxMonsterCommandsPerSlot = 2;
     public static event System.Action<CharacterRuntimeData> CharacterSelectionChanged;
 
@@ -692,6 +694,7 @@ public class BattleTimelineController : MonoBehaviour
         if (runtimeData != null)
             Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
 
+        string previousCharacterId = selectedCharacter?.CharacterId;
         bool isChangingCharacter =
             runtimeData != null &&
             (selectedCharacter == null ||
@@ -723,6 +726,19 @@ public class BattleTimelineController : MonoBehaviour
 
         if (selectionChanged)
             CharacterSelectionChanged?.Invoke(selectedCharacter);
+
+        if (ShouldPlayCharacterChangeSound(previousCharacterId, selectedCharacter?.CharacterId))
+            AudioManager.Instance?.PlaySfx(characterChangeSfxId);
+    }
+
+    public static bool ShouldPlayCharacterChangeSound(string previousCharacterId, string nextCharacterId)
+    {
+        return !string.IsNullOrWhiteSpace(previousCharacterId) &&
+               !string.IsNullOrWhiteSpace(nextCharacterId) &&
+               !string.Equals(
+                   previousCharacterId,
+                   nextCharacterId,
+                   System.StringComparison.OrdinalIgnoreCase);
     }
 
     public void ClearCharacterSelectionFromSkillList(CharacterRuntimeData runtimeData)

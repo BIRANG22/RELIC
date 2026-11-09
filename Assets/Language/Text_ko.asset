@@ -7033,6 +7033,63 @@ MonoBehaviour:
       {2})"
     m_Metadata:
       m_Items: []
+  - m_Id: 31947563796242435
+    m_Localized: "\uD0D0\uC0AC\uB97C \uD3EC\uAE30\uD588\uC2B5\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242436
+    m_Localized: "\uC9C4\uD589 \uC911\uC778 \uD0D0\uC0AC\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823346028544
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\uC11C 2\uCE78
+      \uBA40\uC5B4\uC9C4\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194368
+    m_Localized: "\uBC94\uC704\uC5D0 {ValueRate1}\uC758 {E_Strike}\uB97C \uC900\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194369
+    m_Localized: "\uBC94\uC704\uC5D0 {ValueRate1}\uC758 {E_Strike}\uB97C \uC900\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194370
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\uC11C 2\uCE78
+      \uBA40\uC5B4\uC9C4\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194371
+    m_Localized: "\uB3CC\uC9C4\uD558\uC5EC \uB300\uC0C1\uC5D0\uAC8C {ValueRate1}\uC758
+      {E_Strike}\uB97C \uC8FC\uACE0, {E_Knockback}\uC744 {ValueRate2}\uCE78 \uC801\uC6A9\uD55C\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194372
+    m_Localized: "\uBC94\uC704\uC5D0 {ValueRate1}\uC758 {E_Strike}\uB97C \uC900\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194373
+    m_Localized: "\uC804\uBC29\uC5D0 {ValueRate1}\uC758 {E_Pierce}\uB97C \uC900\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194374
+    m_Localized: "\uAC00\uC7A5 \uBA3C \uB300\uC0C1\uC758 \uC704\uCE58\uC5D0 {ValueRate1}\uC758
+      {E_Strike}\uB97C \uC900\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194375
+    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\uC11C 1\uCE78
+      \uB610\uB294 2\uCE78 \uBA40\uC5B4\uC9C4\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194376
+    m_Localized: "\uBC94\uC704\uC5D0 {ValueRate1}\uC758 {E_Strike}\uB97C \uC900\uB2E4."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32716823371194377
+    m_Localized: "\uC0DD\uBA85\uB825 \uAC10\uC18C"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

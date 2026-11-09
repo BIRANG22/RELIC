@@ -6642,6 +6642,14 @@ MonoBehaviour:
     m_Localized: Not enough space remaining in this slot.
     m_Metadata:
       m_Items: []
+  - m_Id: 31947563796242435
+    m_Localized: Expedition abandoned.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31947563796242436
+    m_Localized: No expedition is in progress.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
