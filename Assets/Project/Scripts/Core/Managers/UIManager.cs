@@ -551,15 +551,10 @@ public class UIManager : Singleton<UIManager>
             HideConfirmDialog);
     }
 
-    // 확인창 Slogan은 동적 문구입니다. 영어 테이블 항목이 아직 반영되지 않은 경우에도
-    // 실제 확인 문구가 Untranslated로 표시되지 않도록 언어별 원문을 사용합니다.
+    // 확인 문구는 현재 선택 언어의 Text 테이블에서 가져옵니다.
+    // 언어별 원문을 코드에 중복 작성하지 않습니다.
     private static string GetGiveUpConfirmationMessage()
     {
-        string localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
-        if (!string.IsNullOrEmpty(localeCode) && localeCode.StartsWith("en", System.StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("ui.check.slogan", "Are you sure you want to give up?");
-        if (!string.IsNullOrEmpty(localeCode) && localeCode.StartsWith("ko", System.StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("ui.check.slogan", "정말로 포기하시겠습니까?");
         return GameLocalization.Get("ui.check.slogan");
     }
 

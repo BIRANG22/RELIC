@@ -429,10 +429,6 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: ui.title.hover
-  playClickSound: 0
-  clickSfx: ui.title.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -522,12 +518,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 1
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -729,12 +719,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 1
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -778,10 +762,6 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: ui.title.hover
-  playClickSound: 1
-  clickSfx: ui.title.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -1144,12 +1124,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 1
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -3625,12 +3599,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 1
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -3682,10 +3650,6 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: ui.title.hover
-  playClickSound: 1
-  clickSfx: ui.title.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
@@ -3858,12 +3822,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 1
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -4831,12 +4789,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 1
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -5519,12 +5471,6 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  playHoverSound: 0
-  hoverSoundId: ui.normal.click
-  hoverSoundVolume: 1
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -5568,10 +5514,6 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 1
-  hoverSfx: ui.title.hover
-  playClickSound: 1
-  clickSfx: ui.title.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
   panelCloseSfx: ui.bag.close
