@@ -1903,6 +1903,7 @@ public class BattleActionRunner
         ShowExecutionRange(BuildPlayerExecutionRange(command), GetPlayerExecutionRangeType(command));
 
         bool shouldControlAttackPlane = ShouldControlAttackPlaneForPlayerSkill(command);
+        bool attackActionStarted = false;
 
         try
         {
@@ -1913,6 +1914,11 @@ public class BattleActionRunner
                 hudService.RefreshHUDs();
                 yield break;
             }
+
+            // Consume once after the attack action, including misses and zero damage.
+            // Keep the status through the action so all hits use the same lifesteal effect.
+            attackActionStarted = command.SkillData != null &&
+                command.SkillData.SkillType == SkillType.Attack;
 
             BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
 
@@ -2115,6 +2121,12 @@ public class BattleActionRunner
         }
         finally
         {
+            if (attackActionStarted)
+            {
+                BattleEquipmentEffectService.ConsumePlayerLifestealOnAttack(
+                    attacker != null ? attacker.RuntimeData : command.UserRuntime);
+            }
+
             EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
             playerAttackPlaneStartedForCurrentSkill = false;
             BattleEquipmentEffectService.ClearMoveFirstAttackPowerIfAttack(

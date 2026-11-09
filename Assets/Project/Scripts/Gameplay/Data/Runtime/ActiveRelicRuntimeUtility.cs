@@ -143,7 +143,15 @@ namespace Relic.Gameplay.Data
                 if (status == null)
                     continue;
 
-                if (IsTurnScopedActiveRelicStatus(status.EffectId))
+                if (!IsTurnScopedActiveRelicStatus(status.EffectId))
+                    continue;
+
+                // Respect the Effect sheet: Decrease is handled by the normal turn-end pass.
+                EffectMasterData effect = null;
+                if (DataManager.Instance?.EffectDatabase != null)
+                    DataManager.Instance.EffectDatabase.TryGet(status.EffectId, out effect);
+
+                if (effect != null && effect.EndTurn == EndTurn.Remove)
                     runtime.StatusEffects.RemoveAt(i);
             }
         }

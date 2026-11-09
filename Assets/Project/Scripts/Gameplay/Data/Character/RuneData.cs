@@ -10,7 +10,6 @@ namespace Relic.Gameplay.Data
         public string Name;
 
         public string TargetCharacterId;
-        public string TargetSkillId;
 
         public string EffectIds;
         public string ValueRate;
