@@ -149,6 +149,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private RectTransform introItemRect;
     private Vector3 introItemOriginalWorldPosition;
     private Vector2 introItemOriginalAnchoredPosition;
+    private RectTransform introInputBlocker;
     private readonly System.Collections.Generic.List<GameObject> introHiddenObjects =
         new System.Collections.Generic.List<GameObject>();
 
@@ -388,6 +389,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             return;
         }
 
+        SetIntroInputBlocked(true);
         Canvas.ForceUpdateCanvases();
         introItemOriginalWorldPosition = introItemRect.position;
         introItemOriginalAnchoredPosition = introItemRect.anchoredPosition;
@@ -408,7 +410,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
         {
             GameObject child = transform.GetChild(i).gameObject;
-            if (child == introItemRect.gameObject || !child.activeSelf) continue;
+            if (child == introItemRect.gameObject || child == introInputBlocker.gameObject || !child.activeSelf) continue;
             introHiddenObjects.Add(child);
             child.SetActive(false);
         }
@@ -428,7 +430,9 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         introItemRect.position = centerWorld;
         SpawnItemImageIntroVfx();
         panelCanvasGroup.interactable = false;
-        panelCanvasGroup.blocksRaycasts = false;
+        // Keep the opening reward panel as an input shield. Disabling raycast
+        // blocking here lets hover/click events pass through to the shop UI.
+        panelCanvasGroup.blocksRaycasts = true;
         itemIntroCoroutine = StartCoroutine(AnimateItemIntro(centerWorld));
     }
 
@@ -472,6 +476,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         // The content hierarchy has just been re-enabled by the intro.
         // Refresh names after its localization/OnEnable callbacks have run.
         RefreshCharacterNames();
+        SetIntroInputBlocked(false);
         panelCanvasGroup.interactable = true;
         panelCanvasGroup.blocksRaycasts = true;
         RestoreIntroItemCanvasGroup();
@@ -717,6 +722,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     private void ResetItemIntro()
     {
+        SetIntroInputBlocked(false);
         if (activeItemImageIntroVfx != null)
         {
             Destroy(activeItemImageIntroVfx);
@@ -734,6 +740,36 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             introItemRect = null;
         }
         RestoreOtherIntroObjects();
+    }
+
+    private void SetIntroInputBlocked(bool blocked)
+    {
+        if (introInputBlocker == null)
+        {
+            if (!blocked)
+                return;
+
+            GameObject blocker = new GameObject(
+                "__IntroInputBlocker",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image));
+            introInputBlocker = blocker.GetComponent<RectTransform>();
+            introInputBlocker.SetParent(transform, false);
+            introInputBlocker.anchorMin = Vector2.zero;
+            introInputBlocker.anchorMax = Vector2.one;
+            introInputBlocker.offsetMin = Vector2.zero;
+            introInputBlocker.offsetMax = Vector2.zero;
+
+            Image blockerImage = blocker.GetComponent<Image>();
+            blockerImage.color = Color.clear;
+            blockerImage.raycastTarget = true;
+        }
+
+        // Keep the shield behind the animated item while still covering the
+        // full panel area for EventSystem raycasts.
+        introInputBlocker.SetAsFirstSibling();
+        introInputBlocker.gameObject.SetActive(blocked);
     }
 
     private static TMP_Text FindText(Transform target)
