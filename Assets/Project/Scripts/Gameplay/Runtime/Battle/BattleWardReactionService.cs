@@ -44,10 +44,21 @@ public static class BattleWardReactionService
         if (context.PlayerTarget != null && context.MonsterCaster != null)
         {
             BattleEffectUtility.DamageMonster(context.MonsterCaster, reactionDamage);
+            ConsumeTriggeredWard(context.PlayerTarget.RuntimeData?.StatusEffects);
             return;
         }
 
         if (context.MonsterTarget != null && context.PlayerCaster != null)
+        {
             BattleEffectUtility.DamagePlayer(context.PlayerCaster, reactionDamage);
+            ConsumeTriggeredWard(context.MonsterTarget.RuntimeData?.StatusEffects);
+        }
+    }
+
+    private static void ConsumeTriggeredWard(List<StatusEffectRuntimeData> statuses)
+    {
+        // 가시 반격이 실제로 발동했을 때만 수치를 1 소모합니다.
+        // Effect 시트의 E_Ward.EndTurn은 DecreaseOnTrigger로 설정해야 합니다.
+        BattleStatusEffectService.TryConsumeOnTrigger(statuses, WardEffectId);
     }
 }

@@ -5418,6 +5418,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillData.Category == Category.Passive)
             return GameLocalization.Get("common.passive");
 
+        if (skillData.IsFastSkill == 1 && skillData.SkillType == SkillType.Buff)
+            return GameLocalization.Get("common.fast_buff");
+        if (skillData.IsFastSkill == 1 && skillData.SkillType == SkillType.Attack)
+            return GameLocalization.Get("common.fast_attack");
+
         return skillData.SkillType switch
         {
             SkillType.Buff => GameLocalization.Get("common.buff"),

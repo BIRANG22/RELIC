@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Relic.Gameplay.Data
@@ -12,12 +11,6 @@ namespace Relic.Gameplay.Data
     public static class SkillDescriptionFormatter
     {
         private static readonly Regex EffectTokenRegex = new(@"\{(?<id>E_[A-Za-z0-9_]+)\}", RegexOptions.Compiled);
-        // Matches only authored effect/value pairs. Other descriptions remain untouched.
-        private static readonly Regex AutoEffectRegex = new(
-            @"\{(?<id>E_[A-Za-z0-9_]+)\}\s+\{ValueRate(?<index>\d+)\}", RegexOptions.Compiled);
-        private static readonly Regex MissingHpAutoRegex = new(
-            @"\{E_Strike\}\s+\{E_MissingHPStrike\}\s+\{ValueRate1\}", RegexOptions.Compiled);
-        private static readonly Regex ArmorAutoRegex = new(@"\{E_Strike\}\s+\{E_ArmorStrike\}", RegexOptions.Compiled);
         private static readonly Regex TmpTagRegex = new(@"<[^>]+>", RegexOptions.Compiled);
 
 
@@ -26,7 +19,7 @@ namespace Relic.Gameplay.Data
             if (data == null)
                 return string.Empty;
 
-            return Format(data.Details, data.ValueRate, data.CountRate, data.ScalingType, false, data.EffectIds);
+            return Format(data.Details, data.ValueRate, data.CountRate, data.ScalingType, false, data.EffectIds, data.ResourceCostValue);
         }
 
         public static string Format(string description, string valueRate, string countRate)
@@ -46,18 +39,42 @@ namespace Relic.Gameplay.Data
         }
 
         public static string Format(string description, string valueRate, string countRate,
-            string scalingType, bool runtimeValues, string effectIds)
+            string scalingType, bool runtimeValues, string effectIds, int? resourceCostValue = null)
         {
             if (string.IsNullOrWhiteSpace(description))
                 return string.Empty;
 
-            // Prefer complete localized effect-combination templates when available.
-            // Existing generic formatting remains the fallback for other effects.
-            string structured = FormatStructuredEffect(description, valueRate, countRate, effectIds);
-            if (structured != null)
-                return ReplaceEffectTokens(structured, valueRate);
+            // SkillMaster resource-cost placeholders are authored independently of effect values.
+            if (resourceCostValue.HasValue)
+                description = description.Replace("{ResourceCostValue}",
+                    resourceCostValue.Value.ToString(CultureInfo.InvariantCulture));
 
-            string result = FormatAutoEffectSentences(description, valueRate, countRate, runtimeValues, effectIds);
+            // Add the repetition to the matching clause rather than the whole skill.
+            // This also supports independently repeated effects (e.g. Strike;Vulnerable).
+            description = AddRepeatCountToDescription(description, countRate);
+
+            // During combat the preview passes the resolved (buff/debuff-adjusted)
+            // effect value, not the original missing-HP percentage. Keep the authored
+            // percentage in the codex, but show a numeric damage value in battle.
+            if (runtimeValues && HasEffect(effectIds, "E_MissingHPStrike"))
+            {
+                int missingIndex = FindSpecialEffectIndex(effectIds, "E_MissingHPStrike");
+                string resolved = GetByIndexOrFirst(Split(valueRate), missingIndex, "0");
+                description = description.Replace("{E_MissingHPStrike}", GetDisplayValue(resolved));
+            }
+            // ArmorStrike uses the caster's current armor. The battle preview has
+            // already resolved that value, including 0 armor -> 0 damage.
+            // Keep the effect name in the codex; only substitute in combat.
+            if (runtimeValues && HasEffect(effectIds, "E_ArmorStrike"))
+            {
+                int armorIndex = FindSpecialEffectIndex(effectIds, "E_ArmorStrike");
+                string resolved = GetByIndexOrFirst(Split(valueRate), armorIndex, "0");
+                description = description.Replace("{E_ArmorStrike}", GetDisplayValue(resolved));
+            }
+
+            // Use the authored, localized Details sentence as-is. Do not rebuild
+            // grammar or Korean object particles from effect IDs.
+            string result = description;
             result = ReplaceScalingIndexed(result, scalingType, valueRate);
             result = ReplaceIndexed(result, "ValueRate", valueRate);
             result = ReplaceIndexed(result, "CountRate", countRate);
@@ -70,136 +87,84 @@ namespace Relic.Gameplay.Data
         }
 
 
-        /// <summary>
-        /// {E_Armor} 같은 EffectId 토큰을 로컬라이징된 효과명 + 인라인 아이콘 예약 영역으로 변환합니다.
-        /// 실제 아이콘 Sprite는 SkillEffectInlineIconRenderer가 StatusEffectIconDatabase에서 가져옵니다.
-        /// </summary>
-        /// <summary>
-        /// Resolve an effect-combination sentence from the existing Text table.
-        /// This does not parse Korean words or branch on character/skill IDs.
-        /// The authored description is preserved if a translation key is absent.
-        /// </summary>
-        private static string FormatStructuredEffect(string description, string values, string counts, string effectIds)
+        private static string AddRepeatCountToDescription(string description, string counts)
         {
-            if (string.IsNullOrWhiteSpace(effectIds) || string.IsNullOrWhiteSpace(description))
-                return null;
+            if (string.IsNullOrWhiteSpace(description) || description.Contains("{CountRate"))
+                return description;
 
-            string[] effects = Split(effectIds);
-            if (effects.Length == 0)
-                return null;
-
-            string key = "skill.sentence.effect." + string.Join(".", effects).ToLowerInvariant();
-            string template = global::GameLocalization.Get(key, string.Empty);
-            if (string.IsNullOrWhiteSpace(template))
-                return null;
-
-            string[] valueParts = Split(values);
             string[] countParts = Split(counts);
-            string firstCount = GetByIndexOrFirst(countParts, 0, "1");
-            string countPlain = TmpTagRegex.Replace(firstCount, string.Empty);
-            int hitCount;
-            if (!int.TryParse(countPlain, out hitCount) || hitCount < 1)
-                hitCount = 1;
+            if (countParts.Length == 0)
+                return description;
 
-            string countSuffix = string.Empty;
-            if (hitCount > 1)
+            // Split on authored clause boundaries so one count cannot accidentally
+            // be attached to another effect's verb. Preserve all original punctuation.
+            string[] clauses = Regex.Split(description, @"(?<=[,，;；])");
+            bool changed = false;
+            for (int c = 0; c < clauses.Length; c++)
             {
-                string countFormat = global::GameLocalization.Get("skill.sentence.count.multiple", string.Empty);
-                if (string.IsNullOrWhiteSpace(countFormat))
-                    return null;
-                countSuffix = global::GameLocalization.ApplyFormatTemplate(countFormat, hitCount);
-            }
+                string clause = clauses[c];
+                MatchCollection rates = Regex.Matches(clause, @"\{ValueRate(?<index>\d+)\}");
+                var indices = new System.Collections.Generic.HashSet<int>();
+                foreach (Match rate in rates)
+                {
+                    if (int.TryParse(rate.Groups["index"].Value, out int index) && index >= 1)
+                        indices.Add(index - 1);
+                }
 
-            // Argument layout is defined by the existing Localization workbook:
-            // {0} strike icon/name, {1} first value, {2} second value,
-            // {3} localized hit-count suffix, {4} pierce icon/name, {5} bleed icon/name.
-            // For E_Move;E_Strike, the second rate is the attack damage.
-            string first = GetDisplayValue(GetByIndexOrFirst(valueParts, 0, "0"));
-            string second = GetDisplayValue(GetByIndexOrFirst(valueParts, 1, "0"));
-            return global::GameLocalization.ApplyFormatTemplate(template,
-                "{E_Strike}", first, second, countSuffix, "{E_Pierce}", "{E_Bleed}",
-                "{E_Armor}", "{E_Cure}", "{E_Grab}", "{E_Ward}",
-                "{E_Karma}", "{E_Vulnerable}", "{E_Bond}");
+                // A single-effect sentence may use an effect ID alone (e.g.
+                // E_MissingHPStrike) with no explicit ValueRate token.
+                if (indices.Count == 0 && countParts.Length == 1)
+                    indices.Add(0);
+                if (indices.Count == 0)
+                    continue;
+
+                int repeat = -1;
+                bool ambiguous = false;
+                foreach (int index in indices)
+                {
+                    if (index >= countParts.Length || !TryReadCount(countParts[index], out int next))
+                    {
+                        ambiguous = true;
+                        break;
+                    }
+                    if (repeat >= 0 && repeat != next)
+                    {
+                        // Multiple distinct effects share a verb, with different
+                        // counts. Never present one of those counts as both.
+                        ambiguous = true;
+                        break;
+                    }
+                    repeat = next;
+                }
+                if (ambiguous || repeat <= 1)
+                    continue;
+
+                Match verb = Regex.Match(clause, @"(?<verb>부여한다|부여하고|준다|주고|회복한다|회복하고|획득한다|획득하고)(?<tail>\s*[.!?。！？]?\s*[,，;；]?)$");
+                if (!verb.Success)
+                    continue;
+                clauses[c] = clause.Substring(0, verb.Index) + repeat.ToString(CultureInfo.InvariantCulture) + "회 " + verb.Value;
+                changed = true;
+            }
+            if (changed)
+                return string.Concat(clauses);
+
+            // For non-Korean descriptions with a single effect, use a localized
+            // repetition label instead of attempting to rearrange their grammar.
+            if (countParts.Length != 1 || !TryReadCount(countParts[0], out int count) || count <= 1)
+                return description;
+            string repeatText = global::GameLocalization.FormatWithFallback(
+                "skill.description.repeat_count", "({0} times)", count.ToString(CultureInfo.InvariantCulture));
+            Match punctuation = Regex.Match(description, @"(?<end>[.!?。！？]\s*)$");
+            return punctuation.Success
+                ? description.Substring(0, punctuation.Index).TrimEnd() + " " + repeatText + punctuation.Value
+                : description.TrimEnd() + " " + repeatText;
         }
 
-        private static string FormatAutoEffectSentences(string source, string values, string counts, bool runtimeValues, string effectIds)
+        private static bool TryReadCount(string raw, out int count)
         {
-            if (!source.Contains("{ValueRate") && !ArmorAutoRegex.IsMatch(source))
-                return source;
-
-            string[] valueParts = Split(values);
-            string[] countParts = Split(counts);
-            bool missingHp = MissingHpAutoRegex.IsMatch(source);
-            bool armor = ArmorAutoRegex.IsMatch(source);
-            bool killBonus = HasEffect(effectIds, "E_ValueUpOnKill");
-            bool missPenalty = HasEffect(effectIds, "E_MissSelfDamage");
-            // 특수 계산식은 효과 아이콘의 위치를 유지하면서 일반 피해 문장으로 조립합니다.
-            string work = missingHp ? MissingHpAutoRegex.Replace(source, "{E_Strike} {ValueRate1}") : source;
-            if (armor)
-                work = ArmorAutoRegex.Replace(work, "{E_Strike} {ValueRate2}");
-
-            MatchCollection matches = AutoEffectRegex.Matches(work);
-            if (matches.Count == 0)
-                return source;
-
-            StringBuilder builder = new StringBuilder();
-            int previous = 0;
-            for (int i = 0; i < matches.Count; i++)
-            {
-                Match match = matches[i];
-                builder.Append(work, previous, match.Index - previous);
-                string id = match.Groups["id"].Value;
-                if (!int.TryParse(match.Groups["index"].Value, out int index) || index < 1)
-                    index = 1;
-                string value = GetByIndexOrFirst(valueParts, index - 1, "0");
-                string count = GetByIndexOrFirst(countParts, index - 1, "1");
-                bool multiple = int.TryParse(TmpTagRegex.Replace(count, ""), out int parsedCount) && parsedCount > 1;
-                bool isLastEffect = i == matches.Count - 1;
-                string remainder = isLastEffect ? work.Substring(match.Index + match.Length).Trim() : "";
-                bool conditionalTail = isLastEffect && (killBonus || missPenalty);
-                string effectToken = "{" + id + "}";
-                string unit = id == "E_Knockback" || id == "E_Grab" ? "tile" : "amount";
-                string action = GetEffectAction(id);
-                string key = "skill.sentence." + action + "." + unit + "." + (multiple ? "multiple" : "single") + "." + (isLastEffect || conditionalTail ? "final" : "linked");
-                string fallback = GetKoreanTemplate(action, unit, multiple, isLastEffect || conditionalTail);
-                string formatted = global::GameLocalization.FormatWithFallback(key, fallback,
-                    effectToken, GetEffectParticle(id), GetDisplayValue(value), parsedCount);
-                if (missingHp && id == "E_Strike" && !runtimeValues)
-                    formatted = global::GameLocalization.FormatWithFallback(
-                        "skill.sentence.special.missing_hp", "{0}{1} 잃은 생명력의 {2}%만큼 준다",
-                        effectToken, GetEffectParticle(id), GetDisplayValue(value));
-                else if (armor && id == "E_Strike" && !runtimeValues)
-                    formatted = global::GameLocalization.FormatWithFallback(
-                        "skill.sentence.special.armor", "{0}{1} 현재 방어도에 비례하여 준다",
-                        effectToken, GetEffectParticle(id));
-                builder.Append(formatted);
-                previous = match.Index + match.Length;
-                if (!isLastEffect && string.IsNullOrWhiteSpace(work.Substring(previous, matches[i + 1].Index - previous)))
-                {
-                    builder.Append(global::GameLocalization.Get("skill.sentence.join", ", "));
-                    previous = matches[i + 1].Index;
-                }
-            }
-            string suffix = work.Substring(previous);
-            if (killBonus || missPenalty)
-            {
-                // The authored tail is replaced as a whole. This avoids parsing Korean
-                // prose and works for localized Details in every supported language.
-                int specialIndex = FindSpecialEffectIndex(effectIds,
-                    killBonus ? "E_ValueUpOnKill" : "E_MissSelfDamage");
-                string specialValue = GetDisplayValue(GetByIndexOrFirst(valueParts, specialIndex, "0"));
-                builder.Append(global::GameLocalization.Get("skill.sentence.break", ". "));
-                builder.Append(killBonus
-                    ? global::GameLocalization.FormatWithFallback("skill.sentence.special.kill_bonus",
-                        "처치 시 영구히 피해량이 {0} 증가한다.", specialValue)
-                    : global::GameLocalization.FormatWithFallback("skill.sentence.special.miss_penalty",
-                        "적중 실패 시 생명력이 {0} 감소한다.", specialValue));
-            }
-            else
-                builder.Append(suffix);
-            string result = builder.ToString().Trim();
-            string end = global::GameLocalization.Get("skill.sentence.end", ".");
-            return result.EndsWith(end, StringComparison.Ordinal) ? result : result + end;
+            string plain = TmpTagRegex.Replace(raw ?? string.Empty, string.Empty);
+            // Numeric preview labels can be wrapped in TMP link/color markup.
+            return int.TryParse(plain.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out count);
         }
 
         private static bool HasEffect(string effectIds, string target)
@@ -218,83 +183,10 @@ namespace Relic.Gameplay.Data
             return -1;
         }
 
-        private static string GetEffectParticle(string id)
-        {
-            // Korean object particles are not part of other languages' grammar.
-            // Keep {1} as an empty argument so translated templates retain
-            // their existing placeholder indexes ({0}, {2}, {3}).
-            var localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
-            if (string.IsNullOrWhiteSpace(localeCode) ||
-                !localeCode.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
-                return string.Empty;
-
-            // Resolve the Korean particle from the localized effect name, not from
-            // a numeric value. A final Hangul syllable with jongseong takes '을'.
-            string name = null;
-            DataManager manager = DataManager.Instance;
-            if (manager?.EffectDatabase != null &&
-                manager.EffectDatabase.TryGet(id, out EffectMasterData effect) && effect != null)
-                name = GameDataLocalization.EffectName(effect);
-
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                char last = name.TrimEnd()[name.TrimEnd().Length - 1];
-                if (last >= 0xAC00 && last <= 0xD7A3)
-                    return ((last - 0xAC00) % 28) == 0 ? "를" : "을";
-            }
-
-            switch (id)
-            {
-                case "E_Strike":
-                case "E_Armor":
-                case "E_Mana":
-                case "E_Karma":
-                case "E_Smite":
-                case "E_Grit":
-                case "E_Heal":
-                case "E_Cure":
-                    return "를";
-                default:
-                    return "을";
-            }
-        }
-
-        private static string GetEffectAction(string id)
-        {
-            switch (id)
-            {
-                case "E_Strike": case "E_Pierce": case "E_MissingHPStrike": return "deal";
-                case "E_Knockback": case "E_Grab": return "apply";
-                case "E_Heal": case "E_Cure": return "restore";
-                case "E_Boost":
-                case "E_Grit":
-                case "E_Charge":
-                case "E_Smite":
-                case "E_Swift":
-                case "E_Lifesteal":
-                case "E_Karma":
-                case "E_Mana": return "gain";
-                default: return "grant";
-            }
-        }
-
-        // Korean is a fallback for the Korean locale only. All other languages must
-        // supply their own grammatically ordered templates in the Text String Table.
-        private static string GetKoreanTemplate(string action, string unit, bool multiple, bool final)
-        {
-            string ending;
-            switch (action)
-            {
-                case "deal": ending = final ? "준다" : "주고"; break;
-                case "apply": ending = final ? "적용한다" : "적용하고"; break;
-                case "restore": ending = final ? "회복한다" : "회복하고"; break;
-                case "gain": ending = final ? "획득한다" : "획득하고"; break;
-                default: ending = final ? "부여한다" : "부여하고"; break;
-            }
-            return "{0}{1} {2}" + (unit == "tile" ? "칸" : "만큼") +
-                   (multiple ? " {3}회" : "") + " " + ending;
-        }
-
+        /// <summary>
+        /// 이펙트 ID 토큰을 로컬라이징된 효과명과 인라인 아이콘으로 변환합니다.
+        /// 조사와 문장 순서는 각 언어의 스킬 설명 원문에서 관리합니다.
+        /// </summary>
         public static string ReplaceEffectTokens(string source)
         {
             return ReplaceEffectTokens(source, null);
@@ -320,6 +212,16 @@ namespace Relic.Gameplay.Data
 
                 if (effectId.Equals("E_MissingHPStrike", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Prefer the localized Effect sheet's authored rate template.
+                    DataManager db = DataManager.Instance;
+                    if (db?.EffectDatabase != null &&
+                        db.EffectDatabase.TryGet(effectId, out EffectMasterData missingEffect) &&
+                        missingEffect != null)
+                    {
+                        string effectName = GameDataLocalization.EffectName(missingEffect);
+                        if (!string.IsNullOrWhiteSpace(effectName) && effectName.Contains("{ValueRate}"))
+                            return effectName.Replace("{ValueRate}", GetDisplayValue(missingHpRate));
+                    }
                     return global::GameLocalization.FormatWithFallback(
                         "skill.effect.missing_hp_strike.value_format",
                         "잃은 체력의 {0}%",
