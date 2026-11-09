@@ -287,6 +287,7 @@ public static class SoundUsageScanner
             return;
 
         AddVfxSoundEntries(report, "Player", database.PlayerSkillVfxSfxEntries);
+        AddVfxSoundEntries(report, "Grid Effect", database.GridEffectVfxSfxEntries);
         AddVfxSoundEntries(report, "Monster", database.MonsterSkillVfxSfxEntries);
     }
 
