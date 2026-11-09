@@ -24,6 +24,12 @@ public class BattleProjectileVfxRenderRoutingOverride
 }
 
 
+public enum IdleVfxSpriteRootOrder
+{
+    BelowSpriteRoot = -1,
+    AboveSpriteRoot = 1
+}
+
 public class BattleUnitAnimator : MonoBehaviour
 {
     private const string DefaultVfxSortingReferenceName = "SpriteRoot";
@@ -76,6 +82,11 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private BattleVfxEntry idleVfx;
     [Tooltip("Displayed continuously in phase 2 instead of Idle VFX. Empty uses the normal Idle VFX.")]
     [SerializeField] private BattleVfxEntry phaseTwoIdleVfx;
+
+    [Tooltip("Idle VFX render order relative to SpriteRoot (one lower or one higher).")]
+    [SerializeField] private IdleVfxSpriteRootOrder idleVfxSpriteRootOrder = IdleVfxSpriteRootOrder.BelowSpriteRoot;
+    [Tooltip("Phase Two Idle VFX render order relative to SpriteRoot (one lower or one higher).")]
+    [SerializeField] private IdleVfxSpriteRootOrder phaseTwoIdleVfxSpriteRootOrder = IdleVfxSpriteRootOrder.BelowSpriteRoot;
 
     [Header("Move VFX")]
     [SerializeField] private BattleVfxEntry moveVfx;
@@ -155,6 +166,9 @@ public class BattleUnitAnimator : MonoBehaviour
     private bool deathPresentationPlayed;
     private bool phaseTransitionPresentationPlayed;
     private GameObject persistentIdleVfxInstance;
+    private Renderer[] persistentIdleVfxRenderers;
+    private Renderer persistentIdleSpriteRootRenderer;
+    private bool persistentIdleUsesWorldVfxHandle;
     private BattleVfxEntry activePersistentIdleVfxEntry;
     private bool persistentIdleVfxIsPhaseTwo;
     private bool persistentIdleVfxFacingRight = true;
@@ -187,6 +201,12 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         // Runtime monster id can switch to phase 2 without an Idle state callback.
         RefreshPersistentIdleVfx();
+    }
+
+    private void LateUpdate()
+    {
+        // Follow SpriteRoot's live sorting order, even if an animation or grid sort changes it.
+        ApplyPersistentIdleVfxSorting();
     }
 
     private void OnDisable()
@@ -1425,6 +1445,7 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             ApplyUnitVfxSortingTarget(handle, desired);
             persistentIdleVfxInstance = handle.gameObject;
+            persistentIdleUsesWorldVfxHandle = true;
         }
         else if (!spawned)
         {
@@ -1441,9 +1462,65 @@ public class BattleUnitAnimator : MonoBehaviour
                 ApplyDirectWorldVfxSorting(instance, desired, GetUnitVfxSortingReferenceY());
             }
             persistentIdleVfxInstance = instance;
+            persistentIdleUsesWorldVfxHandle = false;
         }
 
         activePersistentIdleVfxEntry = desired;
+        CachePersistentIdleVfxRenderers();
+        ApplyPersistentIdleVfxSorting();
+    }
+
+    private void CachePersistentIdleVfxRenderers()
+    {
+        persistentIdleVfxRenderers = persistentIdleVfxInstance != null
+            ? persistentIdleVfxInstance.GetComponentsInChildren<Renderer>(true)
+            : null;
+        persistentIdleSpriteRootRenderer = null;
+    }
+
+    private void ApplyPersistentIdleVfxSorting()
+    {
+        if (persistentIdleVfxInstance == null || persistentIdleVfxRenderers == null)
+            return;
+
+        if (persistentIdleSpriteRootRenderer == null)
+        {
+            Transform spriteRoot = GetVfxSortingReferenceTransform();
+            if (spriteRoot == null)
+                return;
+
+            persistentIdleSpriteRootRenderer = spriteRoot.GetComponent<SpriteRenderer>();
+            if (persistentIdleSpriteRootRenderer == null)
+                persistentIdleSpriteRootRenderer = spriteRoot.GetComponentInChildren<SpriteRenderer>(true);
+            if (persistentIdleSpriteRootRenderer == null)
+                persistentIdleSpriteRootRenderer = spriteRoot.GetComponent<Renderer>();
+            if (persistentIdleSpriteRootRenderer == null)
+                persistentIdleSpriteRootRenderer = spriteRoot.GetComponentInChildren<Renderer>(true);
+        }
+
+        if (persistentIdleSpriteRootRenderer == null)
+            return;
+
+        IdleVfxSpriteRootOrder selectedOrder = persistentIdleVfxIsPhaseTwo && HasVfx(phaseTwoIdleVfx)
+            ? phaseTwoIdleVfxSpriteRootOrder : idleVfxSpriteRootOrder;
+        int targetOrder = persistentIdleSpriteRootRenderer.sortingOrder + (int)selectedOrder;
+        int targetSortingLayer = persistentIdleSpriteRootRenderer.sortingLayerID;
+
+        for (int i = 0; i < persistentIdleVfxRenderers.Length; i++)
+        {
+            Renderer renderer = persistentIdleVfxRenderers[i];
+            if (renderer == null)
+                continue;
+
+            // RenderTexture routes can contain hidden source particle renderers.
+            // Only override the displayed proxy renderers; leave source VFX alone.
+            if (persistentIdleUsesWorldVfxHandle &&
+                (renderer is ParticleSystemRenderer || renderer.GetComponent<VisualEffect>() != null))
+                continue;
+
+            renderer.sortingLayerID = targetSortingLayer;
+            renderer.sortingOrder = targetOrder;
+        }
     }
 
     public void SuspendPersistentIdleVfx()
@@ -1474,6 +1551,9 @@ public class BattleUnitAnimator : MonoBehaviour
         if (persistentIdleVfxInstance != null)
             Destroy(persistentIdleVfxInstance);
         persistentIdleVfxInstance = null;
+        persistentIdleVfxRenderers = null;
+        persistentIdleSpriteRootRenderer = null;
+        persistentIdleUsesWorldVfxHandle = false;
         activePersistentIdleVfxEntry = null;
     }
 

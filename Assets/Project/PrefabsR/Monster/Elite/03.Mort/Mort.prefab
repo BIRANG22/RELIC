@@ -532,6 +532,38 @@ MonoBehaviour:
   guardFlashDuration: 0.08
   defaultHitFlashValue: 0
   autoFindHitFlashRenderers: 1
+  idleVfx:
+    prefab: {fileID: 897698027889696435, guid: 99345cb538748f34d9009479b1ae62d9, type: 3}
+    flipType: 0
+    renderMode: 2
+    proxyBlendMode: 0
+    scaleDirectWorldRendererToProxyHeight: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
+  phaseTwoIdleVfx:
+    prefab: {fileID: 0}
+    flipType: 0
+    renderMode: 0
+    proxyBlendMode: 0
+    scaleDirectWorldRendererToProxyHeight: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
+  idleVfxSpriteRootOrder: -1
+  phaseTwoIdleVfxSpriteRootOrder: -1
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: 73dc175eb7783ce4ca328e2e6e083dbc, type: 3}
     flipType: 2
@@ -1570,7 +1602,6 @@ MonoBehaviour:
   animatorLayer: 0
   crossFadeDuration: 0
   deadAnimationDuration: 0.6
-  arabellaPhaseTransitionDuration: 3.34
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
