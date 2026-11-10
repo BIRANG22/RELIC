@@ -364,6 +364,9 @@ public class BattleGridEffectController : MonoBehaviour
         if (!state.DamageHitPoints(gridIndex, damage, out destroyed))
             return false;
 
+        if (!destroyed && hpUiByGridIndex.TryGetValue(gridIndex, out GridEffectHpUI hpUi) && hpUi != null)
+            hpUi.ShowAfterDamage();
+
         if (shakeDamageableEffects && viewsByGridIndex.TryGetValue(gridIndex, out GameObject damagedView) && damagedView != null && isActiveAndEnabled && Application.isPlaying)
         {
             // 연속 피격 중에는 이전 코루틴의 중간 위치를 기준점으로 삼지 않습니다.

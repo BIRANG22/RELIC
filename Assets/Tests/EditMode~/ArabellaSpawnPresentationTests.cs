@@ -276,6 +276,12 @@ public sealed class ArabellaSpawnPresentationTests
         StringAssert.Contains("return BeginCinematicCamera();", block);
     }
 
+    [Test]
+    public void Presenter_DoesNotAppendCameraRestoreAfterSequence()
+    {
+        Assert.That(ArabellaSpawnPresentation.ShouldRestoreCameraAfterSequence, Is.False);
+    }
+
     private static void AssertField(System.Type owner, string name, System.Type fieldType)
     {
         FieldInfo field = owner.GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);

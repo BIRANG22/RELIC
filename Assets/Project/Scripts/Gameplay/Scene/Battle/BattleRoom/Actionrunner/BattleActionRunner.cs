@@ -1485,8 +1485,7 @@ public class BattleActionRunner
 
             // Apply each grid effect only after the character visibly reaches that tile.
             yield return MovePlayerThroughEnteredGrids(character, command.CharacterId, enteredGridIndices);
-            if (character.RuntimeData != null && !character.RuntimeData.IsDead)
-                statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
+            ApplyPlayerBleedForMovedCells(character, enteredGridIndices.Count);
 
             ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
@@ -1563,6 +1562,7 @@ public class BattleActionRunner
                 }
 
                 yield return MovePlayerThroughEnteredGrids(character, command.CharacterId, enteredGridIndices);
+                ApplyPlayerBleedForMovedCells(character, enteredGridIndices.Count);
                 int reachedGridIndex = character.CurrentGridIndex;
                 executedDistance += GetMoveDistance(
                     gridManager.IndexToCoord(reachedGridIndex) - currentCoord);
@@ -1581,9 +1581,6 @@ public class BattleActionRunner
         }
 
         command.SetExecutedMoveDistance(executedDistance);
-
-        if (currentGridIndex != startGridIndex)
-            statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
         hudService.RefreshHUDs();
         yield return new WaitForSeconds(GetActiveActionBeatDelay());
@@ -3098,8 +3095,7 @@ public class BattleActionRunner
             animator.PlayMove();
 
         yield return MovePlayerThroughEnteredGrids(caster, command.CharacterId, enteredGridIndices);
-        if (caster.RuntimeData != null && !caster.RuntimeData.IsDead)
-            statusEffectService.ApplyBleedDamageToPlayerOnMove(caster);
+        ApplyPlayerBleedForMovedCells(caster, enteredGridIndices.Count);
 
         if (NewSkillEffectRules.ShouldApplyMoveCollisionEffect(effectId))
             ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
@@ -4221,7 +4217,7 @@ public class BattleActionRunner
             }
 
             ApplyGridEffectsToMonster(enteredGridIndices, monster);
-            statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
+            ApplyMonsterBleedForMovedCells(monster, enteredGridIndices.Count);
 
             hudService.RefreshHUDs();
 
@@ -4390,6 +4386,26 @@ public class BattleActionRunner
         statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
         hudService.RefreshHUDs();
         yield return new WaitForSeconds(GetActiveActionBeatDelay());
+    }
+
+    private void ApplyPlayerBleedForMovedCells(BattleCharacter character, int movedCellCount)
+    {
+        for (int i = 0; i < movedCellCount; i++)
+        {
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                break;
+            statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
+        }
+    }
+
+    private void ApplyMonsterBleedForMovedCells(MonsterUnit monster, int movedCellCount)
+    {
+        for (int i = 0; i < movedCellCount; i++)
+        {
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                break;
+            statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
+        }
     }
 
     private sealed class MonsterMoveResolution

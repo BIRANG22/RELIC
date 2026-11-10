@@ -2208,7 +2208,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private void PlayOrderValuePulse(TMP_Text label)
     {
         if (orderValuePulseRoutines.TryGetValue(label, out Coroutine oldRoutine) && oldRoutine != null)
+        {
             StopCoroutine(oldRoutine);
+            RestoreOrderValueScale(label);
+        }
 
         if (!orderValueBaseScales.TryGetValue(label, out Vector3 baseScale))
         {
@@ -2227,7 +2230,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         {
             elapsed += Time.unscaledDeltaTime;
             float phase = Mathf.Clamp01(elapsed / duration);
-            float multiplier = Mathf.Lerp(1f, orderValuePulseScale, Mathf.Sin(phase * Mathf.PI));
+            float multiplier = ResolveOrderValuePulseMultiplier(phase, orderValuePulseScale);
             label.rectTransform.localScale = baseScale * multiplier;
             yield return null;
         }
@@ -2238,11 +2241,26 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    public static float ResolveOrderValuePulseMultiplier(float phase, float pulseScale)
+    {
+        float normalized = Mathf.Clamp01(phase);
+        return Mathf.Lerp(1f, Mathf.Max(1f, pulseScale), Mathf.Sin(normalized * Mathf.PI));
+    }
+
+    private void RestoreOrderValueScale(TMP_Text label)
+    {
+        if (label != null && orderValueBaseScales.TryGetValue(label, out Vector3 baseScale))
+            label.rectTransform.localScale = baseScale;
+    }
+
     private void ResetOrderValueAnimations()
     {
         foreach (KeyValuePair<TMP_Text, Coroutine> pair in orderValuePulseRoutines)
+        {
             if (pair.Value != null)
                 StopCoroutine(pair.Value);
+            RestoreOrderValueScale(pair.Key);
+        }
         orderValuePulseRoutines.Clear();
         foreach (KeyValuePair<TMP_Text, Vector3> pair in orderValueBaseScales)
             if (pair.Key != null)

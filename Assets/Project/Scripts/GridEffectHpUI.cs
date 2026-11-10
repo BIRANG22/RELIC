@@ -2,11 +2,12 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Ã¼·ÂÀ» °¡Áø ±×¸®µå È¿°úÀÇ ÇöÀç Ã¼·Â/ÃÖ´ë Ã¼·ÂÀ» È­¸é UI·Î Ç¥½ÃÇÕ´Ï´Ù.
-/// Ç¥½Ã À§Ä¡´Â ÇØ´ç ±×¸®µå È¿°ú¿¡ Á÷Á¢ ¼³Á¤µÈ BoxCollider2DÀÇ ¾Æ·¡ÂÊÀ» ±âÁØÀ¸·Î ÇÕ´Ï´Ù.
+/// ì²´ë ¥ì„ ê°€ì§„ ê·¸ë¦¬ë“œ íš¨ê³¼ì˜ í˜„ìž¬ ì²´ë ¥/ìµœëŒ€ ì²´ë ¥ì„ í™”ë©´ UIë¡œ í‘œì‹œí•©ë‹ˆë‹¤.
+/// í‘œì‹œ ìœ„ì¹˜ëŠ” í•´ë‹¹ ê·¸ë¦¬ë“œ íš¨ê³¼ì— ì§ì ‘ ì„¤ì •ëœ BoxCollider2Dì˜ ì•„ëž˜ìª½ì„ ê¸°ì¤€ìœ¼ë¡œ í•©ë‹ˆë‹¤.
 /// </summary>
 public class GridEffectHpUI : MonoBehaviour
 {
+    private const float DamageVisibleDuration = 1.2f;
     [Header("UI")]
     [SerializeField] private RectTransform rootRect;
     [SerializeField] private TMP_Text hpText;
@@ -20,6 +21,16 @@ public class GridEffectHpUI : MonoBehaviour
     private float worldYOffset;
     private int lastCurrentHp = int.MinValue;
     private int lastMaxHp = int.MinValue;
+    private float forceVisibleUntil;
+
+    public static bool ShouldForceVisible(float deadline, float currentTime) => currentTime < deadline;
+
+    public void ShowAfterDamage()
+    {
+        forceVisibleUntil = Time.unscaledTime + DamageVisibleDuration;
+        RefreshHp(true);
+        SetVisible(true);
+    }
 
     public void Bind(
         BattleGridEffectController owner,
@@ -74,6 +85,12 @@ public class GridEffectHpUI : MonoBehaviour
 
     private void RefreshHoverVisibility()
     {
+        if (ShouldForceVisible(forceVisibleUntil, Time.unscaledTime))
+        {
+            SetVisible(true);
+            return;
+        }
+
         if (targetCollider == null || !targetCollider.enabled)
         {
             SetVisible(false);
