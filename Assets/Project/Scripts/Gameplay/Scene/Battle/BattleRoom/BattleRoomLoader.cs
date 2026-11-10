@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -1964,7 +1964,7 @@ public class BattleRoomLoader : MonoBehaviour
         RefreshBattleHUDs();
     }
 
-    public ArabellaSpawnPresentation FindDeferredBossSpawnPresentation()
+    public BossSpawnPresentation FindDeferredBossSpawnPresentation()
     {
         for (int i = 0; i < spawnedMonsterUnits.Count; i++)
         {
@@ -1975,10 +1975,10 @@ public class BattleRoomLoader : MonoBehaviour
                 continue;
             }
 
-            ArabellaSpawnPresentation presentation =
-                monsterUnit.GetComponent<ArabellaSpawnPresentation>();
+            BossSpawnPresentation presentation =
+                monsterUnit.GetComponent<BossSpawnPresentation>();
             if (presentation == null)
-                presentation = monsterUnit.GetComponentInChildren<ArabellaSpawnPresentation>(true);
+                presentation = monsterUnit.GetComponentInChildren<BossSpawnPresentation>(true);
 
             if (presentation != null)
                 return presentation;

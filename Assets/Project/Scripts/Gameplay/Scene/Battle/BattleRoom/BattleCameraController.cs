@@ -23,6 +23,7 @@ public class BattleCameraController : MonoBehaviour
     [Header("Monster Phase Lighting")]
     [Tooltip("Scene Global Light 2D used for monster-specific camera step lighting. Assign once on BattleCameraController.")]
     [SerializeField] private Light2D monsterPhaseGlobalLight2D;
+    public Light2D MonsterPhaseGlobalLight2D => monsterPhaseGlobalLight2D;
     private Coroutine monsterPhaseLightingRoutine;
     private bool monsterPhaseLightingSaved;
     private float monsterPhaseOriginalLightIntensity;

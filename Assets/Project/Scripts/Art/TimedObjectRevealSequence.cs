@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,30 +9,30 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
     [Serializable]
     public class RevealTarget
     {
-        [Tooltip("ÁöÁ¤ÇÑ ½Ã°£¿¡ ³ªÅ¸³¯ ¿ÀºêÁ§Æ®")]
+        [Tooltip("ì§€ì •í•œ ì‹œê°„ì— ë‚˜íƒ€ë‚  ì˜¤ë¸Œì íŠ¸")]
         public GameObject targetObject;
 
-        [Tooltip("¿¬Ãâ ½ÃÀÛ ÈÄ ¿ÀºêÁ§Æ®°¡ ³ªÅ¸³ª´Â ½Ã°£")]
+        [Tooltip("ì—°ì¶œ ì‹œì‘ í›„ ì˜¤ë¸Œì íŠ¸ê°€ ë‚˜íƒ€ë‚˜ëŠ” ì‹œê°„")]
         [Min(0f)]
         public float revealTime = 0f;
 
-        [Header("µîÀå ÈÄ ÀÌµ¿")]
-        [Tooltip("µîÀåÇÑ µÚ ÁöÁ¤ÇÑ ·ÎÄÃ À§Ä¡·Î ÀÌµ¿ÇÕ´Ï´Ù.")]
+        [Header("ë“±ì¥ í›„ ì´ë™")]
+        [Tooltip("ë“±ì¥í•œ ë’¤ ì§€ì •í•œ ë¡œì»¬ ìœ„ì¹˜ë¡œ ì´ë™í•©ë‹ˆë‹¤.")]
         public bool useMoveAfterReveal = false;
 
-        [Tooltip("¿ÀºêÁ§Æ®°¡ µîÀåÇÑ µÚ ÀÌµ¿À» ½ÃÀÛÇÏ±â Àü±îÁöÀÇ ´ë±â ½Ã°£")]
+        [Tooltip("ì˜¤ë¸Œì íŠ¸ê°€ ë“±ì¥í•œ ë’¤ ì´ë™ì„ ì‹œì‘í•˜ê¸° ì „ê¹Œì§€ì˜ ëŒ€ê¸° ì‹œê°„")]
         [Min(0f)]
         public float moveDelay = 0f;
 
-        [Tooltip("ÀÌµ¿ÀÌ ³¡³µÀ» ¶§ÀÇ Local Position")]
+        [Tooltip("ì´ë™ì´ ëë‚¬ì„ ë•Œì˜ Local Position")]
         public Vector3 moveTargetLocalPosition;
 
-        [Tooltip("¸ñÇ¥ À§Ä¡±îÁö ÀÌµ¿ÇÏ´Â µ¥ °É¸®´Â ½Ã°£")]
+        [Tooltip("ëª©í‘œ ìœ„ì¹˜ê¹Œì§€ ì´ë™í•˜ëŠ” ë° ê±¸ë¦¬ëŠ” ì‹œê°„")]
         [Min(0f)]
         public float moveDuration = 1f;
 
-        [Header("µîÀå È¿°úÀ½")]
-        [Tooltip("¿ÀºêÁ§Æ®°¡ µîÀåÇÒ ¶§ Àç»ıÇÒ È¿°úÀ½")]
+        [Header("ë“±ì¥ íš¨ê³¼ìŒ")]
+        [Tooltip("ì˜¤ë¸Œì íŠ¸ê°€ ë“±ì¥í•  ë•Œ ì¬ìƒí•  íš¨ê³¼ìŒ")]
         [SoundId(SoundCategory.Sfx)]
         public string revealSoundId;
 
@@ -40,71 +40,71 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
         [Tooltip("SoundDatabase entry volume multiplier.")]
         public float soundVolumeMultiplier = 1f;
 
-        [Header("µîÀå ½Ã Ä«¸Ş¶ó Èçµé¸²")]
-        [Tooltip("ÀÌ ¿ÀºêÁ§Æ®°¡ ³ªÅ¸³¯ ¶§ Ä«¸Ş¶ó¸¦ Èçµì´Ï´Ù.")]
+        [Header("ë“±ì¥ ì‹œ ì¹´ë©”ë¼ í”ë“¤ë¦¼")]
+        [Tooltip("ì´ ì˜¤ë¸Œì íŠ¸ê°€ ë‚˜íƒ€ë‚  ë•Œ ì¹´ë©”ë¼ë¥¼ í”ë“­ë‹ˆë‹¤.")]
         public bool useCameraShake = true;
 
-        [Tooltip("Ä«¸Ş¶ó Èçµé¸² Áö¼Ó ½Ã°£")]
+        [Tooltip("ì¹´ë©”ë¼ í”ë“¤ë¦¼ ì§€ì† ì‹œê°„")]
         [Min(0f)]
         public float shakeDuration = 0.2f;
 
-        [Tooltip("Ä«¸Ş¶ó Èçµé¸² ¼¼±â")]
+        [Tooltip("ì¹´ë©”ë¼ í”ë“¤ë¦¼ ì„¸ê¸°")]
         [Min(0f)]
         public float shakeStrength = 0.15f;
 
-        [Tooltip("Ä«¸Ş¶ó Èçµé¸² ¼Óµµ")]
+        [Tooltip("ì¹´ë©”ë¼ í”ë“¤ë¦¼ ì†ë„")]
         [Min(0f)]
         public float shakeFrequency = 30f;
     }
 
-    [Header("¼øÂ÷ µîÀå ¿ÀºêÁ§Æ®")]
-    [Tooltip("°¢ ¿ÀºêÁ§Æ®¿Í µîÀå ½Ã°£À» ¼³Á¤ÇÕ´Ï´Ù.")]
+    [Header("ìˆœì°¨ ë“±ì¥ ì˜¤ë¸Œì íŠ¸")]
+    [Tooltip("ê° ì˜¤ë¸Œì íŠ¸ì™€ ë“±ì¥ ì‹œê°„ì„ ì„¤ì •í•©ë‹ˆë‹¤.")]
     [SerializeField]
     private List<RevealTarget> revealTargets = new();
 
 
-    [Header("Ä«¸Ş¶ó Èçµé¸²")]
-    [Tooltip("¸ŞÀÎ Ä«¸Ş¶óÀÇ CameraShakeController")]
+    [Header("ì¹´ë©”ë¼ í”ë“¤ë¦¼")]
+    [Tooltip("ë©”ì¸ ì¹´ë©”ë¼ì˜ CameraShakeController")]
     [SerializeField]
     private CameraShakeController cameraShakeController;
 
-    [Header("¿¬Ãâ Á¾·á ÈÄ È°¼ºÈ­")]
-    [Tooltip("ÀüÃ¼ ¿¬ÃâÀÌ ³¡³­ µÚ È°¼ºÈ­ÇÒ ¿ÀºêÁ§Æ®µé")]
+    [Header("ì—°ì¶œ ì¢…ë£Œ í›„ í™œì„±í™”")]
+    [Tooltip("ì „ì²´ ì—°ì¶œì´ ëë‚œ ë’¤ í™œì„±í™”í•  ì˜¤ë¸Œì íŠ¸ë“¤")]
     [SerializeField]
     private List<GameObject> objectsToActivateAfterFinish = new();
 
-    [Tooltip("°ÔÀÓ ½ÃÀÛ ½Ã Á¾·á ÈÄ È°¼ºÈ­ÇÒ ¿ÀºêÁ§Æ®µéÀ» ¼û±è")]
+    [Tooltip("ê²Œì„ ì‹œì‘ ì‹œ ì¢…ë£Œ í›„ í™œì„±í™”í•  ì˜¤ë¸Œì íŠ¸ë“¤ì„ ìˆ¨ê¹€")]
     [SerializeField]
     private bool hideFinishObjectsOnAwake = true;
 
-    [Tooltip("¿¬ÃâÀ» ½ÇÇàÇÒ ¶§ Á¾·á ÈÄ È°¼ºÈ­ÇÒ ¿ÀºêÁ§Æ®µéÀ» ´Ù½Ã ¼û±è")]
+    [Tooltip("ì—°ì¶œì„ ì‹¤í–‰í•  ë•Œ ì¢…ë£Œ í›„ í™œì„±í™”í•  ì˜¤ë¸Œì íŠ¸ë“¤ì„ ë‹¤ì‹œ ìˆ¨ê¹€")]
     [SerializeField]
     private bool hideFinishObjectsOnPlay = true;
 
-    [Header("Á¾·á ¼³Á¤")]
-    [Tooltip("¸ğµç µîÀå ¿ÀºêÁ§Æ®°¡ ³ªÅ¸³­ µÚ À¯ÁöµÇ´Â ½Ã°£")]
+    [Header("ì¢…ë£Œ ì„¤ì •")]
+    [Tooltip("ëª¨ë“  ë“±ì¥ ì˜¤ë¸Œì íŠ¸ê°€ ë‚˜íƒ€ë‚œ ë’¤ ìœ ì§€ë˜ëŠ” ì‹œê°„")]
     [Min(0f)]
     [SerializeField]
     private float finalHoldTime = 1f;
 
-    [Tooltip("À¯Áö ½Ã°£ÀÌ ³¡³ª¸é µîÀå ¿ÀºêÁ§Æ®µéÀ» ¸ğµÎ ¼û±è")]
+    [Tooltip("ìœ ì§€ ì‹œê°„ì´ ëë‚˜ë©´ ë“±ì¥ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ëª¨ë‘ ìˆ¨ê¹€")]
     [SerializeField]
     private bool hideRevealTargetsAfterFinish = true;
 
-    [Tooltip("¿¬Ãâ Á¾·á ÈÄ ÀÌ ½ºÅ©¸³Æ®°¡ ºÙÀº ¿ÀºêÁ§Æ®¸¦ ºñÈ°¼ºÈ­")]
+    [Tooltip("ì—°ì¶œ ì¢…ë£Œ í›„ ì´ ìŠ¤í¬ë¦½íŠ¸ê°€ ë¶™ì€ ì˜¤ë¸Œì íŠ¸ë¥¼ ë¹„í™œì„±í™”")]
     [SerializeField]
     private bool disableSequenceObjectAfterFinish = false;
 
-    [Header("½ÇÇà ¼³Á¤")]
-    [Tooltip("°ÔÀÓ ½ÃÀÛ ½Ã µîÀå ¿ÀºêÁ§Æ®µéÀ» ¸ğµÎ ¼û±è")]
+    [Header("ì‹¤í–‰ ì„¤ì •")]
+    [Tooltip("ê²Œì„ ì‹œì‘ ì‹œ ë“±ì¥ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ëª¨ë‘ ìˆ¨ê¹€")]
     [SerializeField]
     private bool hideRevealTargetsOnAwake = true;
 
-    [Tooltip("ÀÌ ¿ÀºêÁ§Æ®°¡ È°¼ºÈ­µÉ ¶§ ÀÚµ¿ ½ÇÇà")]
+    [Tooltip("ì´ ì˜¤ë¸Œì íŠ¸ê°€ í™œì„±í™”ë  ë•Œ ìë™ ì‹¤í–‰")]
     [SerializeField]
     private bool playOnEnable = false;
 
-    [Tooltip("Time ScaleÀÌ 0ÀÌ¾îµµ ¿¬ÃâÀ» ÁøÇà")]
+    [Tooltip("Time Scaleì´ 0ì´ì–´ë„ ì—°ì¶œì„ ì§„í–‰")]
     [SerializeField]
     private bool useUnscaledTime = false;
 
@@ -166,7 +166,7 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
         {
             Debug.LogWarning(
                 "[TimedObjectRevealSequence] " +
-                "Reveal Targets°¡ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.",
+                "Reveal Targetsê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.",
                 this
             );
 
@@ -205,22 +205,22 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
                 yield return null;
             }
 
-            // ¿ÀºêÁ§Æ® µîÀå
+            // ì˜¤ë¸Œì íŠ¸ ë“±ì¥
             revealTarget.targetObject.SetActive(true);
 
-            // µîÀå È¿°úÀ½ Àç»ı
+            // ë“±ì¥ íš¨ê³¼ìŒ ì¬ìƒ
             PlayRevealSound(revealTarget);
 
-            // µîÀå Ä«¸Ş¶ó Èçµé¸²
+            // ë“±ì¥ ì¹´ë©”ë¼ í”ë“¤ë¦¼
             PlayCameraShake(revealTarget);
 
-            // µîÀå ÈÄ ÁöÁ¤ À§Ä¡·Î ÀÌµ¿
+            // ë“±ì¥ í›„ ì§€ì • ìœ„ì¹˜ë¡œ ì´ë™
             StartMoveAfterReveal(revealTarget);
 
             nextTargetIndex++;
         }
 
-        // ¸ğµç ¿ÀºêÁ§Æ®ÀÇ ÀÌµ¿ÀÌ ³¡³­ µÚ Á¾·á À¯Áö ½Ã°£À» ½ÃÀÛÇÕ´Ï´Ù.
+        // ëª¨ë“  ì˜¤ë¸Œì íŠ¸ì˜ ì´ë™ì´ ëë‚œ ë’¤ ì¢…ë£Œ ìœ ì§€ ì‹œê°„ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         while (activeMovementCount > 0)
         {
             yield return null;
