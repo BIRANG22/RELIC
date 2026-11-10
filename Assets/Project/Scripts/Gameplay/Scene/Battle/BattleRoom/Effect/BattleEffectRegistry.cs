@@ -37,6 +37,7 @@ public class BattleEffectRegistry
         Register(new ManaEffect());
         Register(new KarmaEffect());
         Register(new GritEffect());
+        Register(new ElasticityEffect());
         Register(new BondEffect());
         Register(new SwiftEffect());
         Register(new SmiteEffect());

@@ -70,7 +70,7 @@ SkillId,Name,Category,Rarity,ReferenceResource,Target,Level,Entry,CharacterID,Sk
 S_Move_1,이동,Move,Move,Cost,Self,1,1,ALL,Move,0,E_Move,0,1,1,Selection,Range_Move,선택한 그리드로 이동한다. 이동한 칸 수만큼 마나를 소모한다.
 S_Passive_01,용린,Passive,Exclusive,Ulti,Self,0,0,Char_01,Passive,0,E_Armor,4,1,0,Passive,Range_Self,매 턴 시작 시 자신에게 {ValueRate1}의 {E_Armor}를 부여한다.
 S_Passive_02,용혈,Passive,Exclusive,Ulti,Self,0,0,Char_01,Passive,0,E_Lifesteal;E_Passive_Lose_HP,1;3,1;1,0,Passive,Range_Self,"매 턴 시작 시 자신의 생명력이 {ValueRate2} 감소하고, {ValueRate1}의 {E_Lifesteal}을 부여한다."
-S_Passive_03,직감,Passive,Exclusive,Ulti,Self,0,0,Char_02,Passive,0,E_Blindside,1,1,0,Passive,Range_Self,매 턴 시작 시 자신에게 {ValueRate1}의 {E_Blindside}을 부여한다.
+S_Passive_03,직감,Passive,Exclusive,Ulti,Self,0,0,Char_02,Passive,0,E_Elasticity,2,1,0,Passive,Range_Self,매 턴 시작 시 자신에게 {ValueRate1}의 {E_Elasticity}을 부여한다.
 S_Passive_04,기세,Passive,Exclusive,Ulti,Self,0,0,Char_02,Passive,0,E_Smite,3,1,0,Passive,Range_Self,전투 시작 시 자신에게 {ValueRate1}의 {E_Smite}를 부여한다.
 S_Passive_05,순환,Passive,Exclusive,Ulti,PlayerParty,0,0,Char_03,Passive,0,E_Charge,1,1,0,Passive,Range_Party,매 턴 시작 시 모든 아군에게 {ValueRate1}의 {E_Charge}을 부여한다.
 S_Passive_06,독기,Passive,Exclusive,Ulti,EnemyParty,0,0,Char_03,Passive,0,E_Poison,3,1,0,Passive,Range_All,전투 시작 시 모든 적에게 {ValueRate1}의 {E_Poison}을 부여한다.
@@ -114,7 +114,7 @@ S_Core_07,무모한 일격,Core,Epic,Cost,EnemyParty,1,2,Char_01,Attack,0,E_Stri
 S_Core_08,갈증,Core,Epic,Hp,Self,1,2,Char_01,Buff,0,E_Lifesteal;E_Boost,2;2,1;1,4,Direction,Range_Self,"생명력을 {ResourceCostValue} 소모하여, 자신에게 {ValueRate1}의 {E_Lifesteal}과 {E_Boost}을 부여한다."
 S_Core_09,철갑돌진,Core,Unique,Ulti,EnemyParty,1,2,Char_01,Attack,0,E_Rush;E_ArmorStrike,1;1,1;1,2,Direction,Range_05,돌진하여 충돌한 적에게 {E_ArmorStrike}의 {E_Strike}를 준다.
 S_Core_10,핏빛 수확,Core,Unique,Cost,EnemyParty,1,3,Char_01,Attack,0,E_Strike;E_ValueUpOnKill,6;2,1;1,5,Direction,Range_10,범위에 {ValueRate1}의 피해를 준다. 처치 시 영구히 피해량이 {ValueRate2} 증가한다.
-S_Core_11,간파,Core,Common,Cost,Self,1,1,Char_02,Buff,0,E_Swift,1,1,6,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Swift}을 부여한다.
+S_Core_11,간파,Core,Common,Cost,Self,1,1,Char_02,FastBuff,1,E_Swift,1,1,5,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Swift}을 부여한다.
 S_Core_12,비상검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,0,E_Move;E_Strike,1;10,1;1,3,Direction,Range_15,{ValueRate1}칸 전진하여 범위에 {ValueRate2}의 {E_Strike}를 준다.
 S_Core_13,비연검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,0,E_Strike;E_Move,10;-1,1;1,3,Direction,Range_16,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}칸 후퇴한다."
 S_Core_14,전투감각,Core,Rare,Ulti,Self,1,1,Char_02,Buff,0,E_Boost,2,1,1,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Boost}을 부여한다.
@@ -233,6 +233,7 @@ E_Smite,강타,Beneficial,Decrease,턴 종료 시 1 감소,첫 공격의 피해�
 E_Blindside,기습,Beneficial,Decrease,턴 종료 시 1 감소,후방 공격 시 피해가 50% 증가한다. ,1
 E_Grit,투지,Beneficial,Decrease,턴 종료 시 1 감소,주는 피해가 30% 증가한다.,1
 AR_DamageBoostThisTurn,힘,Beneficial,Decrease,턴 종료 시 1 감소,주는 피해가 100% 증가한다.,1
+E_Elasticity,탄력,Beneficial,DecreaseOnTrigger,공격 시 소멸,연속 공격 후 수치만큼 고정 피해를 추가로 준다.,
 E_Armor,방어도,Beneficial,Remove,턴 종료 시 소멸,보유한 수치만큼 피해를 막는다.,1
 E_Cure,치유,Neutral,0,0,생명력을 수치만큼 즉시 회복한다.,1
 E_Heal,재생,Beneficial,Decrease,턴 종료 시 1 감소,턴 종료 시 수치만큼 생명력을 회복한다.,1
