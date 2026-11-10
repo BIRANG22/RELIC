@@ -768,7 +768,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
         // Keep the shield behind the animated item while still covering the
         // full panel area for EventSystem raycasts.
-        introInputBlocker.SetAsFirstSibling();
+        if (blocked)
+            introInputBlocker.SetAsFirstSibling();
         introInputBlocker.gameObject.SetActive(blocked);
     }
 

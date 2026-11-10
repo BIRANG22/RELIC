@@ -1943,6 +1943,14 @@ MonoBehaviour:
     m_Key: data.effect.e_passive_lose_hp.tooltip
     m_Metadata:
       m_Items: []
+  - m_Id: 33021496911585280
+    m_Key: data.effect.e_elasticity.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33021496949334016
+    m_Key: data.effect.e_elasticity.tooltip
+    m_Metadata:
+      m_Items: []
   - m_Id: 41385915728797874
     m_Key: data.relic.relic_p_01.name
     m_Metadata:

@@ -2251,7 +2251,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100947
-    m_Localized: At the start of each turn, gain {ValueRate1} {E_Blindside}.
+    m_Localized: At the start of each turn, gain {ValueRate1} {E_Elasticity}.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100948
@@ -6720,6 +6720,15 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 32976703032516608
     m_Localized: '{0} times'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33021496911585280
+    m_Localized: Elasticity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33021496949334016
+    m_Localized: Deals additional fixed damage equal to the value after consecutive
+      attacks.
     m_Metadata:
       m_Items: []
   references:
