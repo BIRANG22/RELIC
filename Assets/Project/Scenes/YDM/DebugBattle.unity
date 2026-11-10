@@ -104635,7 +104635,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   revealTargets:
   - targetObject: {fileID: 1961814766}
-    revealTime: 4
+    revealTime: 0
     useMoveAfterReveal: 1
     moveDelay: 2
     moveTargetLocalPosition: {x: -1800, y: 400, z: 0}
@@ -104647,7 +104647,7 @@ MonoBehaviour:
     shakeStrength: 0.15
     shakeFrequency: 1
   - targetObject: {fileID: 558325529}
-    revealTime: 5
+    revealTime: 1
     useMoveAfterReveal: 1
     moveDelay: 1
     moveTargetLocalPosition: {x: 1800, y: -400, z: 0}

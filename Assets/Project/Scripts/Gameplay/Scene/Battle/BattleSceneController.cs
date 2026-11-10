@@ -2830,6 +2830,11 @@ public class BattleSceneController : MonoBehaviour
 
         if (deferredBossIntroRoutine != null)
         {
+            BattleRoomLoader loader = battleRoom != null
+                ? battleRoom.GetComponentInChildren<BattleRoomLoader>(true)
+                : null;
+            loader?.FindDeferredBossSpawnPresentation()?.CancelPresentation();
+
             StopCoroutine(deferredBossIntroRoutine);
             deferredBossIntroRoutine = null;
         }
@@ -2862,23 +2867,7 @@ public class BattleSceneController : MonoBehaviour
             yield break;
         }
 
-        AutoFindSharedRoomPresentationIfNeeded();
-        if (sharedBackgroundController == null ||
-            !sharedBackgroundController.PlayCurrentBossReveal())
-        {
-            CompleteDeferredBossIntro();
-            yield break;
-        }
-
-        IBattleRoomIntroSequence introSequence = ResolveBattleRoomIntroSequence();
-        if (introSequence == null || introSequence.IsCompleted)
-        {
-            CompleteDeferredBossIntro();
-            yield break;
-        }
-
-        deferredBossIntroRoutine = null;
-        battleRoomIntroLoadGate.Request(introSequence, CompleteDeferredBossIntro);
+        CompleteDeferredBossIntro();
     }
 
     private void CompleteDeferredBossIntro()
@@ -2889,6 +2878,55 @@ public class BattleSceneController : MonoBehaviour
             ? battleRoom.GetComponentInChildren<BattleRoomLoader>(true)
             : null;
         loader?.CompleteDeferredMonsterSpawn();
+
+        if (!pendingBattleRoomUsesBossIntro)
+        {
+            FinalizeDeferredBossIntro();
+            return;
+        }
+
+        ArabellaSpawnPresentation presenter =
+            loader?.FindDeferredBossSpawnPresentation();
+        if (presenter != null)
+        {
+            deferredBossIntroRoutine = StartCoroutine(PlayDeferredBossSpawnPresentation(presenter));
+            return;
+        }
+
+        PlayDeferredBossNameRevealOrFinalize();
+    }
+
+    private IEnumerator PlayDeferredBossSpawnPresentation(ArabellaSpawnPresentation presenter)
+    {
+        yield return presenter.Play();
+        PlayDeferredBossNameRevealOrFinalize();
+    }
+
+    private void PlayDeferredBossNameRevealOrFinalize()
+    {
+        deferredBossIntroRoutine = null;
+
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedBackgroundController == null ||
+            !sharedBackgroundController.PlayCurrentBossReveal())
+        {
+            FinalizeDeferredBossIntro();
+            return;
+        }
+
+        IBattleRoomIntroSequence introSequence = ResolveBattleRoomIntroSequence();
+        if (introSequence == null || introSequence.IsCompleted)
+        {
+            FinalizeDeferredBossIntro();
+            return;
+        }
+
+        battleRoomIntroLoadGate.Request(introSequence, FinalizeDeferredBossIntro);
+    }
+
+    private void FinalizeDeferredBossIntro()
+    {
+        deferredBossIntroRoutine = null;
 
         if (pendingBattleRoomUsesBossIntro && BattleCameraController.Instance != null)
             BattleCameraController.Instance.ForceReturnSceneStartPositionImmediate();
@@ -2943,9 +2981,8 @@ public class BattleSceneController : MonoBehaviour
         loader.LoadBattleFromSceneController(
             forceReload,
             deferBattlePartyEntryUntilUncover,
-            pendingBattleRoomUsesBossIntro ||
-            (DataManager.Instance?.TutorialDatabase?.GetForMap(DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId).Count > 0
-             && DataManager.Instance.TutorialDatabase.GetForMap(DataManager.Instance.MapRuntimeStore.Get().CurrentMapId)[0].DeferMonsterSpawn != 0));
+            DataManager.Instance?.TutorialDatabase?.GetForMap(DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId).Count > 0
+            && DataManager.Instance.TutorialDatabase.GetForMap(DataManager.Instance.MapRuntimeStore.Get().CurrentMapId)[0].DeferMonsterSpawn != 0);
     }
 
     private static bool HasMappedId(string value)

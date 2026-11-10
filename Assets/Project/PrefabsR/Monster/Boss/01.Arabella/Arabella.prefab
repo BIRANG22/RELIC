@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 2911902474039894627}
   - component: {fileID: 5282782068058847965}
   - component: {fileID: 1436557978760145995}
+  - component: {fileID: 888000000000000031}
   m_Layer: 0
   m_Name: Arabella
   m_TagString: Untagged
@@ -72,8 +73,351 @@ Transform:
   - {fileID: 4005732995888757864}
   - {fileID: 3400423110568682175}
   - {fileID: 1768054003603864673}
+  - {fileID: 888000000000000002}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &888000000000000031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1910251976348132752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5c1c6a1e71a4e269583a1b1b19f4c81, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  animator: {fileID: 1713437423555881937}
+  unitAnimator: {fileID: 2911902474039894627}
+  appear01Clip: {fileID: 7400000, guid: 9c064442ec995734382f9512fe944ceb, type: 2}
+  appear02Clip: {fileID: 7400000, guid: d70e2df4325537f46bdb8d10e86a1ccb, type: 2}
+  dialogueRoot: {fileID: 888000000000000001}
+  dialogueText: {fileID: 888000000000000024}
+  dialogueRect: {fileID: 888000000000000002}
+  dialogueLocalPosition: {x: 0, y: 16, z: 0}
+  dialogueSize: {x: 650, y: 104}
+  firstDialogueDuration: 0
+  secondDialogueDuration: 0
+  animationSpeed: 1
+  useIntroCamera: 1
+  cameraTargetOffset: {x: 0, y: 2}
+  cameraOrthographicSize: 6
+  cameraBlendInDuration: 0.35
+  cameraBlendOutDuration: 0.35
+--- !u!1 &888000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 888000000000000002}
+  - component: {fileID: 888000000000000003}
+  - component: {fileID: 888000000000000004}
+  - component: {fileID: 888000000000000005}
+  m_Layer: 5
+  m_Name: AppearDialogue
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &888000000000000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 16, z: 0}
+  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 888000000000000012}
+  m_Father: {fileID: 2297306867156154545}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 650, y: 104}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!223 &888000000000000003
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000001}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 0
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 1597553239
+  m_SortingOrder: 300
+  m_TargetDisplay: 0
+--- !u!222 &888000000000000004
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000001}
+  m_CullTransparentMesh: 1
+--- !u!114 &888000000000000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!1 &888000000000000011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 888000000000000012}
+  - component: {fileID: 888000000000000013}
+  - component: {fileID: 888000000000000014}
+  m_Layer: 5
+  m_Name: Background
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &888000000000000012
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000011}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 888000000000000022}
+  m_Father: {fileID: 888000000000000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -10, y: -10}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &888000000000000013
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000011}
+  m_CullTransparentMesh: 1
+--- !u!114 &888000000000000014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.025, g: 0.025, b: 0.025, a: 0.96}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!1 &888000000000000021
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 888000000000000022}
+  - component: {fileID: 888000000000000023}
+  - component: {fileID: 888000000000000024}
+  m_Layer: 5
+  m_Name: DialogueText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &888000000000000022
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000021}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 888000000000000012}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -30, y: -12}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &888000000000000023
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000021}
+  m_CullTransparentMesh: 1
+--- !u!114 &888000000000000024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888000000000000021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: ""
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 0.92, g: 0.92, b: 0.92, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 30
+  m_fontSizeBase: 30
+  m_fontWeight: 400
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 22
+  m_fontSizeMax: 30
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &777000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84,8 +428,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f0b46928a18d4c24a5f6bc7d901f7fd4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   objectsToDisable:
   - {fileID: 8404110253859753422}
   duration: 1
@@ -100,8 +444,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ee6699dc78515ac4cb71d760ca3f9995, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   autoAddClickCollider2D: 1
   fallbackColliderSize: {x: 1, y: 1}
   timelineHoverHighlightObject: {fileID: 2469629087936589391}
@@ -168,8 +512,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0acb2a5b6602dc4ebc65e929968e3d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   targetRenderer: {fileID: 1286001837839981711}
   onClicked:
     m_PersistentCalls:
@@ -183,7 +527,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument:
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &7352004359467415760
@@ -196,8 +540,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 846a9e67db6820742bed9200ba1f9afb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   spriteRoot: {fileID: 4948368021851356309}
   linkedFacingRoots:
   - {fileID: 3400423110568682175}
@@ -214,15 +558,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65329b3ce76752d4b9607a6211627f3d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   animator: {fileID: 1713437423555881937}
   idleStateName: Idle
   moveStateName: Move
   walkStateName: walk
   guardStateName: Guard
   hitStateName: Hit
-  healStateName: 
+  healStateName:
   deadStateName: Dead
   arabellaPhaseOneDefeatedStateName: PhaseOneDefeated
   hitFlashRenderers: []
@@ -359,8 +703,8 @@ MonoBehaviour:
   statusVfxDatabase: {fileID: 11400000, guid: bfb06368a30649efa4153673eb02d38c, type: 2}
   playerSkillPresentations:
     power:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -377,7 +721,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -406,8 +750,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack1:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -424,7 +768,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -453,8 +797,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack2:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -471,7 +815,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -500,8 +844,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack3:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -518,7 +862,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -547,8 +891,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     skill:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -565,7 +909,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -594,8 +938,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra1:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -612,7 +956,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -641,8 +985,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra2:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -659,7 +1003,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -688,8 +1032,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra3:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -706,7 +1050,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -735,8 +1079,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra4:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -753,7 +1097,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -782,8 +1126,8 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra5:
-      monsterSkillId: 
-      prepareStateName: 
+      monsterSkillId:
+      prepareStateName:
       prepareDuration: 0.15
       prepareVfx:
         prefab: {fileID: 0}
@@ -800,7 +1144,7 @@ MonoBehaviour:
         proxySortingOrderOffset: 0
         proxySortingWorldYOffset: 0
         proxyYMultiplier: 100
-      stateName: 
+      stateName:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -879,7 +1223,7 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   - monsterSkillId: S_Monster_35
-    prepareStateName: 
+    prepareStateName:
     prepareDuration: 0.15
     prepareVfx:
       prefab: {fileID: 0}
@@ -925,7 +1269,7 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   - monsterSkillId: S_Monster_36
-    prepareStateName: 
+    prepareStateName:
     prepareDuration: 0.15
     prepareVfx:
       prefab: {fileID: 0}
@@ -971,7 +1315,7 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   - monsterSkillId: S_Monster_37
-    prepareStateName: 
+    prepareStateName:
     prepareDuration: 0.15
     prepareVfx:
       prefab: {fileID: 0}
@@ -1108,8 +1452,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - monsterSkillId: 
-    prepareStateName: 
+  - monsterSkillId:
+    prepareStateName:
     prepareDuration: 0.15
     prepareVfx:
       prefab: {fileID: 0}
@@ -1126,7 +1470,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-    stateName: 
+    stateName:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
@@ -1154,8 +1498,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - monsterSkillId: 
-    prepareStateName: 
+  - monsterSkillId:
+    prepareStateName:
     prepareDuration: 0.15
     prepareVfx:
       prefab: {fileID: 0}
@@ -1172,7 +1516,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-    stateName: 
+    stateName:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
@@ -1200,8 +1544,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - monsterSkillId: 
-    prepareStateName: 
+  - monsterSkillId:
+    prepareStateName:
     prepareDuration: 0.15
     prepareVfx:
       prefab: {fileID: 0}
@@ -1218,7 +1562,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-    stateName: 
+    stateName:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
@@ -1246,8 +1590,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - monsterSkillId: 
-    prepareStateName: 
+  - monsterSkillId:
+    prepareStateName:
     prepareDuration: 0.15
     prepareVfx:
       prefab: {fileID: 0}
@@ -1264,7 +1608,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-    stateName: 
+    stateName:
     vfx:
       prefab: {fileID: 0}
       flipType: 0
@@ -1317,8 +1661,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05cd55f43ce51304eb373d0f397cab2c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   enablePhaseCamera: 1
   focusTarget: {fileID: 0}
   steps:
@@ -1508,8 +1852,8 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46a3b90ac864fa341b003dc84fd7d7f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   targetAnimator: {fileID: 0}
   targetFacing: {fileID: 0}
   debugBindings:
@@ -1723,8 +2067,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33c392ea8bf721f4f9b83ea336edc598, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   useVirtualYOffset: 0
   virtualYOffset: 0
   sortingOrderOffset: 0
@@ -1746,7 +2090,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage: 
+  m_WarningMessage:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0

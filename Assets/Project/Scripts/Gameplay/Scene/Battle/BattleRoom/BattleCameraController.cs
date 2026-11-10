@@ -562,6 +562,14 @@ public class BattleCameraController : MonoBehaviour
             true);
     }
 
+    public bool TryBeginCinematicCamera()
+    {
+        if (hasCinematicCameraState)
+            return false;
+
+        return BeginCinematicCamera();
+    }
+
     public bool BeginCinematicCamera()
     {
         if (targetCamera == null)
