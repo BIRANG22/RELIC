@@ -905,6 +905,13 @@ public class BattleTimelineController : MonoBehaviour
     public bool HasPendingPlayerInsertion =>
         pendingPlayerInsertionSlotIndex >= 0 && pendingPlayerInsertionIndex >= 0;
 
+    public int GetPendingPlayerInsertionIndex(int slotIndex)
+    {
+        return pendingPlayerInsertionSlotIndex == slotIndex
+            ? pendingPlayerInsertionIndex
+            : -1;
+    }
+
     public void ClearPendingPlayerInsertion()
     {
         pendingPlayerInsertionSlotIndex = -1;

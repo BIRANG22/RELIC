@@ -581,29 +581,8 @@ public class PlayerSkillReservationController : MonoBehaviour
                 blockedGridIndices.Add(occupiedGridIndex);
         }
 
-        if (timelineController != null && slotIndex >= 0)
-        {
-            BattleActionSimulationService simulationService = new(gridManager);
-            bool includeCurrentSlotMonsterCommands = !BattleActionOrderUtility.HasSwift(userRuntime);
-            HashSet<int> projectedMonsterGridIndices =
-                simulationService.GetProjectedMonsterOccupiedGridIndices(
-                    timelineController,
-                    slotIndex,
-                    includeCurrentSlotMonsterCommands);
-
-            if (projectedMonsterGridIndices != null)
-            {
-                foreach (int gridIndex in projectedMonsterGridIndices)
-                {
-                    if (IsValidMoveDestinationGridIndex(gridIndex))
-                        blockedGridIndices.Add(gridIndex);
-                }
-            }
-        }
-        else
-        {
-            AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
-        }
+        // Player reservations must not use hidden information about future monster movement.
+        AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
 
         AddBlockedGridEffectIndices(blockedGridIndices);
         return blockedGridIndices;
@@ -2069,21 +2048,149 @@ public class PlayerSkillReservationController : MonoBehaviour
         currentBlockedGridIndices ??= BuildCurrentMoveBlockedGridIndices();
         projectedBlockedGridIndices ??= BuildProjectedMoveBlockedGridIndices();
 
-        List<Vector2Int> path = ChooseReservableMovePath(
-            currentCasterGridIndex,
-            targetGridIndex,
-            currentMoveDistancePerCommand,
-            currentMoveReservationCapacity,
-            gridManager,
-            currentBlockedGridIndices,
-            projectedBlockedGridIndices,
-            true);
+        int maxStepCount = Mathf.Max(1, currentMoveDistancePerCommand) *
+                           currentMoveReservationCapacity;
+        List<TimedMoveTransition> timedTransitions =
+            BuildPriorPlayerTimedMoveTransitions(maxStepCount, out HashSet<int> movingStartIndices);
+
+        List<Vector2Int> path = timedTransitions.Count > 0 &&
+                                currentCasterGridIndex != targetGridIndex
+            ? ChooseTimeAwareReservableMovePath(
+                currentCasterGridIndex,
+                targetGridIndex,
+                maxStepCount,
+                gridManager,
+                currentBlockedGridIndices,
+                projectedBlockedGridIndices,
+                movingStartIndices,
+                timedTransitions,
+                true)
+            : ChooseReservableMovePath(
+                currentCasterGridIndex,
+                targetGridIndex,
+                currentMoveDistancePerCommand,
+                currentMoveReservationCapacity,
+                gridManager,
+                currentBlockedGridIndices,
+                projectedBlockedGridIndices,
+                true);
 
         if (path != null &&
             path.Count > 0 &&
             CanReserveMovePathWithEffectiveCost(path))
         {
             result.Add(path);
+        }
+
+        return result;
+    }
+
+    private List<TimedMoveTransition> BuildPriorPlayerTimedMoveTransitions(
+        int maxStepCount,
+        out HashSet<int> movingStartIndices)
+    {
+        List<TimedMoveTransition> result = new();
+        movingStartIndices = new HashSet<int>();
+
+        EnsureTimelineController();
+
+        if (timelineController == null || gridManager == null || currentSlotIndex < 0)
+            return result;
+
+        IReadOnlyList<PlayerReservedCommand> commands =
+            timelineController.GetPlayerCommands(currentSlotIndex);
+
+        if (commands == null)
+            return result;
+
+        Dictionary<string, int> timeByCharacter = new();
+        Dictionary<string, Vector2Int> finalCoordByCharacter = new();
+
+        int insertionIndex = timelineController.GetPendingPlayerInsertionIndex(currentSlotIndex);
+        int commandLimit = insertionIndex >= 0
+            ? Mathf.Min(insertionIndex, commands.Count)
+            : commands.Count;
+
+        for (int commandIndex = 0; commandIndex < commandLimit; commandIndex++)
+        {
+            PlayerReservedCommand command = commands[commandIndex];
+
+            if (command == null || command.UserRuntime == null ||
+                command.CharacterId == currentUserRuntime?.CharacterId)
+            {
+                continue;
+            }
+
+            IReadOnlyList<Vector2Int> moveSteps = command.VisualMoveSteps;
+
+            if ((moveSteps == null || moveSteps.Count <= 0) &&
+                command.MoveOffset == Vector2Int.zero)
+            {
+                continue;
+            }
+
+            int startIndex = timelineController.GetPreviewGridIndexBeforeCommand(
+                command.UserRuntime,
+                currentSlotIndex,
+                commandIndex);
+
+            if (!IsValidMoveDestinationGridIndex(startIndex))
+                continue;
+
+            Vector2Int coord = gridManager.IndexToCoord(startIndex);
+            int time = timeByCharacter.TryGetValue(command.CharacterId, out int existingTime)
+                ? existingTime
+                : 0;
+
+            if (time == 0)
+                movingStartIndices.Add(startIndex);
+
+            List<Vector2Int> expandedSteps = ExpandMoveSteps(moveSteps, command.MoveOffset);
+
+            for (int i = 0; i < expandedSteps.Count && time < maxStepCount; i++)
+            {
+                Vector2Int next = coord + expandedSteps[i];
+                result.Add(new TimedMoveTransition(time, coord, next));
+                coord = next;
+                time++;
+            }
+
+            timeByCharacter[command.CharacterId] = time;
+            finalCoordByCharacter[command.CharacterId] = coord;
+        }
+
+        foreach (KeyValuePair<string, Vector2Int> pair in finalCoordByCharacter)
+        {
+            int time = timeByCharacter[pair.Key];
+
+            while (time < maxStepCount)
+            {
+                result.Add(new TimedMoveTransition(time, pair.Value, pair.Value));
+                time++;
+            }
+        }
+
+        return result;
+    }
+
+    private static List<Vector2Int> ExpandMoveSteps(
+        IReadOnlyList<Vector2Int> moveSteps,
+        Vector2Int fallbackOffset)
+    {
+        List<Vector2Int> result = new();
+
+        if (moveSteps != null && moveSteps.Count > 0)
+        {
+            for (int i = 0; i < moveSteps.Count; i++)
+            {
+                AddUnitAxisMoveSteps(result, moveSteps[i].x, true);
+                AddUnitAxisMoveSteps(result, moveSteps[i].y, false);
+            }
+        }
+        else
+        {
+            AddUnitAxisMoveSteps(result, fallbackOffset.x, true);
+            AddUnitAxisMoveSteps(result, fallbackOffset.y, false);
         }
 
         return result;
@@ -2288,6 +2395,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         HashSet<int> blockedGridIndices = BuildCurrentCharacterMoveBlockedGridIndices();
 
+        AddPriorSlotPlayerOccupiedGridIndices(blockedGridIndices);
         AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
         AddBlockedGridEffectIndices(blockedGridIndices);
 
@@ -2298,10 +2406,56 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         HashSet<int> blockedGridIndices = BuildCurrentCharacterMoveBlockedGridIndices();
 
-        AddProjectedMonsterOccupiedGridIndices(blockedGridIndices);
+        AddPriorSlotPlayerOccupiedGridIndices(blockedGridIndices);
+        // Keep both path candidates grounded in information visible at reservation time.
+        AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
         AddBlockedGridEffectIndices(blockedGridIndices);
 
         return blockedGridIndices;
+    }
+
+    private void AddPriorSlotPlayerOccupiedGridIndices(HashSet<int> blockedGridIndices)
+    {
+        if (blockedGridIndices == null || currentSlotIndex <= 0)
+            return;
+
+        EnsureTimelineController();
+
+        if (timelineController == null)
+            return;
+
+        string selfCharacterId = currentUserRuntime != null
+            ? currentUserRuntime.CharacterId
+            : null;
+        HashSet<string> processedCharacterIds = new();
+
+        for (int slotIndex = 0; slotIndex < currentSlotIndex; slotIndex++)
+        {
+            IReadOnlyList<PlayerReservedCommand> commands =
+                timelineController.GetPlayerCommands(slotIndex);
+
+            if (commands == null)
+                continue;
+
+            for (int commandIndex = 0; commandIndex < commands.Count; commandIndex++)
+            {
+                PlayerReservedCommand command = commands[commandIndex];
+
+                if (command == null || command.UserRuntime == null ||
+                    command.CharacterId == selfCharacterId ||
+                    !processedCharacterIds.Add(command.CharacterId))
+                {
+                    continue;
+                }
+
+                int projectedGridIndex = timelineController.GetPreviewGridIndexAtSlotEnd(
+                    command.UserRuntime,
+                    currentSlotIndex - 1);
+
+                if (IsValidMoveDestinationGridIndex(projectedGridIndex))
+                    blockedGridIndices.Add(projectedGridIndex);
+            }
+        }
     }
 
     private HashSet<int> BuildCurrentCharacterMoveBlockedGridIndices()
@@ -2327,42 +2481,6 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         return blockedGridIndices;
-    }
-
-    private void AddProjectedMonsterOccupiedGridIndices(HashSet<int> blockedGridIndices)
-    {
-        if (blockedGridIndices == null)
-            return;
-
-        EnsureTimelineController();
-
-        if (timelineController == null || gridManager == null || currentSlotIndex < 0)
-        {
-            AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
-            return;
-        }
-
-        BattleActionSimulationService simulationService = new(gridManager);
-        bool includeCurrentSlotMonsterCommands =
-            !BattleActionOrderUtility.HasSwift(currentUserRuntime);
-
-        HashSet<int> projectedGridIndices =
-            simulationService.GetProjectedMonsterOccupiedGridIndices(
-                timelineController,
-                currentSlotIndex,
-                includeCurrentSlotMonsterCommands);
-
-        if (projectedGridIndices == null || projectedGridIndices.Count <= 0)
-        {
-            AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
-            return;
-        }
-
-        foreach (int gridIndex in projectedGridIndices)
-        {
-            if (IsValidMoveDestinationGridIndex(gridIndex))
-                blockedGridIndices.Add(gridIndex);
-        }
     }
 
     private void AddCurrentMonsterOccupiedGridIndices(HashSet<int> blockedGridIndices)
@@ -2827,6 +2945,93 @@ public class PlayerSkillReservationController : MonoBehaviour
         return projectedDistance <= currentDistance
             ? new List<Vector2Int>(projectedPath)
             : new List<Vector2Int>(currentPath);
+    }
+
+    public static List<Vector2Int> ChooseTimeAwareReservableMovePath(
+        int casterGridIndex,
+        int targetGridIndex,
+        int maxStepCount,
+        GridManager gridManager,
+        ISet<int> currentBlockedGridIndices,
+        ISet<int> projectedBlockedGridIndices,
+        ISet<int> movingStartGridIndices,
+        IReadOnlyList<TimedMoveTransition> timedTransitions,
+        bool allowBlockedTargetGridIndex = false)
+    {
+        if (gridManager == null || maxStepCount <= 0)
+            return null;
+
+        Vector2Int start = gridManager.IndexToCoord(casterGridIndex);
+        Vector2Int target = gridManager.IndexToCoord(targetGridIndex);
+
+        if (!gridManager.IsValidCoord(start) || !gridManager.IsValidCoord(target))
+            return null;
+
+        List<Vector2Int> currentPath = FindTimeAwarePath(
+            start,
+            target,
+            maxStepCount,
+            gridManager,
+            currentBlockedGridIndices,
+            movingStartGridIndices,
+            timedTransitions,
+            allowBlockedTargetGridIndex);
+        List<Vector2Int> projectedPath = FindTimeAwarePath(
+            start,
+            target,
+            maxStepCount,
+            gridManager,
+            projectedBlockedGridIndices,
+            movingStartGridIndices,
+            timedTransitions,
+            allowBlockedTargetGridIndex);
+
+        if (currentPath == null)
+            return projectedPath;
+
+        if (projectedPath == null)
+            return currentPath;
+
+        return projectedPath.Count <= currentPath.Count ? projectedPath : currentPath;
+    }
+
+    private static List<Vector2Int> FindTimeAwarePath(
+        Vector2Int start,
+        Vector2Int target,
+        int maxStepCount,
+        GridManager gridManager,
+        ISet<int> blockedGridIndices,
+        ISet<int> movingStartGridIndices,
+        IReadOnlyList<TimedMoveTransition> timedTransitions,
+        bool allowBlockedTargetGridIndex)
+    {
+        HashSet<Vector2Int> blocked = new();
+
+        if (blockedGridIndices != null)
+        {
+            foreach (int index in blockedGridIndices)
+            {
+                if (movingStartGridIndices != null && movingStartGridIndices.Contains(index))
+                    continue;
+
+                Vector2Int coord = gridManager.IndexToCoord(index);
+
+                if (gridManager.IsValidCoord(coord))
+                    blocked.Add(coord);
+            }
+        }
+
+        if (allowBlockedTargetGridIndex)
+            blocked.Remove(target);
+
+        return TimeAwareMovePathUtility.FindShortestPath(
+            start,
+            target,
+            gridManager.Width,
+            gridManager.Height,
+            maxStepCount,
+            blocked,
+            timedTransitions);
     }
 
     private static List<Vector2Int> GetFirstMovePath(List<List<Vector2Int>> pathCandidates)
