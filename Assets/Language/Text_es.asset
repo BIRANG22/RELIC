@@ -2290,7 +2290,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100947
-    m_Localized: Al comienzo de cada turno, obtienes {ValueRate1} de {E_Blindside}.
+    m_Localized: Al comienzo de cada turno, obtienes {ValueRate1} de {E_Elasticity}.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100948
@@ -6795,6 +6795,15 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 32976703032516608
     m_Localized: '{0} veces'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33021496911585280
+    m_Localized: Elasticidad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33021496949334016
+    m_Localized: "Tras un ataque consecutivo, inflige da\xF1o fijo adicional igual
+      al valor."
     m_Metadata:
       m_Items: []
   references:

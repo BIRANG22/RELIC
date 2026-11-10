@@ -106,3 +106,5 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: b7073d1e0946dad41821fb5c08feee21, type: 3}
   - EffectId: E_Spider_Web
     Icon: {fileID: 21300000, guid: 40a5a3f273dd76f4790f7af79c115b6b, type: 3}
+  - EffectId: E_Elasticity
+    Icon: {fileID: 21300000, guid: 165ef9027a842234c9d642a197c924f3, type: 3}

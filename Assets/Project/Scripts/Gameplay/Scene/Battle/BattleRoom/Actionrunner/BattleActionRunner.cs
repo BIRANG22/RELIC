@@ -2125,6 +2125,9 @@ public class BattleActionRunner
             {
                 BattleEquipmentEffectService.ConsumePlayerLifestealOnAttack(
                     attacker != null ? attacker.RuntimeData : command.UserRuntime);
+                // Elasticity is consumed as a whole after one attack action, not once per hit.
+                ConsumeElasticityOnAttack(
+                    attacker != null ? attacker.RuntimeData : command.UserRuntime);
             }
 
             EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
@@ -2272,6 +2275,12 @@ public class BattleActionRunner
             yield break;
         }
 
+        // Snapshot at action start; an effect granted during this skill must not
+        // retroactively strengthen its already-reserved attack.
+        int elasticityDamage = command.SkillData.SkillType == SkillType.Attack
+            ? GetElasticityStack(caster.RuntimeData?.StatusEffects)
+            : 0;
+        bool elasticityEligible = false;
         bool playedDamageSequence = false;
         bool playedActionForNonDamage = false;
         bool hasForcedMoveVisual = false;
@@ -2319,6 +2328,11 @@ public class BattleActionRunner
             if (IsDamageHitEffect(effectId))
             {
                 playedDamageSequence = true;
+                int resolvedHits = NewSkillEffectRules.ResolveDirectDamageHitCount(effectId, count);
+                if (effectId == "E_StrikeCountByDebuff")
+                    resolvedHits = NewSkillEffectRules.ResolveConditionalHitCount(
+                        count, GetMaximumTargetHarmfulEffectTypes(monsterTargets));
+                elasticityEligible |= resolvedHits > 1;
 
                 yield return ExecutePlayerDamageHitSequence(
                     caster,
@@ -2369,6 +2383,35 @@ public class BattleActionRunner
                 hasForcedMoveVisual = true;
         }
 
+        // Elasticity is a single independent fixed-damage hit AFTER the entire
+        // multi-hit sequence. Do not modify each hit's normal damage value.
+        if (elasticityEligible && elasticityDamage > 0 && monsterTargets != null)
+        {
+            foreach (MonsterUnit monster in monsterTargets)
+            {
+                if (!IsAliveMonsterTarget(monster))
+                    continue;
+
+                int hpBefore = monster.RuntimeData.CurrentHP;
+                BattleEffectUtility.StatusDamageMonster(monster, elasticityDamage);
+                int dealtDamage = Mathf.Max(0, hpBefore - monster.RuntimeData.CurrentHP);
+                if (dealtDamage > 0)
+                {
+                    bool killed = monster.RuntimeData.IsDead;
+                    if (!killed && HasActiveMonsterCounter(monster.RuntimeData))
+                        draugrCounterCandidates.Add(monster);
+                    if (caster.RuntimeData != null)
+                        BattleRunStatisticsRecorder.RecordDamageDealt(
+                            caster.RuntimeData.CharacterId, dealtDamage, killed);
+                    if (statusEffectService.ApplySplitHitAndCheckTrigger(monster))
+                        deathService.HandleMuckSplit(monster);
+                    else if (killed)
+                        deathService.HandleMonsterDead(monster);
+                }
+            }
+            hudService.RefreshHUDs();
+        }
+
         ExecutePlayerPostResolutionEffects(caster, command);
 
         // 드라우그 반격은 공격 스킬의 모든 효과가 끝난 뒤 실행합니다.
@@ -2399,6 +2442,35 @@ public class BattleActionRunner
 
             yield return new WaitForSeconds(GetActiveActionBeatDelay());
         }
+    }
+
+    private const string ElasticityEffectId = "E_Elasticity";
+
+    private static int GetElasticityStack(
+        List<Relic.Gameplay.Data.StatusEffectRuntimeData> statuses)
+    {
+        if (statuses == null)
+            return 0;
+        int amount = 0;
+        foreach (var status in statuses)
+            if (status != null && status.EffectId == ElasticityEffectId)
+                amount += Mathf.Max(0, status.Stack);
+        return amount;
+    }
+
+    private static void ConsumeElasticityOnAttack(
+        Relic.Gameplay.Data.CharacterRuntimeData runtime)
+    {
+        var statuses = runtime?.StatusEffects;
+        if (statuses == null ||
+            DataManager.Instance?.EffectDatabase?.Get(ElasticityEffectId)?.DecreaseRule !=
+                EffectValueDecreaseRule.DecreaseOnTrigger)
+            return;
+
+        // All accumulated stacks are spent by one attack, even a single hit or miss.
+        for (int i = statuses.Count - 1; i >= 0; i--)
+            if (statuses[i] != null && statuses[i].EffectId == ElasticityEffectId)
+                statuses.RemoveAt(i);
     }
 
     private static bool PlayTargetUnitVfxOnPlayerTarget(
