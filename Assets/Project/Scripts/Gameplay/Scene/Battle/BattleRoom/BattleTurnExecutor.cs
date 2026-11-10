@@ -23,7 +23,6 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private MoveGhostPreview moveGhostPreview;
     [SerializeField] private BattleRoomLoader roomLoader;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
-    [SerializeField] private SkillListPanel skillListPanel;
 
     [Header("Unique Skill Cutscene")]
     [SerializeField] private SkillCutsceneView skillCutscenePrefab;
@@ -188,14 +187,6 @@ public class BattleTurnExecutor : MonoBehaviour
     }
 
 
-    private void EnsureSkillListPanel()
-    {
-        if (skillListPanel != null)
-            return;
-
-        skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
-    }
-
     private void OnDisable()
     {
 
@@ -315,10 +306,6 @@ public class BattleTurnExecutor : MonoBehaviour
         isPlayerInputReady = false;
         networkExecutionLocked = false;
         pendingNextTurnSwiftByCharacterId.Clear();
-
-        EnsureSkillListPanel();
-        if (skillListPanel != null)
-            skillListPanel.CloseForBattleExecution();
 
         if (moveGhostPreview != null)
             moveGhostPreview.ClearAll();
@@ -452,10 +439,6 @@ public class BattleTurnExecutor : MonoBehaviour
         MonsterUnit.ClearMonsterInfoSelection();
         MonsterUnit.HideAllTemporaryHUDs();
 
-        EnsureSkillListPanel();
-        if (skillListPanel != null)
-            skillListPanel.CloseForBattleExecution();
-
         HideBattleExecutionUiUntilPlayerTurn();
 
         isExecuting = true;
@@ -506,10 +489,6 @@ public class BattleTurnExecutor : MonoBehaviour
 
         MonsterUnit.ClearMonsterInfoSelection();
         MonsterUnit.HideAllTemporaryHUDs();
-
-        EnsureSkillListPanel();
-        if (skillListPanel != null)
-            skillListPanel.CloseForBattleExecution();
 
         HideBattleExecutionUiUntilPlayerTurn();
 
@@ -882,10 +861,6 @@ public class BattleTurnExecutor : MonoBehaviour
                 }
             }
 
-            EnsureSkillListPanel();
-            if (CanAcceptPlayerInput && skillListPanel != null)
-                skillListPanel.ReopenAfterBattleExecution();
-
             // Back2 changes only when the next player turn is actually ready,
             // not when the end-turn input is pressed or the counter increments internally.
             if (CanAcceptPlayerInput)
@@ -1122,10 +1097,6 @@ public class BattleTurnExecutor : MonoBehaviour
                     timelineController.StopTimelineMotionEffects();
                 }
             }
-
-            EnsureSkillListPanel();
-            if (CanAcceptPlayerInput && skillListPanel != null)
-                skillListPanel.ReopenAfterBattleExecution();
 
             if (CanAcceptPlayerInput && timelineController != null)
                 timelineController.StopTimelineMotionEffects();

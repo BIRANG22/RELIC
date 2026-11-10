@@ -206,13 +206,6 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
             return;
         }
 
-        SkillListPanel skillListPanel = Object.FindFirstObjectByType<SkillListPanel>(
-            FindObjectsInactive.Include
-        );
-
-        if (skillListPanel != null)
-            skillListPanel.CloseForBattleExecution();
-
         MoveGhostPreview moveGhostPreview = Object.FindFirstObjectByType<MoveGhostPreview>(
             FindObjectsInactive.Include
         );

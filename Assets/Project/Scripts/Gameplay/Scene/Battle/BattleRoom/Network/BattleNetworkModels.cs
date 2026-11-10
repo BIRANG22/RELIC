@@ -3,16 +3,17 @@ using Relic.Gameplay.Data;
 
 public enum BattleNetworkCommandType
 {
-    None,
-    SelectTimelineSlot,
-    ClearTimelineSlotSelection,
-    ReservePlayerCommand,
-    RemovePlayerCommand,
-    SetReady,
-    EquipRelic,
-    UnequipRelic,
-    EquipSkill,
-    UnequipSkill
+    None = 0,
+    SelectTimelineSlot = 1,
+    ClearTimelineSlotSelection = 2,
+    ReservePlayerCommand = 3,
+    RemovePlayerCommand = 4,
+    SetReady = 5,
+    EquipRelic = 6,
+    UnequipRelic = 7,
+    EquipSkill = 8,
+    UnequipSkill = 9,
+    MovePlayerCommand = 10
 }
 
 public enum BattleNetworkRejectReason
@@ -36,6 +37,8 @@ public sealed class BattleNetworkCommand
     public int commandType;
     public int slotIndex = -1;
     public int commandIndex = -1;
+    public int destinationSlotIndex = -1;
+    public int destinationCommandIndex = -1;
     public string characterId;
     public string itemId;
     public string skillId;
@@ -47,6 +50,8 @@ public sealed class BattleNetworkCommand
     public int moveDistancePerCost = 1;
     public int[] rangeGridIndices;
     public int[] targetGridIndices;
+    public int[] moveStepX;
+    public int[] moveStepY;
     public bool ready;
     public long knownRevision;
 }
@@ -144,6 +149,8 @@ public sealed class BattleNetworkPlayerCommandSnapshot
     public int moveDistancePerCost = 1;
     public int[] rangeGridIndices;
     public int[] targetGridIndices;
+    public int[] moveStepX;
+    public int[] moveStepY;
 }
 
 [Serializable]

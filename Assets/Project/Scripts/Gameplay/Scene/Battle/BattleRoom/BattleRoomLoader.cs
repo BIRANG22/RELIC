@@ -40,13 +40,8 @@ public class BattleRoomLoader : MonoBehaviour
     [Header("Character Panel")]
     [SerializeField] private BattleCharacterPanelUI battleCharacterPanel;
 
-    [Header("Skill List")]
-    [SerializeField] private SkillListPanel skillListPanel;
-    [SerializeField] private bool openSelectedCharacterSkillListWhenInputReady = true;
-
     [Header("Keyboard Input")]
     [SerializeField] private bool enableCharacterNumberSelectInput = true;
-    [SerializeField] private bool enableSkillPanelToggleInput = true;
 
     [Header("Monster Turn")]
     [SerializeField] private BattleMonsterTurnPlanner monsterTurnPlanner;
@@ -82,7 +77,6 @@ public class BattleRoomLoader : MonoBehaviour
     private readonly List<PlayerHUDSlot> playerHudNumberOrder = new();
     private readonly List<CharacterRuntimeData> playerPartyRuntimes = new();
     private CharacterRuntimeData selectedPlayerRuntime;
-    private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
     private Coroutine initialMonsterPlanRoutine;
     private bool restoringResolvedBattleRoomEntryState;
@@ -208,33 +202,6 @@ public class BattleRoomLoader : MonoBehaviour
         }
     }
 
-    private void HandleSkillPanelToggleInput()
-    {
-        if (TutorialBattleSequence.IsPresentationRunning)
-            return;
-        if (!enableSkillPanelToggleInput)
-            return;
-
-        if (!Input.GetKeyDown(KeyCode.Tab))
-            return;
-
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null)
-            return;
-
-        if (IsTypingInputFieldSelected())
-            return;
-
-        if (turnExecutor == null)
-            EnsureTurnExecutor();
-
-        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
-            return;
-
-        ToggleSkillListForSelectedPlayer();
-    }
-
     private void HandleCharacterNumberSelectInput()
     {
         if (!enableCharacterNumberSelectInput)
@@ -305,89 +272,6 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         SelectPlayerHUD(runtimeData);
-    }
-
-    /// <summary>
-    /// SkillButton의 OnClick에서 호출합니다.
-    /// Tab 키와 동일하게 현재 선택된 캐릭터의 스킬 목록을 열거나 닫습니다.
-    /// </summary>
-    public void ToggleSkillListPanelFromButton()
-    {
-        if (UIPanelButton.IsMenuPanelOpen)
-            return;
-
-        if (turnExecutor == null)
-            EnsureTurnExecutor();
-
-        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
-            return;
-
-        ToggleSkillListForSelectedPlayer();
-    }
-
-    private void ToggleSkillListForSelectedPlayer()
-    {
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null)
-            return;
-
-        if (skillListPanel.IsOpen())
-        {
-            skillListPanel.Close();
-            return;
-        }
-
-        CharacterRuntimeData runtimeData = GetSelectedOrFirstPlayerRuntime();
-
-        if (runtimeData == null)
-            return;
-
-        OpenSkillListForPlayer(runtimeData);
-    }
-
-    private void OpenSelectedCharacterSkillListWhenInputReady()
-    {
-        if (!openSelectedCharacterSkillListWhenInputReady)
-            return;
-
-        if (openSelectedSkillListWhenReadyRoutine != null)
-            StopCoroutine(openSelectedSkillListWhenReadyRoutine);
-
-        openSelectedSkillListWhenReadyRoutine = StartCoroutine(OpenSelectedCharacterSkillListWhenInputReadyRoutine());
-    }
-
-    private IEnumerator OpenSelectedCharacterSkillListWhenInputReadyRoutine()
-    {
-        // 첫 전투방은 HUD/캐릭터 선택/스킬 패널 참조가 같은 프레임에 준비될 수 있어서
-        // 한 프레임 기다린 뒤 다시 확인해야 자동 오픈이 안정적으로 동작합니다.
-        yield return null;
-
-        EnsureSkillListPanel();
-        EnsureTurnExecutor();
-
-        if (skillListPanel == null)
-        {
-            openSelectedSkillListWhenReadyRoutine = null;
-            yield break;
-        }
-
-        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
-        {
-            openSelectedSkillListWhenReadyRoutine = null;
-            yield break;
-        }
-
-        CharacterRuntimeData runtimeData = GetSelectedOrFirstPlayerRuntime();
-
-        if (runtimeData == null)
-        {
-            openSelectedSkillListWhenReadyRoutine = null;
-            yield break;
-        }
-
-        OpenSkillListForPlayer(runtimeData);
-        openSelectedSkillListWhenReadyRoutine = null;
     }
 
     private void EnsureBattleCharacterPanel()
@@ -473,14 +357,6 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         return null;
-    }
-
-    private void EnsureSkillListPanel()
-    {
-        if (skillListPanel != null)
-            return;
-
-        skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
     }
 
     private CharacterRuntimeData GetSelectedOrFirstPlayerRuntime()
@@ -626,8 +502,6 @@ public class BattleRoomLoader : MonoBehaviour
 
         isLoading = false;
 
-        if (skillListPanel != null)
-            skillListPanel.Close();
     }
 
     private IEnumerator LoadBattleWhenDataManagerReady()
@@ -697,7 +571,6 @@ public class BattleRoomLoader : MonoBehaviour
             PrintPartyData();
         }
 
-        RegisterSkillListKeepOpenRoots();
         PrepareCameraForBattleEntry();
 
         ResetPartyCurrentGridToSpawn();
@@ -1044,8 +917,6 @@ public class BattleRoomLoader : MonoBehaviour
         turnEndCostBeforeEffects.Clear();
         RefreshPlayerHUDs();
 
-        if (skillListPanel != null)
-            skillListPanel.Refresh();
     }
 
     private int GetStatusStack(
@@ -1071,17 +942,6 @@ public class BattleRoomLoader : MonoBehaviour
     {
         EnsureBattleCharacterPanel();
         battleCharacterPanel?.SetParty(playerPartyRuntimes);
-    }
-
-    private void RegisterSkillListKeepOpenRoots()
-    {
-        if (skillListPanel == null)
-            return;
-
-        skillListPanel.ClearRuntimeKeepOpenClickRoots();
-
-        if (playerHudRoot is RectTransform playerHudRootRect)
-            skillListPanel.RegisterKeepOpenClickRoot(playerHudRootRect);
     }
 
     // Restore only the already-completed battle's character presentation.
@@ -1231,36 +1091,6 @@ public class BattleRoomLoader : MonoBehaviour
         playerHudSlots.Add(hud);
         playerHudNumberOrder.Add(hud);
 
-        RegisterPlayerHudAsSkillListKeepOpenRoot(hud);
-    }
-
-    private void RegisterPlayerHudAsSkillListKeepOpenRoot(PlayerHUDSlot hud)
-    {
-        if (hud == null)
-            return;
-
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null)
-            return;
-
-        RectTransform hudRect = hud.GetComponent<RectTransform>();
-
-        if (hudRect != null)
-            skillListPanel.RegisterKeepOpenClickRoot(hudRect);
-    }
-
-    private void RegisterAllPlayerHudsAsSkillListKeepOpenRoots()
-    {
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null)
-            return;
-
-        RemoveNullPlayerHudSlots();
-
-        for (int i = 0; i < playerHudSlots.Count; i++)
-            RegisterPlayerHudAsSkillListKeepOpenRoot(playerHudSlots[i]);
     }
 
     private Transform GetPlayerHudPositionAnchor(int displayIndex)
@@ -1368,34 +1198,6 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         SelectPlayerHUD(runtimeData);
-    }
-
-    private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData)
-    {
-        OpenSkillListForPlayer(runtimeData, null);
-    }
-
-    private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData, RectTransform hudRect)
-    {
-        if (runtimeData != null &&
-            !SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(runtimeData.CharacterId))
-        {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.other_player_character"));
-            return;
-        }
-
-        SelectPlayerHUD(runtimeData);
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null)
-            return;
-
-        RegisterAllPlayerHudsAsSkillListKeepOpenRoots();
-
-        if (hudRect != null)
-            skillListPanel.RegisterKeepOpenClickRoot(hudRect);
-
-        skillListPanel.Open(runtimeData, hudRect);
     }
 
     private void HandleTimelineCharacterSelectionChanged(CharacterRuntimeData runtimeData)
@@ -1811,8 +1613,6 @@ public class BattleRoomLoader : MonoBehaviour
             timelineController?.RefocusCurrentSelectedCharacterWhenInputReady();
             Debug.Log("[BattleRoomLoader] Battle input ready true after initial monster plan");
         }
-
-        OpenSelectedCharacterSkillListWhenInputReady();
 
         if (restoringResolvedBattleRoomEntryState)
         {
@@ -2255,12 +2055,6 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (battleCharacterPanel != null)
             battleCharacterPanel.Bind(null);
-
-        if (skillListPanel != null)
-        {
-            skillListPanel.Close();
-            skillListPanel.ClearRuntimeKeepOpenClickRoots();
-        }
 
         ClearPlayerHUDSlotsOnly();
         ClearCharacterWorldHUDSlots();

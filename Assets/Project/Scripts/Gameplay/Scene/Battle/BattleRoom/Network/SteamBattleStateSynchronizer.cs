@@ -201,6 +201,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         BattleTimelineController controller,
         int slotIndex,
         PlayerReservedCommand command,
+        int insertionIndex,
         out bool accepted)
     {
         accepted = false;
@@ -214,7 +215,31 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return false;
         }
 
-        accepted = Instance.RequestPlayerCommandReservation(slotIndex, command);
+        accepted = Instance.RequestPlayerCommandReservation(slotIndex, command, insertionIndex);
+        return true;
+    }
+
+    public static bool TryHandleMovePlayerCommand(
+        BattleTimelineController controller,
+        int sourceSlotIndex,
+        int sourceCommandIndex,
+        int destinationSlotIndex,
+        int destinationCommandIndex,
+        out bool accepted)
+    {
+        accepted = false;
+        if (Instance == null || !Instance.IsNetworkBattleActive ||
+            Instance.applyingNetworkTimeline || controller == null ||
+            Instance.timelineController != controller)
+        {
+            return false;
+        }
+
+        accepted = Instance.RequestMovePlayerCommand(
+            sourceSlotIndex,
+            sourceCommandIndex,
+            destinationSlotIndex,
+            destinationCommandIndex);
         return true;
     }
 
@@ -457,7 +482,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 #endif
     }
 
-    private bool RequestPlayerCommandReservation(int slotIndex, PlayerReservedCommand command)
+    private bool RequestPlayerCommandReservation(int slotIndex, PlayerReservedCommand command, int insertionIndex)
     {
 #if STEAMWORKS_NET
         if (command == null || !CanLocalPlayerControlCharacter(command.CharacterId))
@@ -465,6 +490,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         BattleNetworkCommand networkCommand =
             CreatePlayerCommand(BattleNetworkCommandType.ReservePlayerCommand, slotIndex, command);
+        networkCommand.commandIndex = insertionIndex;
 
         if (!SendOrApplyCommand(networkCommand, true))
             return false;
@@ -472,6 +498,42 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (!IsLocalHost())
             timelineController.ConfirmPlayerCommandFromNetwork(slotIndex, command);
 
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    private bool RequestMovePlayerCommand(
+        int sourceSlotIndex,
+        int sourceCommandIndex,
+        int destinationSlotIndex,
+        int destinationCommandIndex)
+    {
+#if STEAMWORKS_NET
+        if (!TryGetPlayerCommand(sourceSlotIndex, sourceCommandIndex, out PlayerReservedCommand command) ||
+            !CanLocalPlayerControlCharacter(command.CharacterId))
+        {
+            return false;
+        }
+
+        BattleNetworkCommand networkCommand = CreateCommand(BattleNetworkCommandType.MovePlayerCommand);
+        networkCommand.slotIndex = sourceSlotIndex;
+        networkCommand.commandIndex = sourceCommandIndex;
+        networkCommand.destinationSlotIndex = destinationSlotIndex;
+        networkCommand.destinationCommandIndex = destinationCommandIndex;
+        networkCommand.characterId = command.CharacterId;
+        networkCommand.skillId = command.SkillId;
+        networkCommand.direction = (int)command.Direction;
+        networkCommand.selectedGridIndex = command.SelectedGridIndex;
+        if (!SendOrApplyCommand(networkCommand, true))
+            return false;
+
+        if (!IsLocalHost())
+            timelineController.TryMovePlayerReservationFromNetwork(
+                command,
+                destinationSlotIndex,
+                destinationCommandIndex);
         return true;
 #else
         return false;
@@ -544,6 +606,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         dto.moveDistancePerCost = command.MoveDistancePerCost;
         dto.rangeGridIndices = ToArray(command.RangeGridIndices);
         dto.targetGridIndices = ToArray(command.TargetGridIndices);
+        WriteMoveSteps(command.VisualMoveSteps, out dto.moveStepX, out dto.moveStepY);
         return dto;
     }
 
@@ -691,6 +754,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             BattleNetworkCommandType.ClearTimelineSlotSelection => ApplyHostClearSlotSelection(requester),
             BattleNetworkCommandType.ReservePlayerCommand => ApplyHostPlayerReservation(requester, command),
             BattleNetworkCommandType.RemovePlayerCommand => ApplyHostRemovePlayerCommand(requester, command),
+            BattleNetworkCommandType.MovePlayerCommand => ApplyHostMovePlayerCommand(requester, command),
             BattleNetworkCommandType.SetReady => ApplyHostReady(requester, command),
             BattleNetworkCommandType.EquipRelic => ApplyHostEquipmentCommand(requester, command),
             BattleNetworkCommandType.UnequipRelic => ApplyHostEquipmentCommand(requester, command),
@@ -756,11 +820,63 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (playerCommand == null)
             return BattleNetworkRejectReason.InvalidCommand;
 
-        bool accepted =
-            timelineController != null &&
-            timelineController.ConfirmPlayerCommandFromNetwork(command.slotIndex, playerCommand, true);
+        bool accepted = false;
+        try
+        {
+            if (timelineController != null && command.commandIndex >= 0)
+                timelineController.SetPendingPlayerInsertion(command.slotIndex, command.commandIndex);
+
+            accepted = timelineController != null &&
+                timelineController.ConfirmPlayerCommandFromNetwork(command.slotIndex, playerCommand, true);
+        }
+        finally
+        {
+            timelineController?.ClearPendingPlayerInsertion();
+        }
 
         return accepted
+            ? BattleNetworkRejectReason.None
+            : BattleNetworkRejectReason.RejectedByService;
+    }
+
+    private BattleNetworkRejectReason ApplyHostMovePlayerCommand(
+        ulong requester,
+        BattleNetworkCommand command)
+    {
+        if (!IsValidTimelineSlot(command.destinationSlotIndex))
+            return BattleNetworkRejectReason.InvalidSlot;
+
+        if (IsSlotViewedByOtherMember(command.destinationSlotIndex, requester))
+            return BattleNetworkRejectReason.SlotViewedByOtherMember;
+
+        if (!TryGetPlayerCommand(
+                command.slotIndex,
+                command.commandIndex,
+                out PlayerReservedCommand reservedCommand))
+        {
+            return BattleNetworkRejectReason.InvalidCommand;
+        }
+
+        if (!SteamLobbySessionState.IsMemberAllowedToControlCharacter(
+                requester,
+                reservedCommand.CharacterId))
+        {
+            return BattleNetworkRejectReason.NotCharacterOwner;
+        }
+
+        if (!string.Equals(reservedCommand.SkillId, command.skillId, StringComparison.Ordinal) ||
+            reservedCommand.SelectedGridIndex != command.selectedGridIndex ||
+            (int)reservedCommand.Direction != command.direction)
+        {
+            return BattleNetworkRejectReason.InvalidCommand;
+        }
+
+        bool moved = timelineController != null &&
+            timelineController.TryMovePlayerReservationFromNetwork(
+                reservedCommand,
+                command.destinationSlotIndex,
+                command.destinationCommandIndex);
+        return moved
             ? BattleNetworkRejectReason.None
             : BattleNetworkRejectReason.RejectedByService;
     }
@@ -1623,7 +1739,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             snapshot.rangeGridIndices,
             snapshot.targetGridIndices,
             snapshot.moveOffsetX,
-            snapshot.moveOffsetY);
+            snapshot.moveOffsetY,
+            snapshot.moveStepX,
+            snapshot.moveStepY);
         return command;
     }
 
@@ -1646,7 +1764,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             command.rangeGridIndices,
             command.targetGridIndices,
             command.moveOffsetX,
-            command.moveOffsetY);
+            command.moveOffsetY,
+            command.moveStepX,
+            command.moveStepY);
     }
 
     private static void ApplyPlayerSelectionFields(
@@ -1656,7 +1776,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         int[] rangeGridIndices,
         int[] targetGridIndices,
         int moveOffsetX,
-        int moveOffsetY)
+        int moveOffsetY,
+        int[] moveStepX,
+        int[] moveStepY)
     {
         List<int> range = ToList(rangeGridIndices);
         List<int> targets = ToList(targetGridIndices);
@@ -1665,6 +1787,11 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (selectedGridIndex >= 0 && moveOffset != Vector2Int.zero)
         {
             command.SetSelectionResult(direction, selectedGridIndex, range, moveOffset);
+            List<Vector2Int> moveSteps = ReadMoveSteps(moveStepX, moveStepY);
+            command.SetVisualMoveResult(
+                selectedGridIndex,
+                moveOffset,
+                moveSteps.Count > 0 ? moveSteps : new List<Vector2Int> { moveOffset });
             return;
         }
 
@@ -1909,7 +2036,37 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             moveDistancePerCost = command.MoveDistancePerCost,
             rangeGridIndices = ToArray(command.RangeGridIndices),
             targetGridIndices = ToArray(command.TargetGridIndices)
+            ,moveStepX = ToMoveStepAxis(command.VisualMoveSteps, true)
+            ,moveStepY = ToMoveStepAxis(command.VisualMoveSteps, false)
         };
+    }
+
+    private static void WriteMoveSteps(
+        IReadOnlyList<Vector2Int> steps,
+        out int[] x,
+        out int[] y)
+    {
+        x = ToMoveStepAxis(steps, true);
+        y = ToMoveStepAxis(steps, false);
+    }
+
+    private static int[] ToMoveStepAxis(IReadOnlyList<Vector2Int> steps, bool useX)
+    {
+        if (steps == null || steps.Count == 0)
+            return Array.Empty<int>();
+        int[] result = new int[steps.Count];
+        for (int i = 0; i < steps.Count; i++)
+            result[i] = useX ? steps[i].x : steps[i].y;
+        return result;
+    }
+
+    private static List<Vector2Int> ReadMoveSteps(int[] x, int[] y)
+    {
+        List<Vector2Int> result = new();
+        int count = Mathf.Min(x != null ? x.Length : 0, y != null ? y.Length : 0);
+        for (int i = 0; i < count; i++)
+            result.Add(new Vector2Int(x[i], y[i]));
+        return result;
     }
 
     private BattleNetworkMonsterCommandSnapshot[] CreateMonsterCommandSnapshots(int slotIndex)

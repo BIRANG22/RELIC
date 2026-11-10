@@ -174,6 +174,8 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private string totalUsedCostFormat = "{0}";
 
     private int activeSlotIndex = -1;
+    private int pendingPlayerInsertionSlotIndex = -1;
+    private int pendingPlayerInsertionIndex = -1;
     private CharacterRuntimeData selectedCharacter;
     private CharacterRuntimeData lastSelectedCharacter;
     private SkillMasterData selectedSkill;
@@ -892,6 +894,44 @@ public class BattleTimelineController : MonoBehaviour
     {
         selectedSkill = skillData;
         TryStartSkillReservation();
+    }
+
+    public void SetPendingPlayerInsertion(int slotIndex, int playerIndex)
+    {
+        pendingPlayerInsertionSlotIndex = slotIndex;
+        pendingPlayerInsertionIndex = Mathf.Max(0, playerIndex);
+    }
+
+    public bool HasPendingPlayerInsertion =>
+        pendingPlayerInsertionSlotIndex >= 0 && pendingPlayerInsertionIndex >= 0;
+
+    public void ClearPendingPlayerInsertion()
+    {
+        pendingPlayerInsertionSlotIndex = -1;
+        pendingPlayerInsertionIndex = -1;
+    }
+
+    public bool HandleTimelineReservationDrop(
+        TimelineReservationDragContext context,
+        int slotIndex,
+        int playerInsertionIndex)
+    {
+        if (context == null)
+            return false;
+
+        if (context.IsExistingReservation)
+            return TryMovePlayerReservation(context.Command, slotIndex, playerInsertionIndex);
+
+        if (context.Runtime == null || context.Skill == null)
+            return false;
+
+        if (!SelectTimelineSlotFromNetwork(slotIndex, false, false))
+            return false;
+
+        SetPendingPlayerInsertion(slotIndex, playerInsertionIndex);
+        SelectCharacter(context.Runtime);
+        SelectSkill(context.Skill);
+        return true;
     }
 
     public bool ToggleMoveSkillSelection(
@@ -3249,8 +3289,10 @@ public class BattleTimelineController : MonoBehaviour
         bool hadSelection = selectedSkill != null ||
                             (playerSkillReservationController != null &&
                              playerSkillReservationController.IsSkillSelectionActive());
+        bool hadPendingInsertion = HasPendingPlayerInsertion;
+        ClearPendingPlayerInsertion();
         if (!hadSelection)
-            return false;
+            return hadPendingInsertion;
 
         playerSkillReservationController?.ClearPreview();
         selectedSkill = null;
@@ -3276,6 +3318,7 @@ public class BattleTimelineController : MonoBehaviour
             playerSkillReservationController.ClearPreview();
 
         selectedSkill = null;
+        ClearPendingPlayerInsertion();
     }
 
     private void TryStartSkillReservation()
@@ -3395,6 +3438,9 @@ public class BattleTimelineController : MonoBehaviour
                 this,
                 slotIndex,
                 command,
+                pendingPlayerInsertionSlotIndex == slotIndex
+                    ? pendingPlayerInsertionIndex
+                    : -1,
                 out bool networkAccepted))
         {
             return networkAccepted;
@@ -3441,6 +3487,9 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+        bool hasExplicitInsertion =
+            pendingPlayerInsertionSlotIndex == slotIndex &&
+            pendingPlayerInsertionIndex >= 0;
 
         if (slot == null)
         {
@@ -3462,7 +3511,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
+        if (!hasExplicitInsertion && TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
         {
             if (mergeSucceeded)
             {
@@ -3490,7 +3539,9 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        bool added = slot.AddCommand(command);
+        bool added = hasExplicitInsertion
+            ? slot.InsertCommand(pendingPlayerInsertionIndex, command)
+            : slot.AddCommand(command);
 
         if (!added)
         {
@@ -3510,6 +3561,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
         selectedSkill = null;
+        ClearPendingPlayerInsertion();
 
         return true;
     }
@@ -4989,6 +5041,203 @@ public class BattleTimelineController : MonoBehaviour
             RemoveCommand(slotIndex, commandIndex);
             return;
         }
+    }
+
+    public bool TryMovePlayerReservation(
+        PlayerReservedCommand command,
+        int destinationSlotIndex,
+        int destinationPlayerIndex)
+    {
+        return TryMovePlayerReservationInternal(
+            command,
+            destinationSlotIndex,
+            destinationPlayerIndex,
+            true,
+            false);
+    }
+
+    public bool TryMovePlayerReservationFromNetwork(
+        PlayerReservedCommand command,
+        int destinationSlotIndex,
+        int destinationPlayerIndex)
+    {
+        return TryMovePlayerReservationInternal(
+            command,
+            destinationSlotIndex,
+            destinationPlayerIndex,
+            false,
+            true);
+    }
+
+    private bool TryMovePlayerReservationInternal(
+        PlayerReservedCommand command,
+        int destinationSlotIndex,
+        int destinationPlayerIndex,
+        bool allowNetworkDispatch,
+        bool ignoreNetworkViewedSlotLocks)
+    {
+        if (command == null || reserveSlots == null ||
+            destinationSlotIndex < 0 || destinationSlotIndex >= reserveSlots.Length ||
+            IsPlayerSlotLocked(destinationSlotIndex, ignoreNetworkViewedSlotLocks))
+        {
+            return false;
+        }
+
+        int sourceSlotIndex = -1;
+        int sourceCommandIndex = -1;
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI candidate = reserveSlots[slotIndex];
+            int commandIndex = candidate != null ? candidate.IndexOfCommand(command) : -1;
+            if (commandIndex < 0)
+                continue;
+
+            sourceSlotIndex = slotIndex;
+            sourceCommandIndex = commandIndex;
+            break;
+        }
+
+        if (sourceSlotIndex < 0)
+            return false;
+
+        if (IsPlayerSlotLocked(sourceSlotIndex, ignoreNetworkViewedSlotLocks) ||
+            !string.IsNullOrEmpty(GetEquipmentReservationBlockReason(command, destinationSlotIndex)))
+        {
+            return false;
+        }
+
+        if (allowNetworkDispatch &&
+            SteamBattleStateSynchronizer.TryHandleMovePlayerCommand(
+                this,
+                sourceSlotIndex,
+                sourceCommandIndex,
+                destinationSlotIndex,
+                destinationPlayerIndex,
+                out bool networkAccepted))
+        {
+            return networkAccepted;
+        }
+
+        ReserveTurnSlotUI sourceSlot = reserveSlots[sourceSlotIndex];
+        ReserveTurnSlotUI destinationSlot = reserveSlots[destinationSlotIndex];
+        if (sourceSlot == null || destinationSlot == null)
+            return false;
+
+        List<PlayerReservedCommand> originalSourceCommands = new(sourceSlot.Commands);
+        List<PlayerReservedCommand> originalDestinationCommands =
+            sourceSlotIndex == destinationSlotIndex
+                ? null
+                : new List<PlayerReservedCommand>(destinationSlot.Commands);
+
+        if (sourceSlotIndex == destinationSlotIndex)
+        {
+            List<PlayerReservedCommand> reordered =
+                TimelineReservationLayoutUtility.BuildReorderedList(
+                    sourceSlot.Commands,
+                    command,
+                    destinationPlayerIndex);
+            if (reordered == null)
+                return false;
+
+            sourceSlot.Clear();
+            for (int i = 0; i < reordered.Count; i++)
+                sourceSlot.AddCommand(reordered[i]);
+        }
+        else
+        {
+            if (!destinationSlot.CanAcceptCharacter(command.UserRuntime) ||
+                !destinationSlot.CanAddCommand(command) ||
+                !CanAddPlayerCommandToSlot(
+                    destinationSlotIndex,
+                    command.TimelineEntryCost,
+                    ignoreNetworkViewedSlotLocks))
+            {
+                return false;
+            }
+
+            if (!sourceSlot.RemoveCommandAt(sourceCommandIndex, out PlayerReservedCommand removed) ||
+                !ReferenceEquals(removed, command))
+            {
+                return false;
+            }
+
+            if (!destinationSlot.InsertCommand(destinationPlayerIndex, command))
+            {
+                sourceSlot.InsertCommand(sourceCommandIndex, command);
+                return false;
+            }
+        }
+
+        RecalculateAllReservedCosts();
+        if (!AreAllReservedCommandTotalsAffordable())
+        {
+            RestoreSlotCommands(sourceSlot, originalSourceCommands);
+            if (originalDestinationCommands != null)
+                RestoreSlotCommands(destinationSlot, originalDestinationCommands);
+            RecalculateAllReservedCosts();
+            return false;
+        }
+
+        RemovePlayerReservationHistoryEntries(command);
+        RecordPlayerReservation(destinationSlotIndex, command);
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+        return true;
+    }
+
+    private static void RestoreSlotCommands(
+        ReserveTurnSlotUI slot,
+        IReadOnlyList<PlayerReservedCommand> commands)
+    {
+        if (slot == null)
+            return;
+        slot.Clear();
+        if (commands == null)
+            return;
+        for (int i = 0; i < commands.Count; i++)
+            slot.AddCommand(commands[i]);
+    }
+
+    private bool AreAllReservedCommandTotalsAffordable()
+    {
+        List<CharacterRuntimeData> runtimes = CollectReservedRuntimes();
+        for (int runtimeIndex = 0; runtimeIndex < runtimes.Count; runtimeIndex++)
+        {
+            CharacterRuntimeData runtime = runtimes[runtimeIndex];
+            int hp = 0;
+            int cost = 0;
+            int resource = 0;
+            int shield = 0;
+            for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+            {
+                IReadOnlyList<PlayerReservedCommand> commands = reserveSlots[slotIndex]?.Commands;
+                if (commands == null)
+                    continue;
+                for (int commandIndex = 0; commandIndex < commands.Count; commandIndex++)
+                {
+                    PlayerReservedCommand reserved = commands[commandIndex];
+                    if (reserved == null || reserved.UserRuntime != runtime)
+                        continue;
+                    if (!reserved.IsSkillCostResolved)
+                        return false;
+                    hp += reserved.HPCost;
+                    cost += reserved.Cost;
+                    resource += reserved.ResourceCost;
+                    shield += reserved.ShieldCost;
+                }
+            }
+
+            if ((hp > 0 && hp >= runtime.CurrentHP) ||
+                cost > runtime.CurrentCost ||
+                resource > runtime.CurrentResource ||
+                shield > runtime.CurrentShield)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     public int CancelMoveAndAttackReservations(CharacterRuntimeData runtime)

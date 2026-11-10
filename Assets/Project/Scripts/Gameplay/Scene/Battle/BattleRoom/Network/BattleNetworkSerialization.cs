@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class BattleNetworkSerialization
 {
-    public const int ProtocolVersion = 3;
+    public const int ProtocolVersion = 4;
 
     public static bool IsSupportedProtocolVersion(int version)
     {

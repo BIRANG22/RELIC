@@ -17,11 +17,6 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private MovePathPreview movePathPreview;
     [SerializeField] private BattleTimelineController timelineController;
 
-    [Header("Skill List Panel")]
-    [SerializeField] private SkillListPanel skillListPanel;
-    [SerializeField] private bool keepSkillListOpenAfterReservationClick = true;
-    [SerializeField] private int keepSkillListOpenIgnoreFrames = 1;
-
     [Header("Reservation SFX")]
     [Tooltip("스킬 또는 이동 행동이 타임라인에 정상 등록되었을 때 재생할 효과음입니다.")]
     [SerializeField] private string reservationConfirmSfxId = "SkillReserve";
@@ -285,53 +280,12 @@ public class PlayerSkillReservationController : MonoBehaviour
             ClearPreview();
     }
 
-    private void EnsureSkillListPanel()
-    {
-        if (skillListPanel != null)
-            return;
-
-        skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
-    }
-
     private void EnsureTimelineController()
     {
         if (timelineController != null)
             return;
 
         timelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
-    }
-
-    private void KeepSkillListOpenForThisClick()
-    {
-        if (!keepSkillListOpenAfterReservationClick)
-            return;
-
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null)
-            return;
-
-        skillListPanel.IgnoreOutsideCloseForFrames(keepSkillListOpenIgnoreFrames);
-    }
-
-    private void RestoreHoveredSkillRangeAfterReservation()
-    {
-        EnsureSkillListPanel();
-
-        if (skillListPanel == null)
-            return;
-
-        StartCoroutine(RestoreHoveredSkillRangeAfterReservationRoutine());
-    }
-
-    private IEnumerator RestoreHoveredSkillRangeAfterReservationRoutine()
-    {
-        // 예약 완료 시 기존 범위가 지워진 뒤 UI 클릭 처리가 끝난 다음 프레임에
-        // 마우스가 여전히 같은 스킬 위에 있다면 호버 범위를 다시 표시합니다.
-        yield return null;
-
-        EnsureSkillListPanel();
-        skillListPanel?.RestoreSelectedSkillHoverRangeIfPointerOver();
     }
 
     public void ShowSkillHoverRangePreview(
@@ -1782,7 +1736,6 @@ public class PlayerSkillReservationController : MonoBehaviour
         );
 
         bool confirmed = ConfirmCommand(command);
-        KeepSkillListOpenForThisClick();
 
         if (!confirmed || !RefreshContinuousGridSelection())
         {
@@ -1836,12 +1789,8 @@ public class PlayerSkillReservationController : MonoBehaviour
             );
         }
 
-        bool confirmed = ConfirmCommand(command);
-        KeepSkillListOpenForThisClick();
+        ConfirmCommand(command);
         ClearPreview();
-
-        if (confirmed)
-            RestoreHoveredSkillRangeAfterReservation();
     }
 
     private static bool IsAllRangeSkill(
@@ -1876,12 +1825,8 @@ public class PlayerSkillReservationController : MonoBehaviour
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
         command.SetDirectionResult(direction, rangeIndices, rangeIndices);
 
-        bool confirmed = ConfirmCommand(command);
-        KeepSkillListOpenForThisClick();
+        ConfirmCommand(command);
         ClearPreview();
-
-        if (confirmed)
-            RestoreHoveredSkillRangeAfterReservation();
     }
 
     private int GetDirectionalAttackPreviewOriginGridIndex(
@@ -2052,7 +1997,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
             bool selfFlipConfirmed = ConfirmCommands(selfFlipCommands);
 
-            KeepSkillListOpenForThisClick();
             // A completed move is a single action selection. Do not keep move mode active.
             if (selfFlipConfirmed)
                 ClearPreview();
@@ -2088,7 +2032,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         bool confirmed = ConfirmCommands(commands);
 
-        KeepSkillListOpenForThisClick();
         // After a successful move reservation, exit move selection immediately.
         // An invalid/failed move keeps its selection so the player can retry.
         if (confirmed)
@@ -3336,12 +3279,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
 
-        bool confirmed = ConfirmCommand(command);
-        KeepSkillListOpenForThisClick();
+        ConfirmCommand(command);
         ClearPreview();
-
-        if (confirmed)
-            RestoreHoveredSkillRangeAfterReservation();
     }
 
 

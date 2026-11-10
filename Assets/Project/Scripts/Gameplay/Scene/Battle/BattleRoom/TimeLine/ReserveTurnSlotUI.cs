@@ -190,6 +190,20 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         return true;
     }
 
+    public bool InsertCommand(int index, PlayerReservedCommand command)
+    {
+        if (command == null || !CanAcceptCharacter(command.UserRuntime) || !CanAddCommand(command))
+            return false;
+
+        commands.Insert(Mathf.Clamp(index, 0, commands.Count), command);
+        return true;
+    }
+
+    public int IndexOfCommand(PlayerReservedCommand command)
+    {
+        return command != null ? commands.IndexOf(command) : -1;
+    }
+
     public void Clear()
     {
         commands.Clear();
