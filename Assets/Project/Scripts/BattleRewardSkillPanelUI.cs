@@ -1857,7 +1857,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                 : skill.SkillType == SkillType.Buff
                     ? GameLocalization.Get(skill.IsFastSkill == 1 ? "common.fast_buff" : "common.buff")
                     : skill.SkillType == SkillType.Debuff
-                        ? GameLocalization.Get("common.debuff")
+                        ? GameLocalization.Get(skill.IsFastSkill == 1 ? "common.fast_debuff" : "common.debuff")
                         : skill.SkillType == SkillType.Attack
                             ? GameLocalization.Get(skill.IsFastSkill == 1 ? "common.fast_attack" : "common.attack")
                             : GameLocalization.Get("common.passive");

@@ -115,6 +115,18 @@ MonoBehaviour:
     m_Key: common.confirm_quit_game
     m_Metadata:
       m_Items: []
+  - m_Id: 32962961515339776
+    m_Key: common.fast_attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962961553088512
+    m_Key: common.fast_buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962961553088513
+    m_Key: common.fast_debuff
+    m_Metadata:
+      m_Items: []
   - m_Id: 41387432259100720
     m_Key: lobby.combine
     m_Metadata:

@@ -1844,6 +1844,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return GameLocalization.Get("common.passive");
         if (skill.IsFastSkill == 1 && skill.SkillType == SkillType.Buff)
             return GameLocalization.Get("common.fast_buff");
+        if (skill.IsFastSkill == 1 && skill.SkillType == SkillType.Debuff)
+            return GameLocalization.Get("common.fast_debuff");
         if (skill.IsFastSkill == 1 && skill.SkillType == SkillType.Attack)
             return GameLocalization.Get("common.fast_attack");
         switch (skill.SkillType)

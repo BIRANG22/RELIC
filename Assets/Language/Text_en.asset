@@ -6706,6 +6706,18 @@ MonoBehaviour:
     m_Localized: Times Incapacitated
     m_Metadata:
       m_Items: []
+  - m_Id: 32962961515339776
+    m_Localized: Priority Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962961553088512
+    m_Localized: Priority Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962961553088513
+    m_Localized: Priority Debuff
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

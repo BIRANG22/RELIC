@@ -60,7 +60,8 @@ namespace Relic.Gameplay.Data
                     data.CountRate,
                     data.ScalingType,
                     false,
-                    data.EffectIds);
+                    data.EffectIds,
+                    data.ResourceCostValue);
         }
 
         /// <summary>Returns the locale-specific template before UI-owned token and RichText formatting.</summary>

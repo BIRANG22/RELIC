@@ -30,7 +30,7 @@ namespace Relic.Gameplay.Data
                 match => CalculateFocusCostFormula(runtime, payAmount, match).ToString()
             );
 
-            return SkillDescriptionFormatter.Format(formatted, skill?.ValueRate, skill?.CountRate, skill?.ScalingType, false, skill?.EffectIds);
+            return SkillDescriptionFormatter.Format(formatted, skill?.ValueRate, skill?.CountRate, skill?.ScalingType, false, skill?.EffectIds, payAmount);
         }
 
         public static string BuildSkillDescription(
