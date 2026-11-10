@@ -159,6 +159,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 command.SetRangeOriginGridIndex(saved.RangeOriginGridIndex);
                 command.SetRangeOriginCasterGridIndex(saved.RangeOriginCasterGridIndex);
                 command.SetPortalMove(saved.IsPortalMove);
+                command.SetAttackSpatialPolicy(
+                    MonsterAttackSpatialPolicyResolver.ResolveSaved(
+                        saved.AttackSpatialPolicy,
+                        skillData.RangeId));
                 command.SetUseRequestedMoveOffsetForExecution(saved.UseRequestedMoveOffsetForExecution);
 
                 if (saved.ReservedDamage > 0)

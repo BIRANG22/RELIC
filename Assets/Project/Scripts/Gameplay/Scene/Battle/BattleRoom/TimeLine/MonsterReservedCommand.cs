@@ -2,6 +2,36 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
+public enum MonsterAttackSpatialPolicy
+{
+    ActorRelative = 0,
+    LockedTargetGrid = 1
+}
+
+public static class MonsterAttackSpatialPolicyResolver
+{
+    private const string LockedTargetRangePrefix = "Range_m_";
+
+    public static MonsterAttackSpatialPolicy Resolve(string rangeId)
+    {
+        return !string.IsNullOrWhiteSpace(rangeId) &&
+               rangeId.StartsWith(LockedTargetRangePrefix, System.StringComparison.OrdinalIgnoreCase)
+            ? MonsterAttackSpatialPolicy.LockedTargetGrid
+            : MonsterAttackSpatialPolicy.ActorRelative;
+    }
+
+    public static MonsterAttackSpatialPolicy ResolveSaved(int serializedPolicy, string rangeId)
+    {
+        MonsterAttackSpatialPolicy dataPolicy = Resolve(rangeId);
+        if (dataPolicy == MonsterAttackSpatialPolicy.LockedTargetGrid)
+            return dataPolicy;
+
+        return serializedPolicy == (int)MonsterAttackSpatialPolicy.LockedTargetGrid
+            ? MonsterAttackSpatialPolicy.LockedTargetGrid
+            : MonsterAttackSpatialPolicy.ActorRelative;
+    }
+}
+
 public static class BattleAttackExecutionDirectionPolicy
 {
     public static BattleDirection ResolveExecutionDirection(
@@ -12,9 +42,43 @@ public static class BattleAttackExecutionDirectionPolicy
         return liveDirection;
     }
 
-    public static bool ShouldPreserveMonsterTargetGrid(bool hasExplicitRangeResult)
+    public static bool ShouldPreserveMonsterTargetGrid(MonsterAttackSpatialPolicy spatialPolicy)
     {
-        return hasExplicitRangeResult;
+        return spatialPolicy == MonsterAttackSpatialPolicy.LockedTargetGrid;
+    }
+
+    public static int ResolveExecutionOriginGridIndex(
+        MonsterAttackSpatialPolicy spatialPolicy,
+        int liveOriginGridIndex,
+        int reservedOriginGridIndex)
+    {
+        return ShouldPreserveMonsterTargetGrid(spatialPolicy)
+            ? reservedOriginGridIndex
+            : liveOriginGridIndex;
+    }
+}
+
+public static class BattleMonsterCommandRangeSnapshotPolicy
+{
+    public static void Restore(
+        MonsterReservedCommand command,
+        bool hasExplicitRangeResult,
+        MonsterAttackSpatialPolicy spatialPolicy,
+        List<int> rangeGridIndices,
+        List<int> targetGridIndices)
+    {
+        if (command == null)
+            return;
+
+        command.SetAttackSpatialPolicy(spatialPolicy);
+
+        if (hasExplicitRangeResult)
+        {
+            command.SetExplicitRangeResult(rangeGridIndices, targetGridIndices);
+            return;
+        }
+
+        command.SetRangeResult(rangeGridIndices, targetGridIndices);
     }
 }
 
@@ -40,6 +104,7 @@ public class MonsterReservedCommand
     public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
     public bool IsPortalMove { get; private set; }
     public bool HasExplicitRangeResult { get; private set; }
+    public MonsterAttackSpatialPolicy AttackSpatialPolicy { get; private set; }
 
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
@@ -48,6 +113,8 @@ public class MonsterReservedCommand
     {
         UserRuntime = userRuntime;
         SkillData = skillData;
+        AttackSpatialPolicy = MonsterAttackSpatialPolicyResolver.Resolve(
+            skillData != null ? skillData.RangeId : null);
         SetActionIndex(userRuntime != null && skillData != null
             ? userRuntime.GetPresentationActionIndexForSkill(skillData.SkillId)
             : 0);
@@ -110,6 +177,11 @@ public class MonsterReservedCommand
     public void SetPortalMove(bool isPortalMove)
     {
         IsPortalMove = isPortalMove;
+    }
+
+    public void SetAttackSpatialPolicy(MonsterAttackSpatialPolicy spatialPolicy)
+    {
+        AttackSpatialPolicy = spatialPolicy;
     }
 
     public int EnsureReservedDamage()

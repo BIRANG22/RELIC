@@ -13,6 +13,7 @@ public class PierceEffect : BattleEffectBase
 
         if (context.PlayerTarget != null)
         {
+            bool wasAlive = !context.PlayerTarget.RuntimeData.IsDead;
             int previousHp = context.PlayerTarget.RuntimeData.CurrentHP;
             int wardDamage = BattleWardReactionService.ResolveReactionDamage(
                 context.PlayerTarget.RuntimeData.StatusEffects,
@@ -22,6 +23,10 @@ public class PierceEffect : BattleEffectBase
             BattleEffectUtility.PierceDamagePlayer(context.PlayerTarget, finalDamage, context.MonsterCaster != null || context.MonsterCommand != null);
             int dealtDamage = Mathf.Max(0, previousHp - context.PlayerTarget.RuntimeData.CurrentHP);
             BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
+            BattleDamageModifierUtility.TryConsumeVulnerableOnDamageTrigger(
+                context.PlayerTarget.RuntimeData.StatusEffects,
+                damage,
+                wasAlive);
         }
 
         if (context.MonsterTarget != null)
@@ -75,6 +80,11 @@ public class PierceEffect : BattleEffectBase
                 if (healAmount > 0)
                     BattleEffectUtility.HealPlayer(context.PlayerCaster, healAmount);
             }
+
+            BattleDamageModifierUtility.TryConsumeVulnerableOnDamageTrigger(
+                context.MonsterTarget.RuntimeData.StatusEffects,
+                damage,
+                wasAlive);
         }
     }
 }

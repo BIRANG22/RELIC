@@ -618,6 +618,7 @@ public class SaveSystem : Singleton<SaveSystem>
                 ForcedDirection = item.ForcedDirection,
                 IsPortalMove = item.IsPortalMove,
                 HasExplicitRangeResult = item.HasExplicitRangeResult,
+                AttackSpatialPolicy = item.AttackSpatialPolicy,
                 RangeGridIndices = item.RangeGridIndices != null ? new List<int>(item.RangeGridIndices) : new List<int>(),
                 TargetGridIndices = item.TargetGridIndices != null ? new List<int>(item.TargetGridIndices) : new List<int>(),
                 HasSimulatedResult = item.HasSimulatedResult,
@@ -1298,6 +1299,7 @@ public class BattleRoomMonsterCommandSaveData
     public int ForcedDirection;
     public bool IsPortalMove;
     public bool HasExplicitRangeResult;
+    public int AttackSpatialPolicy;
     public List<int> RangeGridIndices = new();
     public List<int> TargetGridIndices = new();
     public bool HasSimulatedResult;

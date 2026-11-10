@@ -2099,6 +2099,7 @@ public class BattleRoomLoader : MonoBehaviour
                         ForcedDirection = (int)command.ForcedDirection,
                         IsPortalMove = command.IsPortalMove,
                         HasExplicitRangeResult = command.HasExplicitRangeResult,
+                        AttackSpatialPolicy = (int)command.AttackSpatialPolicy,
                         RangeGridIndices = new List<int>(command.RangeGridIndices),
                         TargetGridIndices = new List<int>(command.TargetGridIndices),
                         HasSimulatedResult = command.HasSimulatedResult,

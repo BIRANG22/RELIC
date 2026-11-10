@@ -4759,19 +4759,14 @@ public class BattleActionRunner
             : facing != null && !facing.IsFacingRight
                 ? BattleDirection.Left
                 : BattleDirection.Right;
-        // Attack direction must agree with the reserved attack cells even if the
-        // intended target has moved to the opposite side before execution.
-        // ForcedDirection is authoritative for directional/special attacks.
         BattleDirection monsterExecutionDirection = liveMonsterDirection;
-        // Muck's projectile direction must match the specific cell selected by
-        // its AI, not the direction of a potentially detoured approach step.
-        bool muckReservedAttack =
-            string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal) &&
-            command.HasExplicitRangeResult && command.TargetGridIndices != null &&
+        bool usesLockedTargetGrid =
+            BattleAttackExecutionDirectionPolicy.ShouldPreserveMonsterTargetGrid(
+                command.AttackSpatialPolicy) &&
+            command.TargetGridIndices != null &&
             command.TargetGridIndices.Count > 0 && gridManager != null &&
             monster.MainGridIndex >= 0;
-        if (muckReservedAttack)
+        if (usesLockedTargetGrid)
         {
             int targetIndex = command.TargetGridIndices[0];
             Vector2Int targetCoord = gridManager.IndexToCoord(targetIndex);
@@ -4781,36 +4776,6 @@ public class BattleActionRunner
                     ? BattleDirection.Right : BattleDirection.Left;
             else if (command.HasForcedDirection)
                 monsterExecutionDirection = command.ForcedDirection;
-        }
-        else if (command.HasForcedDirection)
-        {
-            monsterExecutionDirection = command.ForcedDirection;
-        }
-        else if (gridManager != null && monster.MainGridIndex >= 0)
-        {
-            Vector2Int origin = gridManager.IndexToCoord(monster.MainGridIndex);
-            int left = 0;
-            int right = 0;
-            // Explicit hit cells have priority over the broader range preview.
-            System.Collections.Generic.IReadOnlyList<int> attackCells =
-                command.TargetGridIndices != null && command.TargetGridIndices.Count > 0
-                    ? command.TargetGridIndices : command.RangeGridIndices;
-            if (attackCells != null)
-            {
-                for (int i = 0; i < attackCells.Count; i++)
-                {
-                    int index = attackCells[i];
-                    if (index < 0)
-                        continue;
-                    int dx = gridManager.IndexToCoord(index).x - origin.x;
-                    if (dx < 0) left++;
-                    else if (dx > 0) right++;
-                }
-                if (left > right)
-                    monsterExecutionDirection = BattleDirection.Left;
-                else if (right > left)
-                    monsterExecutionDirection = BattleDirection.Right;
-            }
         }
 
         if (facing == null)
@@ -5122,77 +5087,14 @@ public class BattleActionRunner
         MonsterUnit monster,
         MonsterReservedCommand command)
     {
-        if (monster == null || command == null || gridManager == null)
+        if (monster == null || command == null || monster.MainGridIndex < 0)
             return;
 
-        bool isBlobAttack =
-            string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
-
-        bool isVespaAttack =
-            string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
-
-        bool isCinderExplosion =
-            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
-
-        bool isDraugrAttack =
-            string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
-
-        bool isRookBash =
-            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
-
-        bool isMortWraithRush =
-            string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, MortWraithRushSkillId, System.StringComparison.Ordinal);
-
-        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
-
-        // 녹턴 방향 공격과 모르트의 망령쇄도는 실행 순간의 실제 위치에서 시작합니다.
-        // 선행 이동이 실패하거나 일부만 성공했다면 예약 당시 성공 예상 위치를 공격 원점으로 사용하지 않습니다.
-        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack || isRookBash || isMortWraithRush || isNocturnDirectionalAttack)
-        {
-            if (monster.MainGridIndex >= 0)
-                command.SetRangeOriginGridIndex(monster.MainGridIndex);
-
-            return;
-        }
-
-        if (!UsesRelativeRangeOriginAtExecution(command))
-            return;
-
-        if (monster.MainGridIndex < 0 ||
-            command.RangeOriginGridIndex < 0 ||
-            command.RangeOriginCasterGridIndex < 0)
-        {
-            return;
-        }
-
-        Vector2Int plannedCasterCoord = gridManager.IndexToCoord(command.RangeOriginCasterGridIndex);
-        Vector2Int reservedOriginCoord = gridManager.IndexToCoord(command.RangeOriginGridIndex);
-        Vector2Int actualCasterCoord = gridManager.IndexToCoord(monster.MainGridIndex);
-        Vector2Int relativeOriginOffset = reservedOriginCoord - plannedCasterCoord;
-        Vector2Int executionOriginCoord = actualCasterCoord + relativeOriginOffset;
-
-        if (!gridManager.IsValidCoord(executionOriginCoord))
-            return;
-
-        command.SetRangeOriginGridIndex(gridManager.CoordToIndex(executionOriginCoord));
-    }
-
-    private static bool UsesRelativeRangeOriginAtExecution(MonsterReservedCommand command)
-    {
-        if (command == null)
-            return false;
-
-        bool isMuckAttack =
-            string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal);
-
-        return isMuckAttack;
+        command.SetRangeOriginGridIndex(
+            BattleAttackExecutionDirectionPolicy.ResolveExecutionOriginGridIndex(
+                command.AttackSpatialPolicy,
+                monster.MainGridIndex,
+                command.RangeOriginGridIndex));
     }
 
     private void RecalculateMonsterSkillRangeAtExecution(
@@ -5206,10 +5108,10 @@ public class BattleActionRunner
             string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
 
-        // 명시적 지정 그리드 공격만 예약 결과를 유지합니다.
-        // 그 외 방향 공격은 실제 위치와 실행 직전 방향으로 다시 계산합니다.
+        // 그리드 지정 공격만 예약 목표를 유지합니다.
+        // 그 외 공격은 예약 범위 캐시와 무관하게 실제 위치와 실행 직전 방향으로 다시 계산합니다.
         if (BattleAttackExecutionDirectionPolicy.ShouldPreserveMonsterTargetGrid(
-                command.HasExplicitRangeResult))
+                command.AttackSpatialPolicy))
         {
             return;
         }

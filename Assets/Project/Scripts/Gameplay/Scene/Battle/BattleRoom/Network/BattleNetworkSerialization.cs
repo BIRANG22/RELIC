@@ -4,7 +4,12 @@ using UnityEngine;
 
 public static class BattleNetworkSerialization
 {
-    public const int ProtocolVersion = 1;
+    public const int ProtocolVersion = 3;
+
+    public static bool IsSupportedProtocolVersion(int version)
+    {
+        return version == ProtocolVersion;
+    }
 
     public static string SerializeSnapshot(BattleNetworkSnapshot snapshot)
     {
@@ -23,7 +28,7 @@ public static class BattleNetworkSerialization
             BattleNetworkSnapshot dto = JsonUtility.FromJson<BattleNetworkSnapshot>(payload);
 
             if (dto == null ||
-                dto.version != ProtocolVersion ||
+                !IsSupportedProtocolVersion(dto.version) ||
                 dto.revision <= 0 ||
                 !TryParseSteamId(dto.hostSteamId, out _))
             {
@@ -56,7 +61,7 @@ public static class BattleNetworkSerialization
             BattleNetworkCommand dto = JsonUtility.FromJson<BattleNetworkCommand>(payload);
 
             if (dto == null ||
-                dto.version != ProtocolVersion ||
+                !IsSupportedProtocolVersion(dto.version) ||
                 string.IsNullOrWhiteSpace(dto.requestId) ||
                 !TryParseSteamId(dto.requesterSteamId, out _) ||
                 !Enum.IsDefined(typeof(BattleNetworkCommandType), dto.commandType))
@@ -98,7 +103,7 @@ public static class BattleNetworkSerialization
                 JsonUtility.FromJson<BattleNetworkExecutionSnapshot>(payload);
 
             if (dto == null ||
-                dto.version != ProtocolVersion ||
+                !IsSupportedProtocolVersion(dto.version) ||
                 dto.revision <= 0 ||
                 !TryParseSteamId(dto.hostSteamId, out _))
             {
@@ -129,7 +134,7 @@ public static class BattleNetworkSerialization
                 JsonUtility.FromJson<BattleNetworkCommandResponse>(payload);
 
             if (dto == null ||
-                dto.version != ProtocolVersion ||
+                !IsSupportedProtocolVersion(dto.version) ||
                 string.IsNullOrWhiteSpace(dto.requestId) ||
                 !TryParseSteamId(dto.requesterSteamId, out _) ||
                 !Enum.IsDefined(typeof(BattleNetworkRejectReason), dto.rejectReason))

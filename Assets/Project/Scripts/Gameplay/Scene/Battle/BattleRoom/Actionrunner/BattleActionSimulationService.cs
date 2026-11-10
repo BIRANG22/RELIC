@@ -1106,7 +1106,9 @@ public class BattleActionSimulationService
         MonsterReservedCommand command,
         List<int> currentCells)
     {
-        if (command != null && command.HasExplicitRangeResult)
+        if (command != null &&
+            BattleAttackExecutionDirectionPolicy.ShouldPreserveMonsterTargetGrid(
+                command.AttackSpatialPolicy))
             return;
 
         if (currentCells == null || currentCells.Count <= 0)

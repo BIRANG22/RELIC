@@ -1178,7 +1178,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 JsonUtility.FromJson<BattleNetworkStartRelicChoicesMessage>(messageJson);
 
             if (message == null ||
-                message.version != BattleNetworkSerialization.ProtocolVersion ||
+                !BattleNetworkSerialization.IsSupportedProtocolVersion(message.version) ||
                 !BattleNetworkSerialization.TryParseSteamId(message.hostSteamId, out ulong hostId) ||
                 hostId != originalHostSteamId)
             {
@@ -1706,13 +1706,12 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         else
             command.ClearForcedDirection();
 
-        if ((snapshot.rangeGridIndices != null && snapshot.rangeGridIndices.Length > 0) ||
-            (snapshot.targetGridIndices != null && snapshot.targetGridIndices.Length > 0))
-        {
-            command.SetExplicitRangeResult(
-                ToList(snapshot.rangeGridIndices),
-                ToList(snapshot.targetGridIndices));
-        }
+        BattleMonsterCommandRangeSnapshotPolicy.Restore(
+            command,
+            snapshot.hasExplicitRangeResult,
+            (MonsterAttackSpatialPolicy)snapshot.attackSpatialPolicy,
+            ToList(snapshot.rangeGridIndices),
+            ToList(snapshot.targetGridIndices));
 
         return command;
     }
@@ -1959,6 +1958,8 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             hasForcedDirection = command.HasForcedDirection,
             forcedDirection = (int)command.ForcedDirection,
             isPortalMove = command.IsPortalMove,
+            hasExplicitRangeResult = command.HasExplicitRangeResult,
+            attackSpatialPolicy = (int)command.AttackSpatialPolicy,
             rangeGridIndices = ToArray(command.RangeGridIndices),
             targetGridIndices = ToArray(command.TargetGridIndices)
         };
