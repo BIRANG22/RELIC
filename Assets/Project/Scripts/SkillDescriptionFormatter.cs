@@ -98,7 +98,16 @@ namespace Relic.Gameplay.Data
 
             // Split on authored clause boundaries so one count cannot accidentally
             // be attached to another effect's verb. Preserve all original punctuation.
-            string[] clauses = Regex.Split(description, @"(?<=[,，;；])");
+            // Separate complete sentences as well as comma/semicolon clauses.
+            // Otherwise a following sentence (e.g. "보유한 버프의 종류만큼...")
+            // prevents the repeated hit count from being inserted before "준다".
+            // Keep the punctuation and whitespace unchanged in the final output.
+            // Also split consecutive effect clauses without a comma, such as
+            // "{ValueRate1}의 피해를 주고 {ValueRate2}의 취약을 부여한다."
+            // The split is only performed when the next clause starts with an
+            // indexed effect value, so unrelated narrative text is untouched.
+            string[] clauses = Regex.Split(description,
+                @"(?<=[.!?。！？])(?=\s|$)|(?<=[,，;；])|(?<=주고)(?=\s*\{ValueRate\d+\})|(?<=부여하고)(?=\s*\{ValueRate\d+\})|(?<=회복하고)(?=\s*\{ValueRate\d+\})|(?<=획득하고)(?=\s*\{ValueRate\d+\})");
             bool changed = false;
             for (int c = 0; c < clauses.Length; c++)
             {
@@ -142,7 +151,10 @@ namespace Relic.Gameplay.Data
                 Match verb = Regex.Match(clause, @"(?<verb>부여한다|부여하고|준다|주고|회복한다|회복하고|획득한다|획득하고)(?<tail>\s*[.!?。！？]?\s*[,，;；]?)$");
                 if (!verb.Success)
                     continue;
-                clauses[c] = clause.Substring(0, verb.Index) + repeat.ToString(CultureInfo.InvariantCulture) + "회 " + verb.Value;
+                // The inline repetition unit must come from localization, not a Korean literal.
+                string localizedRepeat = global::GameLocalization.FormatWithFallback(
+                    "skill.description.repeat_inline", "{0}회", repeat);
+                clauses[c] = clause.Substring(0, verb.Index) + localizedRepeat + " " + verb.Value;
                 changed = true;
             }
             if (changed)
