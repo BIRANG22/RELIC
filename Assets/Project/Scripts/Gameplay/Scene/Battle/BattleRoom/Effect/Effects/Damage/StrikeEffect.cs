@@ -40,6 +40,11 @@ public class StrikeEffect : BattleEffectBase
                 dealtDamage,
                 wasAlive && context.PlayerTarget.RuntimeData.IsDead,
                 context.PlayerTarget.RuntimeData.StatusEffects);
+
+            BattleDamageModifierUtility.TryConsumeVulnerableOnDamageTrigger(
+                context.PlayerTarget.RuntimeData.StatusEffects,
+                damage,
+                wasAlive);
         }
 
         if (context.MonsterTarget != null)
@@ -88,6 +93,11 @@ public class StrikeEffect : BattleEffectBase
                 if (healAmount > 0)
                     BattleEffectUtility.HealPlayer(context.PlayerCaster, healAmount);
             }
+
+            BattleDamageModifierUtility.TryConsumeVulnerableOnDamageTrigger(
+                context.MonsterTarget.RuntimeData.StatusEffects,
+                damage,
+                wasAlive);
         }
     }
 

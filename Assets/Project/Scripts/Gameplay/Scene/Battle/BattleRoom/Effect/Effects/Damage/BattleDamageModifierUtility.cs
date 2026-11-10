@@ -19,6 +19,33 @@ public static class BattleDamageModifierUtility
     private const string TargetOutgoingDamageReductionEffectId =
         ActiveRelicEffectIds.Fatigue;
 
+    public static bool TryConsumeVulnerableOnDamageTrigger(
+        List<StatusEffectRuntimeData> statuses,
+        int baseDamage,
+        bool targetWasAlive)
+    {
+        if (!targetWasAlive || baseDamage <= 0 || statuses == null)
+            return false;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+            if (status == null ||
+                !string.Equals(status.EffectId, VulnerableEffectId, System.StringComparison.Ordinal) ||
+                status.Stack <= 0)
+            {
+                continue;
+            }
+
+            status.Stack--;
+            if (status.Stack <= 0)
+                statuses.RemoveAt(i);
+            return true;
+        }
+
+        return false;
+    }
+
     public static int CalculateFinalDamageToPlayer(BattleEffectContext context, int baseDamage)
     {
         float damage = Mathf.Max(0, baseDamage);
