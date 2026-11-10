@@ -32,7 +32,9 @@ public static class BattleDamageModifierUtility
         if (context?.MonsterCaster != null &&
             context.PlayerTarget != null &&
             HasStatus(context.MonsterCaster.RuntimeData.StatusEffects, BlindsideEffectId) &&
-            IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget))
+            ResolveRearAttackQualification(
+                context.RearAttackQualifiedAtActionStart,
+                IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget)))
         {
             damage *= 1.5f;
         }
@@ -41,7 +43,9 @@ public static class BattleDamageModifierUtility
         if (context?.MonsterCaster != null &&
             context.PlayerTarget != null &&
             HasStatus(context.MonsterCaster.RuntimeData.StatusEffects, AmbushEffectId) &&
-            IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget))
+            ResolveRearAttackQualification(
+                context.RearAttackQualifiedAtActionStart,
+                IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget)))
         {
             damage *= 2f;
         }
@@ -61,8 +65,8 @@ public static class BattleDamageModifierUtility
     {
         float damage = Mathf.Max(0, baseDamage);
 
-        // ÇÃ·¹ÀÌ¾î À¯¹°ÀÇ ´ë»ó Á¶°Ç º¸Á¤À» ¸ÕÀú Àû¿ëÇÏ°í,
-        // ±× ´ÙÀ½ ÀüÅõ Áß È¹µæÇÑ »óÅÂ È¿°ú¸¦ ºÎ¿© ¼ø¼­´ë·Î °è»êÇÕ´Ï´Ù.
+        // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½,
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È¹ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (context?.PlayerCaster != null)
         {
             damage = BattleEquipmentEffectService.ModifyPlayerDamageToMonster(context, damage);
@@ -75,7 +79,9 @@ public static class BattleDamageModifierUtility
         if (context?.PlayerCaster != null &&
             context.MonsterTarget != null &&
             HasStatus(context.PlayerCaster.RuntimeData.StatusEffects, BlindsideEffectId) &&
-            IsAttackingMonsterFromBehind(context.PlayerCaster, context.MonsterTarget))
+            ResolveRearAttackQualification(
+                context.RearAttackQualifiedAtActionStart,
+                IsAttackingMonsterFromBehind(context.PlayerCaster, context.MonsterTarget)))
         {
             damage *= 1.5f;
         }
@@ -124,8 +130,8 @@ public static class BattleDamageModifierUtility
 
         float value = damage;
 
-        // StatusEffects ¸®½ºÆ®´Â È¿°ú°¡ Ã³À½ ºÎ¿©µÈ ¼ø¼­¸¦ À¯ÁöÇÕ´Ï´Ù.
-        // µû¶ó¼­ ÀüÅõ Áß È¹µæÇÑ ¹öÇÁ/µð¹öÇÁ´Â ÀÌ ¼ø¼­ ±×´ë·Î °è»êÇÕ´Ï´Ù.
+        // StatusEffects ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½Î¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È¹ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         for (int i = 0; i < runtime.StatusEffects.Count; i++)
         {
             StatusEffectRuntimeData status = runtime.StatusEffects[i];
@@ -262,7 +268,7 @@ public static class BattleDamageModifierUtility
     }
 
 
-    private static bool IsAttackingMonsterFromBehind(
+    public static bool IsAttackingMonsterFromBehind(
         BattleCharacter attacker,
         MonsterUnit target)
     {
@@ -290,7 +296,7 @@ public static class BattleDamageModifierUtility
             : attackerCoord.x > targetCoord.x;
     }
 
-    private static bool IsAttackingPlayerFromBehind(
+    public static bool IsAttackingPlayerFromBehind(
         MonsterUnit attacker,
         BattleCharacter target)
     {
@@ -325,6 +331,13 @@ public static class BattleDamageModifierUtility
         string effectId)
     {
         return GetStatusStack(statuses, effectId) > 0;
+    }
+
+    public static bool ResolveRearAttackQualification(
+        bool? actionQualification,
+        bool liveQualification)
+    {
+        return actionQualification ?? liveQualification;
     }
 
     private static int GetStatusStack(

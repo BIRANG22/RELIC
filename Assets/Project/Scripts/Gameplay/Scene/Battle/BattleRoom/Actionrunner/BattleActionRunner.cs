@@ -2276,6 +2276,7 @@ public class BattleActionRunner
         bool playedActionForNonDamage = false;
         bool hasForcedMoveVisual = false;
         HashSet<MonsterUnit> draugrCounterCandidates = new();
+        BattleRearAttackActionSnapshot rearAttackSnapshot = new();
 
         for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
         {
@@ -2328,7 +2329,8 @@ public class BattleActionRunner
                     value,
                     count,
                     attackerAnimator,
-                    draugrCounterCandidates);
+                    draugrCounterCandidates,
+                    rearAttackSnapshot);
 
                 continue;
             }
@@ -2490,7 +2492,8 @@ public class BattleActionRunner
         int value,
         int count,
         BattleUnitAnimator attackerAnimator,
-        HashSet<MonsterUnit> draugrCounterCandidates)
+        HashSet<MonsterUnit> draugrCounterCandidates,
+        BattleRearAttackActionSnapshot rearAttackSnapshot)
     {
         int hitCount = Mathf.Max(
             1,
@@ -2614,8 +2617,6 @@ public class BattleActionRunner
                         continue;
                     }
 
-                    FaceMonsterAgainstAttackDirection(monster, command.Direction);
-
                     BattleEffectContext context = CreatePlayerMonsterEffectContext(
                         caster,
                         monster,
@@ -2623,6 +2624,12 @@ public class BattleActionRunner
                         effectId,
                         value,
                         effectParameterCount);
+
+                    bool liveRearAttack =
+                        BattleDamageModifierUtility.IsAttackingMonsterFromBehind(caster, monster);
+                    context.RearAttackQualifiedAtActionStart = rearAttackSnapshot.GetOrCapture(
+                        monster.RuntimeData.RuntimeId,
+                        liveRearAttack);
 
                     int hpBeforeHit = monster.RuntimeData != null
                         ? monster.RuntimeData.CurrentHP
@@ -2638,6 +2645,13 @@ public class BattleActionRunner
                     bool receivedDamage = monster.RuntimeData != null &&
                         (monster.RuntimeData.CurrentHP < hpBeforeHit ||
                          monster.RuntimeData.CurrentShield < shieldBeforeHit);
+
+                    if (receivedDamage &&
+                        monster.RuntimeData != null &&
+                        !monster.RuntimeData.IsDead)
+                    {
+                        FaceMonsterAgainstAttackDirection(monster, command.Direction);
+                    }
 
                     // 드라우그는 플레이어의 공격 스킬에 실제로 피격된 경우에만 반격 후보가 됩니다.
                     // 다단 공격은 타격마다 반격하지 않고, 해당 스킬의 모든 타격이 끝난 뒤 한 번만 반격합니다.
@@ -3329,10 +3343,13 @@ public class BattleActionRunner
             hitFacing = monster.GetComponentInChildren<BattleUnitFacing>();
         if (hitFacing != null)
         {
-            // The hit reaction is visual only. Never overwrite the reserved
-            // attack direction with the direction of an incoming hit.
             hitFacing.FaceRight(faceRight);
         }
+
+        if (monster.RuntimeData != null)
+            monster.RuntimeData.Direction = faceRight
+                ? BattleDirection.Right
+                : BattleDirection.Left;
     }
 
     private void FaceMonsterToAttacker(MonsterUnit monster, BattleCharacter attacker)
@@ -4995,6 +5012,7 @@ public class BattleActionRunner
             yield break;
 
         int hitCount = monsterSkillEffectService.GetDamageHitCount(command);
+        BattleRearAttackActionSnapshot rearAttackSnapshot = new();
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
@@ -5049,7 +5067,11 @@ public class BattleActionRunner
                 }
             }
 
-            monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
+            monsterSkillEffectService.ApplyMonsterSkillDamageHit(
+                monster,
+                command,
+                hitIndex,
+                rearAttackSnapshot);
 
             if (monster.RuntimeData == null || monster.RuntimeData.IsDead)
                 yield break;
