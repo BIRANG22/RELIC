@@ -630,6 +630,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: boss_arabella8
+    aliases: []
+    clip: {fileID: 8300000, guid: c7bdc8104972b47359a60d473149fe98, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   - id: skill.root
     aliases: []
     clip: {fileID: 8300000, guid: ca3b3e4f7c120454ca82321e3b517b60, type: 3}
@@ -858,6 +867,15 @@ MonoBehaviour:
   - id: menu.open
     aliases: []
     clip: {fileID: 8300000, guid: 7ec90ab715897407d87173f709961418, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: boss_text
+    aliases: []
+    clip: {fileID: 8300000, guid: 85937ea92886f4125b9d01af2a375f47, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
