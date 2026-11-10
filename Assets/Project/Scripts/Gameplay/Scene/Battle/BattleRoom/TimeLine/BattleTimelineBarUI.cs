@@ -662,7 +662,7 @@ public class BattleTimelineBarUI : MonoBehaviour
             return;
 
         if (owner != null)
-            owner.RemoveCommand(entry.SlotIndex, entry.PlayerCommandIndex);
+            owner.RemoveCommand(entry.SlotIndex, entry.PlayerCommand);
     }
 
     public void ShowEntryRangePreview(BattleTimelinePreviewEntry entry)

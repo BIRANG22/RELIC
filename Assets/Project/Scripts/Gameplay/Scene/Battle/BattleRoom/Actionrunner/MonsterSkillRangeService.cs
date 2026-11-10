@@ -5,6 +5,34 @@ using UnityEngine;
 
 public static class MonsterSkillRangeService
 {
+    public static List<Vector2Int> BuildRangeOffsets(
+        MonsterSkillData skillData,
+        bool facingRight,
+        RangeDatabase rangeDatabase = null)
+    {
+        List<Vector2Int> result = new();
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.RangeId))
+            return result;
+
+        RangeDatabase resolvedRangeDatabase = rangeDatabase ?? DataManager.Instance?.RangeDatabase;
+        SkillRangeData rangeData = resolvedRangeDatabase?.Get(skillData.RangeId);
+        if (rangeData?.Positions == null)
+            return result;
+
+        for (int i = 0; i < rangeData.Positions.Count; i++)
+        {
+            Vector2Int offset = rangeData.Positions[i];
+            if (offset == Vector2Int.zero)
+                continue;
+            if (!facingRight)
+                offset = new Vector2Int(-offset.x, offset.y);
+            if (!result.Contains(offset))
+                result.Add(offset);
+        }
+
+        return result;
+    }
+
     public static List<int> BuildRangeGridIndices(
         MonsterUnit monster,
         MonsterSkillData skillData,

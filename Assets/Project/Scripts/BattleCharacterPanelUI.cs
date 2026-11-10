@@ -5069,20 +5069,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        LocaleTMPFontGuard.Prepare(skillTooltipDetailText);
-        skillTooltipDetailText.ForceMeshUpdate();
-        TMP_TextInfo info = skillTooltipDetailText.textInfo;
-        List<string> ids = new List<string>();
-        for (int i = 0; i < info.linkCount; i++)
-        {
-            string id = info.linkInfo[i].GetLinkID();
-            if (string.IsNullOrEmpty(id) || !id.StartsWith("effecticon:", StringComparison.Ordinal))
-                continue;
-            string effectId = id.Substring("effecticon:".Length);
-            if (string.IsNullOrEmpty(effectId) || ids.Contains(effectId))
-                continue;
-            ids.Add(effectId);
-        }
+        List<string> ids = SkillDescriptionFormatter.ExtractLinkedEffectIds(
+            skillTooltipDetailText.text);
 
         if (ids.Count == 0)
         {

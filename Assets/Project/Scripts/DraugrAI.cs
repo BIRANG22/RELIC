@@ -17,18 +17,6 @@ namespace Relic.Gameplay.Monster
         private const string MoveSkillId = "S_Monster_15";
         private const string AttackSkillId = "S_Monster_16";
 
-        private static readonly Vector2Int[] MoveDirections =
-        {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right,
-            new Vector2Int(-1, 1),
-            new Vector2Int(1, 1),
-            new Vector2Int(-1, -1),
-            new Vector2Int(1, -1)
-        };
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return AttackSkillId;
@@ -203,7 +191,7 @@ namespace Relic.Gameplay.Monster
             BattleGridEffectController effects =
                 Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
-            foreach (Vector2Int offset in MoveDirections)
+            foreach (Vector2Int offset in GetSkillRangeOffsets(monsterUnit, MoveSkillId))
             {
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))
                     continue;
@@ -294,7 +282,7 @@ namespace Relic.Gameplay.Monster
                     }
                 }
 
-                foreach (Vector2Int direction in MoveDirections)
+                foreach (Vector2Int direction in GetSkillRangeOffsets(unit, MoveSkillId))
                 {
                     Vector2Int nextOffset = offset + direction;
                     if (!visited.Add(nextOffset))
@@ -495,27 +483,12 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager,
             int horizontalSign)
         {
-            List<int> result = new();
-            Vector2Int origin = gridManager.IndexToCoord(originGridIndex);
-
-            for (int x = 1; x <= 2; x++)
-            {
-                for (int y = -1; y <= 1; y++)
-                {
-                    // The sweep has three cells in its first column and
-                    // only the middle cell in its second column (four total).
-                    if (x == 2 && y != 0)
-                        continue;
-                    Vector2Int coord = origin + new Vector2Int(horizontalSign * x, y);
-
-                    if (!gridManager.IsValidCoord(coord))
-                        continue;
-
-                    result.Add(gridManager.CoordToIndex(coord));
-                }
-            }
-
-            return result;
+            return BattleRangeCalculator.GetDirectionRangeIndices(
+                originGridIndex,
+                GetSkillRangeId(AttackSkillId),
+                horizontalSign < 0 ? BattleDirection.Left : BattleDirection.Right,
+                DataManager.Instance?.RangeDatabase,
+                gridManager);
         }
 
         private static bool ContainsTarget(List<int> range, HashSet<int> targets)

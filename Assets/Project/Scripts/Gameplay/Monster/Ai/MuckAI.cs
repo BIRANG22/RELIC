@@ -12,13 +12,6 @@ namespace Relic.Gameplay.Monster
         private const string AttackSkillId = "S_Monster_02";
         private const string ResidueGridEffectId = "GR_Residue";
 
-        private static readonly Vector2Int[] MoveDirections =
-        {
-            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right,
-            new Vector2Int(-1, 1), new Vector2Int(1, 1),
-            new Vector2Int(-1, -1), new Vector2Int(1, -1)
-        };
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return AttackSkillId;
@@ -115,6 +108,7 @@ namespace Relic.Gameplay.Monster
             int bestReachablePathLength = int.MaxValue;
             int bestReachableRisk = int.MaxValue;
             List<Vector2Int> fallbackSteps = new();
+            List<Vector2Int> moveDirections = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
 
             while (queue.Count > 0)
             {
@@ -168,7 +162,7 @@ namespace Relic.Gameplay.Monster
                 if (length >= bestPathLength)
                     continue;
 
-                foreach (Vector2Int direction in MoveDirections)
+                foreach (Vector2Int direction in moveDirections)
                 {
                     Vector2Int next = offset + direction;
                     if (distances.ContainsKey(next) ||

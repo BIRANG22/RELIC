@@ -22,19 +22,19 @@ Char_06,Char_06,70,13,4,5,Karma,2,2,S_Passive_11,S_Passive_12,S_Unique_11,S_Uniq
 # Monster
 몬스터ID,페이즈,이름,등급,HP,방어도,최소 가격,최대 가격,고유아이템,고유 아이템 확률,이동범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID
 MonsterId,Phase,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05
-Mon_01,0,머크,Common,50,0,24,32,Item_001,0.35,Range_18,S_Monster_01,S_Monster_02,0,0,0
-Mon_02,0,블롭,Common,20,0,10,16,Item_002,0.35,Range_17,S_Monster_03,S_Monster_04,0,0,0
-Mon_03,0,랜서,Common,38,0,18,24,Item_003,0.35,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0
-Mon_04,0,블라이트,Common,42,0,18,24,Item_004,0.35,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0
-Mon_05,0,베스파,Common,55,0,25,30,Item_005,0.35,Range_19,S_Monster_11,S_Monster_12,0,0,0
-Mon_06,0,신더,Common,32,20,20,25,Item_006,0.35,Range_18,S_Monster_13,S_Monster_14,0,0,0
-Mon_07,0,드라우그,Common,64,0,30,35,Item_007,0.35,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0
-Mon_08,0,바로우,Common,58,0,30,35,Item_008,0.35,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,0,0
-Mon_09,0,루크,Elite,105,0,55,65,Item_009,0.3,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0
-Mon_10,0,녹턴,Elite,96,0,60,70,Item_010,0.3,0,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0
-Mon_11,0,모르트,Elite,88,0,50,60,Item_011,0.3,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0
+Mon_01,0,머크,Common,50,0,24,32,Item_001,0.34999999999999998,Range_18,S_Monster_01,S_Monster_02,0,0,0
+Mon_02,0,블롭,Common,20,0,10,16,Item_002,0.34999999999999998,Range_17,S_Monster_03,S_Monster_04,0,0,0
+Mon_03,0,랜서,Common,38,0,18,24,Item_003,0.34999999999999998,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0
+Mon_04,0,블라이트,Common,42,0,18,24,Item_004,0.34999999999999998,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0
+Mon_05,0,베스파,Common,55,0,25,30,Item_005,0.34999999999999998,Range_19,S_Monster_11,S_Monster_12,0,0,0
+Mon_06,0,신더,Common,32,20,20,25,Item_006,0.34999999999999998,Range_18,S_Monster_13,S_Monster_14,0,0,0
+Mon_07,0,드라우그,Common,64,0,30,35,Item_007,0.34999999999999998,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0
+Mon_08,0,바로우,Common,58,0,30,35,Item_008,0.34999999999999998,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,0,0
+Mon_09,0,루크,Elite,105,0,55,65,Item_009,0.29999999999999999,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0
+Mon_10,0,녹턴,Elite,96,0,60,70,Item_010,0.29999999999999999,0,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0
+Mon_11,0,모르트,Elite,88,0,50,60,Item_011,0.29999999999999999,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0
 Mon_12_1,1,아라벨라,Boss,148,0,0,0,0,0,Range_19,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37
-Mon_12_2,2,각성 아라벨라,Boss,112,0,80,95,Item_012,0.7,Range_18,S_Monster_38,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40
+Mon_12_2,2,각성 아라벨라,Boss,112,0,80,95,Item_012,0.69999999999999996,Range_18,S_Monster_38,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
@@ -176,7 +176,7 @@ S_Monster_25,그림자걸음,Self,1,E_Move,0,1,0,Range_All,Move,그림자의 위
 S_Monster_26,심연 찌르기,PlayerParty,1,E_Pierce,7,1,0,Range_03,Attack,범위에 {ValueRate1}의 {E_Pierce}를 준다.,icon_mon_skill_018,공격,
 S_Monster_27,어둠 가르기,PlayerParty,1,E_Strike,10,1,0,Range_15,Attack,범위에 {ValueRate1}의 {E_Strike}를 준다.,icon_mon_skill_019,공격,
 S_Monster_28,그림자 소용돌이,PlayerParty,1,E_Strike;E_Grab,2;1,1,0,Range_13,Attack,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Grab}을 {ValueRate2}칸 적용한다.",icon_mon_skill_020,공격,
-S_Monster_29,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터에게서 1칸 멀어진다.,icon_mon_skill_001,이동,
+S_Monster_29,이동,Self,1,E_Move,0,1,0,Range_19,Move,가까운 캐릭터에게서 1칸 멀어진다.,icon_mon_skill_001,이동,
 S_Monster_30,망령쇄도,PlayerParty,1,E_Pierce,9,1,0,Range_06,Attack,전방에 {ValueRate1}의 {E_Pierce}를 준다.,icon_mon_skill_021,공격,
 S_Monster_31,혼령폭발,PlayerParty,1,E_Strike,12,1,0,Range_m_02,Attack,가장 먼 대상의 위치에 {ValueRate1}의 {E_Strike}를 준다.,icon_mon_skill_022,공격,
 S_Monster_32,피의저주,PlayerParty,1,E_Bleed,3,1,0,Range_m_01,Debuff,가장 가까운 대상의 위치에 {ValueRate1}의 {E_Bleed}을 부여한다.,icon_mon_skill_023,디버프,

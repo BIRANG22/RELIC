@@ -18,14 +18,6 @@ namespace Relic.Gameplay.Monster
         private const string DirectShotSkillId = "S_Monster_19";
         private const string ArcShotSkillId = "S_Monster_20";
 
-        private static readonly Vector2Int[] EscapeOffsets =
-        {
-            new Vector2Int(2, 0),
-            new Vector2Int(-2, 0),
-            new Vector2Int(0, 2),
-            new Vector2Int(0, -2)
-        };
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return DirectShotSkillId;
@@ -241,9 +233,11 @@ namespace Relic.Gameplay.Monster
             int bestCollisionMinDistance = int.MinValue;
             int bestCollisionTotalDistance = int.MinValue;
 
-            for (int i = 0; i < EscapeOffsets.Length; i++)
+            List<Vector2Int> escapeOffsets = GetSkillRangeOffsetsAtDistance(
+                monsterUnit, MoveSkillId, 2);
+            for (int i = 0; i < escapeOffsets.Count; i++)
             {
-                Vector2Int offset = EscapeOffsets[i];
+                Vector2Int offset = escapeOffsets[i];
 
                 if (!CanReserveTwoTileEscape(
                         monsterUnit,
@@ -395,9 +389,11 @@ namespace Relic.Gameplay.Monster
                 for (int i = 0; i < levelCount; i++)
                 {
                     Vector2Int origin = frontier.Dequeue();
-                    for (int direction = 0; direction < EscapeOffsets.Length; direction++)
+                    List<Vector2Int> escapeOffsets = GetSkillRangeOffsetsAtDistance(
+                        monsterUnit, MoveSkillId, 2);
+                    for (int direction = 0; direction < escapeOffsets.Count; direction++)
                     {
-                        Vector2Int delta = EscapeOffsets[direction] / 2;
+                        Vector2Int delta = escapeOffsets[direction] / 2;
                         Vector2Int next = origin + delta;
                         if (!gridManager.IsValidCoord(next) || visited.Contains(next))
                             continue;
@@ -647,22 +643,12 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager,
             int horizontalSign)
         {
-            List<int> result = new();
-            Vector2Int origin = gridManager.IndexToCoord(originGridIndex);
-            int step = 1;
-
-            while (true)
-            {
-                Vector2Int coord = origin + new Vector2Int(horizontalSign * step, 0);
-
-                if (!gridManager.IsValidCoord(coord))
-                    break;
-
-                result.Add(gridManager.CoordToIndex(coord));
-                step++;
-            }
-
-            return result;
+            return BattleRangeCalculator.GetDirectionRangeIndices(
+                originGridIndex,
+                GetSkillRangeId(DirectShotSkillId),
+                horizontalSign < 0 ? BattleDirection.Left : BattleDirection.Right,
+                DataManager.Instance?.RangeDatabase,
+                gridManager);
         }
 
         private BattleCharacter FindFarthestPlayerFromGrid(
@@ -718,11 +704,10 @@ namespace Relic.Gameplay.Monster
 
             // Read the area-of-effect offsets from the game data rather than
             // constructing a fixed 3x3 square.
-            const string arcShotRangeId = "Range_m_02";
             RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
             return BattleRangeCalculator.GetSelectionRangeIndices(
                 centerGridIndex,
-                arcShotRangeId,
+                GetSkillRangeId(ArcShotSkillId),
                 rangeDatabase,
                 gridManager);
         }

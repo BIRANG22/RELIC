@@ -487,6 +487,10 @@ public class BattleResultChecker : MonoBehaviour
 
     private void CompleteBattleRewardFlow(System.Action completedCallback)
     {
+        DataManager dataManager = DataManager.Instance;
+        BattlePartyRevivalService.ReviveIncapacitatedParty(
+            dataManager?.PartyRuntimeStore,
+            dataManager?.CharacterRuntimeStore);
         MarkCurrentBattleNodeCleared();
 
         if (completedCallback != null)

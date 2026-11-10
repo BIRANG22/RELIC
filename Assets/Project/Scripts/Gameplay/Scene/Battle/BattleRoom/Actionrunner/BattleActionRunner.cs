@@ -2872,19 +2872,12 @@ public class BattleActionRunner
                         ? draugrFacing.GetBattleDirection()
                         : BattleDirection.Right;
 
-            int horizontalSign = counterDirection == BattleDirection.Right ? 1 : -1;
-
-            List<int> counterRange = new();
-
-            for (int distance = 1; distance <= 2; distance++)
-            {
-                Vector2Int coord = draugrCoord + new Vector2Int(horizontalSign * distance, 0);
-
-                if (!gridManager.IsValidCoord(coord))
-                    continue;
-
-                counterRange.Add(gridManager.CoordToIndex(coord));
-            }
+            List<int> counterRange = BattleRangeCalculator.GetDirectionRangeIndices(
+                draugr.MainGridIndex,
+                counterSkill.RangeId,
+                counterDirection,
+                DataManager.Instance?.RangeDatabase,
+                gridManager);
 
             MonsterReservedCommand counterCommand =
                 new MonsterReservedCommand(draugr.RuntimeData, counterSkill);
@@ -6052,8 +6045,8 @@ public class BattleActionRunner
             : facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
-        int maxMove = command.SkillData.SkillId == "S_Monster_22"
-            ? 6
+        int maxMove = command.SkillData.GridMove > 0
+            ? command.SkillData.GridMove
             : gridManager.Width;
 
         Vector2Int finalOffset = Vector2Int.zero;

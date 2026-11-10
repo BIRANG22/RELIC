@@ -16,6 +16,8 @@ namespace Relic.Gameplay.Data
         public string CountCalcTypes;
         public string CountRate;
 
+        public int GridMove;
+
         public string RangeId;
 
         public TimelineActionType TimelineNotation;

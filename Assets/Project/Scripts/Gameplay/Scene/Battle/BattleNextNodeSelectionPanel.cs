@@ -96,11 +96,15 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
     private readonly List<int> visibleNodeIndices = new();
     private Coroutine layoutApplyRoutine;
     private Action<int, bool> onNodeHoverChanged;
+    private CanvasGroup inputCanvasGroup;
+    private bool isInputLocked;
 
     public IReadOnlyList<int> VisibleNodeIndices => visibleNodeIndices;
+    public bool IsInputLocked => isInputLocked;
 
     private void Awake()
     {
+        EnsureInputCanvasGroup();
         ResolveChoices();
     }
 
@@ -116,6 +120,7 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
 
     public void Open(MapRuntimeData runtime, Action<int> onSelected, Action<int, bool> hoverCallback = null)
     {
+        SetInputLocked(false);
         ClearChoiceHover();
         onNodeHoverChanged = hoverCallback;
         ResolveChoices();
@@ -173,6 +178,31 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
 
         foreach (int index in visibleNodeIndices)
             onNodeHoverChanged(index, false);
+    }
+
+    public void LockInputAfterSelection()
+    {
+        if (isInputLocked)
+            return;
+
+        ClearChoiceHover();
+        SetInputLocked(true);
+    }
+
+    private void SetInputLocked(bool locked)
+    {
+        EnsureInputCanvasGroup();
+        isInputLocked = locked;
+        inputCanvasGroup.interactable = !locked;
+        inputCanvasGroup.blocksRaycasts = !locked;
+    }
+
+    private void EnsureInputCanvasGroup()
+    {
+        if (inputCanvasGroup == null)
+            inputCanvasGroup = GetComponent<CanvasGroup>();
+        if (inputCanvasGroup == null)
+            inputCanvasGroup = gameObject.AddComponent<CanvasGroup>();
     }
 
     public void Close()

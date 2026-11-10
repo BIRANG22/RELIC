@@ -15,19 +15,11 @@ namespace Relic.Gameplay.Monster
         private const string DashSkillId = "S_Monster_22";
         private const string BashSkillId = "S_Monster_23";
         private const string EarthquakeSkillId = "S_Monster_24";
-        private const int DashMaxDistance = 6;
-
-        private static readonly List<Vector2Int> MoveOffsets = new()
+        private static int GetDashMaxDistance()
         {
-            Vector2Int.left,
-            Vector2Int.right,
-            Vector2Int.up,
-            Vector2Int.down,
-            new Vector2Int(-1, 1),
-            new Vector2Int(1, 1),
-            new Vector2Int(-1, -1),
-            new Vector2Int(1, -1)
-        };
+            MonsterSkillData skill = DataManager.Instance?.MonsterSkillDatabase?.Get(DashSkillId);
+            return Mathf.Max(0, skill != null ? skill.GridMove : 0);
+        }
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
@@ -265,7 +257,7 @@ namespace Relic.Gameplay.Monster
                 Vector2Int target = gridManager.IndexToCoord(targets[i]);
                 int distance = (target.x - origin.x) * sign;
                 if (target.y != origin.y || distance <= 0 ||
-                    distance > DashMaxDistance || distance >= nearest ||
+                    distance > GetDashMaxDistance() || distance >= nearest ||
                     !IsDashPathClear(origin, target, gridManager))
                     continue;
                 nearest = distance;
@@ -296,9 +288,10 @@ namespace Relic.Gameplay.Monster
                 Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
             int bestRisk = int.MaxValue;
             int bestDistance = int.MaxValue;
-            for (int i = 0; i < MoveOffsets.Count; i++)
+            List<Vector2Int> moveOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int i = 0; i < moveOffsets.Count; i++)
             {
-                Vector2Int offset = MoveOffsets[i];
+                Vector2Int offset = moveOffsets[i];
                 Vector2Int candidate = source + offset;
                 if (!gridManager.IsValidCoord(candidate))
                     continue;
@@ -367,16 +360,22 @@ namespace Relic.Gameplay.Monster
             if (targetIndices == null || targetIndices.Count == 0)
                 return false;
 
-            // Mirror TryBuildBash target priority (nearest adjacent target).
+            // Mirror TryBuildBash target priority using the skill's configured range.
+            HashSet<int> bashRange = new(BattleRangeCalculator.GetDirectionRangeIndices(
+                monsterUnit.MainGridIndex,
+                GetSkillRangeId(BashSkillId),
+                bashDirection,
+                DataManager.Instance?.RangeDatabase,
+                gridManager));
             int bashTargetIndex = -1;
             int bashTargetDistance = int.MaxValue;
             for (int i = 0; i < targetIndices.Count; i++)
             {
+                if (!bashRange.Contains(targetIndices[i]))
+                    continue;
                 Vector2Int target = gridManager.IndexToCoord(targetIndices[i]);
-                int dx = Mathf.Abs(target.x - origin.x);
-                int dy = Mathf.Abs(target.y - origin.y);
-                int distance = dx + dy;
-                if (dx <= 1 && dy <= 1 && distance > 0 && distance < bashTargetDistance)
+                int distance = Mathf.Abs(target.x - origin.x) + Mathf.Abs(target.y - origin.y);
+                if (distance > 0 && distance < bashTargetDistance)
                 {
                     bashTargetDistance = distance;
                     bashTargetIndex = targetIndices[i];
@@ -387,9 +386,10 @@ namespace Relic.Gameplay.Monster
                 Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
             int bestRisk = int.MaxValue;
             int bestDistance = int.MaxValue;
-            for (int m = 0; m < MoveOffsets.Count; m++)
+            List<Vector2Int> moveOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int m = 0; m < moveOffsets.Count; m++)
             {
-                Vector2Int offset = MoveOffsets[m];
+                Vector2Int offset = moveOffsets[m];
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))
                     continue;
                 int moveDestination = GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
@@ -408,7 +408,7 @@ namespace Relic.Gameplay.Monster
                     }
                     int dx = target.x - candidate.x;
                     int distance = Mathf.Abs(dx);
-                    if (target.y != candidate.y || distance < 1 || distance > DashMaxDistance ||
+                    if (target.y != candidate.y || distance < 1 || distance > GetDashMaxDistance() ||
                         !IsDashPathClear(candidate, target, gridManager))
                         continue;
                     if (risk > bestRisk || (risk == bestRisk && distance >= bestDistance))
@@ -486,9 +486,10 @@ namespace Relic.Gameplay.Monster
             int bestRiskRank = int.MaxValue;
             int bestDistance = int.MaxValue;
 
-            for (int i = 0; i < MoveOffsets.Count; i++)
+            List<Vector2Int> moveOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int i = 0; i < moveOffsets.Count; i++)
             {
-                Vector2Int candidateOffset = MoveOffsets[i];
+                Vector2Int candidateOffset = moveOffsets[i];
 
                 if (!CanMonsterMove(monsterUnit, gridManager, candidateOffset))
                     continue;
@@ -550,9 +551,10 @@ namespace Relic.Gameplay.Monster
             int bestRiskRank = int.MaxValue;
             int bestDistance = int.MaxValue;
 
-            for (int i = 0; i < MoveOffsets.Count; i++)
+            List<Vector2Int> moveOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int i = 0; i < moveOffsets.Count; i++)
             {
-                Vector2Int candidateOffset = MoveOffsets[i];
+                Vector2Int candidateOffset = moveOffsets[i];
 
                 if (!CanMonsterMove(monsterUnit, gridManager, candidateOffset))
                     continue;
@@ -650,7 +652,7 @@ namespace Relic.Gameplay.Monster
 
                 int distance = Mathf.Abs(target.x - origin.x);
 
-                if (distance <= 0 || distance > DashMaxDistance || distance >= bestDistance ||
+                if (distance <= 0 || distance > GetDashMaxDistance() || distance >= bestDistance ||
                     !IsDashPathClear(origin, target, gridManager))
                     continue;
 
@@ -702,32 +704,34 @@ namespace Relic.Gameplay.Monster
 
             Vector2Int origin = gridManager.IndexToCoord(originGridIndex);
             List<int> targets = FindCharacterTargetGridIndices();
+            HashSet<int> rightRange = new(BattleRangeCalculator.GetDirectionRangeIndices(
+                originGridIndex, GetSkillRangeId(BashSkillId), BattleDirection.Right,
+                DataManager.Instance?.RangeDatabase, gridManager));
+            HashSet<int> leftRange = new(BattleRangeCalculator.GetDirectionRangeIndices(
+                originGridIndex, GetSkillRangeId(BashSkillId), BattleDirection.Left,
+                DataManager.Instance?.RangeDatabase, gridManager));
             int bestDistance = int.MaxValue;
             bool found = false;
 
             for (int i = 0; i < targets.Count; i++)
             {
                 int gridIndex = targets[i];
-
-                if (gridIndex < 0)
+                bool inRightRange = rightRange.Contains(gridIndex);
+                bool inLeftRange = leftRange.Contains(gridIndex);
+                if (!inRightRange && !inLeftRange)
                     continue;
 
                 Vector2Int target = gridManager.IndexToCoord(gridIndex);
-                int dx = Mathf.Abs(target.x - origin.x);
-                int dy = Mathf.Abs(target.y - origin.y);
-
-                if (dx > 1 || dy > 1 || (dx == 0 && dy == 0))
-                    continue;
-
-                int distance = dx + dy;
-
-                if (distance >= bestDistance)
+                int distance = Mathf.Abs(target.x - origin.x) + Mathf.Abs(target.y - origin.y);
+                if (distance <= 0 || distance >= bestDistance)
                     continue;
 
                 bestDistance = distance;
-                direction = target.x >= origin.x
+                direction = inRightRange && !inLeftRange
                     ? BattleDirection.Right
-                    : BattleDirection.Left;
+                    : inLeftRange && !inRightRange
+                        ? BattleDirection.Left
+                        : target.x >= origin.x ? BattleDirection.Right : BattleDirection.Left;
                 found = true;
             }
 
