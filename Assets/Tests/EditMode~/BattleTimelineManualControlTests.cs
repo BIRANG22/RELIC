@@ -132,6 +132,70 @@ public class BattleTimelineManualControlTests
         Assert.That(Slot(0).Commands[1], Is.SameAs(third));
     }
 
+    [Test]
+    public void MoveReservation_BetweenSlots_InsertsWithoutChangingMovePath()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(2, 0);
+        CharacterRuntimeData runtime = Runtime("DragMove", BattleDirection.Right);
+        PlayerReservedCommand moving = Move(runtime, BattleDirection.Left, 2, Vector2Int.left);
+        PlayerReservedCommand before = Attack(runtime);
+        PlayerReservedCommand after = Attack(runtime);
+        Assert.That(Slot(0).AddCommand(moving), Is.True);
+        Assert.That(Slot(1).AddCommand(before), Is.True);
+        Assert.That(Slot(1).AddCommand(after), Is.True);
+
+        Assert.That(controller.TryMovePlayerReservation(moving, 1, 1), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.Empty);
+        Assert.That(Slot(1).Commands, Is.EqualTo(new[] { before, moving, after }));
+        Assert.That(moving.VisualMoveSteps, Is.EqualTo(new[] { Vector2Int.left }));
+    }
+
+    [Test]
+    public void MoveReservation_InvalidCharacterDestination_LeavesBothSlotsUnchanged()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(2, 0);
+        CharacterRuntimeData first = Runtime("FirstDrag", BattleDirection.Right);
+        CharacterRuntimeData second = Runtime("SecondDrag", BattleDirection.Right);
+        PlayerReservedCommand moving = Attack(first);
+        PlayerReservedCommand occupied = Attack(second);
+        Assert.That(Slot(0).AddCommand(moving), Is.True);
+        Assert.That(Slot(1).AddCommand(occupied), Is.True);
+
+        Assert.That(controller.TryMovePlayerReservation(moving, 1, 0), Is.False);
+
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { moving }));
+        Assert.That(Slot(1).Commands, Is.EqualTo(new[] { occupied }));
+    }
+
+    [Test]
+    public void PendingInsertion_ConfirmCommand_InsertsBetweenExistingCommands()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("DropSkill", BattleDirection.Right);
+        PlayerReservedCommand before = Attack(runtime);
+        PlayerReservedCommand inserted = Attack(runtime);
+        PlayerReservedCommand after = Attack(runtime);
+        Assert.That(Slot(0).AddCommand(before), Is.True);
+        Assert.That(Slot(0).AddCommand(after), Is.True);
+
+        controller.SetPendingPlayerInsertion(0, 1);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, inserted), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { before, inserted, after }));
+    }
+
+    [Test]
+    public void CancelPendingSelection_ClearsPendingDragInsertion()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        controller.SetPendingPlayerInsertion(0, 0);
+
+        controller.CancelPendingActionSelection(false);
+
+        Assert.That(controller.HasPendingPlayerInsertion, Is.False);
+    }
+
     private BattleTimelineController CreateControllerWithSlots(int count, int activeSlotIndex)
     {
         controllerObject = new GameObject("TimelineControllerTest");

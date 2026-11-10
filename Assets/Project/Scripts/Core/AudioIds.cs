@@ -29,8 +29,6 @@ public static class AudioIds
         public const string BattleEndButtonHover = "battle.end.button.hover";
         public const string BattleTimelineSlotSlide = "battle.timeline.slot.slide";
         public const string BattleMapNodeCheckAnimation = "battle.map.node.check.animation";
-        public const string SkillListPanelOpen = "battle.skill.list.open";
-        public const string SkillListPanelClose = "battle.skill.list.close";
         public const string BattleEventDiceRoll = "battle.event.dice.roll";
         public const string BattleBossRevealImpactLow = "battle.boss.reveal.impact.low";
         public const string BattleBossRevealImpactHigh = "battle.boss.reveal.impact.high";

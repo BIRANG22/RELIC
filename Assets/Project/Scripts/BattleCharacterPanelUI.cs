@@ -556,6 +556,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RegisterMoveAndItemButtonListeners();
         EnsureSkillButtonHoverEffects();
         EnsureMoveAndItemButtonHoverEffects();
+        EnsureTimelineSkillDragSources();
         ResolveSkillTooltipReferences();
         ResolveEquipmentTooltipReferences();
         HideSkillTooltip();
@@ -3899,6 +3900,62 @@ public class BattleCharacterPanelUI : MonoBehaviour
         EnsureSkillButtonHoverEffect(skill02Button);
         EnsureSkillButtonHoverEffect(skill03Button);
         EnsureSkillButtonHoverEffect(skill04Button);
+    }
+
+    private void EnsureTimelineSkillDragSources()
+    {
+        ConfigureTimelineSkillDragSource(moveButton, moveIconImage, -1);
+        ConfigureTimelineSkillDragSource(skill01Button, skill01IconImage, 0);
+        ConfigureTimelineSkillDragSource(skill02Button, skill02IconImage, 1);
+        ConfigureTimelineSkillDragSource(skill03Button, skill03IconImage, 2);
+        ConfigureTimelineSkillDragSource(skill04Button, skill04IconImage, 3);
+    }
+
+    private void ConfigureTimelineSkillDragSource(Button button, Image icon, int displaySlotIndex)
+    {
+        if (button == null)
+            return;
+
+        BattleCharacterSkillDragSource source =
+            button.GetComponent<BattleCharacterSkillDragSource>();
+        if (source == null)
+            source = button.gameObject.AddComponent<BattleCharacterSkillDragSource>();
+        source.Configure(this, displaySlotIndex, icon);
+    }
+
+    public bool TryBeginTimelineSkillDrag(
+        int displaySlotIndex,
+        Image icon,
+        PointerEventData eventData)
+    {
+        if (boundRuntime == null || TimelineReservationDragContext.Active != null)
+            return false;
+
+        string skillId = displaySlotIndex < 0
+            ? boundRuntime.MoveSkillId
+            : GetSkillIdForDisplaySlot(displaySlotIndex);
+        SkillMasterData skillData = ResolveSkillData(skillId);
+        if (skillData == null)
+            return false;
+
+        if (displaySlotIndex < 0 && !BattleFirstTutorialController.CanSelectMove)
+            return false;
+        if (displaySlotIndex >= 0 && BattleFirstTutorialController.IsInputRestricted &&
+            (displaySlotIndex != 0 || !BattleFirstTutorialController.CanSelectSkill01))
+        {
+            return false;
+        }
+
+        EnsureTurnExecutor();
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return false;
+
+        TimelineReservationDragContext.BeginNewSkill(
+            boundRuntime,
+            skillData,
+            icon != null ? icon.sprite : null,
+            eventData);
+        return TimelineReservationDragContext.Active != null;
     }
 
     private void EnsureSkillButtonHoverEffect(Button button)

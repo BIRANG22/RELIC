@@ -12,7 +12,6 @@ public class ActiveRelicTargetingController : MonoBehaviour
     [SerializeField, Range(0.05f, 1f)] private float gridEffectPreviewAlpha = 0.45f;
 
     private ActiveRelicService service;
-    private SkillListPanel owner;
     private Action onTargetingSucceeded;
     private CharacterRuntimeData pendingRuntime;
     private ActiveRelicAvailability pendingAvailability;
@@ -45,11 +44,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
         ActiveRelicAvailability availability,
         Action succeededCallback = null)
     {
-        bool started = BeginTargeting(
-            null,
-            activeRelicService,
-            runtime,
-            availability);
+        bool started = BeginTargetingInternal(activeRelicService, runtime, availability);
 
         if (started)
             onTargetingSucceeded = succeededCallback;
@@ -57,8 +52,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
         return started;
     }
 
-    public bool BeginTargeting(
-        SkillListPanel ownerPanel,
+    private bool BeginTargetingInternal(
         ActiveRelicService activeRelicService,
         CharacterRuntimeData runtime,
         ActiveRelicAvailability availability)
@@ -76,7 +70,6 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
         CancelTargeting();
 
-        owner = ownerPanel;
         service = activeRelicService;
         pendingRuntime = runtime;
         pendingAvailability = availability;
@@ -122,7 +115,6 @@ public class ActiveRelicTargetingController : MonoBehaviour
             MonsterUnit.SetAllReservationVisualState(false);
 
         isTargeting = false;
-        owner = null;
         onTargetingSucceeded = null;
         service = null;
         pendingRuntime = null;
@@ -187,8 +179,6 @@ public class ActiveRelicTargetingController : MonoBehaviour
         if (!isTargeting || cell == null || service == null)
             return;
 
-        owner?.IgnoreOutsideCloseForFrames(2);
-
         ActiveRelicUseResult result = service.TryUseTarget(
             pendingRuntime,
             cell.Index,
@@ -197,10 +187,8 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
         if (result.Succeeded)
         {
-            SkillListPanel targetOwner = owner;
             Action succeededCallback = onTargetingSucceeded;
             CancelTargeting();
-            targetOwner?.Refresh();
             succeededCallback?.Invoke();
             return;
         }

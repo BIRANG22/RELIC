@@ -47,6 +47,14 @@ public class BattleTimelineBarUI : MonoBehaviour
         return owner != null && owner.OnTimelineSlotClicked(slotIndex);
     }
 
+    public bool HandleReservationDrop(int slotIndex, int playerInsertionIndex)
+    {
+        return owner != null && owner.HandleTimelineReservationDrop(
+            TimelineReservationDragContext.Active,
+            slotIndex,
+            playerInsertionIndex);
+    }
+
     public bool TryGetOwner(out BattleTimelineController result)
     {
         result = owner;

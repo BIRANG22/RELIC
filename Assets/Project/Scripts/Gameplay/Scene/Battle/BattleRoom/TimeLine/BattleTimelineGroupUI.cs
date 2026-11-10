@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
+public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropHandler
 {
     [Header("Turn Mark")]
     [SerializeField] private TMP_Text turnText;
@@ -1235,6 +1235,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             skillHoverUI = hoverObject.AddComponent<TimelineSkillIconHoverUI>();
 
         skillHoverUI.Setup(entry);
+        TimelineReservationDragSource dragSource =
+            hoverObject.GetComponent<TimelineReservationDragSource>();
+        if (dragSource == null)
+            dragSource = hoverObject.AddComponent<TimelineReservationDragSource>();
+        dragSource.Setup(entry, skillImage);
         EnsureHoverRaycastTarget(hoverObject);
 
         if (skillImage != null)
@@ -1273,6 +1278,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         if (skillHoverUI != null)
             skillHoverUI.Clear();
+
+        TimelineReservationDragSource dragSource =
+            target.GetComponent<TimelineReservationDragSource>();
+        if (dragSource != null)
+            dragSource.Clear();
     }
 
     private GameObject GetSkillHoverObject(Image skillImage)
@@ -1317,6 +1327,100 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        TryHandleReservationDrop(eventData);
+    }
+
+    public bool TryHandleReservationDrop(PointerEventData eventData)
+    {
+        if (owner == null || TimelineReservationDragContext.Active == null ||
+            TimelineReservationDragContext.Active.DropHandled)
+            return false;
+
+        RectTransform groupRect = transform as RectTransform;
+        if (groupRect == null || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                groupRect,
+                eventData.position,
+                eventData.pressEventCamera,
+                out Vector2 localPoint))
+        {
+            return false;
+        }
+
+        List<float> centers = new();
+        List<BattleTimelinePreviewEntry> playerEntries = new();
+        bool draggedHasSwift = TimelineReservationDragContext.Active.HasSwift;
+        for (int orderIndex = 0; orderIndex < currentEntries.Count; orderIndex++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[orderIndex];
+            if (entry == null || !entry.IsPlayer || entry.PlayerCommand == null)
+                continue;
+            if (BattleActionOrderUtility.HasSwift(entry.PlayerCommand) != draggedHasSwift)
+                continue;
+
+            Transform order = transform.Find("Order" + (orderIndex + 1).ToString("00"));
+            RectTransform orderRect = order as RectTransform;
+            if (orderRect == null)
+                continue;
+
+            centers.Add(orderRect.anchoredPosition.x);
+            playerEntries.Add(entry);
+        }
+
+        int playerInsertion;
+        if (playerEntries.Count == 0)
+        {
+            playerInsertion = draggedHasSwift ? 0 : GetPlayerCommandCount();
+        }
+        else
+        {
+            int visualInsertion = TimelineReservationLayoutUtility.FindNearestInsertion(
+                localPoint.x,
+                centers);
+            playerInsertion = visualInsertion >= playerEntries.Count
+                ? playerEntries[playerEntries.Count - 1].PlayerCommandIndex + 1
+                : Mathf.Max(0, playerEntries[visualInsertion].PlayerCommandIndex);
+        }
+
+        bool handled = owner.HandleReservationDrop(slotIndex, playerInsertion);
+        if (handled)
+            TimelineReservationDragContext.MarkDropHandled();
+        return handled;
+    }
+
+    public bool ContainsScreenPointInDropArea(Vector2 screenPoint, Camera eventCamera)
+    {
+        RectTransform groupRect = transform as RectTransform;
+        if (groupRect == null || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                groupRect,
+                screenPoint,
+                eventCamera,
+                out Vector2 localPoint))
+        {
+            return false;
+        }
+
+        // TimelineSlot 루트 폭은 70이지만 Order01~Order05는 오른쪽 60~260 위치까지
+        // 루트 밖으로 뻗어 있습니다. 루트 Rect만 검사하면 실제 행동 표시 영역에 놓은
+        // 드롭을 놓치므로 활성 자식 전체의 시각 경계를 하나의 연속 드롭 영역으로 봅니다.
+        Bounds visualBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(groupRect);
+        return localPoint.x >= visualBounds.min.x && localPoint.x <= visualBounds.max.x &&
+               localPoint.y >= visualBounds.min.y && localPoint.y <= visualBounds.max.y;
+    }
+
+    private int GetPlayerCommandCount()
+    {
+        int count = 0;
+        for (int i = 0; i < currentEntries.Count; i++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[i];
+            if (entry != null && entry.IsPlayer && entry.PlayerCommand != null)
+                count = Mathf.Max(count, entry.PlayerCommandIndex + 1);
+        }
+        return count;
     }
 
     // The first order is drawn underneath later siblings in some TimelineSlot
