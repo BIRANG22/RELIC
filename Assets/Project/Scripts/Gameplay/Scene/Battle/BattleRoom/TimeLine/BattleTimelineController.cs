@@ -5765,16 +5765,9 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null)
             return false;
 
-        if (command.HasSimulatedResult && command.SimulatedMoveGridIndex >= 0)
-        {
-            gridIndex = command.SimulatedMoveGridIndex;
-            return true;
-        }
-
-        if (command.ReservedMoveGridIndex < 0)
-            return false;
-
-        gridIndex = command.EffectiveMoveGridIndex;
+        // 예약 UI는 충돌 시뮬레이션 결과를 노출하지 않고 사용자가 지정한 도착 위치를 유지합니다.
+        // 예약 위치가 없는 이동형 스킬만 기존 시뮬레이션 위치를 fallback으로 사용합니다.
+        gridIndex = command.PreviewMoveGridIndex;
         return gridIndex >= 0;
     }
 
