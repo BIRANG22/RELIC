@@ -162,7 +162,7 @@ public static class BattlePlayerSkillPreviewCalculator
             return string.Empty;
 
         if (preview == null)
-            return SkillDescriptionFormatter.Format(localizedDescription, skill.ValueRate, skill.CountRate, skill.ScalingType, false, skill.EffectIds, skill.ResourceCostValue);
+            return SkillDescriptionFormatter.Format(localizedDescription, skill.ValueRate, skill.CountRate, skill.ScalingType, false, skill.EffectIds);
 
         List<SkillEffectEntry> entries = ResolveEntries(skill);
         string description = localizedDescription;
@@ -210,8 +210,7 @@ public static class BattlePlayerSkillPreviewCalculator
             string.Join(";", countTexts),
             skill.ScalingType,
             preview.Command?.UserRuntime != null,
-            skill.EffectIds,
-            preview.PayAmount);
+            skill.EffectIds);
     }
 
     private static string BuildNumericLink(
@@ -337,10 +336,49 @@ public static class BattlePlayerSkillPreviewCalculator
                         entryIndex < command.ResolvedEffectCounts.Count
             ? Mathf.Max(1, command.ResolvedEffectCounts[entryIndex])
             : Mathf.Max(1, entry.CountAmount);
-        int finalCount = CalculateEffectCount(runtime, command, entry, baseCount);
+        // 환영검무: 실제 전투 실행과 동일하게 현재 이로운 효과의 종류 수를
+        // 직접 피해 효과의 타격 횟수에 더합니다. 중첩 수가 아닌 서로 다른 효과 ID를 셉니다.
+        int buffTypeBonus = 0;
+        if (IsDamageEffect(entry.EffectId) && HasEffect(command?.SkillData, "E_StrikeCountByBuff"))
+            buffTypeBonus = CountBeneficialEffectTypes(runtime);
+
+        int countBeforeEquipment = baseCount + buffTypeBonus;
+        int finalCount = CalculateEffectCount(runtime, command, entry, countBeforeEquipment);
         List<string> formulaParts = new() { baseCount.ToString() };
-        AppendDelta(formulaParts, finalCount - baseCount);
+        AppendDelta(formulaParts, buffTypeBonus);
+        AppendDelta(formulaParts, finalCount - countBeforeEquipment);
         return new BattleSkillNumberBreakdown(finalCount, string.Join(string.Empty, formulaParts));
+    }
+
+    private static bool HasEffect(SkillMasterData skill, string effectId)
+    {
+        if (skill?.EffectEntries == null)
+            return false;
+
+        foreach (SkillEffectEntry effect in skill.EffectEntries)
+            if (effect != null && effect.EffectId == effectId)
+                return true;
+
+        return false;
+    }
+
+    private static int CountBeneficialEffectTypes(CharacterRuntimeData runtime)
+    {
+        if (runtime?.StatusEffects == null || DataManager.Instance?.EffectDatabase == null)
+            return 0;
+
+        HashSet<string> effectIds = new(StringComparer.Ordinal);
+        foreach (StatusEffectRuntimeData status in runtime.StatusEffects)
+        {
+            if (status == null || status.Stack <= 0 || string.IsNullOrWhiteSpace(status.EffectId))
+                continue;
+
+            EffectMasterData master = DataManager.Instance.EffectDatabase.Get(status.EffectId);
+            if (master?.EffectType == EffectType.Beneficial)
+                effectIds.Add(status.EffectId);
+        }
+
+        return effectIds.Count;
     }
 
     private static void AppendDelta(List<string> formulaParts, int delta)
