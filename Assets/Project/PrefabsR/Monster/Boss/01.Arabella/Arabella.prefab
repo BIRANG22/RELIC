@@ -1953,16 +1953,20 @@ MonoBehaviour:
     fallbackText: "\uC774 \uC544\uB984\uB2E4\uC6B4 \uAE30\uB3C4 \uC18C\uB9AC\uAC00
       \uB4E4\uB9AC\uC2DC\uB098\uC694?"
     displayDuration: 2
+    sfxId: boss_text
+    sfxVolume: 1
   - localizationKey: battle.boss.arabella.appear.02
     fallbackText: "\uACE0\uD1B5\uC740 \uC7A0\uC2DC\uBFD0\uC785\uB2C8\uB2E4. \uAD6C\uC6D0\uC740
       \uC601\uC6D0\uD558\uB2C8\uAE4C\uC694."
     displayDuration: 2
-  objectRevealStartDelay: 7
+    sfxId: boss_text
+    sfxVolume: 1
+  objectRevealStartDelay: 8
   sequenceSteps:
   - label: light off
     action: 10
     overrideLightIntensity: 1
-    lightIntensity: 0.3
+    lightIntensity: 0.2
     lightCurve:
       serializedVersion: 2
       m_Curve:
@@ -1989,10 +1993,17 @@ MonoBehaviour:
       m_RotationOrder: 4
     startDelay: 0
     duration: 0
-    targetOffset: {x: 0.94, y: 1.2, z: -13}
+    targetOffset: {x: 1.2, y: 1.2, z: -13}
     shakeStrength: 0
     shakeFrequency: 0
     fadeOutShake: 0
+    vfxPrefab: {fileID: 0}
+    vfxOrigin: {fileID: 0}
+    vfxLocalOffset: {x: 0, y: 0, z: 0}
+    vfxLocalEulerAngles: {x: 0, y: 0, z: 0}
+    parentVfxToOrigin: 0
+    vfxLifetime: 0
+    destroyVfxOnPresentationEnd: 1
   - label: move
     action: 0
     overrideLightIntensity: 0
@@ -2023,10 +2034,17 @@ MonoBehaviour:
       m_RotationOrder: 4
     startDelay: 1
     duration: 2
-    targetOffset: {x: 0.94, y: 1.2, z: -13}
+    targetOffset: {x: 1.2, y: 1.2, z: -13}
     shakeStrength: 0
     shakeFrequency: 0
     fadeOutShake: 0
+    vfxPrefab: {fileID: 0}
+    vfxOrigin: {fileID: 0}
+    vfxLocalOffset: {x: 0, y: 0, z: 0}
+    vfxLocalEulerAngles: {x: 0, y: 0, z: 0}
+    parentVfxToOrigin: 0
+    vfxLifetime: 0
+    destroyVfxOnPresentationEnd: 1
   - label: hold
     action: 10
     overrideLightIntensity: 0
@@ -2056,13 +2074,20 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     startDelay: 0
-    duration: 2
-    targetOffset: {x: 0.94, y: 1.2, z: -13}
+    duration: 2.5
+    targetOffset: {x: 1.2, y: 1.2, z: -13}
     shakeStrength: 0
     shakeFrequency: 0
     fadeOutShake: 0
-  - label: hold
-    action: 10
+    vfxPrefab: {fileID: 0}
+    vfxOrigin: {fileID: 0}
+    vfxLocalOffset: {x: 0, y: 0, z: 0}
+    vfxLocalEulerAngles: {x: 0, y: 0, z: 0}
+    parentVfxToOrigin: 0
+    vfxLifetime: 0
+    destroyVfxOnPresentationEnd: 1
+  - label: light on
+    action: 1
     overrideLightIntensity: 1
     lightIntensity: 0.8
     lightCurve:
@@ -2090,11 +2115,18 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     startDelay: 0
-    duration: 1
-    targetOffset: {x: 0.94, y: 1.2, z: -13}
-    shakeStrength: 0
-    shakeFrequency: 0
+    duration: 0.05
+    targetOffset: {x: 1.2, y: 1.2, z: -13}
+    shakeStrength: 0.1
+    shakeFrequency: 10
     fadeOutShake: 0
+    vfxPrefab: {fileID: 6877144895907850899, guid: 4ccd41b6d4991b542af33e60bb08345c, type: 3}
+    vfxOrigin: {fileID: 0}
+    vfxLocalOffset: {x: 0, y: 0, z: 0}
+    vfxLocalEulerAngles: {x: 0, y: 0, z: 0}
+    parentVfxToOrigin: 0
+    vfxLifetime: 0
+    destroyVfxOnPresentationEnd: 1
   - label: hold
     action: 10
     overrideLightIntensity: 0
@@ -2124,11 +2156,18 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     startDelay: 0
-    duration: 3
-    targetOffset: {x: 0.94, y: 1.2, z: -13}
+    duration: 4
+    targetOffset: {x: 1.2, y: 1.2, z: -13}
     shakeStrength: 0
     shakeFrequency: 0
     fadeOutShake: 0
+    vfxPrefab: {fileID: 0}
+    vfxOrigin: {fileID: 0}
+    vfxLocalOffset: {x: 0, y: 0, z: 0}
+    vfxLocalEulerAngles: {x: 0, y: 0, z: 0}
+    parentVfxToOrigin: 0
+    vfxLifetime: 0
+    destroyVfxOnPresentationEnd: 1
 --- !u!1 &2469629087936589391
 GameObject:
   m_ObjectHideFlags: 0
