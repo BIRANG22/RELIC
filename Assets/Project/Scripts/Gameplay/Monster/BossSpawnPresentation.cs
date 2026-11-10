@@ -46,6 +46,22 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         [Min(0f)] public float shakeStrength = 0.18f;
         [Min(0f)] public float shakeFrequency = 28f;
         public bool fadeOutShake = true;
+
+        [Header("Step VFX")]
+        [Tooltip("이 스텝 시작 시 생성할 VFX 프리팹입니다. 비워두면 생성하지 않습니다.")]
+        public GameObject vfxPrefab;
+        [Tooltip("VFX 생성 기준 Transform입니다. 비워두면 BossSpawnPresentation 오브젝트를 기준으로 합니다.")]
+        public Transform vfxOrigin;
+        [Tooltip("기준 Transform의 로컬 좌표 기준 생성 위치 보정값입니다.")]
+        public Vector3 vfxLocalOffset = Vector3.zero;
+        [Tooltip("기준 Transform 회전에 추가할 VFX 로컬 회전값입니다.")]
+        public Vector3 vfxLocalEulerAngles = Vector3.zero;
+        [Tooltip("체크하면 기준 Transform의 자식으로 생성하여 이동/회전을 따라갑니다.")]
+        public bool parentVfxToOrigin = false;
+        [Tooltip("0이면 자동 제거하지 않습니다. 양수면 생성 후 해당 초가 지나면 제거합니다 (실시간 기준).")]
+        [Min(0f)] public float vfxLifetime = 0f;
+        [Tooltip("연출 종료 또는 취소 시 VFX를 제거합니다. 끄면 생성된 VFX가 남습니다.")]
+        public bool destroyVfxOnPresentationEnd = true;
     }
 
     [Header("Animation")]
@@ -141,6 +157,12 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         [TextArea(1, 3)] public string fallbackText;
         [Tooltip("이 대사를 표시할 시간(초). 시간이 끝나면 다음 대사로 넘어갑니다. 마지막 대사가 0이면 연출 종료까지 유지됩니다.")]
         [Min(0f)] public float displayDuration;
+
+        [Header("Dialogue SFX")]
+        [Tooltip("대사가 화면에 나타날 때 재생할 Sound DB의 SFX ID입니다. 비워두면 재생하지 않습니다.")]
+        public string sfxId;
+        [Tooltip("이 대사의 SFX 볼륨 배율입니다 (0~1).")]
+        [Range(0f, 1f)] public float sfxVolume = 1f;
     }
 
     [Header("Timed Boss Dialogue")]
@@ -170,6 +192,13 @@ public sealed class BossSpawnPresentation : MonoBehaviour
     [Tooltip("카메라 동작만 순서대로 실행합니다. X/Y/Z는 월드 절대좌표이며, 애니메이션은 별도로 동시에 진행됩니다.")]
     [SerializeField] private PresentationStep[] sequenceSteps = new PresentationStep[0];
 
+    [Header("Battle Effect Slide During Intro")]
+    [Tooltip("보스 등장 연출 동안 BattleEffect 슬라이드 효과를 화면에 표시하고, 종료하면 대기 위치로 퇴장시킵니다.")]
+    [SerializeField] private bool useBattleEffectSlide = true;
+    [Tooltip("비워두면 BattleEffectPlaneSlideController.Instance를 자동 사용합니다.")]
+    [SerializeField] private BattleEffectPlaneSlideController battleEffectSlideController;
+    private BattleEffectPlaneSlideController activeIntroSlide;
+
     private bool hasPlayed;
     private bool ownsIntroCamera;
     private Camera introCamera;
@@ -185,6 +214,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
     private bool bossIntroLightSaved;
     private float bossIntroOriginalIntensity;
     private Coroutine bossIntroLightRoutine;
+    private readonly List<GameObject> presentationVfx = new List<GameObject>();
 
     public bool HasPlayed => hasPlayed;
 
@@ -235,6 +265,9 @@ public sealed class BossSpawnPresentation : MonoBehaviour
             yield break;
         }
 
+        // Use the normal battle-effect slide during this independent cinematic.
+        BeginIntroBattleEffectSlide();
+
         // Dialogue timing starts here, alongside the independent camera and animation sequences.
         BeginDialogueTimeline();
         CaptureBossIntroLight();
@@ -262,6 +295,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
                 if (step.startDelay > 0f)
                     yield return WaitForDuration(step.startDelay);
                 ApplyBossIntroStepLighting(step);
+                SpawnStepVfx(step);
                 yield return ExecuteCameraStep(step);
             }
         }
@@ -271,7 +305,10 @@ public sealed class BossSpawnPresentation : MonoBehaviour
             yield return null;
 
         yield return RestoreIntroCameraRoutine();
+        // Wait for the same reserve-position slide used after a turn.
+        yield return EndIntroBattleEffectSlideRoutine();
         RestoreBossIntroLight();
+        CleanupPresentationVfx();
 
         StopDialogueTimeline();
         animator.speed = 1f;
@@ -367,6 +404,41 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         bossIntroLight = null;
     }
 
+    private void SpawnStepVfx(PresentationStep step)
+    {
+        if (step == null || step.vfxPrefab == null)
+            return;
+
+        Transform origin = step.vfxOrigin != null ? step.vfxOrigin : transform;
+        Vector3 worldPosition = origin.TransformPoint(step.vfxLocalOffset);
+        Quaternion worldRotation = origin.rotation * Quaternion.Euler(step.vfxLocalEulerAngles);
+        Transform parent = step.parentVfxToOrigin ? origin : null;
+        GameObject instance = Instantiate(step.vfxPrefab, worldPosition, worldRotation, parent);
+
+        if (step.destroyVfxOnPresentationEnd)
+            presentationVfx.Add(instance);
+
+        if (step.vfxLifetime > 0f)
+            StartCoroutine(DestroyStepVfxAfterDelay(instance, step.vfxLifetime));
+    }
+
+    private static IEnumerator DestroyStepVfxAfterDelay(GameObject instance, float duration)
+    {
+        yield return WaitForDuration(duration);
+        if (instance != null)
+            Destroy(instance);
+    }
+
+    private void CleanupPresentationVfx()
+    {
+        for (int i = 0; i < presentationVfx.Count; i++)
+        {
+            if (presentationVfx[i] != null)
+                Destroy(presentationVfx[i]);
+        }
+        presentationVfx.Clear();
+    }
+
     private IEnumerator ExecuteCameraStep(PresentationStep step)
     {
         switch (step.action)
@@ -400,8 +472,40 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         }
     }
 
+    private void BeginIntroBattleEffectSlide()
+    {
+        if (!useBattleEffectSlide)
+            return;
+
+        BattleEffectPlaneSlideController slide = battleEffectSlideController != null
+            ? battleEffectSlideController : BattleEffectPlaneSlideController.Instance;
+        if (slide == null || !slide.isActiveAndEnabled)
+            return;
+
+        activeIntroSlide = slide;
+        activeIntroSlide.MoveToBattleCenter();
+    }
+
+    private IEnumerator EndIntroBattleEffectSlideRoutine()
+    {
+        BattleEffectPlaneSlideController slide = activeIntroSlide;
+        activeIntroSlide = null;
+        if (slide != null && slide.isActiveAndEnabled)
+            yield return slide.MoveToReserveAndWaitRoutine();
+    }
+
+    private void CancelIntroBattleEffectSlide()
+    {
+        BattleEffectPlaneSlideController slide = activeIntroSlide;
+        activeIntroSlide = null;
+        if (slide != null && slide.isActiveAndEnabled)
+            slide.MoveToReservePosition();
+    }
+
     public void CancelPresentation()
     {
+        CancelIntroBattleEffectSlide();
+        CleanupPresentationVfx();
         RestoreBossIntroLight();
         StopDialogueTimeline();
         if (animator != null)
@@ -440,6 +544,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
                 ? entry.fallbackText
                 : GameLocalization.Get(entry.localizationKey, entry.fallbackText);
             dialogueRoot.SetActive(true);
+            PlayDialogueSfx(entry);
 
             float duration = Mathf.Max(0f, entry.displayDuration);
             if (duration > 0f)
@@ -465,6 +570,23 @@ public sealed class BossSpawnPresentation : MonoBehaviour
 
         dialogueCoroutine = null;
         dialogueTimelineCompleted = true;
+    }
+
+    private void PlayDialogueSfx(TimedDialogue entry)
+    {
+        if (entry == null || string.IsNullOrWhiteSpace(entry.sfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+        {
+            Debug.LogWarning("[BossSpawnPresentation] AudioManager.Instance가 없어 다이어로그 SFX를 재생할 수 없습니다.", this);
+            return;
+        }
+
+        // Use the same Sound DB routing as DBAudioSource, without adding an
+        // OnEnable listener that would trigger duplicate sounds.
+        audioManager.PlaySfx(entry.sfxId.Trim(), Mathf.Clamp01(entry.sfxVolume));
     }
 
     private void ApplyDialogueLayout()
