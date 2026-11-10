@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UI;
 
 public class BattleRewardRelicIntroInputLockTests
@@ -40,6 +41,33 @@ public class BattleRewardRelicIntroInputLockTests
 
             setBlocked.Invoke(panel, new object[] { false });
             Assert.That(blocker.gameObject.activeSelf, Is.False);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(panelObject);
+        }
+    }
+
+    [Test]
+    public void IntroInputBlocker_ParentDisableDoesNotChangeSiblingPositionOrLogError()
+    {
+        GameObject panelObject = new GameObject("Relic_panel", typeof(RectTransform));
+        try
+        {
+            BattleRewardRelicPanelUI panel = panelObject.AddComponent<BattleRewardRelicPanelUI>();
+            MethodInfo setBlocked = typeof(BattleRewardRelicPanelUI).GetMethod(
+                "SetIntroInputBlocked", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(setBlocked, Is.Not.Null);
+            setBlocked.Invoke(panel, new object[] { true });
+
+            Transform blocker = panelObject.transform.Find("__IntroInputBlocker");
+            Assert.That(blocker, Is.Not.Null);
+
+            panelObject.SetActive(false);
+
+            Assert.That(blocker.gameObject.activeSelf, Is.False);
+            LogAssert.NoUnexpectedReceived();
         }
         finally
         {

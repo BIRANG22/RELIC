@@ -1964,6 +1964,29 @@ public class BattleRoomLoader : MonoBehaviour
         RefreshBattleHUDs();
     }
 
+    public ArabellaSpawnPresentation FindDeferredBossSpawnPresentation()
+    {
+        for (int i = 0; i < spawnedMonsterUnits.Count; i++)
+        {
+            MonsterUnit monsterUnit = spawnedMonsterUnits[i];
+            if (monsterUnit == null || monsterUnit.RuntimeData == null ||
+                !ArabellaPhaseTransition.IsArabellaMonsterId(monsterUnit.RuntimeData.MonsterId))
+            {
+                continue;
+            }
+
+            ArabellaSpawnPresentation presentation =
+                monsterUnit.GetComponent<ArabellaSpawnPresentation>();
+            if (presentation == null)
+                presentation = monsterUnit.GetComponentInChildren<ArabellaSpawnPresentation>(true);
+
+            if (presentation != null)
+                return presentation;
+        }
+
+        return null;
+    }
+
     private void SpawnMonstersAndRefreshBattleStartPassives()
     {
         SpawnMonstersAndHUD(false);
