@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
@@ -110,6 +110,8 @@ public class BattleSceneController : MonoBehaviour
     private bool pendingBattleRoomUsesBossIntro;
     private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
     private Coroutine deferredBossIntroRoutine;
+    private Coroutine activeBossSpawnPresentationRoutine;
+    private TimedObjectRevealSequence activeBossRevealSequence;
     private bool deferBattlePartyEntryUntilUncover;
 
     private void Awake()
@@ -2834,6 +2836,16 @@ public class BattleSceneController : MonoBehaviour
                 ? battleRoom.GetComponentInChildren<BattleRoomLoader>(true)
                 : null;
             loader?.FindDeferredBossSpawnPresentation()?.CancelPresentation();
+            if (activeBossSpawnPresentationRoutine != null)
+            {
+                StopCoroutine(activeBossSpawnPresentationRoutine);
+                activeBossSpawnPresentationRoutine = null;
+            }
+            if (activeBossRevealSequence != null)
+            {
+                activeBossRevealSequence.StopSequence();
+                activeBossRevealSequence = null;
+            }
 
             StopCoroutine(deferredBossIntroRoutine);
             deferredBossIntroRoutine = null;
@@ -2885,7 +2897,7 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        ArabellaSpawnPresentation presenter =
+        BossSpawnPresentation presenter =
             loader?.FindDeferredBossSpawnPresentation();
         if (presenter != null)
         {
@@ -2896,14 +2908,49 @@ public class BattleSceneController : MonoBehaviour
         PlayDeferredBossNameRevealOrFinalize();
     }
 
-    private IEnumerator PlayDeferredBossSpawnPresentation(ArabellaSpawnPresentation presenter)
+    private IEnumerator PlayDeferredBossSpawnPresentation(BossSpawnPresentation presenter)
     {
-        yield return presenter.Play();
-        PlayDeferredBossNameRevealOrFinalize();
+        // Boss animation/camera and the timed object reveal run concurrently.
+        // Both must finish before battle input is unlocked.
+        bool bossPresentationCompleted = false;
+        activeBossSpawnPresentationRoutine = StartCoroutine(
+            PlayBossSpawnPresentationAndNotify(presenter, () => bossPresentationCompleted = true));
+
+        float delay = presenter != null ? presenter.ObjectRevealStartDelay : 0f;
+        float elapsed = 0f;
+        while (elapsed < delay)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        AutoFindSharedRoomPresentationIfNeeded();
+        bool revealStarted = sharedBackgroundController != null &&
+            sharedBackgroundController.PlayCurrentBossReveal();
+        IBattleRoomIntroSequence revealSequence = revealStarted
+            ? ResolveBattleRoomIntroSequence()
+            : null;
+        activeBossRevealSequence = revealSequence as TimedObjectRevealSequence;
+
+        while (!bossPresentationCompleted ||
+               (revealSequence != null && !revealSequence.IsCompleted))
+            yield return null;
+
+        activeBossSpawnPresentationRoutine = null;
+        activeBossRevealSequence = null;
+        FinalizeDeferredBossIntro();
+    }
+
+    private IEnumerator PlayBossSpawnPresentationAndNotify(BossSpawnPresentation presenter, Action onComplete)
+    {
+        if (presenter != null)
+            yield return presenter.Play();
+        onComplete?.Invoke();
     }
 
     private void PlayDeferredBossNameRevealOrFinalize()
     {
+        // Fallback for boss encounters without a BossSpawnPresentation component.
         deferredBossIntroRoutine = null;
 
         AutoFindSharedRoomPresentationIfNeeded();

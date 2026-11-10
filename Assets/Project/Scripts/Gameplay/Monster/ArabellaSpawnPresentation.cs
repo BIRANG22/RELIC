@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -12,6 +13,37 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
 
     private const string Appear01StateName = "Appear01";
     private const string Appear02StateName = "Appear02";
+
+    public enum SequenceAction
+    {
+        CameraMove,
+        CameraShake,
+        Wait,
+        ShowFirstDialogue,
+        ShowSecondDialogue,
+        HideDialogue,
+        PlayAppear01,
+        PlayAppear02,
+        RestoreCamera,
+        PlayIdle
+    }
+
+    [Serializable]
+    public class PresentationStep
+    {
+        public string label;
+        public SequenceAction action;
+        [Tooltip("CameraMove: 이동 시간 / CameraShake: 흔들림 시간 / Wait: 대기 시간 / Animation: 0이면 클립 길이, 양수이면 지정 시간")]
+        [Min(0f)] public float duration = 0.35f;
+
+        [Header("CameraMove")]
+        public Vector3 targetOffset = new Vector3(0f, 2f, -20f);
+
+        [Header("CameraShake")]
+        [Min(0f)] public float shakeStrength = 0.18f;
+        [Min(0f)] public float shakeFrequency = 28f;
+        public bool fadeOutShake = true;
+    }
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
@@ -31,12 +63,9 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
     [Header("Animation Timing")]
     [SerializeField, Min(0.01f)] private float animationSpeed = 1f;
 
-    [Header("Intro Camera")]
-    [SerializeField] private bool useIntroCamera = true;
-    [SerializeField] private Vector2 cameraTargetOffset = new Vector2(0f, 2f);
-    [SerializeField, Min(0.01f)] private float cameraOrthographicSize = 6f;
-    [SerializeField, Min(0f)] private float cameraBlendInDuration = 0.35f;
-    [SerializeField, Min(0f)] private float cameraBlendOutDuration = 0.35f;
+    [Header("Sequential Presentation (비어 있으면 기본 등장 연출)")]
+    [Tooltip("위에서 아래로 순차 실행합니다. CameraMove의 X/Y는 아라벨라 위치에서의 오프셋이며 Z는 카메라의 월드 Z 좌표입니다. 애니메이션 단계는 실행 후 duration 동안 기다립니다.")]
+    [SerializeField] private PresentationStep[] sequenceSteps = new PresentationStep[0];
 
     private bool hasPlayed;
     private bool ownsIntroCamera;
@@ -45,6 +74,8 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
     private Vector3 cameraRestorePosition;
     private Quaternion cameraRestoreRotation;
     private float cameraRestoreOrthographicSize;
+    private Vector3 cameraBasePosition;
+    private float cameraBaseSize;
 
     public bool HasPlayed => hasPlayed;
 
@@ -61,7 +92,6 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
     private void Awake()
     {
         ApplyDialogueLayout();
-
         if (dialogueRoot != null)
             dialogueRoot.SetActive(false);
     }
@@ -91,7 +121,6 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
             yield break;
 
         hasPlayed = true;
-
         if (!CanPlay)
         {
             Debug.LogWarning("[ArabellaSpawnPresentation] 등장 연출 참조가 완전하지 않아 연출을 건너뜁니다.", this);
@@ -100,20 +129,28 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
 
         ApplyDialogueLayout();
         animator.speed = Mathf.Max(0.01f, animationSpeed);
-        BeginIntroCamera();
+        if (sequenceSteps != null && Array.Exists(sequenceSteps, step => step != null && (step.action == SequenceAction.CameraMove || step.action == SequenceAction.CameraShake)))
+            BeginIntroCamera();
 
-        dialogueRoot.SetActive(true);
-        dialogueText.text = GameLocalization.Get(FirstDialogueKey, FirstDialogueFallback);
-        PlayAnimatorState(Appear01StateName);
-        yield return WaitForDuration(ResolvePresentationDuration(
-            appear01Clip,
-            firstDialogueDuration));
+        if (sequenceSteps != null && sequenceSteps.Length > 0)
+        {
+            foreach (PresentationStep step in sequenceSteps)
+            {
+                if (step == null)
+                    continue;
+                yield return ExecuteStep(step);
+            }
+        }
+        else
+        {
+            ShowDialogue(FirstDialogueKey, FirstDialogueFallback);
+            PlayAnimatorState(Appear01StateName);
+            yield return WaitForDuration(ResolvePresentationDuration(appear01Clip, firstDialogueDuration));
 
-        dialogueText.text = GameLocalization.Get(SecondDialogueKey, SecondDialogueFallback);
-        PlayAnimatorState(Appear02StateName);
-        yield return WaitForDuration(ResolvePresentationDuration(
-            appear02Clip,
-            secondDialogueDuration));
+            ShowDialogue(SecondDialogueKey, SecondDialogueFallback);
+            PlayAnimatorState(Appear02StateName);
+            yield return WaitForDuration(ResolvePresentationDuration(appear02Clip, secondDialogueDuration));
+        }
 
         yield return RestoreIntroCameraRoutine();
 
@@ -122,20 +159,70 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
         unitAnimator.PlayIdle();
     }
 
+    private IEnumerator ExecuteStep(PresentationStep step)
+    {
+        switch (step.action)
+        {
+            case SequenceAction.CameraMove:
+                if (ownsIntroCamera)
+                {
+                    StopCameraBlend();
+                    Vector3 target = new Vector3(
+                        transform.position.x + step.targetOffset.x,
+                        transform.position.y + step.targetOffset.y,
+                        step.targetOffset.z);
+                    yield return BlendCameraRoutine(cameraBasePosition, target,
+                        cameraBaseSize, cameraBaseSize, step.duration);
+                }
+                break;
+            case SequenceAction.CameraShake:
+                if (ownsIntroCamera)
+                    yield return ShakeCameraRoutine(step.duration, step.shakeStrength,
+                        step.shakeFrequency, step.fadeOutShake);
+                break;
+            case SequenceAction.Wait:
+                yield return WaitForDuration(step.duration);
+                break;
+            case SequenceAction.ShowFirstDialogue:
+                ShowDialogue(FirstDialogueKey, FirstDialogueFallback);
+                break;
+            case SequenceAction.ShowSecondDialogue:
+                ShowDialogue(SecondDialogueKey, SecondDialogueFallback);
+                break;
+            case SequenceAction.HideDialogue:
+                dialogueRoot.SetActive(false);
+                break;
+            case SequenceAction.PlayAppear01:
+                PlayAnimatorState(Appear01StateName);
+                yield return WaitForDuration(ResolvePresentationDuration(appear01Clip, step.duration));
+                break;
+            case SequenceAction.PlayAppear02:
+                PlayAnimatorState(Appear02StateName);
+                yield return WaitForDuration(ResolvePresentationDuration(appear02Clip, step.duration));
+                break;
+            case SequenceAction.RestoreCamera:
+                yield return RestoreIntroCameraRoutine(step.duration);
+                break;
+            case SequenceAction.PlayIdle:
+                unitAnimator.PlayIdle();
+                break;
+        }
+    }
+
+    private void ShowDialogue(string key, string fallback)
+    {
+        dialogueRoot.SetActive(true);
+        dialogueText.text = GameLocalization.Get(key, fallback);
+    }
+
     public void CancelPresentation()
     {
         if (dialogueRoot != null)
             dialogueRoot.SetActive(false);
-
         if (animator != null)
             animator.speed = 1f;
 
-        if (cameraBlendRoutine != null)
-        {
-            StopCoroutine(cameraBlendRoutine);
-            cameraBlendRoutine = null;
-        }
-
+        StopCameraBlend();
         RestoreIntroCameraImmediate();
     }
 
@@ -143,7 +230,6 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
     {
         if (dialogueRect == null)
             return;
-
         dialogueRect.localPosition = dialogueLocalPosition;
         dialogueRect.sizeDelta = dialogueSize;
     }
@@ -158,7 +244,6 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
     {
         if (overrideDuration > 0f)
             return overrideDuration;
-
         float clipLength = clip != null ? clip.length : 0f;
         return clipLength / Mathf.Max(0.01f, animationSpeed);
     }
@@ -166,9 +251,7 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
     private static IEnumerator WaitForDuration(float duration)
     {
         float elapsed = 0f;
-        duration = Mathf.Max(0f, duration);
-
-        while (elapsed < duration)
+        while (elapsed < Mathf.Max(0f, duration))
         {
             elapsed += Time.unscaledDeltaTime;
             yield return null;
@@ -177,11 +260,9 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
 
     private void BeginIntroCamera()
     {
-        if (!useIntroCamera || BattleCameraController.Instance == null ||
+        if (BattleCameraController.Instance == null ||
             !BattleCameraController.Instance.TryBeginCinematicCamera())
-        {
             return;
-        }
 
         introCamera = Camera.main;
         if (introCamera == null)
@@ -194,89 +275,95 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
         cameraRestorePosition = introCamera.transform.position;
         cameraRestoreRotation = introCamera.transform.rotation;
         cameraRestoreOrthographicSize = introCamera.orthographicSize;
-
-        Vector3 targetPosition = new Vector3(
-            transform.position.x + cameraTargetOffset.x,
-            transform.position.y + cameraTargetOffset.y,
-            cameraRestorePosition.z);
-
-        cameraBlendRoutine = StartCoroutine(BlendCameraRoutine(
-            cameraRestorePosition,
-            targetPosition,
-            cameraRestoreOrthographicSize,
-            cameraOrthographicSize,
-            cameraBlendInDuration));
+        cameraBasePosition = cameraRestorePosition;
+        cameraBaseSize = cameraRestoreOrthographicSize;
     }
 
-    private IEnumerator RestoreIntroCameraRoutine()
+    private IEnumerator RestoreIntroCameraRoutine(float duration = 0.35f)
     {
         if (!ownsIntroCamera || introCamera == null)
             yield break;
 
-        if (cameraBlendRoutine != null)
-        {
-            StopCoroutine(cameraBlendRoutine);
-            cameraBlendRoutine = null;
-        }
-
-        yield return BlendCameraRoutine(
-            introCamera.transform.position,
-            cameraRestorePosition,
-            introCamera.orthographicSize,
-            cameraRestoreOrthographicSize,
-            cameraBlendOutDuration);
+        StopCameraBlend();
+        yield return BlendCameraRoutine(cameraBasePosition, cameraRestorePosition,
+            cameraBaseSize, cameraRestoreOrthographicSize, duration);
 
         BattleCameraController.Instance?.EndCinematicCameraKeepingCurrentPose();
         ownsIntroCamera = false;
         introCamera = null;
     }
 
-    private IEnumerator BlendCameraRoutine(
-        Vector3 startPosition,
-        Vector3 targetPosition,
-        float startSize,
-        float targetSize,
-        float duration)
+    private void StopCameraBlend()
+    {
+        if (cameraBlendRoutine == null)
+            return;
+        StopCoroutine(cameraBlendRoutine);
+        cameraBlendRoutine = null;
+        if (ownsIntroCamera)
+            ApplyCameraPose(cameraBasePosition, cameraBaseSize);
+    }
+
+    private IEnumerator BlendCameraRoutine(Vector3 startPosition, Vector3 targetPosition,
+        float startSize, float targetSize, float duration)
     {
         float elapsed = 0f;
         duration = Mathf.Max(0f, duration);
-
         do
         {
             float t = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
             t = Mathf.SmoothStep(0f, 1f, t);
-            ApplyCameraPose(
-                Vector3.Lerp(startPosition, targetPosition, t),
+            ApplyCameraPose(Vector3.Lerp(startPosition, targetPosition, t),
                 Mathf.Lerp(startSize, targetSize, t));
-
             if (t >= 1f)
                 break;
-
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
         while (true);
-
         cameraBlendRoutine = null;
     }
 
-    private void ApplyCameraPose(Vector3 position, float orthographicSize)
+    private IEnumerator ShakeCameraRoutine(float duration, float strength, float frequency, bool fadeOut)
     {
+        Vector3 fixedBase = cameraBasePosition;
+        float size = cameraBaseSize;
+        float elapsed = 0f;
+        duration = Mathf.Max(0f, duration);
+        while (elapsed < duration)
+        {
+            float envelope = fadeOut ? 1f - Mathf.Clamp01(elapsed / duration) : 1f;
+            float phase = elapsed * Mathf.Max(0f, frequency);
+            // 두 축의 서로 다른 주파수로 반복 패턴을 줄이고, 마지막에는 원래 위치로 복구.
+            Vector3 offset = new Vector3(Mathf.Sin(phase * 2.17f),
+                Mathf.Sin(phase * 2.91f + 1.3f), 0f) * (strength * envelope);
+            ApplyCameraPose(fixedBase + offset, size, false);
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        ApplyCameraPose(fixedBase, size);
+    }
+
+    private void ApplyCameraPose(Vector3 position, float orthographicSize, bool updateBase = true)
+    {
+        if (!ownsIntroCamera)
+            return;
+
+        if (updateBase)
+        {
+            cameraBasePosition = position;
+            cameraBaseSize = orthographicSize;
+        }
+
         if (BattleCameraController.Instance != null)
         {
             BattleCameraController.Instance.ApplyCinematicCameraPose(
-                position,
-                cameraRestoreRotation,
-                orthographicSize,
-                true,
-                false,
-                true);
+                position, cameraRestoreRotation, orthographicSize,
+                true, false, true);
             return;
         }
 
         if (introCamera == null)
             return;
-
         introCamera.transform.position = position;
         if (introCamera.orthographic)
             introCamera.orthographicSize = Mathf.Max(0.01f, orthographicSize);
@@ -287,19 +374,12 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
         if (!ownsIntroCamera)
             return;
 
-        if (cameraBlendRoutine != null)
-        {
-            StopCoroutine(cameraBlendRoutine);
-            cameraBlendRoutine = null;
-        }
-
+        StopCameraBlend();
         if (BattleCameraController.Instance != null)
             BattleCameraController.Instance.RestoreCinematicCameraImmediate();
         else if (introCamera != null)
         {
-            introCamera.transform.SetPositionAndRotation(
-                cameraRestorePosition,
-                cameraRestoreRotation);
+            introCamera.transform.SetPositionAndRotation(cameraRestorePosition, cameraRestoreRotation);
             if (introCamera.orthographic)
                 introCamera.orthographicSize = cameraRestoreOrthographicSize;
         }
