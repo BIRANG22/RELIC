@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -11,6 +12,9 @@ namespace Relic.Gameplay.Data
     public static class SkillDescriptionFormatter
     {
         private static readonly Regex EffectTokenRegex = new(@"\{(?<id>E_[A-Za-z0-9_]+)\}", RegexOptions.Compiled);
+        private static readonly Regex EffectLinkRegex = new(
+            @"<link\s*=\s*""effecticon:(?<id>E_[A-Za-z0-9_]+)""[^>]*>",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex TmpTagRegex = new(@"<[^>]+>", RegexOptions.Compiled);
 
 
@@ -202,6 +206,23 @@ namespace Relic.Gameplay.Data
         public static string ReplaceEffectTokens(string source)
         {
             return ReplaceEffectTokens(source, null);
+        }
+
+        public static List<string> ExtractLinkedEffectIds(string formattedDescription)
+        {
+            var result = new List<string>();
+            if (string.IsNullOrWhiteSpace(formattedDescription))
+                return result;
+
+            var added = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (Match match in EffectLinkRegex.Matches(formattedDescription))
+            {
+                string effectId = match.Groups["id"].Value;
+                if (!string.IsNullOrWhiteSpace(effectId) && added.Add(effectId))
+                    result.Add(effectId);
+            }
+
+            return result;
         }
 
         /// <summary>

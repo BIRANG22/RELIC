@@ -7,6 +7,40 @@ namespace Relic.Gameplay.Monster
 {
     public abstract class MonsterAIBase
     {
+        protected static List<Vector2Int> GetSkillRangeOffsets(
+            MonsterUnit monsterUnit,
+            string skillId)
+        {
+            MonsterSkillData skillData =
+                DataManager.Instance?.MonsterSkillDatabase?.Get(skillId);
+            bool facingRight = monsterUnit?.RuntimeData?.Direction == BattleDirection.Right;
+            return MonsterSkillRangeService.BuildRangeOffsets(
+                skillData,
+                facingRight,
+                DataManager.Instance?.RangeDatabase);
+        }
+
+        protected static string GetSkillRangeId(string skillId)
+        {
+            return DataManager.Instance?.MonsterSkillDatabase?.Get(skillId)?.RangeId;
+        }
+
+        protected static List<Vector2Int> GetSkillRangeOffsetsAtDistance(
+            MonsterUnit monsterUnit,
+            string skillId,
+            int distance)
+        {
+            List<Vector2Int> source = GetSkillRangeOffsets(monsterUnit, skillId);
+            List<Vector2Int> result = new();
+            for (int i = 0; i < source.Count; i++)
+            {
+                Vector2Int offset = source[i];
+                if (Mathf.Max(Mathf.Abs(offset.x), Mathf.Abs(offset.y)) == distance)
+                    result.Add(offset);
+            }
+            return result;
+        }
+
         // Distance for selecting nearest/farthest targets on the 8-direction grid.
         // This is not a pathfinding cost or a skill range check.
         protected static int TargetGridDistance(Vector2Int a, Vector2Int b)

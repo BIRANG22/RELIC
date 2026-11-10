@@ -137,25 +137,6 @@ namespace Relic.Gameplay.Monster
             return approached;
         }
 
-        private static readonly Vector2Int[] EscapeOffsets =
-        {
-            Vector2Int.left,
-            Vector2Int.right,
-            Vector2Int.up,
-            Vector2Int.down,
-            new Vector2Int(-1, 1),
-            new Vector2Int(1, 1),
-            new Vector2Int(-1, -1),
-            new Vector2Int(1, -1)
-        };
-
-        public static bool IsMoveOffsetInSkillRange(Vector2Int offset)
-        {
-            return offset != Vector2Int.zero &&
-                   Mathf.Abs(offset.x) <= 1 &&
-                   Mathf.Abs(offset.y) <= 1;
-        }
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return WraithRushSkillId;
@@ -426,12 +407,10 @@ namespace Relic.Gameplay.Monster
             int bestNearestDistance = int.MinValue;
             int bestTotalDistance = int.MinValue;
 
-            for (int i = 0; i < EscapeOffsets.Length; i++)
+            List<Vector2Int> escapeOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int i = 0; i < escapeOffsets.Count; i++)
             {
-                Vector2Int offset = EscapeOffsets[i];
-
-                if (!IsMoveOffsetInSkillRange(offset))
-                    continue;
+                Vector2Int offset = escapeOffsets[i];
 
                 if (!CanMonsterMoveFromProjectedOrigin(
                         monsterUnit,
@@ -494,10 +473,8 @@ namespace Relic.Gameplay.Monster
             int bestSafety = int.MinValue;
             int bestDistance = int.MinValue;
 
-            foreach (Vector2Int offset in EscapeOffsets)
+            foreach (Vector2Int offset in GetSkillRangeOffsets(monsterUnit, MoveSkillId))
             {
-                if (!IsMoveOffsetInSkillRange(offset))
-                    continue;
                 if (!CanMonsterMoveFromProjectedOrigin(
                         monsterUnit, originGridIndex, gridManager, offset))
                     continue;

@@ -220,10 +220,18 @@ public class BattleNextNodeChoiceButton : MonoBehaviour, IPointerEnterHandler, I
         if (nodeIndex < 0 || UIPanelButton.IsMenuPanelOpen)
             return;
 
+        if (!CanBeginSelection(() => SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit()))
+            return;
+
         if (hoverScale == null)
             hoverScale = GetComponent<BattleNextNodeChoiceHoverScale>();
 
         hoverScale?.SetSelected(true);
         onSelected?.Invoke(nodeIndex);
+    }
+
+    public static bool CanBeginSelection(Func<bool> tryBlockSharedStateEdit)
+    {
+        return tryBlockSharedStateEdit == null || !tryBlockSharedStateEdit();
     }
 }

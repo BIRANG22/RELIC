@@ -22,22 +22,6 @@ namespace Relic.Gameplay.Monster
         private const string SpiderEggGridEffectId = "GR_spider_egg";
         private const string CinderMonsterId = "Mon_06";
 
-        private static readonly Vector2Int[] MoveOffsets =
-        {
-            Vector2Int.left,
-            Vector2Int.right,
-            Vector2Int.up,
-            Vector2Int.down,
-            new Vector2Int(-1, -1),
-            new Vector2Int(-1, 1),
-            new Vector2Int(1, -1),
-            new Vector2Int(1, 1),
-            Vector2Int.left * 2,
-            Vector2Int.right * 2,
-            Vector2Int.up * 2,
-            Vector2Int.down * 2
-        };
-
         private static readonly Vector2Int[] CardinalOffsets =
         {
             Vector2Int.left,
@@ -228,7 +212,7 @@ namespace Relic.Gameplay.Monster
             int currentDistance = GetNearestPlayerDistance(origin, players, gridManager);
             int bestDistance = currentDistance;
             Vector2Int best = Vector2Int.zero;
-            foreach (Vector2Int offset in CardinalOffsets)
+            foreach (Vector2Int offset in GetSkillRangeOffsets(unit, PhaseTwoMoveSkillId))
             {
                 Vector2Int nextCoord = origin + offset;
                 if (!gridManager.IsValidCoord(nextCoord)) continue;
@@ -267,7 +251,7 @@ namespace Relic.Gameplay.Monster
                 ? offset.x > 0
                 : unit.RuntimeData.Direction == BattleDirection.Right;
             List<int> indices = MonsterSkillRangeService.BuildRangeGridIndices(
-                unit, "Range_18", gridManager, facingRight, gridIndex, ranges);
+                unit, GetSkillRangeId(MeleeAttackSkillId), gridManager, facingRight, gridIndex, ranges);
             if (indices == null) return false;
             foreach (BattleCharacter player in players)
                 if (IsAlivePlayer(player) && indices.Contains(player.CurrentGridIndex))
@@ -465,9 +449,10 @@ namespace Relic.Gameplay.Monster
             int bestScore = int.MinValue;
             int bestThreatDistance = int.MinValue;
 
-            for (int i = 0; i < MoveOffsets.Length; i++)
+            List<Vector2Int> moveOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int i = 0; i < moveOffsets.Count; i++)
             {
-                Vector2Int offset = MoveOffsets[i];
+                Vector2Int offset = moveOffsets[i];
 
                 // 1칸과 2칸 이동을 모두 후보로 두고, 실제 이동 가능한 경로만 평가합니다.
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))

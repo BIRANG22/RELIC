@@ -220,6 +220,9 @@ public class BattleMapPanel : MonoBehaviour
         if (isNextNodeSelectionProcessing)
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (battleSceneController == null)
         {
             Debug.LogWarning("[BattleMapPanel] BattleSceneController가 연결되지 않았습니다.");
@@ -227,6 +230,7 @@ public class BattleMapPanel : MonoBehaviour
         }
 
         isNextNodeSelectionProcessing = true;
+        nextNodeSelectionPanel?.LockInputAfterSelection();
 
         // 선택지 클릭 직후 방 전환을 시작하지 않고, 지도상의 실제 노드에
         // X 표시 애니메이션을 끝까지 재생한 다음 기존 선택 흐름을 실행합니다.

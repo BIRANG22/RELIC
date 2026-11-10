@@ -44,18 +44,6 @@ namespace Relic.Gameplay.Monster
         private const string MoveSkillId = "S_Monster_13";
         private const string ExplodeSkillId = "S_Monster_14";
 
-        private static readonly Vector2Int[] MoveDirections =
-        {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right,
-            new Vector2Int(-1, 1),
-            new Vector2Int(1, 1),
-            new Vector2Int(-1, -1),
-            new Vector2Int(1, -1)
-        };
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return monster != null && monster.IsExplodeReady
@@ -210,10 +198,11 @@ namespace Relic.Gameplay.Monster
             int bestDistanceScore = int.MaxValue;
             Vector2Int bestOffset = Vector2Int.zero;
 
+            List<Vector2Int> moveDirections = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
             MonsterUnit[] otherCinders = Object.FindObjectsByType<MonsterUnit>(FindObjectsSortMode.None);
-            for (int i = 0; i < MoveDirections.Length; i++)
+            for (int i = 0; i < moveDirections.Count; i++)
             {
-                Vector2Int offset = MoveDirections[i];
+                Vector2Int offset = moveDirections[i];
                 if (!CanCinderMove(monsterUnit, gridManager, offset))
                     continue;
 
@@ -250,9 +239,10 @@ namespace Relic.Gameplay.Monster
                     int peerTargets = int.MinValue;
                     int peerDistance = int.MaxValue;
                     Vector2Int peerOrigin = gridManager.IndexToCoord(peer.MainGridIndex);
-                    for (int j = 0; j < MoveDirections.Length; j++)
+                    List<Vector2Int> peerMoveDirections = GetSkillRangeOffsets(peer, MoveSkillId);
+                    for (int j = 0; j < peerMoveDirections.Count; j++)
                     {
-                        Vector2Int peerOffset = MoveDirections[j];
+                        Vector2Int peerOffset = peerMoveDirections[j];
                         Vector2Int peerCoord = peerOrigin + peerOffset;
                         if (!gridManager.IsValidCoord(peerCoord)) continue;
                         int peerCell = gridManager.CoordToIndex(peerCoord);

@@ -126,6 +126,13 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private RectTransform equippedSkillTooltipAnchor;
     private readonly Vector3[] equippedSkillTooltipCorners = new Vector3[4];
 
+    [Header("Offered Skill Effect Tooltip")]
+    [SerializeField] private Vector2 offeredSkillEffectTooltipOffset = new Vector2(120f, 0f);
+    [SerializeField, Min(0f)] private float offeredSkillEffectTooltipVerticalSpacing = 8f;
+    private UnitStatusEffectTooltipUI offeredSkillEffectTooltip;
+    private readonly List<StatusEffectRuntimeData> offeredSkillEffectPreview = new();
+    private int offeredSkillEffectCardIndex = -1;
+
     [Header("Skip Reward Button")]
     [Tooltip("Assign Skill_panel/SkipButton. If empty, the direct child SkipButton is found automatically.")]
     [SerializeField] private Button skipButton;
@@ -265,6 +272,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        HideOfferedSkillEffectTooltip();
         HideEquippedSkillTooltipImmediately();
         SetSkipRevealState(false);
         cardAudioSuspendedForPause = false;
@@ -515,9 +523,86 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (index < 0 || index >= cardHovered.Length) return;
         cardHovered[index] = clickedCardIndex < 0 && pendingReplacementCard < 0 && !processing && cardInteractionReady[index] && hovered;
         if (cardHovered[index])
+        {
             ShowPreviewForOfferedCard(index);
-        else if (!hovered && !previewFromReplacement && previewOfferedCardIndex == index)
-            ClearSkillSlotPreviewVfx();
+            ShowOfferedSkillEffectTooltip(index);
+        }
+        else if (!hovered)
+        {
+            HideOfferedSkillEffectTooltip(index);
+
+            if (!previewFromReplacement && previewOfferedCardIndex == index)
+                ClearSkillSlotPreviewVfx();
+        }
+    }
+
+    public static List<StatusEffectRuntimeData> BuildEffectPreview(SkillMasterData skill)
+    {
+        var result = new List<StatusEffectRuntimeData>();
+        if (skill == null)
+            return result;
+
+        string description = SkillDescriptionFormatter.Format(
+            GameDataLocalization.SkillDetailsTemplate(skill),
+            skill.ValueRate,
+            skill.CountRate,
+            skill.ScalingType,
+            false,
+            skill.EffectIds,
+            skill.ResourceCostValue);
+        List<string> effectIds = SkillDescriptionFormatter.ExtractLinkedEffectIds(description);
+        for (int i = 0; i < effectIds.Count; i++)
+            result.Add(new StatusEffectRuntimeData(effectIds[i], 1));
+
+        return result;
+    }
+
+    private void ShowOfferedSkillEffectTooltip(int index)
+    {
+        if (index < 0 || index >= offeredSkills.Length || offeredSkills[index] == null)
+        {
+            HideOfferedSkillEffectTooltip();
+            return;
+        }
+
+        Transform card = scaleCardRoots[index];
+        RectTransform anchor = card as RectTransform;
+        if (anchor == null)
+        {
+            HideOfferedSkillEffectTooltip();
+            return;
+        }
+
+        offeredSkillEffectPreview.Clear();
+        offeredSkillEffectPreview.AddRange(BuildEffectPreview(offeredSkills[index]));
+        if (offeredSkillEffectPreview.Count == 0)
+        {
+            HideOfferedSkillEffectTooltip();
+            return;
+        }
+
+        offeredSkillEffectTooltip ??= UnitStatusEffectTooltipUI.GetOrCreate();
+        if (offeredSkillEffectTooltip == null)
+            return;
+
+        offeredSkillEffectCardIndex = index;
+        offeredSkillEffectTooltip.ShowSkillEffectList(
+            this,
+            offeredSkillEffectPreview,
+            anchor,
+            null,
+            offeredSkillEffectTooltipOffset,
+            offeredSkillEffectTooltipVerticalSpacing);
+    }
+
+    private void HideOfferedSkillEffectTooltip(int cardIndex = -1)
+    {
+        if (cardIndex >= 0 && offeredSkillEffectCardIndex != cardIndex)
+            return;
+
+        offeredSkillEffectCardIndex = -1;
+        offeredSkillEffectPreview.Clear();
+        offeredSkillEffectTooltip?.HideSkillEffectList(this);
     }
 
     private bool cardAudioSuspendedForPause;
@@ -885,6 +970,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         // Once replacement mode begins, the offered skill is locked until an
         // equipped slot is clicked. Do not allow reselecting or cancelling it.
         if (pendingReplacementCard >= 0) return;
+        HideOfferedSkillEffectTooltip();
         string id = characterIds[index];
         ClearSkillSlotPreviewVfx();
         SkillMasterData skill = offeredSkills[index];
@@ -1503,6 +1589,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     public void DiscardReward()
     {
         if (reward == null || processing || !skipRevealComplete || !gameObject.activeInHierarchy) return;
+        HideOfferedSkillEffectTooltip();
         processing = true;
         ClearSkillSlotPreviewVfx();
         SetSkipRevealState(false);

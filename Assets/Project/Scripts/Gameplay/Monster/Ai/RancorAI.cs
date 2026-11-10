@@ -11,14 +11,6 @@ namespace Relic.Gameplay.Monster
         private const string BuffSkillId = "S_Monster_07";
         private const string MoveSkillId = "S_Monster_05";
 
-        private static readonly Vector2Int[] EscapeOffsets =
-        {
-            new Vector2Int(0, 2),
-            new Vector2Int(0, -2),
-            new Vector2Int(-2, 0),
-            new Vector2Int(2, 0)
-        };
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return BuffSkillId;
@@ -223,9 +215,11 @@ namespace Relic.Gameplay.Monster
             Vector2Int bestRiskyFallbackOffset = Vector2Int.zero;
             int bestRiskyFallbackSpaceScore = int.MinValue;
 
-            for (int i = 0; i < EscapeOffsets.Length; i++)
+            List<Vector2Int> escapeOffsets = GetSkillRangeOffsetsAtDistance(
+                monsterUnit, MoveSkillId, 2);
+            for (int i = 0; i < escapeOffsets.Count; i++)
             {
-                Vector2Int offset = EscapeOffsets[i];
+                Vector2Int offset = escapeOffsets[i];
 
                 // 맵 밖이나 통과 불가 그리드 효과처럼 실행 전에도 변하지 않는 장애물은 제외합니다.
                 if (!CanReserveEscapeMove(

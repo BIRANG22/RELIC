@@ -14,14 +14,6 @@ namespace Relic.Gameplay.Monster
         // 같은 예약 턴에서 먼저 계획한 블롭의 목표를 공유합니다.
         private static readonly Dictionary<MonsterUnit, int> reservedTargets = new();
 
-        private static readonly Vector2Int[] MoveDirections =
-        {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right
-        };
-
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return AttackSkillId;
@@ -180,6 +172,7 @@ namespace Relic.Gameplay.Monster
             // 공격 경로를 찾지 못한 경우에도 무작위로 헤매지 않고
             // 가장 가까운 캐릭터와 같은 행을 맞출 수 있는 이동을 선택합니다.
             int bestFallbackCost = int.MaxValue;
+            List<Vector2Int> fallbackMoveDirections = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
             for (int i = 0; i < targets.Count; i++)
             {
                 int target = targets[i];
@@ -189,9 +182,9 @@ namespace Relic.Gameplay.Monster
                 Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
                 int currentScore = Mathf.Abs(targetCoord.y - currentCoord.y) * 10 +
                                    Mathf.Abs(targetCoord.x - currentCoord.x);
-                for (int d = 0; d < MoveDirections.Length; d++)
+                for (int d = 0; d < fallbackMoveDirections.Count; d++)
                 {
-                    Vector2Int step = MoveDirections[d];
+                    Vector2Int step = fallbackMoveDirections[d];
                     if (!CanMonsterMove(monsterUnit, gridManager, step)) continue;
                     int next = GetProjectedMainGridIndex(monsterUnit, gridManager, step);
                     if (next < 0 || IsRiskyGridEffectDestination(next, gridEffectController)) continue;
@@ -238,6 +231,7 @@ namespace Relic.Gameplay.Monster
             bool[] done = new bool[count];
             for (int i = 0; i < count; i++) costs[i] = int.MaxValue;
             costs[origin] = 0;
+            List<Vector2Int> routeMoveDirections = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
 
             for (int iteration = 0; iteration < count; iteration++)
             {
@@ -264,9 +258,9 @@ namespace Relic.Gameplay.Monster
                 }
 
                 Vector2Int currentCoord = gridManager.IndexToCoord(current);
-                for (int d = 0; d < MoveDirections.Length; d++)
+                for (int d = 0; d < routeMoveDirections.Count; d++)
                 {
-                    Vector2Int direction = MoveDirections[d];
+                    Vector2Int direction = routeMoveDirections[d];
                     Vector2Int nextCoord = currentCoord + direction;
                     if (!gridManager.IsValidCoord(nextCoord)) continue;
                     int next = gridManager.CoordToIndex(nextCoord);
@@ -372,9 +366,10 @@ namespace Relic.Gameplay.Monster
             }
 
             // 한 칸 정상 이동 후 바로 좌우 공격이 가능한지를 예약 시점에만 판단합니다.
-            for (int i = 0; i < MoveDirections.Length; i++)
+            List<Vector2Int> moveDirections = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int i = 0; i < moveDirections.Count; i++)
             {
-                Vector2Int moveOffset = MoveDirections[i];
+                Vector2Int moveOffset = moveDirections[i];
 
                 if (!CanMonsterMove(monsterUnit, gridManager, moveOffset))
                     continue;
@@ -578,9 +573,10 @@ namespace Relic.Gameplay.Monster
             bool bestIsRisky = true;
             int bestTargetDistance = int.MaxValue;
 
-            for (int i = 0; i < MoveDirections.Length; i++)
+            List<Vector2Int> moveDirections = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
+            for (int i = 0; i < moveDirections.Count; i++)
             {
-                Vector2Int offset = MoveDirections[i];
+                Vector2Int offset = moveDirections[i];
                 int projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
                 bool canMoveNormally = CanMonsterMove(monsterUnit, gridManager, offset);
                 bool isCollision = IsCharacterCollisionMoveCandidate(
@@ -674,6 +670,7 @@ namespace Relic.Gameplay.Monster
                 return Vector2Int.zero;
 
             cost[origin] = 0;
+            List<Vector2Int> detourMoveDirections = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
             for (int iteration = 0; iteration < cellCount; iteration++)
             {
                 int current = -1;
@@ -694,9 +691,9 @@ namespace Relic.Gameplay.Monster
                     return firstStep[current];
 
                 Vector2Int coord = gridManager.IndexToCoord(current);
-                for (int d = 0; d < MoveDirections.Length; d++)
+                for (int d = 0; d < detourMoveDirections.Count; d++)
                 {
-                    Vector2Int step = MoveDirections[d];
+                    Vector2Int step = detourMoveDirections[d];
                     Vector2Int nextCoord = coord + step;
                     if (!gridManager.IsValidCoord(nextCoord))
                         continue;

@@ -11,18 +11,6 @@ namespace Relic.Gameplay.Monster
         private const string AttackSkillId = "S_Monster_12";
         private const int MaxMoveActionCount = 2;
 
-        private static readonly Vector2Int[] MoveOffsets =
-        {
-            new Vector2Int(0, 1),
-            new Vector2Int(0, -1),
-            new Vector2Int(-1, 0),
-            new Vector2Int(1, 0),
-            new Vector2Int(0, 2),
-            new Vector2Int(0, -2),
-            new Vector2Int(-2, 0),
-            new Vector2Int(2, 0)
-        };
-
         private static readonly Vector2Int[] CardinalDirections =
         {
             Vector2Int.up,
@@ -87,12 +75,14 @@ namespace Relic.Gameplay.Monster
                 return plan;
 
             List<Vector2Int> shapeOffsets = BuildMonsterShapeOffsets(monsterUnit, gridManager, startCoord);
+            List<Vector2Int> moveOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
             List<ReachableState> reachableStates = BuildReachableStates(
                 gridManager,
                 startCoord,
                 shapeOffsets,
                 occupiedIndices,
-                blockedGridEffectIndices);
+                blockedGridEffectIndices,
+                moveOffsets);
 
             AttackCandidate attackCandidate = FindBestImmediateAttackCandidate(
                 gridManager,
@@ -297,7 +287,8 @@ namespace Relic.Gameplay.Monster
             Vector2Int startCoord,
             List<Vector2Int> shapeOffsets,
             HashSet<int> occupiedIndices,
-            HashSet<int> blockedGridEffectIndices)
+            HashSet<int> blockedGridEffectIndices,
+            List<Vector2Int> moveOffsets)
         {
             List<ReachableState> result = new();
             Dictionary<Vector2Int, ReachableState> bestByCoord = new();
@@ -321,9 +312,9 @@ namespace Relic.Gameplay.Monster
                 {
                     ReachableState state = frontier[stateIndex];
 
-                    for (int moveIndex = 0; moveIndex < MoveOffsets.Length; moveIndex++)
+                    for (int moveIndex = 0; moveIndex < moveOffsets.Count; moveIndex++)
                     {
-                        Vector2Int moveOffset = MoveOffsets[moveIndex];
+                        Vector2Int moveOffset = moveOffsets[moveIndex];
 
                         if (!CanMoveFromState(
                                 gridManager,
@@ -379,9 +370,6 @@ namespace Relic.Gameplay.Monster
             HashSet<int> occupiedIndices,
             HashSet<int> blockedGridEffectIndices)
         {
-            if (!IsOneOrTwoTileCardinalMove(moveOffset))
-                return false;
-
             int tileCount = Mathf.Max(Mathf.Abs(moveOffset.x), Mathf.Abs(moveOffset.y));
             Vector2Int unitStep = new(
                 moveOffset.x == 0 ? 0 : (moveOffset.x > 0 ? 1 : -1),
@@ -715,13 +703,6 @@ namespace Relic.Gameplay.Monster
 
             // 대상 칸은 살아 있는 캐릭터가 점유하고 있어도 정상 공격 대상입니다.
             return gridManager.IsValidCoord(targetCoord) && targetGridIndex >= 0;
-        }
-
-        private static bool IsOneOrTwoTileCardinalMove(Vector2Int moveOffset)
-        {
-            int distance = Mathf.Max(Mathf.Abs(moveOffset.x), Mathf.Abs(moveOffset.y));
-            bool isCardinal = moveOffset.x == 0 || moveOffset.y == 0;
-            return isCardinal && distance >= 1 && distance <= 2;
         }
 
         private static void AddMoveActions(

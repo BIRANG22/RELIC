@@ -686,21 +686,6 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                         Debug.Log($"[Tutorial_03] Step11 compound input ready={compoundExecutor.CanAcceptPlayerInput}");
                     }
 
-                    // Step 10 selects Haze while tutorial input can still be locked.
-                    // Normal character switching auto-selects a timeline slot only
-                    // when input is ready. Re-run that same selection now rather
-                    // than requiring a manual slot click in the tutorial.
-                    if (compoundExecutor != null && compoundExecutor.CanAcceptPlayerInput)
-                    {
-                        BattleTimelineController activeTimeline =
-                            FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Exclude);
-                        if (activeTimeline != null)
-                        {
-                            activeTimeline.EnsureSelectedCharacterAutoSlot();
-                            if (activeTimeline.ActiveSlotIndex < 0)
-                                Debug.LogWarning("[Tutorial_03] Step11: no available timeline slot after input became ready.");
-                        }
-                    }
                 }
                 // 타임라인 및 행동 소개 단계에서는 안내를 넘길 수 있지만 실제 UI 조작은 차단합니다.
                 bool blockGuideInput = !continuationMode &&
