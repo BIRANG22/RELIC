@@ -33,7 +33,12 @@ public class MonsterSkillEffectService
 
     public void ApplyMonsterSkill(MonsterUnit caster, MonsterReservedCommand command)
     {
-        ApplyMonsterSkillInternal(caster, command, EffectExecutionMode.All, -1);
+        ApplyMonsterSkillInternal(
+            caster,
+            command,
+            EffectExecutionMode.All,
+            -1,
+            new BattleRearAttackActionSnapshot());
     }
 
     public bool HasDamageHitEffect(MonsterReservedCommand command)
@@ -85,29 +90,36 @@ public class MonsterSkillEffectService
     public void ApplyMonsterSkillDamageHit(
         MonsterUnit caster,
         MonsterReservedCommand command,
-        int hitIndex)
+        int hitIndex,
+        BattleRearAttackActionSnapshot rearAttackSnapshot)
     {
-        ApplyMonsterSkillInternal(caster, command, EffectExecutionMode.DamageHit, hitIndex);
+        ApplyMonsterSkillInternal(
+            caster,
+            command,
+            EffectExecutionMode.DamageHit,
+            hitIndex,
+            rearAttackSnapshot);
     }
 
     public void ApplyMonsterSkillNonDamageEffects(
         MonsterUnit caster,
         MonsterReservedCommand command)
     {
-        ApplyMonsterSkillInternal(caster, command, EffectExecutionMode.NonDamage, -1);
+        ApplyMonsterSkillInternal(caster, command, EffectExecutionMode.NonDamage, -1, null);
     }
 
     private void ApplyMonsterSkillInternal(
         MonsterUnit caster,
         MonsterReservedCommand command,
         EffectExecutionMode mode,
-        int hitIndex)
+        int hitIndex,
+        BattleRearAttackActionSnapshot rearAttackSnapshot)
     {
         if (caster == null || command == null || command.SkillData == null)
             return;
 
         if (command.SkillData.Target == TargetType.PlayerParty)
-            ApplyToPlayers(caster, command, mode, hitIndex);
+            ApplyToPlayers(caster, command, mode, hitIndex, rearAttackSnapshot);
         else if (command.SkillData.Target == TargetType.EnemyParty)
             ApplyToMonsters(caster, command, mode, hitIndex);
         else if (command.SkillData.Target == TargetType.Self)
@@ -120,7 +132,8 @@ public class MonsterSkillEffectService
         MonsterUnit caster,
         MonsterReservedCommand command,
         EffectExecutionMode mode,
-        int hitIndex)
+        int hitIndex,
+        BattleRearAttackActionSnapshot rearAttackSnapshot)
     {
         BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
             FindObjectsInactive.Exclude,
@@ -140,7 +153,14 @@ public class MonsterSkillEffectService
             if (!command.TargetGridIndices.Contains(target.CurrentGridIndex))
                 continue;
 
-            ExecuteEffects(caster, target, null, command, mode, hitIndex);
+            ExecuteEffects(
+                caster,
+                target,
+                null,
+                command,
+                mode,
+                hitIndex,
+                rearAttackSnapshot);
         }
 
         ApplyDamageToCharacterGridEffects(command, mode, hitIndex);
@@ -241,7 +261,7 @@ public class MonsterSkillEffectService
             if (!inTargetRange)
                 continue;
 
-            ExecuteEffects(caster, null, target, command, mode, hitIndex);
+            ExecuteEffects(caster, null, target, command, mode, hitIndex, null);
         }
     }
 
@@ -251,7 +271,7 @@ public class MonsterSkillEffectService
         EffectExecutionMode mode,
         int hitIndex)
     {
-        ExecuteEffects(caster, null, caster, command, mode, hitIndex);
+        ExecuteEffects(caster, null, caster, command, mode, hitIndex, null);
     }
 
     private void ExecuteEffects(
@@ -260,7 +280,8 @@ public class MonsterSkillEffectService
     MonsterUnit monsterTarget,
     MonsterReservedCommand command,
     EffectExecutionMode mode,
-    int hitIndex)
+    int hitIndex,
+    BattleRearAttackActionSnapshot rearAttackSnapshot)
     {
         if (caster == null || command == null || command.SkillData == null)
             return;
@@ -346,6 +367,18 @@ public class MonsterSkillEffectService
                 Count = mode == EffectExecutionMode.DamageHit ? 1 : count
             };
 
+            if (playerTarget != null && rearAttackSnapshot != null)
+            {
+                bool liveRearAttack =
+                    BattleDamageModifierUtility.IsAttackingPlayerFromBehind(caster, playerTarget);
+                context.RearAttackQualifiedAtActionStart = rearAttackSnapshot.GetOrCapture(
+                    playerTarget.RuntimeData.CharacterId,
+                    liveRearAttack);
+            }
+
+            int hpBeforeEffect = playerTarget?.RuntimeData?.CurrentHP ?? 0;
+            int shieldBeforeEffect = playerTarget?.RuntimeData?.CurrentShield ?? 0;
+
             try
             {
                 if (mode == EffectExecutionMode.All && isDamageHitEffect)
@@ -388,7 +421,12 @@ public class MonsterSkillEffectService
 
             // 기습 판정은 피격 직전의 방향을 사용해야 합니다.
             // 피해 적용이 끝난 뒤에만 피격 캐릭터가 공격자를 바라보도록 전환합니다.
-            if (playerTarget != null && isDamageHitEffect &&
+            bool receivedDamage = playerTarget != null &&
+                playerTarget.RuntimeData != null &&
+                (playerTarget.RuntimeData.CurrentHP < hpBeforeEffect ||
+                 playerTarget.RuntimeData.CurrentShield < shieldBeforeEffect);
+
+            if (receivedDamage && isDamageHitEffect &&
                 playerTarget.RuntimeData != null && !playerTarget.RuntimeData.IsDead)
             {
                 FacePlayerToAttacker(playerTarget, caster);

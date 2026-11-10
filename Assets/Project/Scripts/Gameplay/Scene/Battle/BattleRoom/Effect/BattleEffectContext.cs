@@ -23,6 +23,9 @@ public class BattleEffectContext
     public int Count;
     public SkillExecutionResult ExecutionResult;
 
+    // 같은 공격 행동의 연타는 첫 피해 판정 시점의 기습 성립 여부를 공유합니다.
+    public bool? RearAttackQualifiedAtActionStart;
+
     // 전투 결과 계산과 분리된 강제 이동 시각 연출 수명 알림입니다.
     public Action ForcedMoveVisualStarted;
     public Action ForcedMoveVisualCompleted;
