@@ -6781,6 +6781,18 @@ MonoBehaviour:
     m_Localized: Veces incapacitado
     m_Metadata:
       m_Items: []
+  - m_Id: 32962961515339776
+    m_Localized: Ataque Prioritario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962961553088512
+    m_Localized: Mejora Prioritaria
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962961553088513
+    m_Localized: "Debilitaci\xF3n Prioritaria"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

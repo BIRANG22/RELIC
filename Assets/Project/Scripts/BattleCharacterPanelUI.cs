@@ -5423,6 +5423,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (skillData.IsFastSkill == 1 && skillData.SkillType == SkillType.Buff)
             return GameLocalization.Get("common.fast_buff");
+        if (skillData.IsFastSkill == 1 && skillData.SkillType == SkillType.Debuff)
+            return GameLocalization.Get("common.fast_debuff");
         if (skillData.IsFastSkill == 1 && skillData.SkillType == SkillType.Attack)
             return GameLocalization.Get("common.fast_attack");
 

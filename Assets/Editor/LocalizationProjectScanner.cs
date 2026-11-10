@@ -501,6 +501,10 @@ public static class LocalizationRuntimeSourceCatalog
         Entry("battle.intro.rest_area", "휴식 구역 진입"),
         // Passive skill type uses this key in battle, reward, and lobby skill tooltips.
         Entry("common.passive", "패시브"),
+        // Fast skill type labels used by battle, lobby, and reward tooltips.
+        Entry("common.fast_attack", "속공"),
+        Entry("common.fast_buff", "속버프"),
+        Entry("common.fast_debuff", "속디버프"),
         // Event dice result texts are produced at runtime, not by prefab TMP labels.
         Entry("event.dice.success", "성공"),
         Entry("event.dice.failure", "실패"),
