@@ -78,6 +78,7 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
     private float cameraBaseSize;
 
     public bool HasPlayed => hasPlayed;
+    public static bool ShouldRestoreCameraAfterSequence => false;
 
     public bool CanPlay =>
         animator != null &&
@@ -152,7 +153,7 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
             yield return WaitForDuration(ResolvePresentationDuration(appear02Clip, secondDialogueDuration));
         }
 
-        yield return RestoreIntroCameraRoutine();
+        ReleaseIntroCameraKeepingCurrentPose();
 
         dialogueRoot.SetActive(false);
         animator.speed = 1f;
@@ -288,6 +289,17 @@ public sealed class ArabellaSpawnPresentation : MonoBehaviour
         yield return BlendCameraRoutine(cameraBasePosition, cameraRestorePosition,
             cameraBaseSize, cameraRestoreOrthographicSize, duration);
 
+        BattleCameraController.Instance?.EndCinematicCameraKeepingCurrentPose();
+        ownsIntroCamera = false;
+        introCamera = null;
+    }
+
+    private void ReleaseIntroCameraKeepingCurrentPose()
+    {
+        if (!ownsIntroCamera)
+            return;
+
+        StopCameraBlend();
         BattleCameraController.Instance?.EndCinematicCameraKeepingCurrentPose();
         ownsIntroCamera = false;
         introCamera = null;

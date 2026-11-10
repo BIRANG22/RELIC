@@ -6,14 +6,14 @@ using UnityEngine;
 namespace Relic.Gameplay.Monster
 {
     /// <summary>
-    /// ¸ğ¸£Æ®(Mon_11) Àü¿ë AIÀÔ´Ï´Ù.
-    /// - ÀÌµ¿/È¥·ÉÆø¹ß/ÇÇÀÇ ÀúÁÖÀÇ ÆÇ´Ü ¹üÀ§´Â Monster ½ÃÆ®ÀÇ AttackRangeId¸¦ »ç¿ëÇÕ´Ï´Ù.
-    /// - ±ÙÁ¢, Á¢±Ù ÀÌµ¿, ÇÃ·¹ÀÌ¾î È¿°ú/ÇÇÇØ¸¦ °¨ÁöÇÏ¸é 1Ä­ µµ¸Á ÀÌµ¿À» ¿¹¾àÇÕ´Ï´Ù.
-    /// - µµ¸ÁÀÌ ÇÊ¿äÇÏÁö ¾Ê¾Æµµ ¸Á·É¼âµµ¸¦ »ç¿ëÇÒ °¡·Î ¶óÀÎÀ» Àâ±â À§ÇØ ÀÌµ¿ÇÒ ¼ö ÀÖ½À´Ï´Ù.
-    /// - ¸Á·É¼âµµ´Â °ø°İ ¿¹»ó À§Ä¡¿Í °°Àº ¶óÀÎ¿¡ Ä³¸¯ÅÍ°¡ ÀÖÀ» ¶§¸¸ ¿¹¾àÇÕ´Ï´Ù.
-    /// - È¥·ÉÆø¹ßÀº ¹üÀ§¿Í °ü°è¾øÀÌ °¡Àå ¸Õ »ıÁ¸ Ä³¸¯ÅÍ¿¡°Ô ¿¹¾àÇÕ´Ï´Ù.
-    /// - ÇÇÀÇ ÀúÁÖ´Â °¡Àå °¡±î¿î »ıÁ¸ Ä³¸¯ÅÍ¿¡°Ô ¿¹¾àÇÕ´Ï´Ù.
-    /// - »ç·É¼úÀº ÅÏ ½ÃÀÛ Æ¯¼ºÀ¸·Î Ã³¸®µÇ¹Ç·Î ¿©±â¼­´Â ¿¹¾àÇÏÁö ¾Ê½À´Ï´Ù.
+    /// ëª¨ë¥´íŠ¸(Mon_11) ì „ìš© AIì…ë‹ˆë‹¤.
+    /// - ì´ë™/í˜¼ë ¹í­ë°œ/í”¼ì˜ ì €ì£¼ì˜ íŒë‹¨ ë²”ìœ„ëŠ” Monster ì‹œíŠ¸ì˜ AttackRangeIdë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
+    /// - ê·¼ì ‘, ì ‘ê·¼ ì´ë™, í”Œë ˆì´ì–´ íš¨ê³¼/í”¼í•´ë¥¼ ê°ì§€í•˜ë©´ 1ì¹¸ ë„ë§ ì´ë™ì„ ì˜ˆì•½í•©ë‹ˆë‹¤.
+    /// - ë„ë§ì´ í•„ìš”í•˜ì§€ ì•Šì•„ë„ ë§ë ¹ì‡„ë„ë¥¼ ì‚¬ìš©í•  ê°€ë¡œ ë¼ì¸ì„ ì¡ê¸° ìœ„í•´ ì´ë™í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+    /// - ë§ë ¹ì‡„ë„ëŠ” ê³µê²© ì˜ˆìƒ ìœ„ì¹˜ì™€ ê°™ì€ ë¼ì¸ì— ìºë¦­í„°ê°€ ìˆì„ ë•Œë§Œ ì˜ˆì•½í•©ë‹ˆë‹¤.
+    /// - í˜¼ë ¹í­ë°œì€ ë²”ìœ„ì™€ ê´€ê³„ì—†ì´ ê°€ì¥ ë¨¼ ìƒì¡´ ìºë¦­í„°ì—ê²Œ ì˜ˆì•½í•©ë‹ˆë‹¤.
+    /// - í”¼ì˜ ì €ì£¼ëŠ” ê°€ì¥ ê°€ê¹Œìš´ ìƒì¡´ ìºë¦­í„°ì—ê²Œ ì˜ˆì•½í•©ë‹ˆë‹¤.
+    /// - ì‚¬ë ¹ìˆ ì€ í„´ ì‹œì‘ íŠ¹ì„±ìœ¼ë¡œ ì²˜ë¦¬ë˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ì˜ˆì•½í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public class MortAI : MonsterAIBase
     {
@@ -23,8 +23,8 @@ namespace Relic.Gameplay.Monster
         private const string BloodCurseSkillId = "S_Monster_32";
         private const string NecromancySkillId = "S_Monster_41";
 
-        // ÀÌÀü ¿¹¾à ½ÃÁ¡ÀÇ »ı¸í·ÂÀ» ±â·ÏÇÏ¿© ÀÌ¹ø ÅÏ¿¡ ¹ŞÀº ÇÇÇØ¸¦ ÆÇÁ¤ÇÕ´Ï´Ù.
-        // Ã¼·ÂÀÌ ÃÖ´ëÄ¡º¸´Ù ³·´Ù´Â ÀÌÀ¯¸¸À¸·Î ¸Å ÅÏ µµ¸ÁÄ¡Áö ¾Ê½À´Ï´Ù.
+        // ì´ì „ ì˜ˆì•½ ì‹œì ì˜ ìƒëª…ë ¥ì„ ê¸°ë¡í•˜ì—¬ ì´ë²ˆ í„´ì— ë°›ì€ í”¼í•´ë¥¼ íŒì •í•©ë‹ˆë‹¤.
+        // ì²´ë ¥ì´ ìµœëŒ€ì¹˜ë³´ë‹¤ ë‚®ë‹¤ëŠ” ì´ìœ ë§Œìœ¼ë¡œ ë§¤ í„´ ë„ë§ì¹˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         private sealed class EscapeDamageSnapshot
         {
             public int LastHP;
@@ -83,7 +83,7 @@ namespace Relic.Gameplay.Monster
             return result;
         }
 
-        // Á÷Àü ¿¹¾à ´ç½ÃÀÇ À§Ä¡¸¦ º¸°üÇÏ¿© ¸Ö¸®¼­ Á¢±ÙÇÑ Ä³¸¯ÅÍµµ °¨ÁöÇÕ´Ï´Ù.
+        // ì§ì „ ì˜ˆì•½ ë‹¹ì‹œì˜ ìœ„ì¹˜ë¥¼ ë³´ê´€í•˜ì—¬ ë©€ë¦¬ì„œ ì ‘ê·¼í•œ ìºë¦­í„°ë„ ê°ì§€í•©ë‹ˆë‹¤.
         private sealed class ApproachSnapshot
         {
             public int MortGridIndex;
@@ -121,7 +121,7 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int oldCoord = gridManager.IndexToCoord(oldIndex);
                 Vector2Int newCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
-                // ÀÌÀü À§Ä¡¿Í ÇöÀç À§Ä¡¸¦ µ¿ÀÏÇÑ ¸ğ¸£Æ® À§Ä¡¸¦ ±âÁØÀ¸·Î ºñ±³ÇÕ´Ï´Ù.
+                // ì´ì „ ìœ„ì¹˜ì™€ í˜„ì¬ ìœ„ì¹˜ë¥¼ ë™ì¼í•œ ëª¨ë¥´íŠ¸ ìœ„ì¹˜ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë¹„êµí•©ë‹ˆë‹¤.
                 Vector2Int mortCoord = previous.MortGridIndex >= 0
                     ? gridManager.IndexToCoord(previous.MortGridIndex) : currentMortCoord;
                 int before = Mathf.Max(Mathf.Abs(oldCoord.x - mortCoord.x), Mathf.Abs(oldCoord.y - mortCoord.y));
@@ -149,6 +149,13 @@ namespace Relic.Gameplay.Monster
             new Vector2Int(1, -1)
         };
 
+        public static bool IsMoveOffsetInSkillRange(Vector2Int offset)
+        {
+            return offset != Vector2Int.zero &&
+                   Mathf.Abs(offset.x) <= 1 &&
+                   Mathf.Abs(offset.y) <= 1;
+        }
+
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return WraithRushSkillId;
@@ -173,7 +180,7 @@ namespace Relic.Gameplay.Monster
             MonsterRuntimeData runtime = monsterUnit.RuntimeData;
             int priority = 0;
 
-            // »ç·É¼úÀº º°µµ ÅÏ ½ÃÀÛ Ã³¸®¿¡¼­ ½ÇÇàÇÕ´Ï´Ù.
+            // ì‚¬ë ¹ìˆ ì€ ë³„ë„ í„´ ì‹œì‘ ì²˜ë¦¬ì—ì„œ ì‹¤í–‰í•©ë‹ˆë‹¤.
 
 
             bool receivedDamage = WasDamagedSinceLastPlan(runtime);
@@ -191,12 +198,12 @@ namespace Relic.Gameplay.Monster
             int attackOriginGridIndex = monsterUnit.MainGridIndex;
             int projectedEscapeGridIndex = monsterUnit.MainGridIndex;
 
-            // ¸ğ¸£Æ®ÀÇ µµ¸Á ÀÌµ¿Àº ÇÑ ÅÏ¿¡ ÃÖ´ë 1¹ø¸¸ ¿¹¾àÇÕ´Ï´Ù.
-            // Á¢±Ù, ÇÇÇØ/µğ¹öÇÁ, ÁÖº¯ 8Ä­ À§Çù ½Ã ¾Õ ½½·ÔÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            // ¾ÈÀüÇÑ ÈÄº¸ Áß ¸Á·É¼âµµ(30)¸¦ ¿¬°èÇÒ ¼ö ÀÖ´Â °¡·Î ¶óÀÎÀ» ¿ì¼±ÇÕ´Ï´Ù.
+            // ëª¨ë¥´íŠ¸ì˜ ë„ë§ ì´ë™ì€ í•œ í„´ì— ìµœëŒ€ 1ë²ˆë§Œ ì˜ˆì•½í•©ë‹ˆë‹¤.
+            // ì ‘ê·¼, í”¼í•´/ë””ë²„í”„, ì£¼ë³€ 8ì¹¸ ìœ„í˜‘ ì‹œ ì• ìŠ¬ë¡¯ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            // ì•ˆì „í•œ í›„ë³´ ì¤‘ ë§ë ¹ì‡„ë„(30)ë¥¼ ì—°ê³„í•  ìˆ˜ ìˆëŠ” ê°€ë¡œ ë¼ì¸ì„ ìš°ì„ í•©ë‹ˆë‹¤.
             const int maxEscapeMoveCount = 1;
-            // ¸ğ¸£Æ®´Â ÇÇ°İÀÌ³ª Á¢±Ù ¿©ºÎ¿Í °ü°è¾øÀÌ ¸Å ÅÏ ¾ÈÀüÇÑ ¹æÇâÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            // À§Çù °¨Áö ½ÅÈ£´Â À¯ÁöÇÏ¿© ÇÇÇØ/µğ¹öÇÁ ÃßÀû »óÅÂ¸¦ Á¤»óÀûÀ¸·Î ¼ÒºñÇÕ´Ï´Ù.
+            // ëª¨ë¥´íŠ¸ëŠ” í”¼ê²©ì´ë‚˜ ì ‘ê·¼ ì—¬ë¶€ì™€ ê´€ê³„ì—†ì´ ë§¤ í„´ ì•ˆì „í•œ ë°©í–¥ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            // ìœ„í˜‘ ê°ì§€ ì‹ í˜¸ëŠ” ìœ ì§€í•˜ì—¬ í”¼í•´/ë””ë²„í”„ ì¶”ì  ìƒíƒœë¥¼ ì •ìƒì ìœ¼ë¡œ ì†Œë¹„í•©ë‹ˆë‹¤.
             bool mustEscape = FindAlivePlayers().Count > 0;
 
             for (int escapeMoveIndex = 0;
@@ -204,7 +211,7 @@ namespace Relic.Gameplay.Monster
                  mustEscape;
                  escapeMoveIndex++)
             {
-                // µµ¸Á ¹æÇâÀº ±ÙÁ¢ÇÑ ´ë»ó¸¸ÀÌ ¾Æ´Ï¶ó »ì¾Æ ÀÖ´Â ¸ğµç Ä³¸¯ÅÍ¸¦ °í·ÁÇÕ´Ï´Ù.
+                // ë„ë§ ë°©í–¥ì€ ê·¼ì ‘í•œ ëŒ€ìƒë§Œì´ ì•„ë‹ˆë¼ ì‚´ì•„ ìˆëŠ” ëª¨ë“  ìºë¦­í„°ë¥¼ ê³ ë ¤í•©ë‹ˆë‹¤.
                 List<BattleCharacter> projectedRangeTargets = FindAlivePlayers();
                 if (projectedRangeTargets.Count <= 0)
                     break;
@@ -217,11 +224,11 @@ namespace Relic.Gameplay.Monster
 
                 if (escapeOffset == Vector2Int.zero)
                 {
-                    UnityEngine.Debug.LogWarning("[MortAI] ÀÌµ¿ ÈÄº¸ ¾øÀ½: ÁÖº¯ Á¡À¯/Àå¾Ö¹°/¸Ê °æ°è¸¦ È®ÀÎÇÏ¼¼¿ä.");
+                    UnityEngine.Debug.LogWarning("[MortAI] ì´ë™ í›„ë³´ ì—†ìŒ: ì£¼ë³€ ì ìœ /ì¥ì• ë¬¼/ë§µ ê²½ê³„ë¥¼ í™•ì¸í•˜ì„¸ìš”.");
                     break;
                 }
 
-                // ½ÇÁ¦ ÀÌµ¿ Çàµ¿À» ¿¹¾àÇÑ °æ¿ì¿¡¸¸ È¿°ú ¹İÀÀ ÇÃ·¡±×¸¦ ¼ÒºñÇÕ´Ï´Ù.
+                // ì‹¤ì œ ì´ë™ í–‰ë™ì„ ì˜ˆì•½í•œ ê²½ìš°ì—ë§Œ íš¨ê³¼ ë°˜ì‘ í”Œë˜ê·¸ë¥¼ ì†Œë¹„í•©ë‹ˆë‹¤.
                 runtime.PendingPlayerEffectEscape = false;
                 plan.Add(new MonsterAIAction(
                     MoveSkillId,
@@ -236,8 +243,8 @@ namespace Relic.Gameplay.Monster
                     escapeOffset,
                     gridManager);
 
-                // ¸Á·É¼âµµ´Â ¾Õ ½½·ÔÀÇ Ã¹ µµ¸Á ÀÌµ¿°ú °°Àº ½½·Ô¿¡¼­ ÀÌ¾îÁú ¼ö ÀÖÀ¸¹Ç·Î
-                // °ø°İ ¿¹»ó ¿øÁ¡Àº Ã¹ ¹øÂ° ÀÌµ¿ ¼º°ø ¿¹»ó À§Ä¡±îÁö¸¸ ¹İ¿µÇÕ´Ï´Ù.
+                // ë§ë ¹ì‡„ë„ëŠ” ì• ìŠ¬ë¡¯ì˜ ì²« ë„ë§ ì´ë™ê³¼ ê°™ì€ ìŠ¬ë¡¯ì—ì„œ ì´ì–´ì§ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+                // ê³µê²© ì˜ˆìƒ ì›ì ì€ ì²« ë²ˆì§¸ ì´ë™ ì„±ê³µ ì˜ˆìƒ ìœ„ì¹˜ê¹Œì§€ë§Œ ë°˜ì˜í•©ë‹ˆë‹¤.
                 if (escapeMoveIndex == 0)
                 {
                     moveOffset = escapeOffset;
@@ -247,12 +254,12 @@ namespace Relic.Gameplay.Monster
 
             List<BattleCharacter> allAlivePlayers = FindAlivePlayers();
 
-            // ÀÌµ¿ °¡´ÉÇÑ Ä­ÀÌ ¾ø´Ù¸é ±âÁ¸ °ø°İ ¿¹¾àÀ» ÁøÇàÇÕ´Ï´Ù.
-            // ÀÌµ¿Àº Ç×»ó ¾Õ ½½·Ô¿¡ ÇÑ ¹ø¸¸ ¿¹¾àÇÕ´Ï´Ù.
+            // ì´ë™ ê°€ëŠ¥í•œ ì¹¸ì´ ì—†ë‹¤ë©´ ê¸°ì¡´ ê³µê²© ì˜ˆì•½ì„ ì§„í–‰í•©ë‹ˆë‹¤.
+            // ì´ë™ì€ í•­ìƒ ì• ìŠ¬ë¡¯ì— í•œ ë²ˆë§Œ ì˜ˆì•½í•©ë‹ˆë‹¤.
 
-            // ¸Á·É¼âµµ´Â ¸ğ¸£Æ®ÀÇ ÀÌµ¿ Àü À§Ä¡¿Í °°Àº °¡·Î ¶óÀÎ¿¡
-            // »ıÁ¸ Ä³¸¯ÅÍ°¡ ÀÖÀ» ¶§¸¸ »ç¿ëÇÕ´Ï´Ù. °°Àº ¶óÀÎ¿¡ ¿©·¯ ¸íÀÌ ÀÖ´Ù¸é
-            // °¡Àå °¡±î¿î ´ë»óÀ» ÇâÇÏµµ·Ï ¿¹¾àÇÕ´Ï´Ù.
+            // ë§ë ¹ì‡„ë„ëŠ” ëª¨ë¥´íŠ¸ì˜ ì´ë™ ì „ ìœ„ì¹˜ì™€ ê°™ì€ ê°€ë¡œ ë¼ì¸ì—
+            // ìƒì¡´ ìºë¦­í„°ê°€ ìˆì„ ë•Œë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤. ê°™ì€ ë¼ì¸ì— ì—¬ëŸ¬ ëª…ì´ ìˆë‹¤ë©´
+            // ê°€ì¥ ê°€ê¹Œìš´ ëŒ€ìƒì„ í–¥í•˜ë„ë¡ ì˜ˆì•½í•©ë‹ˆë‹¤.
             BattleCharacter wraithRushTarget = FindNearestSameLineTarget(
                 monsterUnit.MainGridIndex,
                 allAlivePlayers,
@@ -279,7 +286,7 @@ namespace Relic.Gameplay.Monster
                     wraithRushDirection));
             }
 
-            // È¥·ÉÆø¹ßÀº AttackRange¿Í °ü°è¾øÀÌ °¡Àå ¸Õ »ıÁ¸ Ä³¸¯ÅÍ¿¡°Ô »ç¿ëÇÕ´Ï´Ù.
+            // í˜¼ë ¹í­ë°œì€ AttackRangeì™€ ê´€ê³„ì—†ì´ ê°€ì¥ ë¨¼ ìƒì¡´ ìºë¦­í„°ì—ê²Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
             BattleCharacter explosionTarget = FindFarthestTarget(
                 attackOriginGridIndex,
                 allAlivePlayers,
@@ -299,8 +306,8 @@ namespace Relic.Gameplay.Monster
                         explosionTarget.CurrentGridIndex, runtime.Direction, gridManager)));
             }
 
-            // ÇÇÀÇ ÀúÁÖ´Â ¸Å ÅÏ »ç¿ëÇÏ¸ç, °ø°İ ¹üÀ§·Î ´ë»óÀ» Á¦ÇÑÇÏÁö ¾Ê½À´Ï´Ù.
-            // È¥·ÉÆø¹ß°ú µ¿ÀÏÇÑ ÀÌµ¿ ¿¹»ó À§Ä¡¸¦ ±âÁØÀ¸·Î °¡Àå °¡±î¿î »ıÁ¸ Ä³¸¯ÅÍ¸¦ ¼±ÅÃÇÕ´Ï´Ù.
+            // í”¼ì˜ ì €ì£¼ëŠ” ë§¤ í„´ ì‚¬ìš©í•˜ë©°, ê³µê²© ë²”ìœ„ë¡œ ëŒ€ìƒì„ ì œí•œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+            // í˜¼ë ¹í­ë°œê³¼ ë™ì¼í•œ ì´ë™ ì˜ˆìƒ ìœ„ì¹˜ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê°€ì¥ ê°€ê¹Œìš´ ìƒì¡´ ìºë¦­í„°ë¥¼ ì„ íƒí•©ë‹ˆë‹¤.
             BattleCharacter curseTarget = FindNearestTarget(
                 attackOriginGridIndex, allAlivePlayers, gridManager);
 
@@ -319,8 +326,8 @@ namespace Relic.Gameplay.Monster
                     explicitRangeGridIndices: new List<int> { curseTarget.CurrentGridIndex }));
             }
 
-            // ¸Á·É¼âµµ¿Í ÀÌµ¿À» °°Àº ½½·Ô¿¡ ¿¹¾àÇß´Ù¸é °ø°İÀ» ¸ÕÀú ½ÇÇàÇÕ´Ï´Ù.
-            // ½ÇÇà ¼ø¼­´Â MonsterAIPlan.ActionsÀÇ ¼ø¼­¸¦ µû¸£¹Ç·Î ÀÌµ¿ ¸í·ÉÀ» µÚ·Î ¿Å±é´Ï´Ù.
+            // ë§ë ¹ì‡„ë„ì™€ ì´ë™ì„ ê°™ì€ ìŠ¬ë¡¯ì— ì˜ˆì•½í–ˆë‹¤ë©´ ê³µê²©ì„ ë¨¼ì € ì‹¤í–‰í•©ë‹ˆë‹¤.
+            // ì‹¤í–‰ ìˆœì„œëŠ” MonsterAIPlan.Actionsì˜ ìˆœì„œë¥¼ ë”°ë¥´ë¯€ë¡œ ì´ë™ ëª…ë ¹ì„ ë’¤ë¡œ ì˜®ê¹ë‹ˆë‹¤.
             int rushIndex = plan.Actions.FindIndex(action => action.SkillId == WraithRushSkillId);
             int moveIndex = plan.Actions.FindIndex(action => action.SkillId == MoveSkillId);
             if (rushIndex >= 0 && moveIndex >= 0 && moveIndex < rushIndex)
@@ -423,6 +430,9 @@ namespace Relic.Gameplay.Monster
             {
                 Vector2Int offset = EscapeOffsets[i];
 
+                if (!IsMoveOffsetInSkillRange(offset))
+                    continue;
+
                 if (!CanMonsterMoveFromProjectedOrigin(
                         monsterUnit,
                         originGridIndex,
@@ -436,17 +446,17 @@ namespace Relic.Gameplay.Monster
                 int nearestDistance = GetNearestDistance(movedCoord, threatTargets, gridManager);
                 int totalDistance = GetTotalDistance(movedCoord, threatTargets, gridManager);
 
-                // µµ¸ÁÀº ¾ÈÀüÀÌ ¿ì¼±ÀÌÁö¸¸, ¾ÈÀüÇÑ ÈÄº¸µé »çÀÌ¿¡¼­´Â
-                // ¸Á·É¼âµµ(30)¸¦ ¹Ù·Î ¿¬°èÇÒ ¼ö ÀÖ´Â °¡·Î ¶óÀÎÀ» ¿ì¼±ÇÕ´Ï´Ù.
-                // ÁÖº¯ 8Ä­¿¡¼­ ¹ş¾î³¯ ¼ö ÀÖ´Ù¸é ´Ù½Ã ÀÎÁ¢ÇÏ´Â À§Ä¡´Â Á¦¿ÜÇÕ´Ï´Ù.
+                // ë„ë§ì€ ì•ˆì „ì´ ìš°ì„ ì´ì§€ë§Œ, ì•ˆì „í•œ í›„ë³´ë“¤ ì‚¬ì´ì—ì„œëŠ”
+                // ë§ë ¹ì‡„ë„(30)ë¥¼ ë°”ë¡œ ì—°ê³„í•  ìˆ˜ ìˆëŠ” ê°€ë¡œ ë¼ì¸ì„ ìš°ì„ í•©ë‹ˆë‹¤.
+                // ì£¼ë³€ 8ì¹¸ì—ì„œ ë²—ì–´ë‚  ìˆ˜ ìˆë‹¤ë©´ ë‹¤ì‹œ ì¸ì ‘í•˜ëŠ” ìœ„ì¹˜ëŠ” ì œì™¸í•©ë‹ˆë‹¤.
                 int safetyTier = nearestDistance > 1 ? 1 : 0;
                 int destination = gridManager.CoordToIndex(movedCoord);
                 bool canRush = FindNearestSameLineTarget(
                     destination, threatTargets, gridManager) != null;
                 int rushLine = canRush ? 1 : 0;
 
-                // Ã¹ ¹øÂ° ±âÁØÀº °¡Àå °¡±î¿î Ä³¸¯ÅÍ¿ÍÀÇ °Å¸®ÀÔ´Ï´Ù.
-                // °Å¸®°¡ °°À» ¶§¸¸ ÁÖº¯ 8Ä­ ¾ÈÀüµµ ¹× ¸Á·É¼âµµ ¿¬°è °¡´É¼ºÀ» ºñ±³ÇÕ´Ï´Ù.
+                // ì²« ë²ˆì§¸ ê¸°ì¤€ì€ ê°€ì¥ ê°€ê¹Œìš´ ìºë¦­í„°ì™€ì˜ ê±°ë¦¬ì…ë‹ˆë‹¤.
+                // ê±°ë¦¬ê°€ ê°™ì„ ë•Œë§Œ ì£¼ë³€ 8ì¹¸ ì•ˆì „ë„ ë° ë§ë ¹ì‡„ë„ ì—°ê³„ ê°€ëŠ¥ì„±ì„ ë¹„êµí•©ë‹ˆë‹¤.
                 bool better =
                     nearestDistance > bestNearestDistance ||
                     (nearestDistance == bestNearestDistance && safetyTier > bestSafetyTier) ||
@@ -469,8 +479,8 @@ namespace Relic.Gameplay.Monster
         }
 
 
-        // µµ¸Á Á¶°ÇÀÌ ¾øÀ» ¶§´Â °ø°İÀ» À§ÇÑ Àç¹èÄ¡¸¦ ¼±ÅÃÇÕ´Ï´Ù.
-        // °ø°İÇÒ °¡·Î ¶óÀÎÀ» ¸¸µé ¼ö ÀÖ´Â Ä­¸¸ ¼±ÅÃÇÏ°í, ÀÎÁ¢ À§ÇèÀ» ÇÇÇÕ´Ï´Ù.
+        // ë„ë§ ì¡°ê±´ì´ ì—†ì„ ë•ŒëŠ” ê³µê²©ì„ ìœ„í•œ ì¬ë°°ì¹˜ë¥¼ ì„ íƒí•©ë‹ˆë‹¤.
+        // ê³µê²©í•  ê°€ë¡œ ë¼ì¸ì„ ë§Œë“¤ ìˆ˜ ìˆëŠ” ì¹¸ë§Œ ì„ íƒí•˜ê³ , ì¸ì ‘ ìœ„í—˜ì„ í”¼í•©ë‹ˆë‹¤.
         private Vector2Int ResolveWraithRushPositionMove(
             MonsterUnit monsterUnit, int originGridIndex,
             List<BattleCharacter> targets, GridManager gridManager)
@@ -486,6 +496,8 @@ namespace Relic.Gameplay.Monster
 
             foreach (Vector2Int offset in EscapeOffsets)
             {
+                if (!IsMoveOffsetInSkillRange(offset))
+                    continue;
                 if (!CanMonsterMoveFromProjectedOrigin(
                         monsterUnit, originGridIndex, gridManager, offset))
                     continue;
@@ -689,8 +701,8 @@ namespace Relic.Gameplay.Monster
             List<BattleCharacter> targets,
             GridManager gridManager)
         {
-            // ÇöÀç´Â °¡Àå °¡±î¿î °ø°İ °¡´É ´ë»óÀ» Áß½ÉÁ¡À¸·Î »ç¿ëÇÕ´Ï´Ù.
-            // ´ë»ó ÀÚÃ¼´Â ¿¹¾à ½ÃÁ¡¿¡ °íÁ¤µÇ¸ç ½ÇÇà ´Ü°è¿¡¼­ ´Ù½Ã ¼±ÅÃÇÏÁö ¾Ê½À´Ï´Ù.
+            // í˜„ì¬ëŠ” ê°€ì¥ ê°€ê¹Œìš´ ê³µê²© ê°€ëŠ¥ ëŒ€ìƒì„ ì¤‘ì‹¬ì ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+            // ëŒ€ìƒ ìì²´ëŠ” ì˜ˆì•½ ì‹œì ì— ê³ ì •ë˜ë©° ì‹¤í–‰ ë‹¨ê³„ì—ì„œ ë‹¤ì‹œ ì„ íƒí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
             return FindNearestTarget(originGridIndex, targets, gridManager);
         }
 

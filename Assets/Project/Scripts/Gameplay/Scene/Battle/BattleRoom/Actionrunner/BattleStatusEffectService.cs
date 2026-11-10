@@ -491,7 +491,7 @@ public class BattleStatusEffectService
         if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
             return;
 
-        int bleedStack = damageService.GetStatusStack(character.RuntimeData.StatusEffects, "E_Bleed");
+        int bleedStack = ConsumeBleedMoveStep(character.RuntimeData.StatusEffects);
 
         if (bleedStack <= 0)
             return;
@@ -509,7 +509,7 @@ public class BattleStatusEffectService
         if (monster == null || monster.RuntimeData == null)
             return;
 
-        int bleedStack = damageService.GetStatusStack(monster.RuntimeData.StatusEffects, "E_Bleed");
+        int bleedStack = ConsumeBleedMoveStep(monster.RuntimeData.StatusEffects);
 
         if (bleedStack <= 0)
             return;
@@ -518,6 +518,27 @@ public class BattleStatusEffectService
 
         if (monster.RuntimeData.IsDead)
             deathService.HandleMonsterDead(monster);
+    }
+
+    public static int ConsumeBleedMoveStep(List<StatusEffectRuntimeData> statusEffects)
+    {
+        if (statusEffects == null)
+            return 0;
+
+        for (int i = 0; i < statusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = statusEffects[i];
+            if (status == null || status.EffectId != "E_Bleed" || status.Stack <= 0)
+                continue;
+
+            int damage = status.Stack;
+            status.RemoveStack(1);
+            if (status.Stack <= 0)
+                statusEffects.RemoveAt(i);
+            return damage;
+        }
+
+        return 0;
     }
 
     public bool ApplyTurnEndEffects()
