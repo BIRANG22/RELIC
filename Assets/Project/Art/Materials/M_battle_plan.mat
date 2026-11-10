@@ -85,7 +85,7 @@ Material:
     - _ZTest: 4
     - _ZWrite: 1
     - _ZWriteControl: 0
-    - _boder: 0.05
+    - _boder: 0.01
     - _boder_1: 0
     - _boder_2: 0
     m_Colors:
