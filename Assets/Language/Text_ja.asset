@@ -6468,6 +6468,10 @@ MonoBehaviour:
     m_Localized: "\u5148\u5236\u30C7\u30D0\u30D5"
     m_Metadata:
       m_Items: []
+  - m_Id: 32976703032516608
+    m_Localized: "{0}\u56DE"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

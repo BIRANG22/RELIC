@@ -6793,6 +6793,10 @@ MonoBehaviour:
     m_Localized: "Debilitaci\xF3n Prioritaria"
     m_Metadata:
       m_Items: []
+  - m_Id: 32976703032516608
+    m_Localized: '{0} veces'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

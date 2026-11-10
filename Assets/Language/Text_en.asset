@@ -6718,6 +6718,10 @@ MonoBehaviour:
     m_Localized: Priority Debuff
     m_Metadata:
       m_Items: []
+  - m_Id: 32976703032516608
+    m_Localized: '{0} times'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

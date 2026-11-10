@@ -6043,6 +6043,10 @@ MonoBehaviour:
     m_Key: skill.description.repeat_count
     m_Metadata:
       m_Items: []
+  - m_Id: 32976703032516608
+    m_Key: skill.description.repeat_inline
+    m_Metadata:
+      m_Items: []
   - m_Id: 31275475401940992
     m_Key: resource.karma
     m_Metadata:
