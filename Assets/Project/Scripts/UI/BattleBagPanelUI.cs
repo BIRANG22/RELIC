@@ -867,7 +867,7 @@ public class BattleBagPanelUI : MonoBehaviour
             else if (compound != null && !string.IsNullOrWhiteSpace(compound.EffectDesc))
                 detailDescriptionText.text = GameDataLocalization.CompoundDescription(compound);
             else if (relic != null && !string.IsNullOrWhiteSpace(relic.EffectDesc))
-                detailDescriptionText.text = GameDataLocalization.RelicEffectDescription(relic);
+                RelicDescriptionPresenter.Set(detailDescriptionText, GameDataLocalization.RelicEffectDescription(relic));
             else
                 detailDescriptionText.text = GameLocalization.Get("battle.acquired_item");
         }

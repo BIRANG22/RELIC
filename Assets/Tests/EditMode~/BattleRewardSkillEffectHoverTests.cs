@@ -52,6 +52,35 @@ public class BattleRewardSkillEffectHoverTests
     }
 
     [Test]
+    public void BuildEffectPreview_PlainSwiftName_IncludesDisplayableDirectEffectId()
+    {
+        var database = new EffectDatabase();
+        database.Initialize(new[]
+        {
+            new EffectMasterData
+            {
+                EffectId = "E_Swift",
+                Name = "신속",
+                ToolTip = "행동 예약 시 앞순서에 배치할 수 있다.",
+                Mark = 1
+            }
+        });
+        var skill = new SkillMasterData
+        {
+            Details = "모든 아군에게 1의 신속을 부여한다.",
+            EffectIds = "E_Swift",
+            ValueRate = "1",
+            CountRate = "1"
+        };
+
+        List<StatusEffectRuntimeData> preview =
+            BattleRewardSkillPanelUI.BuildEffectPreview(skill, database);
+
+        Assert.That(preview, Has.Count.EqualTo(1));
+        Assert.That(preview[0].EffectId, Is.EqualTo("E_Swift"));
+    }
+
+    [Test]
     public void SetCardHovered_PointerExit_ClearsEffectTooltipWithoutSlotPreview()
     {
         panelObject = new GameObject("RewardSkillPanel");
@@ -67,4 +96,15 @@ public class BattleRewardSkillEffectHoverTests
 
         Assert.That(activeCardField.GetValue(panel), Is.EqualTo(-1));
     }
+
+    [Test]
+    public void BuildTopOffsets_MultipleEffects_StackDownwardFromFirstItem()
+    {
+        List<float> offsets = SkillEffectTooltipDownwardLayout.BuildTopOffsets(
+            new[] { 80f, 60f, 40f },
+            8f);
+
+        Assert.That(offsets, Is.EqualTo(new[] { 0f, -88f, -156f }));
+    }
+
 }

@@ -231,7 +231,7 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
             }
 
             if (effectText != null)
-                effectText.text = GameDataLocalization.RelicEffectDescription(relicData);
+                RelicDescriptionPresenter.Set(effectText, GameDataLocalization.RelicEffectDescription(relicData));
         }
         else
         {

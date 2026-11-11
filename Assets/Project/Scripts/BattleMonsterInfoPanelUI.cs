@@ -68,6 +68,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text skillInfoNameText;
     [SerializeField] private TMP_Text skillInfoTypeText;
     [SerializeField] private TMP_Text skillInfoDetailsText;
+    private MonsterSkillEffectLinkTooltip skillEffectLinkTooltip;
 
     [Header("Monster Skill Effects")]
     [SerializeField] private GameObject[] skillEffectRoots = new GameObject[MonsterSkillEffectSlotCount];
@@ -111,6 +112,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        skillEffectLinkTooltip?.ClearHover();
         ClearStatusEffects();
         boundMonster = null;
         boundRuntime = null;
@@ -413,6 +415,8 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
     private void ShowMonsterSkillInfo(MonsterSkillData skillData)
     {
+        skillEffectLinkTooltip?.ClearHover();
+
         if (skillData == null)
         {
             ClearMonsterSkillInfo();
@@ -653,6 +657,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
     private void ClearMonsterSkillInfo()
     {
+        skillEffectLinkTooltip?.ClearHover();
         ResolveSkillInfoReferences();
         ResolveSkillEffectReferences();
 
@@ -1055,6 +1060,15 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
         if (skillInfoDetailsText == null)
             skillInfoDetailsText = FindTextUnder(skillInfoRoot, "Skill_Details");
+
+        if (skillInfoDetailsText != null)
+        {
+            if (skillEffectLinkTooltip == null)
+                skillEffectLinkTooltip = skillInfoDetailsText.GetComponent<MonsterSkillEffectLinkTooltip>();
+            if (skillEffectLinkTooltip == null)
+                skillEffectLinkTooltip = skillInfoDetailsText.gameObject.AddComponent<MonsterSkillEffectLinkTooltip>();
+            skillEffectLinkTooltip.Bind(skillInfoDetailsText);
+        }
     }
 
     private void ResolveSkillEffectReferences()
@@ -1334,5 +1348,208 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         lastMaxHp = int.MinValue;
         lastArmor = int.MinValue;
         lastStatusHash = int.MinValue;
+    }
+}
+
+/// <summary>
+/// TMP 설명문에서 현재 커서 아래의 effecticon 링크 하나를 찾아 효과 설명을 표시합니다.
+/// </summary>
+[DisallowMultipleComponent]
+public sealed class MonsterSkillEffectLinkTooltip : MonoBehaviour
+{
+    private const string EffectLinkPrefix = "effecticon:";
+
+    private TMP_Text targetText;
+    private UnitStatusEffectTooltipUI tooltip;
+    private readonly List<StatusEffectRuntimeData> effectPreview = new(1);
+    private string activeEffectId;
+    private bool isTooltipVisible;
+
+    public void Bind(TMP_Text text)
+    {
+        if (targetText != text)
+            ClearHover();
+
+        targetText = text;
+        enabled = targetText != null;
+        if (targetText == null)
+            return;
+
+        targetText.richText = true;
+        targetText.raycastTarget = true;
+    }
+
+    public void ClearHover()
+    {
+        if (!isTooltipVisible && activeEffectId == null && effectPreview.Count == 0)
+            return;
+
+        activeEffectId = null;
+        effectPreview.Clear();
+        if (isTooltipVisible)
+            tooltip?.Hide(this);
+        isTooltipVisible = false;
+    }
+
+    public static bool TryParseEffectId(string linkId, out string effectId)
+    {
+        effectId = string.Empty;
+        if (string.IsNullOrWhiteSpace(linkId) ||
+            !linkId.StartsWith(EffectLinkPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        string candidate = linkId.Substring(EffectLinkPrefix.Length).Trim();
+        if (candidate.Length == 0)
+            return false;
+
+        effectId = candidate;
+        return true;
+    }
+
+    private void Update()
+    {
+        if (targetText == null || !targetText.gameObject.activeInHierarchy)
+        {
+            ClearHover();
+            return;
+        }
+
+        Canvas canvas = targetText.canvas;
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (canvas.worldCamera != null ? canvas.worldCamera : Camera.main)
+            : null;
+
+        int linkIndex = TMP_TextUtilities.FindIntersectingLink(
+            targetText,
+            Input.mousePosition,
+            camera);
+        if (linkIndex < 0)
+        {
+            ClearHover();
+            return;
+        }
+
+        targetText.ForceMeshUpdate();
+        TMP_TextInfo textInfo = targetText.textInfo;
+        if (linkIndex >= textInfo.linkCount ||
+            !TryParseEffectId(textInfo.linkInfo[linkIndex].GetLinkID(), out string effectId))
+        {
+            ClearHover();
+            return;
+        }
+
+        if (string.Equals(activeEffectId, effectId, StringComparison.OrdinalIgnoreCase))
+        {
+            AlignTooltipTopLeftToPointer();
+            return;
+        }
+
+        DataManager manager = DataManager.Instance;
+        if (manager?.EffectDatabase == null ||
+            !manager.EffectDatabase.TryGet(effectId, out EffectMasterData effectData) ||
+            effectData == null)
+        {
+            ClearHover();
+            return;
+        }
+
+        tooltip ??= UnitStatusEffectTooltipUI.GetOrCreate();
+        if (tooltip == null)
+            return;
+
+        activeEffectId = effectId;
+        effectPreview.Clear();
+        effectPreview.Add(new StatusEffectRuntimeData(effectId, 1));
+        tooltip.ShowPinned(
+            this,
+            effectPreview,
+            GetLinkScreenPosition(textInfo.linkInfo[linkIndex], camera));
+        isTooltipVisible = true;
+        AlignTooltipTopLeftToPointer();
+    }
+
+    private void AlignTooltipTopLeftToPointer()
+    {
+        if (!isTooltipVisible || tooltip == null)
+            return;
+
+        UnitStatusEffectTooltipItemUI[] items =
+            tooltip.GetComponentsInChildren<UnitStatusEffectTooltipItemUI>(true);
+        for (int i = 0; i < items.Length; i++)
+        {
+            UnitStatusEffectTooltipItemUI item = items[i];
+            if (item == null || !item.gameObject.activeInHierarchy ||
+                item.gameObject.name != "UnitStatusEffectTooltipItemUI")
+            {
+                continue;
+            }
+
+            RectTransform rect = item.transform as RectTransform;
+            RectTransform parentRect = rect != null ? rect.parent as RectTransform : null;
+            if (rect == null || parentRect == null)
+                return;
+
+            Canvas canvas = rect.GetComponentInParent<Canvas>();
+            Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? (canvas.worldCamera != null ? canvas.worldCamera : Camera.main)
+                : null;
+            if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                    parentRect,
+                    Input.mousePosition,
+                    camera,
+                    out Vector3 pointerWorld))
+            {
+                return;
+            }
+
+            AlignTopLeftToWorldPoint(rect, pointerWorld);
+            return;
+        }
+    }
+
+    public static void AlignTopLeftToWorldPoint(RectTransform rect, Vector3 requestedTopLeft)
+    {
+        if (rect == null)
+            return;
+
+        Vector3[] corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        rect.position += requestedTopLeft - corners[1];
+    }
+
+    private Vector2 GetLinkScreenPosition(TMP_LinkInfo link, Camera camera)
+    {
+        TMP_TextInfo textInfo = targetText.textInfo;
+        float right = float.NegativeInfinity;
+        float top = float.NegativeInfinity;
+        float bottom = float.PositiveInfinity;
+        int end = Mathf.Min(
+            link.linkTextfirstCharacterIndex + link.linkTextLength,
+            textInfo.characterCount);
+
+        for (int i = link.linkTextfirstCharacterIndex; i < end; i++)
+        {
+            TMP_CharacterInfo character = textInfo.characterInfo[i];
+            if (!character.isVisible)
+                continue;
+
+            right = Mathf.Max(right, character.topRight.x);
+            top = Mathf.Max(top, character.ascender);
+            bottom = Mathf.Min(bottom, character.descender);
+        }
+
+        if (float.IsNegativeInfinity(right))
+            return Input.mousePosition;
+
+        Vector3 localPoint = new Vector3(right, (top + bottom) * 0.5f, 0f);
+        Vector3 worldPoint = targetText.rectTransform.TransformPoint(localPoint);
+        return RectTransformUtility.WorldToScreenPoint(camera, worldPoint);
+    }
+
+    private void OnDisable()
+    {
+        ClearHover();
     }
 }

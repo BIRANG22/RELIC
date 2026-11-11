@@ -127,7 +127,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private readonly Vector3[] equippedSkillTooltipCorners = new Vector3[4];
 
     [Header("Offered Skill Effect Tooltip")]
-    [SerializeField] private Vector2 offeredSkillEffectTooltipOffset = new Vector2(120f, 0f);
+    [SerializeField] private Vector2 offeredSkillEffectTooltipOffset = new Vector2(320f, -100f);
     [SerializeField, Min(0f)] private float offeredSkillEffectTooltipVerticalSpacing = 8f;
     private UnitStatusEffectTooltipUI offeredSkillEffectTooltip;
     private readonly List<StatusEffectRuntimeData> offeredSkillEffectPreview = new();
@@ -538,6 +538,13 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     public static List<StatusEffectRuntimeData> BuildEffectPreview(SkillMasterData skill)
     {
+        return BuildEffectPreview(skill, DataManager.Instance?.EffectDatabase);
+    }
+
+    public static List<StatusEffectRuntimeData> BuildEffectPreview(
+        SkillMasterData skill,
+        EffectDatabase effectDatabase)
+    {
         var result = new List<StatusEffectRuntimeData>();
         if (skill == null)
             return result;
@@ -551,8 +558,29 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             skill.EffectIds,
             skill.ResourceCostValue);
         List<string> effectIds = SkillDescriptionFormatter.ExtractLinkedEffectIds(description);
+        var added = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (int i = 0; i < effectIds.Count; i++)
-            result.Add(new StatusEffectRuntimeData(effectIds[i], 1));
+        {
+            if (added.Add(effectIds[i]))
+                result.Add(new StatusEffectRuntimeData(effectIds[i], 1));
+        }
+
+        if (!string.IsNullOrWhiteSpace(skill.EffectIds) && effectDatabase != null)
+        {
+            string[] directIds = skill.EffectIds.Split(';');
+            for (int i = 0; i < directIds.Length; i++)
+            {
+                string id = directIds[i].Trim();
+                if (string.IsNullOrWhiteSpace(id) || added.Contains(id))
+                    continue;
+                if (!effectDatabase.TryGet(id, out EffectMasterData effect) ||
+                    effect == null || effect.Mark != 1)
+                    continue;
+
+                added.Add(id);
+                result.Add(new StatusEffectRuntimeData(id, 1));
+            }
+        }
 
         return result;
     }
@@ -589,6 +617,12 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         offeredSkillEffectTooltip.ShowSkillEffectList(
             this,
             offeredSkillEffectPreview,
+            anchor,
+            null,
+            offeredSkillEffectTooltipOffset,
+            offeredSkillEffectTooltipVerticalSpacing);
+        SkillEffectTooltipDownwardLayout.Apply(
+            offeredSkillEffectTooltip,
             anchor,
             null,
             offeredSkillEffectTooltipOffset,

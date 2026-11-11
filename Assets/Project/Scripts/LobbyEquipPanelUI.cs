@@ -619,7 +619,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         if (ownedRelicView.EffectText != null)
-            ownedRelicView.EffectText.text = FormatRelicEffectDescription(relic);
+            RelicDescriptionPresenter.Set(ownedRelicView.EffectText, FormatRelicEffectDescription(relic));
 
         if (ownedRelicView.EquipButton != null)
             ownedRelicView.EquipButton.interactable = true;
@@ -3261,7 +3261,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         result = ReplaceIndexedEffectValues(result, "CountRate", relic.CountRate);
         result = ReplaceEffectValue(result, "{ValueRate}", relic.ValueRate);
         result = ReplaceEffectValue(result, "{CountRate}", relic.CountRate);
-        return result;
+        return RelicDescriptionFormatter.Format(result, relic.EffectIds);
     }
 
     private static string ReplaceIndexedEffectValues(string source, string tokenName, string values)

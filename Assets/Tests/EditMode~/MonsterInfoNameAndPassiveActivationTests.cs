@@ -10,6 +10,100 @@ using TMPro;
 public sealed class MonsterInfoNameAndPassiveActivationTests
 {
     [Test]
+    public void MonsterSkillEffectTooltip_AlignTopLeft_MatchesRequestedWorldPoint()
+    {
+        GameObject root = new GameObject("Tooltip", typeof(RectTransform));
+        try
+        {
+            RectTransform rect = root.GetComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(320f, 95f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.position = new Vector3(40f, 20f, 0f);
+            Vector3 requestedTopLeft = new Vector3(150f, 275f, 0f);
+
+            MonsterSkillEffectLinkTooltip.AlignTopLeftToWorldPoint(rect, requestedTopLeft);
+
+            Vector3[] corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            Assert.That(corners[1].x, Is.EqualTo(requestedTopLeft.x).Within(0.001f));
+            Assert.That(corners[1].y, Is.EqualTo(requestedTopLeft.y).Within(0.001f));
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void MonsterSkillItem_FormatDetail_PreservesBarrierEffectLinkAndUnderline()
+    {
+        string formatted = MonsterInfoSkillItemUI.FormatDetailForEffectHover(
+            "자신에게 <link=\"effecticon:E_Barrier\">장막</link><space=1em>을 부여한다.");
+
+        Assert.That(formatted, Does.Contain("<link=\"effecticon:E_Barrier\"><u>장막</u></link>"));
+        Assert.That(formatted, Does.Not.Contain("<space=1em>"));
+    }
+
+    [Test]
+    public void MonsterSkillItem_FormatDetail_PreservesEveryEffectLink()
+    {
+        string formatted = MonsterInfoSkillItemUI.FormatDetailForEffectHover(
+            "<link=\"effecticon:E_Poison\">중독</link><space=1em>과 " +
+            "<link=\"effecticon:E_Bleed\">출혈</link><space=1em>을 부여한다.");
+
+        Assert.That(
+            SkillDescriptionFormatter.ExtractLinkedEffectIds(formatted),
+            Is.EqualTo(new[] { "E_Poison", "E_Bleed" }));
+        Assert.That(formatted, Does.Contain("<u>중독</u>"));
+        Assert.That(formatted, Does.Contain("<u>출혈</u>"));
+    }
+
+    [TestCase("effecticon:E_Poison", "E_Poison")]
+    [TestCase("effecticon:E_Bleed", "E_Bleed")]
+    public void MonsterSkillEffectLink_TryParseValidId_ReturnsEffectId(string linkId, string expected)
+    {
+        bool parsed = MonsterSkillEffectLinkTooltip.TryParseEffectId(linkId, out string effectId);
+
+        Assert.That(parsed, Is.True);
+        Assert.That(effectId, Is.EqualTo(expected));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("effecticon:")]
+    [TestCase("other:E_Poison")]
+    public void MonsterSkillEffectLink_TryParseInvalidId_ReturnsFalse(string linkId)
+    {
+        Assert.That(
+            MonsterSkillEffectLinkTooltip.TryParseEffectId(linkId, out string effectId),
+            Is.False);
+        Assert.That(effectId, Is.Empty);
+    }
+
+    [Test]
+    public void MonsterSkillEffectLink_BindEnablesRichTextAndRaycast()
+    {
+        GameObject root = new GameObject("MonsterSkillDetail", typeof(RectTransform));
+        try
+        {
+            TMP_Text text = root.AddComponent<TextMeshProUGUI>();
+            text.richText = false;
+            text.raycastTarget = false;
+            MonsterSkillEffectLinkTooltip hover = root.AddComponent<MonsterSkillEffectLinkTooltip>();
+
+            hover.Bind(text);
+
+            Assert.That(text.richText, Is.True);
+            Assert.That(text.raycastTarget, Is.True);
+            Assert.That(hover.enabled, Is.True);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
     public void PlayerSkillHoverDescription_UsesExcelSourceWhenLocalizationIsMissing()
     {
         Assert.That(

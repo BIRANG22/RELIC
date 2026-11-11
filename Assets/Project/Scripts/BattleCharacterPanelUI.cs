@@ -1543,7 +1543,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (equipmentTooltipNameText != null)
             equipmentTooltipNameText.text = displayName ?? string.Empty;
         if (equipmentTooltipDetailText != null)
-            SkillEffectInlineIconUtility.SetText(equipmentTooltipDetailText, description ?? string.Empty);
+            RelicDescriptionPresenter.Set(equipmentTooltipDetailText, description ?? string.Empty);
 
         if (equipmentTooltipLineImage != null)
         {
@@ -5159,6 +5159,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 detailEffectPreview.Add(new StatusEffectRuntimeData(id, 1));
         }
         detailEffectTooltip.ShowSkillEffectList(this, detailEffectPreview, skillTooltipRectTransform, skillEffectTooltipAnchor, skillEffectTooltipOffset, skillEffectTooltipVerticalSpacing);
+        SkillEffectTooltipDownwardLayout.Apply(
+            detailEffectTooltip,
+            skillTooltipRectTransform,
+            skillEffectTooltipAnchor,
+            skillEffectTooltipOffset,
+            skillEffectTooltipVerticalSpacing);
         activeSkillEffectSignature = signature;
     }
 

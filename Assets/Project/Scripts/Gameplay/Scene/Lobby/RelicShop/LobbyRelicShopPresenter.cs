@@ -726,7 +726,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         if (bodyText != null)
-            bodyText.text = GameDataLocalization.RelicEffectDescription(relic);
+            RelicDescriptionPresenter.Set(bodyText, GameDataLocalization.RelicEffectDescription(relic));
 
         LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         bool purchased = runtime != null && Contains(runtime.OwnedRelicIds, relicId);
