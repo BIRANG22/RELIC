@@ -886,7 +886,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         SetIcon(rewardIcon, icon);
         if (rewardName != null) rewardName.text = relic != null ? GameDataLocalization.RelicName(relic) : current.RewardId;
         if (rewardRarity != null) rewardRarity.text = relic != null ? GameDataLocalization.RelicRarity(relic) : string.Empty;
-        if (rewardEffect != null) rewardEffect.text = relic != null ? GameDataLocalization.RelicEffectDescription(relic) : string.Empty;
+        RelicDescriptionPresenter.Set(rewardEffect, relic != null ? GameDataLocalization.RelicEffectDescription(relic) : string.Empty);
         if (rarityLine != null && relic != null)
         {
             Color color = commonColor;
@@ -1318,7 +1318,10 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         LocalizeStringEvent stringEvent = label.GetComponent<LocalizeStringEvent>();
         if (stringEvent != null) stringEvent.enabled = false;
 
-        label.text = value ?? string.Empty;
+        if ((value ?? string.Empty).Contains("effecticon:"))
+            RelicDescriptionPresenter.Set(label, value);
+        else
+            label.text = value ?? string.Empty;
         label.SetAllDirty();
     }
 

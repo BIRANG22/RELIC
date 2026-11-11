@@ -132,7 +132,7 @@ S_Core_25,짙은 그림자,Core,Rare,Ulti,EnemyParty,1,2,Char_03,Debuff,0,E_Fati
 S_Core_26,영혼 흡수,Core,Rare,Cost,EnemyParty,1,2,Char_03,Attack,0,E_Strike;E_RestoreManaPerHitTarget,8;1,1;1,4,Direction,Range_24,범위에 {ValueRate1}의 {E_Strike}를 준다. 적중한 적의 수만큼 마나를 회복한다.
 S_Core_27,독성발현,Core,Epic,Cost,EnemyParty,1,3,Char_03,Debuff,0,E_PoisonEqualTargetPoison,1,1,6,Direction,Range_12,대상이 보유한 {E_Poison} 수치만큼 {E_Poison}을 부여한다.
 S_Core_28,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,2,Char_03,Debuff,0,E_Bondage,1,1,2,Direction,Range_06,범위에 {ValueRate1}의 {E_Bondage}을 부여한다.
-S_Core_29,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,3,Char_03,Buff,0,E_Swift,1,1,8,Direction,Range_Party,모든 아군에게 {ValueRate1}의 신속을 부여한다.
+S_Core_29,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,3,Char_03,Buff,0,E_Swift,1,1,8,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Swift}을 부여한다.
 S_Core_30,극성맹독,Core,Unique,Cost,EnemyParty,1,2,Char_03,Debuff,0,E_Poison;E_TriggerPoison,3;1,1;1,5,Direction,Range_24,범위에 {ValueRate1}의 {E_Poison}을 부여한다. 적중한 대상의 중독을 즉시 1회 발동한다.
 S_Core_31,희생,Core,Common,Hp,PlayerParty,1,2,Char_04,FastBuff,1,E_Armor;E_Cure,5;2,1;1,4,Direction,Range_b_07,"범위에 {ValueRate1}의 {E_Armor}를 부여하고, {ValueRate2}의 생명력을 회복한다."
 S_Core_32,죄의 인도,Core,Common,Cost,EnemyParty,1,2,Char_04,Attack,0,E_Strike;E_Grab,8;1,1;1,3,Direction,Range_08,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Grab}을 {ValueRate2}칸 적용한다."

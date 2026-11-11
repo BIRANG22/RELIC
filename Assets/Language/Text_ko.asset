@@ -3401,7 +3401,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101075
-    m_Localized: "\uBAA8\uB4E0 \uC544\uAD70\uC5D0\uAC8C {ValueRate1}\uC758 \uC2E0\uC18D\uC744
+    m_Localized: "\uBAA8\uB4E0 \uC544\uAD70\uC5D0\uAC8C {ValueRate1}\uC758 {E_Swift}\uC744
       \uBD80\uC5EC\uD55C\uB2E4."
     m_Metadata:
       m_Items: []

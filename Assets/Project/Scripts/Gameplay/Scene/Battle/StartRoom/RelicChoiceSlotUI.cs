@@ -161,9 +161,10 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
         if (relicEffectText != null)
         {
-            relicEffectText.text = compoundData != null && !string.IsNullOrWhiteSpace(compoundData.EffectDesc)
+            string description = compoundData != null && !string.IsNullOrWhiteSpace(compoundData.EffectDesc)
                 ? GameDataLocalization.CompoundDescription(compoundData)
                 : GameDataLocalization.RelicEffectDescription(relicData);
+            RelicDescriptionPresenter.Set(relicEffectText, description);
         }
     }
 

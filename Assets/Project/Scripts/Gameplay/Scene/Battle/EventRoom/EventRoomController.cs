@@ -603,7 +603,7 @@ public class EventRoomController : MonoBehaviour
             relicHoverNameText.text = GameDataLocalization.RelicName(relicData);
 
         if (relicHoverDescText != null)
-            relicHoverDescText.text = GameDataLocalization.RelicEffectDescription(relicData);
+            RelicDescriptionPresenter.Set(relicHoverDescText, GameDataLocalization.RelicEffectDescription(relicData));
 
         if (relicHoverInfoPanel != null)
         {

@@ -12,6 +12,10 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 {
+    private static readonly Regex EffectLinkContentRegex = new(
+        @"(<link\s*=\s*""effecticon:[^""]+""[^>]*>)(?!<u>)(.*?)(</link>)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
     [Header("References")]
     [SerializeField] private Image skillIconImage;
     [SerializeField] private TMP_Text nameText;
@@ -21,6 +25,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
     [SerializeField] private TMP_Text typeText;
 
     private MonsterSkillData boundSkill;
+    private MonsterSkillEffectLinkTooltip effectLinkTooltip;
 
     private void OnEnable()
     {
@@ -30,6 +35,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 
     private void OnDisable()
     {
+        effectLinkTooltip?.ClearHover();
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
@@ -45,6 +51,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 
     public void Bind(MonsterSkillData skillData)
     {
+        effectLinkTooltip?.ClearHover();
         ResolveReferences();
         ProtectDynamicTexts();
 
@@ -64,13 +71,12 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
         {
             string localizedDescription = GameDataLocalization.MonsterSkillDescription(skillData);
             string formattedDescription = MonsterSkillDescriptionFormatter.Format(localizedDescription, skillData, true);
-            // 효과명은 밑줄로 표시하고 인라인 효과 아이콘은 사용하지 않습니다.
-            // 기존 공통 포매터가 생성하는 effecticon 링크만 변환합니다.
-            formattedDescription = Regex.Replace(
-                formattedDescription,
-                @"<link=""effecticon:[^""]+"">(.*?)</link>\s*<space=1em>",
-                "<u>$1</u>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-            detailText.text = formattedDescription;
+            detailText.text = FormatDetailForEffectHover(formattedDescription);
+            if (effectLinkTooltip == null)
+                effectLinkTooltip = detailText.GetComponent<MonsterSkillEffectLinkTooltip>();
+            if (effectLinkTooltip == null)
+                effectLinkTooltip = detailText.gameObject.AddComponent<MonsterSkillEffectLinkTooltip>();
+            effectLinkTooltip.Bind(detailText);
         }
 
         Sprite rangeSprite = ResolveRangeIcon(skillData.RangeId);
@@ -82,6 +88,17 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 
         if (typeText != null)
             typeText.text = GameDataLocalization.MonsterSkillType(skillData);
+    }
+
+    public static string FormatDetailForEffectHover(string formattedDescription)
+    {
+        string result = formattedDescription ?? string.Empty;
+        result = EffectLinkContentRegex.Replace(result, "$1<u>$2</u>$3");
+        return Regex.Replace(
+            result,
+            @"</link>\s*<space=[^>]+>",
+            "</link>",
+            RegexOptions.IgnoreCase);
     }
 
     private static void EnsureInlineIcons(TMP_Text text)
@@ -115,6 +132,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 
     private void Clear()
     {
+        effectLinkTooltip?.ClearHover();
         if (skillIconImage != null)
             SetImage(skillIconImage, null);
         if (rangeImage != null)

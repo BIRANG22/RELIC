@@ -143,7 +143,7 @@ namespace Relic.Gameplay.Data
             result = ReplaceRelicIndexedValues(result, "CountRate", data.CountRate);
             result = ReplaceRelicValue(result, "{ValueRate}", data.ValueRate);
             result = ReplaceRelicValue(result, "{CountRate}", data.CountRate);
-            return result;
+            return RelicDescriptionFormatter.Format(result, data.EffectIds);
         }
 
         private static string ReplaceRelicIndexedValues(string source, string tokenName, string values)
