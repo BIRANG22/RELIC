@@ -113,6 +113,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1694736522265887693
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,6 +241,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &6217469092900563637
 GameObject:
   m_ObjectHideFlags: 0
@@ -249,6 +255,7 @@ GameObject:
   - component: {fileID: 7317988531753664609}
   - component: {fileID: 634832801135278591}
   - component: {fileID: 2544472808455411913}
+  - component: {fileID: 5757768555199498203}
   m_Layer: 5
   m_Name: Image
   m_TagString: Untagged
@@ -313,3 +320,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5757768555199498203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6217469092900563637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c371383f43a63d49abdfb7eb04ff2fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveDistance: 20
+  moveDuration: 2
+  useUnscaledTime: 1
