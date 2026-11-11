@@ -201,6 +201,7 @@ public class BattleTimelineController : MonoBehaviour
         new List<MonsterReservedCommand>[5];
 
     private readonly List<PlayerReservationHistoryEntry> playerReservationHistory = new();
+    private readonly List<PlayerReservationHistoryEntry> playerReservationRedoHistory = new();
     private readonly HashSet<int> networkViewedSlotIndices = new();
 
     public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
@@ -328,9 +329,27 @@ public class BattleTimelineController : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
+        if (IsRedoModifierPressed())
+        {
+            RedoLastPlayerReservation();
+            return;
+        }
+
         PruneInvalidPlayerReservationHistory();
         if (playerReservationHistory.Count > 0)
             UndoLastPlayerReservation();
+    }
+
+    private static bool IsRedoModifierPressed()
+    {
+        return IsRedoModifierPressed(
+            Input.GetKey(KeyCode.LeftAlt),
+            Input.GetKey(KeyCode.RightAlt));
+    }
+
+    public static bool IsRedoModifierPressed(bool leftAltPressed, bool rightAltPressed)
+    {
+        return leftAltPressed || rightAltPressed;
     }
 
     private static bool ShouldReturnCameraForSelectedCharacter(
@@ -610,9 +629,105 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         PlayerReservationHistoryEntry entry = playerReservationHistory[playerReservationHistory.Count - 1];
-        playerReservationHistory.RemoveAt(playerReservationHistory.Count - 1);
 
-        RemovePlayerReservationEntry(entry, true);
+        if (entry.Operation == PlayerReservationHistoryOperation.Move)
+        {
+            if (TryApplyPlayerReservationMoveHistory(entry, true))
+            {
+                playerReservationHistory.RemoveAt(playerReservationHistory.Count - 1);
+                playerReservationRedoHistory.Add(entry);
+            }
+
+            return;
+        }
+
+        if (RemovePlayerReservationEntry(entry, true, out int removedOrderIndex))
+        {
+            playerReservationRedoHistory.Add(new PlayerReservationHistoryEntry(
+                entry.SlotIndex,
+                entry.Command,
+                removedOrderIndex));
+        }
+    }
+
+    public bool RedoLastPlayerReservation()
+    {
+        if (isSlotSelectionLocked)
+            return false;
+
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return false;
+
+        if (playerReservationRedoHistory.Count <= 0)
+            return false;
+
+        PlayerReservationHistoryEntry entry =
+            playerReservationRedoHistory[playerReservationRedoHistory.Count - 1];
+
+        if (entry != null && entry.Operation == PlayerReservationHistoryOperation.Move)
+        {
+            if (!TryApplyPlayerReservationMoveHistory(entry, false))
+                return false;
+
+            playerReservationRedoHistory.RemoveAt(playerReservationRedoHistory.Count - 1);
+            playerReservationHistory.Add(entry);
+            return true;
+        }
+
+        if (entry == null || entry.Command == null || reserveSlots == null ||
+            entry.SlotIndex < 0 || entry.SlotIndex >= reserveSlots.Length ||
+            IsPlayerSlotLocked(entry.SlotIndex))
+        {
+            return false;
+        }
+
+        ReserveTurnSlotUI slot = reserveSlots[entry.SlotIndex];
+        if (slot == null || slot.Commands == null ||
+            slot.IndexOfCommand(entry.Command) >= 0 ||
+            !slot.CanAcceptCharacter(entry.Command.UserRuntime))
+        {
+            return false;
+        }
+
+        string equipmentBlockReason = GetEquipmentReservationBlockReason(
+            entry.Command,
+            entry.SlotIndex);
+        if (!string.IsNullOrEmpty(equipmentBlockReason))
+            return false;
+
+        if (!CanAddPlayerCommandToSlot(entry.SlotIndex, entry.Command.TimelineEntryCost))
+            return false;
+
+        if (!slot.InsertCommand(entry.OrderIndex, entry.Command))
+            return false;
+
+        RecalculateAllReservedCosts();
+        if (!AreAllReservedCommandTotalsAffordable())
+        {
+            int insertedIndex = slot.IndexOfCommand(entry.Command);
+            if (insertedIndex >= 0)
+                slot.RemoveCommandAt(insertedIndex, out _);
+
+            entry.Command.UserRuntime?.ClearReservedCosts();
+            RecalculateAllReservedCosts();
+            return false;
+        }
+
+        BattleEquipmentEffectService.TryApplyAndConsumeSpiderWebMoveCostPenalty(entry.Command);
+        playerReservationRedoHistory.RemoveAt(playerReservationRedoHistory.Count - 1);
+        RecordPlayerReservation(entry.SlotIndex, entry.Command, true);
+
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        GetActiveTimelineBarUI()?.PlayPlayerReservationFeedback(entry.SlotIndex, entry.Command);
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+
+        Debug.Log($"[BattleTimelineController] 마지막 예약 다시 실행 / Slot:{entry.SlotIndex} / Order:{entry.OrderIndex}");
+        return true;
     }
 
     public void MoveSelectedTimelineSlot(int direction)
@@ -3821,7 +3936,10 @@ public class BattleTimelineController : MonoBehaviour
         RefreshMoveGhostPreview();
     }
 
-    private void RecordPlayerReservation(int slotIndex, PlayerReservedCommand command)
+    private void RecordPlayerReservation(
+        int slotIndex,
+        PlayerReservedCommand command,
+        bool preserveRedoHistory = false)
     {
         if (command == null)
             return;
@@ -3829,8 +3947,17 @@ public class BattleTimelineController : MonoBehaviour
         if (slotIndex < 0)
             return;
 
+        if (!preserveRedoHistory)
+            playerReservationRedoHistory.Clear();
+
         RemovePlayerReservationHistoryEntries(command);
-        playerReservationHistory.Add(new PlayerReservationHistoryEntry(slotIndex, command));
+        int orderIndex = reserveSlots != null && slotIndex < reserveSlots.Length && reserveSlots[slotIndex] != null
+            ? reserveSlots[slotIndex].IndexOfCommand(command)
+            : -1;
+        playerReservationHistory.Add(new PlayerReservationHistoryEntry(
+            slotIndex,
+            command,
+            orderIndex));
     }
 
     private int GetSlotIndexOf(ReserveTurnSlotUI slot)
@@ -3849,11 +3976,9 @@ public class BattleTimelineController : MonoBehaviour
 
     private void PruneInvalidPlayerReservationHistory()
     {
-        for (int i = playerReservationHistory.Count - 1; i >= 0; i--)
-        {
-            if (!IsPlayerReservationEntryValid(playerReservationHistory[i]))
-                playerReservationHistory.RemoveAt(i);
-        }
+        while (playerReservationHistory.Count > 0 &&
+               !IsPlayerReservationEntryValid(playerReservationHistory[playerReservationHistory.Count - 1]))
+            playerReservationHistory.RemoveAt(playerReservationHistory.Count - 1);
     }
 
     private bool IsPlayerReservationEntryValid(PlayerReservationHistoryEntry entry)
@@ -3861,10 +3986,17 @@ public class BattleTimelineController : MonoBehaviour
         if (entry == null || entry.Command == null)
             return false;
 
-        if (reserveSlots == null || entry.SlotIndex < 0 || entry.SlotIndex >= reserveSlots.Length)
+        if (entry.Operation == PlayerReservationHistoryOperation.Move)
+        {
+            return GetPlayerCommandIndex(entry.Command, entry.DestinationSlotIndex) >= 0;
+        }
+
+        if (reserveSlots == null ||
+            entry.DestinationSlotIndex < 0 ||
+            entry.DestinationSlotIndex >= reserveSlots.Length)
             return false;
 
-        ReserveTurnSlotUI slot = reserveSlots[entry.SlotIndex];
+        ReserveTurnSlotUI slot = reserveSlots[entry.DestinationSlotIndex];
 
         if (slot == null || slot.Commands == null)
             return false;
@@ -3876,6 +4008,55 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool TryApplyPlayerReservationMoveHistory(
+        PlayerReservationHistoryEntry entry,
+        bool undo)
+    {
+        if (entry == null || entry.Command == null || reserveSlots == null)
+            return false;
+
+        int expectedSlotIndex = undo ? entry.DestinationSlotIndex : entry.SourceSlotIndex;
+        int targetSlotIndex = undo ? entry.SourceSlotIndex : entry.DestinationSlotIndex;
+        int targetOrderIndex = undo ? entry.SourceOrderIndex : entry.DestinationOrderIndex;
+        int currentOrderIndex = GetPlayerCommandIndex(entry.Command, expectedSlotIndex);
+
+        if (currentOrderIndex < 0)
+            return false;
+
+        int insertionIndex = targetOrderIndex;
+        if (expectedSlotIndex == targetSlotIndex && currentOrderIndex < targetOrderIndex)
+            insertionIndex++;
+
+        bool moved = TryMovePlayerReservationInternal(
+            entry.Command,
+            targetSlotIndex,
+            insertionIndex,
+            false,
+            false,
+            false);
+
+        if (moved)
+        {
+            Debug.Log(
+                $"[BattleTimelineController] 예약 이동 {(undo ? "되돌리기" : "다시 실행")} / " +
+                $"From:{expectedSlotIndex}:{currentOrderIndex} / To:{targetSlotIndex}:{targetOrderIndex}");
+        }
+
+        return moved;
+    }
+
+    private int GetPlayerCommandIndex(PlayerReservedCommand command, int slotIndex)
+    {
+        if (command == null || reserveSlots == null ||
+            slotIndex < 0 || slotIndex >= reserveSlots.Length)
+        {
+            return -1;
+        }
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+        return slot != null ? slot.IndexOfCommand(command) : -1;
     }
 
     private void RemovePlayerReservationHistoryEntries(PlayerReservedCommand command)
@@ -3899,8 +4080,13 @@ public class BattleTimelineController : MonoBehaviour
         }
     }
 
-    private bool RemovePlayerReservationEntry(PlayerReservationHistoryEntry entry, bool showLog)
+    private bool RemovePlayerReservationEntry(
+        PlayerReservationHistoryEntry entry,
+        bool showLog,
+        out int removedOrderIndex)
     {
+        removedOrderIndex = -1;
+
         if (!IsPlayerReservationEntryValid(entry))
             return false;
 
@@ -3915,6 +4101,8 @@ public class BattleTimelineController : MonoBehaviour
 
             if (!removed)
                 return false;
+
+            removedOrderIndex = i;
 
             RemoveReservedCosts(removedCommand);
             RemovePlayerReservationHistoryEntries(removedCommand);
@@ -5060,7 +5248,8 @@ public class BattleTimelineController : MonoBehaviour
             destinationSlotIndex,
             destinationPlayerIndex,
             true,
-            false);
+            false,
+            true);
     }
 
     public bool TryMovePlayerReservationFromNetwork(
@@ -5073,6 +5262,7 @@ public class BattleTimelineController : MonoBehaviour
             destinationSlotIndex,
             destinationPlayerIndex,
             false,
+            true,
             true);
     }
 
@@ -5081,7 +5271,8 @@ public class BattleTimelineController : MonoBehaviour
         int destinationSlotIndex,
         int destinationPlayerIndex,
         bool allowNetworkDispatch,
-        bool ignoreNetworkViewedSlotLocks)
+        bool ignoreNetworkViewedSlotLocks,
+        bool recordHistory)
     {
         if (command == null || reserveSlots == null ||
             destinationSlotIndex < 0 || destinationSlotIndex >= reserveSlots.Length ||
@@ -5185,8 +5376,24 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        RemovePlayerReservationHistoryEntries(command);
-        RecordPlayerReservation(destinationSlotIndex, command);
+        if (recordHistory)
+        {
+            int destinationCommandIndex = destinationSlot.IndexOfCommand(command);
+            bool locationChanged =
+                sourceSlotIndex != destinationSlotIndex ||
+                sourceCommandIndex != destinationCommandIndex;
+            if (locationChanged)
+            {
+                playerReservationRedoHistory.Clear();
+                playerReservationHistory.Add(PlayerReservationHistoryEntry.Move(
+                    command,
+                    sourceSlotIndex,
+                    sourceCommandIndex,
+                    destinationSlotIndex,
+                    destinationCommandIndex));
+            }
+        }
+
         RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
@@ -5290,6 +5497,7 @@ public class BattleTimelineController : MonoBehaviour
         if (removedCount <= 0)
             return 0;
 
+        playerReservationRedoHistory.Clear();
         reservationVersion++;
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();
@@ -5319,6 +5527,7 @@ public class BattleTimelineController : MonoBehaviour
         if (!removed)
             return false;
 
+        playerReservationRedoHistory.Clear();
         RemoveReservedCosts(removedCommand);
         RemovePlayerReservationHistoryEntries(removedCommand);
 
@@ -5350,6 +5559,7 @@ public class BattleTimelineController : MonoBehaviour
 
         playerSkillReservationController?.ClearPreview();
         playerReservationHistory.Clear();
+        playerReservationRedoHistory.Clear();
         reservationVersion++;
 
         if (reserveSlots != null)
@@ -5384,6 +5594,7 @@ public class BattleTimelineController : MonoBehaviour
         ClearSelectedSlotSelection();
         ClearPlayerLockedSlot();
         playerReservationHistory.Clear();
+        playerReservationRedoHistory.Clear();
         reservationVersion++;
 
         if (reserveSlots != null)
@@ -5831,16 +6042,65 @@ public class BattleTimelineController : MonoBehaviour
 
         return null;
     }
+    private enum PlayerReservationHistoryOperation
+    {
+        Add,
+        Move
+    }
+
     private sealed class PlayerReservationHistoryEntry
     {
-        public PlayerReservationHistoryEntry(int slotIndex, PlayerReservedCommand command)
+        public PlayerReservationHistoryEntry(
+            int slotIndex,
+            PlayerReservedCommand command,
+            int orderIndex = -1)
         {
-            SlotIndex = slotIndex;
+            Operation = PlayerReservationHistoryOperation.Add;
             Command = command;
+            SourceSlotIndex = -1;
+            SourceOrderIndex = -1;
+            DestinationSlotIndex = slotIndex;
+            DestinationOrderIndex = orderIndex;
         }
 
-        public int SlotIndex { get; }
+        private PlayerReservationHistoryEntry(
+            PlayerReservedCommand command,
+            int sourceSlotIndex,
+            int sourceOrderIndex,
+            int destinationSlotIndex,
+            int destinationOrderIndex)
+        {
+            Operation = PlayerReservationHistoryOperation.Move;
+            Command = command;
+            SourceSlotIndex = sourceSlotIndex;
+            SourceOrderIndex = sourceOrderIndex;
+            DestinationSlotIndex = destinationSlotIndex;
+            DestinationOrderIndex = destinationOrderIndex;
+        }
+
+        public PlayerReservationHistoryOperation Operation { get; }
         public PlayerReservedCommand Command { get; }
+        public int SourceSlotIndex { get; }
+        public int SourceOrderIndex { get; }
+        public int DestinationSlotIndex { get; }
+        public int DestinationOrderIndex { get; }
+        public int SlotIndex => DestinationSlotIndex;
+        public int OrderIndex => DestinationOrderIndex;
+
+        public static PlayerReservationHistoryEntry Move(
+            PlayerReservedCommand command,
+            int sourceSlotIndex,
+            int sourceOrderIndex,
+            int destinationSlotIndex,
+            int destinationOrderIndex)
+        {
+            return new PlayerReservationHistoryEntry(
+                command,
+                sourceSlotIndex,
+                sourceOrderIndex,
+                destinationSlotIndex,
+                destinationOrderIndex);
+        }
     }
 
 }
