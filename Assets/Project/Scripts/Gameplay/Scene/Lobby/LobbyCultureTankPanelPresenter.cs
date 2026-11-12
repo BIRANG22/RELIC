@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -25,6 +25,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [SerializeField] private GameObject completionRoot;
     [SerializeField] private Button completionButton;
     [SerializeField] private Image completionIcon;
+
+    [Header("Compound Combine VFX")]
+    [Tooltip("조합 성공 시 활성화할 씬의 VFX 오브젝트입니다. 최초에는 비활성화 상태로 배치해 주세요.")]
+    [SerializeField] private GameObject compoundCombineVfx;
 
     [Header("Ingredient Register Sound")]
     [Tooltip("Storage의 재료가 CultureTankRow에 실제로 등록되었을 때 재생할 SFX입니다.")]
@@ -379,7 +383,25 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         SaveAndPublish();
         RefreshAll();
         RefreshCompoundReferenceNow();
+        PlayCompoundCombineVfx();
         AudioManager.Instance?.PlaySfx(materialCombineSoundId);
+    }
+
+    private void PlayCompoundCombineVfx()
+    {
+        if (compoundCombineVfx == null)
+            return;
+
+        // 이미 활성화되어 있더라도 다음 조합에서 이펙트를 처음부터 재생합니다.
+        compoundCombineVfx.SetActive(false);
+        compoundCombineVfx.SetActive(true);
+
+        ParticleSystem[] particles = compoundCombineVfx.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < particles.Length; i++)
+        {
+            if (particles[i] != null && particles[i].gameObject.activeInHierarchy)
+                particles[i].Play(true);
+        }
     }
 
     private void ClaimCompletion()
