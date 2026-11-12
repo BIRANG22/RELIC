@@ -255,7 +255,7 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
-    public void DirectReservationRemoval_AfterUndo_InvalidatesRedoHistory()
+    public void DirectReservationRemoval_AfterUndo_RedoRestoresClickedCommand()
     {
         BattleTimelineController controller = CreateControllerWithSlots(1, 0);
         CharacterRuntimeData runtime = Runtime("RedoDeleteBranch", BattleDirection.Right);
@@ -265,10 +265,10 @@ public class BattleTimelineManualControlTests
         Assert.That(controller.ConfirmPlayerCommand(0, undone), Is.True);
         controller.UndoLastPlayerReservation();
 
-        Assert.That(controller.RemoveCommandFromNetwork(0, 0), Is.True);
+        controller.RemoveCommand(0, retained);
 
-        Assert.That(controller.RedoLastPlayerReservation(), Is.False);
-        Assert.That(Slot(0).Commands, Is.Empty);
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { retained }));
     }
 
     [Test]

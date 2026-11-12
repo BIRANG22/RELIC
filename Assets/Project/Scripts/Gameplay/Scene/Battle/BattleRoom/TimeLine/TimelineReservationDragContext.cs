@@ -13,10 +13,21 @@ public sealed class TimelineReservationDragContext
     public bool HasSwift => Command != null
         ? BattleActionOrderUtility.HasSwift(Command)
         : (Skill != null && Skill.IsFastSkill == 1) || BattleActionOrderUtility.HasSwift(Runtime);
+    public int OccupiedOrders => Command != null
+        ? BattleTimelineCapacityPolicy.NormalizeOccupiedOrders(Command.TimelineEntryCost)
+        : ResolveSkillOccupiedOrders(Skill);
 
     public static TimelineReservationDragContext Active { get; private set; }
 
     private static RectTransform dragVisual;
+
+    private static int ResolveSkillOccupiedOrders(SkillMasterData skill)
+    {
+        if (skill == null || skill.Category == Category.Move)
+            return 1;
+
+        return BattleTimelineCapacityPolicy.NormalizeOccupiedOrders(skill.Entry);
+    }
 
     public static void BeginNewSkill(
         CharacterRuntimeData runtime,
@@ -52,6 +63,8 @@ public sealed class TimelineReservationDragContext
     {
         if (dragVisual != null && eventData != null)
             dragVisual.position = eventData.position;
+
+        UpdateTimelinePreview(eventData);
     }
 
     public static void CompleteDropAtPointer(PointerEventData eventData)
@@ -85,10 +98,57 @@ public sealed class TimelineReservationDragContext
 
     public static void End()
     {
+        ClearTimelinePreviews();
         if (dragVisual != null)
             Object.Destroy(dragVisual.gameObject);
         dragVisual = null;
         Active = null;
+    }
+
+    private static void UpdateTimelinePreview(PointerEventData eventData)
+    {
+        if (Active == null || eventData == null)
+        {
+            ClearTimelinePreviews();
+            return;
+        }
+
+        BattleTimelineGroupUI[] groups = Object.FindObjectsByType<BattleTimelineGroupUI>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+        BattleTimelineGroupUI target = null;
+        for (int i = 0; i < groups.Length; i++)
+        {
+            BattleTimelineGroupUI group = groups[i];
+            if (group != null && group.ContainsScreenPointInDropArea(
+                    eventData.position,
+                    eventData.pressEventCamera))
+            {
+                target = group;
+                break;
+            }
+        }
+
+        for (int i = 0; i < groups.Length; i++)
+        {
+            BattleTimelineGroupUI group = groups[i];
+            if (group == null)
+                continue;
+
+            if (group == target)
+                group.ShowReservationDragPreview(Active, eventData);
+            else
+                group.ClearReservationDragPreview();
+        }
+    }
+
+    private static void ClearTimelinePreviews()
+    {
+        BattleTimelineGroupUI[] groups = Object.FindObjectsByType<BattleTimelineGroupUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        for (int i = 0; i < groups.Length; i++)
+            groups[i]?.ClearReservationDragPreview();
     }
 
     private static void CreateVisual(Sprite icon, PointerEventData eventData)

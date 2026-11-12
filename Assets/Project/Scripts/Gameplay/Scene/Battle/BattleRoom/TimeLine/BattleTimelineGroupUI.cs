@@ -35,6 +35,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     [Header("Empty Use Skill Slots")]
     [SerializeField] private Color emptyUseSkillColor = new Color32(0xFF, 0xFF, 0xFF, 0x05);
 
+    [Header("Reservation Drag Highlight")]
+    [SerializeField] private Sprite reservationDragHighlight1;
+    [SerializeField] private Sprite reservationDragHighlight2;
+    [SerializeField] private Sprite reservationDragHighlight3;
+    [SerializeField] private Color reservationDragHighlightColor = new Color(1f, 1f, 1f, 0.35f);
+
     [Header("Selected Slot Overlay")]
     [SerializeField] private GameObject selectedSlotObject;
     [SerializeField, Min(0f)] private float selectFadeInDuration = 0.2f;
@@ -79,6 +85,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     private bool emptyUseSkillSlotsVisible = false;
     private bool endOrdersCleared;
     private BattleTimelineTransformCache transformCache;
+    private readonly Dictionary<RectTransform, Vector2> dragPreviewOriginalPositions = new();
+    private RectTransform dragReservationHighlight;
+    private CanvasGroup dragPreviewHiddenOrderGroup;
+    private float dragPreviewHiddenOrderOriginalAlpha;
+    private TimelineReservationDragContext dragPreviewContext;
+    private int dragPreviewPlayerInsertion = -1;
 
     private bool hasCachedTurnMarkVisual;
     private Sprite[] useSkillRootNormalSprites;
@@ -1350,6 +1362,20 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
             return false;
         }
 
+        if (ReferenceEquals(dragPreviewContext, TimelineReservationDragContext.Active) &&
+            dragPreviewPlayerInsertion >= 0)
+        {
+            bool previewHandled = owner.HandleReservationDrop(
+                slotIndex,
+                dragPreviewPlayerInsertion);
+            if (previewHandled)
+            {
+                TimelineReservationDragContext.MarkDropHandled();
+                TimelineReservationDragContext.End();
+            }
+            return previewHandled;
+        }
+
         List<float> centers = new();
         List<BattleTimelinePreviewEntry> playerEntries = new();
         bool draggedHasSwift = TimelineReservationDragContext.Active.HasSwift;
@@ -1387,8 +1413,223 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
         bool handled = owner.HandleReservationDrop(slotIndex, playerInsertion);
         if (handled)
+        {
             TimelineReservationDragContext.MarkDropHandled();
+            TimelineReservationDragContext.End();
+        }
         return handled;
+    }
+
+    public void ShowReservationDragPreview(
+        TimelineReservationDragContext context,
+        PointerEventData eventData)
+    {
+        ClearReservationDragPreview();
+        if (context == null || eventData == null)
+            return;
+
+        RectTransform groupRect = transform as RectTransform;
+        if (groupRect == null || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                groupRect,
+                eventData.position,
+                eventData.pressEventCamera,
+                out Vector2 localPoint))
+        {
+            return;
+        }
+
+        List<BattleTimelinePreviewEntry> entries = new();
+        List<int> occupiedOrders = new();
+        List<int> eligibleEntryIndices = new();
+        List<BattleTimelinePreviewEntry> eligiblePlayerEntries = new();
+        List<float> eligibleCenters = new();
+        int movingIndex = -1;
+        for (int orderIndex = 0; orderIndex < currentEntries.Count; orderIndex++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[orderIndex];
+            if (entry == null)
+                continue;
+
+            Transform order = transform.Find("Order" + (orderIndex + 1).ToString("00"));
+            RectTransform orderRect = order as RectTransform;
+            if (orderRect == null)
+                continue;
+
+            if (context.Command != null && ReferenceEquals(entry.PlayerCommand, context.Command))
+                movingIndex = entries.Count;
+            entries.Add(entry);
+            occupiedOrders.Add(Mathf.Max(1, entry.OccupiedOrders));
+            if (entry.IsPlayer && entry.PlayerCommand != null &&
+                BattleActionOrderUtility.HasSwift(entry.PlayerCommand) == context.HasSwift)
+            {
+                eligibleEntryIndices.Add(entries.Count - 1);
+                eligiblePlayerEntries.Add(entry);
+                eligibleCenters.Add(orderRect.anchoredPosition.x);
+            }
+        }
+
+        int eligibleInsertion = TimelineReservationLayoutUtility.FindNearestInsertion(
+            localPoint.x,
+            eligibleCenters);
+        if (eligiblePlayerEntries.Count == 0)
+        {
+            dragPreviewPlayerInsertion = context.HasSwift ? 0 : GetPlayerCommandCount();
+        }
+        else
+        {
+            dragPreviewPlayerInsertion = eligibleInsertion >= eligiblePlayerEntries.Count
+                ? eligiblePlayerEntries[eligiblePlayerEntries.Count - 1].PlayerCommandIndex + 1
+                : Mathf.Max(0, eligiblePlayerEntries[eligibleInsertion].PlayerCommandIndex);
+        }
+
+        int insertion;
+        if (eligibleEntryIndices.Count == 0)
+            insertion = context.HasSwift ? 0 : entries.Count;
+        else if (eligibleInsertion >= eligibleEntryIndices.Count)
+            insertion = eligibleEntryIndices[eligibleEntryIndices.Count - 1] + 1;
+        else
+            insertion = eligibleEntryIndices[eligibleInsertion];
+
+        if (movingIndex >= 0 && movingIndex < insertion)
+            insertion--;
+
+        TimelineReservationLayoutUtility.InsertionPreviewLayout layout =
+            TimelineReservationLayoutUtility.BuildInsertionPreview(
+                occupiedOrders,
+                movingIndex,
+                insertion,
+                context.OccupiedOrders,
+                5);
+        if (layout == null)
+        {
+            dragPreviewPlayerInsertion = -1;
+            return;
+        }
+
+        dragPreviewContext = context;
+
+        float spacing = GetOrderSpacing();
+        float firstX = GetOrderPositionX(0);
+        for (int i = 0; i < entries.Count; i++)
+        {
+            BattleTimelinePreviewEntry entry = entries[i];
+            if (entry == null || i == movingIndex || layout.ItemStarts[i] < 0)
+                continue;
+
+            Transform order = transform.Find("Order" + (entry.OrderIndex + 1).ToString("00"));
+            RectTransform rect = order as RectTransform;
+            if (rect == null)
+                continue;
+
+            dragPreviewOriginalPositions[rect] = rect.anchoredPosition;
+            Vector2 shifted = rect.anchoredPosition;
+            shifted.x = firstX + spacing * layout.ItemStarts[i];
+            rect.anchoredPosition = shifted;
+        }
+
+        if (movingIndex >= 0 && movingIndex < entries.Count)
+        {
+            BattleTimelinePreviewEntry movingEntry = entries[movingIndex];
+            Transform movingOrder = transform.Find(
+                "Order" + (movingEntry.OrderIndex + 1).ToString("00"));
+            if (movingOrder != null)
+            {
+                dragPreviewHiddenOrderGroup = movingOrder.GetComponent<CanvasGroup>();
+                if (dragPreviewHiddenOrderGroup == null)
+                    dragPreviewHiddenOrderGroup = movingOrder.gameObject.AddComponent<CanvasGroup>();
+                dragPreviewHiddenOrderOriginalAlpha = dragPreviewHiddenOrderGroup.alpha;
+                dragPreviewHiddenOrderGroup.alpha = 0f;
+            }
+        }
+
+        EnsureDragReservationHighlight(groupRect);
+        Image highlightImage = dragReservationHighlight.GetComponent<Image>();
+        if (highlightImage != null)
+        {
+            highlightImage.sprite = ResolveReservationDragHighlightSprite(
+                context.OccupiedOrders,
+                reservationDragHighlight1,
+                reservationDragHighlight2,
+                reservationDragHighlight3);
+            highlightImage.color = reservationDragHighlightColor;
+        }
+        Vector2 highlightPosition = dragReservationHighlight.anchoredPosition;
+        highlightPosition.x = firstX + spacing * layout.PlaceholderStart -
+                              Mathf.Abs(spacing) * 0.5f;
+        dragReservationHighlight.anchoredPosition = highlightPosition;
+        dragReservationHighlight.sizeDelta = new Vector2(
+            Mathf.Abs(spacing) * context.OccupiedOrders,
+            dragReservationHighlight.sizeDelta.y);
+        dragReservationHighlight.gameObject.SetActive(true);
+    }
+
+    public void ClearReservationDragPreview()
+    {
+        foreach (KeyValuePair<RectTransform, Vector2> item in dragPreviewOriginalPositions)
+        {
+            if (item.Key != null)
+                item.Key.anchoredPosition = item.Value;
+        }
+        dragPreviewOriginalPositions.Clear();
+        if (dragPreviewHiddenOrderGroup != null)
+            dragPreviewHiddenOrderGroup.alpha = dragPreviewHiddenOrderOriginalAlpha;
+        dragPreviewHiddenOrderGroup = null;
+        dragPreviewContext = null;
+        dragPreviewPlayerInsertion = -1;
+        if (dragReservationHighlight != null)
+            dragReservationHighlight.gameObject.SetActive(false);
+    }
+
+    private float GetOrderPositionX(int orderIndex)
+    {
+        Transform order = transform.Find("Order" + (orderIndex + 1).ToString("00"));
+        return order is RectTransform rect ? rect.anchoredPosition.x : 0f;
+    }
+
+    private float GetOrderSpacing()
+    {
+        float spacing = GetOrderPositionX(1) - GetOrderPositionX(0);
+        return Mathf.Abs(spacing) > 0.01f ? spacing : 50f;
+    }
+
+    private void EnsureDragReservationHighlight(RectTransform groupRect)
+    {
+        if (dragReservationHighlight != null)
+            return;
+
+        GameObject highlight = new GameObject(
+            "ReservationDragHighlight",
+            typeof(RectTransform),
+            typeof(CanvasGroup),
+            typeof(Image));
+        dragReservationHighlight = highlight.GetComponent<RectTransform>();
+        dragReservationHighlight.SetParent(groupRect, false);
+        dragReservationHighlight.SetAsLastSibling();
+        dragReservationHighlight.anchorMin = new Vector2(0.5f, 0.5f);
+        dragReservationHighlight.anchorMax = new Vector2(0.5f, 0.5f);
+        dragReservationHighlight.pivot = new Vector2(0f, 0.5f);
+        dragReservationHighlight.sizeDelta = new Vector2(50f, 50f);
+        Image image = highlight.GetComponent<Image>();
+        image.color = reservationDragHighlightColor;
+        image.raycastTarget = false;
+        CanvasGroup canvasGroup = highlight.GetComponent<CanvasGroup>();
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+        highlight.SetActive(false);
+    }
+
+    public static Sprite ResolveReservationDragHighlightSprite(
+        int occupiedOrders,
+        Sprite oneOrder,
+        Sprite twoOrders,
+        Sprite threeOrders)
+    {
+        return Mathf.Clamp(occupiedOrders, 1, 3) switch
+        {
+            1 => oneOrder,
+            2 => twoOrders,
+            _ => threeOrders
+        };
     }
 
     public bool ContainsScreenPointInDropArea(Vector2 screenPoint, Camera eventCamera)

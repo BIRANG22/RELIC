@@ -276,6 +276,7 @@ public class BattleTimelineController : MonoBehaviour
     private void Update()
     {
         HandleKeyboardSlotSelectInput();
+        HandleKeyboardUndoRedoReservationInput();
         HandleEndButtonHoverOutsidePolling();
         HandleSelectionCancelRightClick();
         HandleCharacterSelectionOutsideGridClick();
@@ -580,9 +581,9 @@ public class BattleTimelineController : MonoBehaviour
 
         int direction = 0;
 
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.RightArrow))
             direction = 1;
-        else if (Input.GetKeyDown(KeyCode.A))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
             direction = -1;
 
         if (direction == 0)
@@ -591,7 +592,7 @@ public class BattleTimelineController : MonoBehaviour
         MoveSelectedTimelineSlot(direction);
     }
 
-    private void HandleKeyboardUndoReservationInput()
+    private void HandleKeyboardUndoRedoReservationInput()
     {
         if (TutorialBattleSequence.IsPresentationRunning) return;
         if (!isActiveAndEnabled)
@@ -603,10 +604,14 @@ public class BattleTimelineController : MonoBehaviour
         if (IsTypingInputFieldSelected())
             return;
 
-        if (!Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Undo))
+        {
+            UndoLastPlayerReservation();
             return;
+        }
 
-        UndoLastPlayerReservation();
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Redo))
+            RedoLastPlayerReservation();
     }
 
     public void UndoLastPlayerReservation()
@@ -5212,7 +5217,7 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
-        RemoveCommandFromNetwork(slotIndex, orderIndex);
+        RemoveCommandFromNetwork(slotIndex, orderIndex, true);
     }
 
 
@@ -5509,7 +5514,10 @@ public class BattleTimelineController : MonoBehaviour
         return removedCount;
     }
 
-    public bool RemoveCommandFromNetwork(int slotIndex, int orderIndex)
+    public bool RemoveCommandFromNetwork(
+        int slotIndex,
+        int orderIndex,
+        bool recordRedoHistory = false)
     {
         if (reserveSlots == null)
             return false;
@@ -5530,6 +5538,14 @@ public class BattleTimelineController : MonoBehaviour
         playerReservationRedoHistory.Clear();
         RemoveReservedCosts(removedCommand);
         RemovePlayerReservationHistoryEntries(removedCommand);
+
+        if (recordRedoHistory && removedCommand != null)
+        {
+            playerReservationRedoHistory.Add(new PlayerReservationHistoryEntry(
+                slotIndex,
+                removedCommand,
+                orderIndex));
+        }
 
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();

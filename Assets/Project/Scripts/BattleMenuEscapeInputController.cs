@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(-10000)]
 public class BattleMenuEscapeInputController : MonoBehaviour
 {
     private static int lastHandledEscapeFrame = -1;
@@ -138,6 +139,15 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
             if (UIManager.Instance != null && UIManager.Instance.TryHideOptionIfOpen(true))
                 return;
+
+            // 설정 패널은 MenuPanel보다 앞에 표시되는 모달입니다. 같은 ESC 입력으로
+            // 설정을 닫은 뒤 뒤쪽 MenuPanel까지 열리지 않도록 이 프레임을 소비합니다.
+            if (BattleSettingPanelUI.TryCloseOpenPanel())
+            {
+                lastHandledEscapeFrame = Time.frameCount;
+                Input.ResetInputAxes();
+                return;
+            }
 
             // MenuPanel이 이미 열려 있다면 ESC의 최우선 대상은 MenuPanel입니다.
             // MonsterInfoPanel이 뒤에 열려 있더라도 이번 ESC에서는 닫지 않습니다.
