@@ -15,7 +15,8 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class TutorialBattleSequence : MonoBehaviour
 {
-    public static bool IsPresentationRunning { get; private set; }
+    private static bool dialoguePresentationRunning;
+    public static bool IsPresentationRunning => dialoguePresentationRunning || TutorialFocusGuideRunner.IsRunning;
     public static bool IsBlockingBattleStart => false;
     public static string ActiveTutorialMapId { get; private set; } = string.Empty;
     public static int ActiveBattleGuideStep => -1;
@@ -32,15 +33,22 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool CanClickFinalTutorialWorldCharacter(string characterId) => false;
     public static void NotifyFinalTutorialWorldCharacterClicked(string characterId) { }
     public static void NotifyFinalTutorialCompoundUsed() { }
-    public static bool CanUseBattleSkill(string skillId, string moveId, string firstSkillId) => !IsPresentationRunning;
-    public static bool IsShortcutAllowed(KeyCode key) => !IsPresentationRunning || key == KeyCode.Escape;
+    public static bool CanUseBattleSkill(string skillId, string moveId, string firstSkillId) =>
+        TutorialFocusGuideRunner.IsRunning ? TutorialFocusGuideRunner.AllowsSkill(skillId, moveId, firstSkillId) : !IsPresentationRunning;
+    public static bool IsShortcutAllowed(KeyCode key) => TutorialFocusGuideRunner.IsRunning
+        ? TutorialFocusGuideRunner.AllowsShortcut(key) : !IsPresentationRunning || key == KeyCode.Escape;
     // Permit the battle room to initialise its default character before dialogue.
     // Player-driven selections remain blocked once the dialogue overlay begins.
-    public static bool CanSelectTutorialCharacter(string characterId) => !IsPresentationRunning || !dialogueInputActive;
-    public static bool CanClickTutorialGrid(int gridIndex) => !IsPresentationRunning;
-    public static bool CanAcceptTutorialMove(PlayerReservedCommand command) => !IsPresentationRunning;
-    public static bool CanAcceptTutorialCommand(PlayerReservedCommand command, BattleTimelineController timeline) => !IsPresentationRunning;
-    public static bool CanClickTutorialEndTurn() => !IsPresentationRunning;
+    public static bool CanSelectTutorialCharacter(string characterId) => TutorialFocusGuideRunner.IsRunning
+        ? TutorialFocusGuideRunner.AllowsCharacter(characterId) : !IsPresentationRunning || !dialogueInputActive;
+    public static bool CanClickTutorialGrid(int gridIndex) => TutorialFocusGuideRunner.IsRunning
+        ? TutorialFocusGuideRunner.AllowsGrid(gridIndex) : !IsPresentationRunning;
+    public static bool CanAcceptTutorialMove(PlayerReservedCommand command) => TutorialFocusGuideRunner.IsRunning
+        ? TutorialFocusGuideRunner.AllowsMove(command) : !IsPresentationRunning;
+    public static bool CanAcceptTutorialCommand(PlayerReservedCommand command, BattleTimelineController timeline) => TutorialFocusGuideRunner.IsRunning
+        ? TutorialFocusGuideRunner.AllowsCommand(command, timeline) : !IsPresentationRunning;
+    public static bool CanClickTutorialEndTurn() => TutorialFocusGuideRunner.IsRunning
+        ? TutorialFocusGuideRunner.AllowsEndTurn() : !IsPresentationRunning;
     public static void StartContinuation(string mapId, int firstOrder, int lastOrder) { }
     public static void NotifyTargetSelected(string target) { }
 
@@ -97,7 +105,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         ActiveTutorialMapId = mapId ?? string.Empty;
         initialHudReady = false;
         dialogueInputActive = false;
-        IsPresentationRunning = true;
+        dialoguePresentationRunning = true;
         // Block inventory, equipment and other unrelated UI from the moment
         // the tutorial begins, not only after the opening dialogue appears.
         // The battle room may still complete its automatic character selection.
@@ -446,7 +454,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         HideUi();
         routine = null;
         dialogueInputActive = false;
-        IsPresentationRunning = false;
+        dialoguePresentationRunning = false;
         ActiveTutorialMapId = string.Empty;
     }
 

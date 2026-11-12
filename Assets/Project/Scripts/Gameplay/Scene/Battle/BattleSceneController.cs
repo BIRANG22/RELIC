@@ -424,6 +424,12 @@ public class BattleSceneController : MonoBehaviour
         {
             existing.OpenIndex(indexId);
             existing.transform.SetAsLastSibling();
+            if (string.Equals(indexId, "Index01", StringComparison.OrdinalIgnoreCase))
+            {
+                TutorialFocusGuideRunner runner = GetComponent<TutorialFocusGuideRunner>();
+                if (runner == null) runner = gameObject.AddComponent<TutorialFocusGuideRunner>();
+                runner.BeginAfterPanel("Map_26");
+            }
             return;
         }
 
@@ -431,6 +437,13 @@ public class BattleSceneController : MonoBehaviour
         panel.name = tutorialGuidePrefab.gameObject.name + "(Clone)";
         panel.transform.SetAsLastSibling();
         panel.OpenIndex(indexId);
+        // Continue the new interactive tutorial only after the guide panel closes.
+        if (string.Equals(indexId, "Index01", StringComparison.OrdinalIgnoreCase))
+        {
+            TutorialFocusGuideRunner runner = GetComponent<TutorialFocusGuideRunner>();
+            if (runner == null) runner = gameObject.AddComponent<TutorialFocusGuideRunner>();
+            runner.BeginAfterPanel("Map_26");
+        }
     }
 
     private void TrySpawnTutorialEntryGuide()

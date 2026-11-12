@@ -41,6 +41,8 @@ namespace Relic.Gameplay.Data
         public string HighlightTarget;
         // Above / Below: location of the guide tooltip relative to the highlighted UI.
         public string TooltipPosition;
+        // Fixed positioning anchor for the tooltip, independent of highlight.
+        public string TooltipAnchor;
         public string CompleteTextKey;
         public string CompleteTextKO;
     }

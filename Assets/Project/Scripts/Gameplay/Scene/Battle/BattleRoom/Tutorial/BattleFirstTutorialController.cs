@@ -20,9 +20,9 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
     public static bool IsTimelineRegisteredSkillPreviewLocked => false;
     public static bool CanClickMonster(MonsterUnit monster) => true;
     public static bool CanClickGrid(int gridIndex) => true;
-    public static void NotifyMoveSelected() { }
+    public static void NotifyMoveSelected() { TutorialFocusGuideRunner.NotifyMoveSelected(); }
     public static void NotifyGridClicked(int gridIndex) { }
-    public static void NotifySkill01Selected() { }
+    public static void NotifySkill01Selected() { TutorialFocusGuideRunner.NotifySkillSelected(); }
     public static void NotifyEndTurnRequested() { }
     public bool TryStartTutorialIfNeeded() => false;
     public bool StartTutorial() => false;
