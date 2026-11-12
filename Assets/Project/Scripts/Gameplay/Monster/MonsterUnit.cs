@@ -483,6 +483,7 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            if (TutorialGuideController.IsModalOpen) return;
             if (TutorialBattleSequence.CanClickFinalTutorialWorldMonster(this))
             {
                 if (lastTutorialWorldClickFrame == Time.frameCount) return;
@@ -572,6 +573,7 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseEnter()
         {
+            if (TutorialGuideController.IsModalOpen) return;
             // Do not show status tooltips for any monster while a monster info panel is open.
             if (infoSelectedMonster != null)
                 return;

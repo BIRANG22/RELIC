@@ -84,6 +84,7 @@ public class GridCell : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         // Tutorial_03 owns its grid restrictions while it is running.
         // The old first-tutorial controller may still be alive after the event room.
         if (!TutorialBattleSequence.CanClickTutorialGrid(Index))
@@ -109,12 +110,14 @@ public class GridCell : MonoBehaviour
 
     private void OnMouseUp()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (owner != null)
             owner.NotifyCellPointerUp(this);
     }
 
     private void OnMouseEnter()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (owner != null)
             owner.NotifyCellHovered(this);
     }

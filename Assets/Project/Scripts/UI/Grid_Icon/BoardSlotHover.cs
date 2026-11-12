@@ -14,6 +14,7 @@ public class BoardSlotHover : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (TutorialGuideController.IsModalOpen) return;
         Debug.Log($"ENTER : {name} / slotIndex = {slotIndex}");
 
         if (controller != null && slotIndex >= 0)

@@ -25,6 +25,7 @@ public class ButtonKeyboardShortcutManager : MonoBehaviour
 
     private void Update()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (Keyboard.current == null)
             return;
 

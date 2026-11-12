@@ -16,10 +16,10 @@ MonoBehaviour:
   - indexId: Index01
     pages:
     - page: 1
-      sprite: {fileID: 0}
+      sprite: {fileID: 21300000, guid: 438f6544192dba84eb8baa9ff39bc493, type: 3}
     - page: 2
-      sprite: {fileID: 0}
+      sprite: {fileID: 21300000, guid: a362b07ee6f8f094a9a1eb4cd1677460, type: 3}
     - page: 3
-      sprite: {fileID: 0}
+      sprite: {fileID: 21300000, guid: cf5a1c5092dec1540a85b1b7d24c5689, type: 3}
     - page: 4
-      sprite: {fileID: 0}
+      sprite: {fileID: 21300000, guid: e6be8475460aef346814795b22d660fb, type: 3}
