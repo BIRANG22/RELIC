@@ -272,6 +272,10 @@ namespace Relic.Gameplay.Data
                         displayName = localizedName;
                 }
 
+                // Basic damage does not provide a tooltip. Keep its name as plain text.
+                if (effectId.Equals("E_Strike", StringComparison.OrdinalIgnoreCase))
+                    return displayName;
+
                 string safeId = effectId.Replace("\"", string.Empty);
                 return $"<link=\"effecticon:{safeId}\">{displayName}</link><space=1em>";
             });

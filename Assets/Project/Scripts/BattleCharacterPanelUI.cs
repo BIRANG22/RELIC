@@ -4950,6 +4950,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
                     string.Empty)
                 : string.Empty;
 
+            // Keep the BattleCharacterPanel tooltip consistent with the actual preview cost.
+            int resolvedTooltipCost = Mathf.Max(0, preview != null
+                ? preview.PayAmount : skillData.ResourceCostValue);
+            tooltipDetail = (tooltipDetail ?? string.Empty).Replace(
+                "{ResourceCostValue}", resolvedTooltipCost.ToString());
+
             // TooltipPanel의 Detail도 다른 스킬 설명 UI와 동일하게
             // effecticon 링크를 실제 상태효과 아이콘 이미지로 렌더링합니다.
             // Only this detail field receives underlined effect links; icon layout remains unchanged.
@@ -5262,7 +5268,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 manager.EffectDatabase.TryGet(id, out EffectMasterData effect) && effect != null)
                 detailEffectPreview.Add(new StatusEffectRuntimeData(id, 1));
         }
-        detailEffectTooltip.ShowSkillEffectList(this, detailEffectPreview, skillTooltipRectTransform, skillEffectTooltipAnchor, skillEffectTooltipOffset, skillEffectTooltipVerticalSpacing);
+        detailEffectTooltip.ShowSkillEffectList(this, detailEffectPreview, skillTooltipRectTransform, skillEffectTooltipAnchor, skillEffectTooltipOffset, skillEffectTooltipVerticalSpacing, skillTooltipFadeInDuration, skillTooltipFadeOutDuration);
         activeSkillEffectSignature = signature;
     }
 

@@ -37,6 +37,11 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     [SerializeField, Min(0f)] private float skillEffectVerticalSpacing = 8f;
     private Object skillEffectOwner;
     private readonly List<UnitStatusEffectTooltipItemUI> skillEffectItems = new();
+    // Separate fade for linked-effect list items. The shared tooltip canvas is also
+    // used by monster hover tooltips, so its CanvasGroup must not be faded here.
+    private Coroutine skillEffectListFadeRoutine;
+    private readonly List<UnitStatusEffectTooltipItemUI> fadingSkillEffectItems = new();
+    private float skillEffectListFadeOutDuration = 0.05f;
     private readonly List<RectTransform> skillEffectRects = new();
 
     [Header("Status Tooltip Position")]
@@ -64,6 +69,13 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     private Object currentOwner;
     private bool isVisible;
     private bool pinnedToOwner;
+    private bool cursorRightPinned;
+
+    [Header("Monster Info Cursor Tooltip")]
+    [Tooltip("몬스터 정보 패널에서 마우스 이미지 오른쪽에 띄우는 간격(Canvas UI 단위).")]
+    [SerializeField, Min(0f)] private float monsterInfoCursorRightGap = 48f;
+    [Tooltip("툴팁 상단의 커서 기준 높이(Canvas UI 단위).")]
+    [SerializeField] private float monsterInfoCursorTopOffset = 8f;
     private UnitStatusEffectTooltipSide currentSide = UnitStatusEffectTooltipSide.Right;
     private Object monsterPrefabOwner;
     private readonly List<UnitStatusEffectTooltipItemUI> monsterItemInstances = new();
@@ -106,6 +118,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        ClearSkillEffectItemsImmediately();
         DestroyMonsterPrefabImmediate();
 
         if (instance == this)
@@ -114,6 +127,12 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (isVisible && cursorRightPinned && currentOwner != null)
+        {
+            UpdateCursorRightPosition(currentOwner, Input.mousePosition);
+            return;
+        }
+
         if (!isVisible || !followMousePosition || pinnedToOwner)
             return;
 
@@ -129,6 +148,39 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     {
         Show(owner, statusEffects, screenPosition, GetSideForScreenPosition(screenPosition));
     }
+
+    // 몬스터 정보 패널 전용. 툴팁의 왼쪽 위 모서리를 커서 이미지 오른쪽에 고정합니다.
+    // 기존 일반 효과 및 기억 보상 툴팁 위치에는 영향을 주지 않습니다.
+    public void ShowCursorRight(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 cursorScreenPosition)
+    {
+        Show(owner, statusEffects, cursorScreenPosition, UnitStatusEffectTooltipSide.Right);
+        if (currentOwner != owner || itemRect == null) return;
+        pinnedToOwner = true;
+        cursorRightPinned = true;
+        UpdateCursorRightPosition(owner, cursorScreenPosition);
+    }
+
+    public void UpdateCursorRightPosition(Object owner, Vector2 cursorScreenPosition)
+    {
+        if (!cursorRightPinned || currentOwner != owner || itemRect == null || itemParentRect == null)
+            return;
+
+        Camera camera = rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (rootCanvas.worldCamera != null ? rootCanvas.worldCamera : Camera.main) : null;
+        float scale = rootCanvas != null ? Mathf.Max(0.0001f, rootCanvas.scaleFactor) : 1f;
+        Vector2 topLeftScreenPosition = cursorScreenPosition +
+            new Vector2(monsterInfoCursorRightGap, monsterInfoCursorTopOffset) * scale;
+        if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                itemParentRect, topLeftScreenPosition, camera, out Vector3 requestedTopLeft))
+            return;
+
+        // Pivot값에 무관하게 툴팁의 실제 왼쪽 위 모서리를 이동합니다.
+        itemRect.GetWorldCorners(cursorTooltipCorners);
+        itemRect.position += requestedTopLeft - cursorTooltipCorners[1];
+        ClampItemInsideCanvas();
+    }
+
+    private readonly Vector3[] cursorTooltipCorners = new Vector3[4];
 
     // Only this owner's tooltip uses a fixed location; other status tooltips still follow the mouse.
     public void ShowPinned(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 screenPosition)
@@ -189,6 +241,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         }
 
         pinnedToOwner = false;
+        cursorRightPinned = false;
         currentOwner = owner;
         currentSide = side;
 
@@ -222,7 +275,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     /// 마지막 효과가 패널 바로 위, 첫 번째 효과가 가장 위에 옵니다.
     /// </summary>
     public void ShowSkillEffectList(Object owner, IReadOnlyList<StatusEffectRuntimeData> effects,
-        RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f)
+        RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f,
+        float listFadeInDuration = 0.12f, float listFadeOutDuration = 0.05f)
     {
         InitializeIfNeeded();
         List<StatusEffectRuntimeData> valid = GetValidStatusEffects(effects);
@@ -234,8 +288,9 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             return;
         }
 
-        HideSkillEffectList(null);
+        ClearSkillEffectItemsImmediately();
         skillEffectOwner = owner;
+        skillEffectListFadeOutDuration = Mathf.Max(0f, listFadeOutDuration);
         if (itemView != null)
             itemView.gameObject.SetActive(false);
         foreach (StatusEffectRuntimeData effect in valid)
@@ -243,6 +298,11 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             UnitStatusEffectTooltipItemUI item = Instantiate(prefab, itemRoot, false);
             item.Set(effect);
             item.transform.SetAsLastSibling();
+            CanvasGroup itemFadeGroup = item.GetComponent<CanvasGroup>();
+            if (itemFadeGroup == null) itemFadeGroup = item.gameObject.AddComponent<CanvasGroup>();
+            itemFadeGroup.alpha = listFadeInDuration <= 0f ? 1f : 0f;
+            itemFadeGroup.interactable = false;
+            itemFadeGroup.blocksRaycasts = false;
             skillEffectItems.Add(item);
             skillEffectRects.Add(item.transform as RectTransform);
         }
@@ -251,6 +311,10 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         if (canvasGroup != null)
             canvasGroup.alpha = 1f;
         UpdateSkillEffectListPosition(owner, tooltipPanel, customAnchor, offset, verticalSpacing);
+        if (listFadeInDuration > 0f)
+            skillEffectListFadeRoutine = StartCoroutine(FadeSkillEffectItems(
+                new List<UnitStatusEffectTooltipItemUI>(skillEffectItems), 1f,
+                listFadeInDuration, false));
     }
 
     public void UpdateSkillEffectListPosition(Object owner, RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f)
@@ -304,12 +368,88 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         if (owner != null && skillEffectOwner != owner)
             return;
         skillEffectOwner = null;
-        foreach (UnitStatusEffectTooltipItemUI item in skillEffectItems)
-            if (item != null) Destroy(item.gameObject);
+        if (skillEffectItems.Count == 0)
+            return;
+
+        if (skillEffectListFadeRoutine != null)
+        {
+            StopCoroutine(skillEffectListFadeRoutine);
+            skillEffectListFadeRoutine = null;
+        }
+        // Remove items from layout tracking immediately, but keep their visuals
+        // alive for the same fade-out time as the owner tooltip.
+        fadingSkillEffectItems.AddRange(skillEffectItems);
         skillEffectItems.Clear();
         skillEffectRects.Clear();
-        if (!isVisible && monsterItemInstances.Count == 0 && canvasGroup != null)
+        if (skillEffectListFadeOutDuration <= 0f)
+            ClearSkillEffectItemsImmediately();
+        else
+            skillEffectListFadeRoutine = StartCoroutine(FadeSkillEffectItems(
+                new List<UnitStatusEffectTooltipItemUI>(fadingSkillEffectItems), 0f,
+                skillEffectListFadeOutDuration, true));
+    }
+
+    private IEnumerator FadeSkillEffectItems(
+        List<UnitStatusEffectTooltipItemUI> items, float target, float duration, bool destroyOnFinish)
+    {
+        float[] initialAlpha = new float[items.Count];
+        for (int i = 0; i < items.Count; i++)
+        {
+            CanvasGroup group = items[i] != null ? items[i].GetComponent<CanvasGroup>() : null;
+            initialAlpha[i] = group != null ? group.alpha : 0f;
+        }
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, duration));
+            for (int i = 0; i < items.Count; i++)
+            {
+                CanvasGroup group = items[i] != null ? items[i].GetComponent<CanvasGroup>() : null;
+                if (group != null) group.alpha = Mathf.Lerp(initialAlpha[i], target, progress);
+            }
+            yield return null;
+        }
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] == null) continue;
+            CanvasGroup group = items[i].GetComponent<CanvasGroup>();
+            if (group != null) group.alpha = target;
+            if (destroyOnFinish)
+            {
+                items[i].gameObject.SetActive(false);
+                Destroy(items[i].gameObject);
+                fadingSkillEffectItems.Remove(items[i]);
+            }
+        }
+        skillEffectListFadeRoutine = null;
+        if (destroyOnFinish && !isVisible && monsterItemInstances.Count == 0 &&
+            skillEffectItems.Count == 0 && canvasGroup != null)
             canvasGroup.alpha = 0f;
+    }
+
+    private void ClearSkillEffectItemsImmediately()
+    {
+        if (skillEffectListFadeRoutine != null)
+        {
+            StopCoroutine(skillEffectListFadeRoutine);
+            skillEffectListFadeRoutine = null;
+        }
+        foreach (UnitStatusEffectTooltipItemUI item in skillEffectItems)
+        {
+            if (item == null) continue;
+            item.gameObject.SetActive(false);
+            Destroy(item.gameObject);
+        }
+        foreach (UnitStatusEffectTooltipItemUI item in fadingSkillEffectItems)
+        {
+            if (item == null) continue;
+            item.gameObject.SetActive(false);
+            Destroy(item.gameObject);
+        }
+        skillEffectItems.Clear();
+        skillEffectRects.Clear();
+        fadingSkillEffectItems.Clear();
     }
 
     public void ShowMonsterPrefab(
@@ -593,6 +733,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
         currentOwner = null;
         pinnedToOwner = false;
+        cursorRightPinned = false;
         HideWithFade();
     }
 

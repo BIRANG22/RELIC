@@ -1442,7 +1442,7 @@ public sealed class MonsterSkillEffectLinkTooltip : MonoBehaviour
 
         if (string.Equals(activeEffectId, effectId, StringComparison.OrdinalIgnoreCase))
         {
-            AlignTooltipTopLeftToPointer();
+            tooltip?.UpdateCursorRightPosition(this, Input.mousePosition);
             return;
         }
 
@@ -1462,12 +1462,12 @@ public sealed class MonsterSkillEffectLinkTooltip : MonoBehaviour
         activeEffectId = effectId;
         effectPreview.Clear();
         effectPreview.Add(new StatusEffectRuntimeData(effectId, 1));
-        tooltip.ShowPinned(
+        tooltip.ShowCursorRight(
             this,
             effectPreview,
-            GetLinkScreenPosition(textInfo.linkInfo[linkIndex], camera));
+            Input.mousePosition);
         isTooltipVisible = true;
-        AlignTooltipTopLeftToPointer();
+        tooltip.UpdateCursorRightPosition(this, Input.mousePosition);
     }
 
     private void AlignTooltipTopLeftToPointer()

@@ -53,7 +53,8 @@ public static class SkillEffectTooltipDownwardLayout
 
         Vector3[] anchorCorners = new Vector3[4];
         anchor.GetWorldCorners(anchorCorners);
-        Vector3 targetWorld = anchorCorners[1] + anchor.TransformVector(new Vector3(offset.x, offset.y, 0f));
+        // Upper-right corner of the hovered card, not the previous upper-left reference.
+        Vector3 targetWorld = anchorCorners[2] + anchor.TransformVector(new Vector3(offset.x, offset.y, 0f));
         Vector2 targetScreen = RectTransformUtility.WorldToScreenPoint(anchorCamera, targetWorld);
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 itemRoot,

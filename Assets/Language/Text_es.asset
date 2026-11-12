@@ -1335,7 +1335,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797794
-    m_Localized: "Generar huevo de ara\xF1a"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797795
@@ -1343,7 +1343,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797796
-    m_Localized: "Generar telara\xF1a"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797

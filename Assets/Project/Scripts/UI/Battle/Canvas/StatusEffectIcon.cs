@@ -94,7 +94,10 @@ public class StatusEffectIcon : MonoBehaviour,
             ? eventData.position
             : (Vector2)Input.mousePosition;
 
-        statusTooltipUI.UpdatePosition(position);
+        if (GetComponentInParent<BattleMonsterInfoPanelUI>() != null)
+            statusTooltipUI.UpdateCursorRightPosition(this, position);
+        else
+            statusTooltipUI.UpdatePosition(position);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -133,7 +136,10 @@ public class StatusEffectIcon : MonoBehaviour,
             ? UnitStatusEffectTooltipSide.Left
             : UnitStatusEffectTooltipSide.Right;
 
-        statusTooltipUI.Show(this, tooltipStatusEffects, mousePosition, side);
+        if (GetComponentInParent<BattleMonsterInfoPanelUI>() != null)
+            statusTooltipUI.ShowCursorRight(this, tooltipStatusEffects, mousePosition);
+        else
+            statusTooltipUI.Show(this, tooltipStatusEffects, mousePosition, side);
     }
 
     private void HideTooltip()

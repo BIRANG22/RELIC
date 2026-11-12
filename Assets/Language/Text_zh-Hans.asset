@@ -1253,7 +1253,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797794
-    m_Localized: "\u751F\u6210\u8718\u86DB\u5375"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797795
@@ -1261,7 +1261,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797796
-    m_Localized: "\u751F\u6210\u8718\u86DB\u7F51"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797

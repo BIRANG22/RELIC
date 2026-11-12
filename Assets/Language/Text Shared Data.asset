@@ -1615,16 +1615,8 @@ MonoBehaviour:
     m_Key: data.effect.e_explode.tooltip
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915728797794
-    m_Key: data.effect.e_spawn_spider_egg.name
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915728797795
     m_Key: data.effect.e_spawn_spider_egg.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797796
-    m_Key: data.effect.e_spawn_spider_web.name
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797
@@ -6077,6 +6069,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31947563796242436
     m_Key: system.expedition.missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797794
+    m_Key: data.effect.e_spawn_spider_egg.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797796
+    m_Key: data.effect.e_spawn_spider_web.name
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150538
