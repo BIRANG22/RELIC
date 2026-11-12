@@ -49095,7 +49095,8 @@ MonoBehaviour:
   activeRelicTargetingController: {fileID: 0}
   turnExecutor: {fileID: 27159002}
   flipButton: {fileID: 0}
-  resetButton: {fileID: 0}
+  cancelButton: {fileID: 39550668}
+  restoreButton: {fileID: 2012720669}
   lockedRelicSlotSprite: {fileID: 21300000, guid: 57cfdc60441b47046866d2ed376ecb99, type: 3}
   lockedRelicSlotColor: {r: 0.72, g: 0.72, b: 0.78, a: 1}
   skillNameColor: {r: 1, g: 1, b: 1, a: 1}

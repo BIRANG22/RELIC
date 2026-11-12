@@ -91,6 +91,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     {
         public Transform Root;
         public Image Portrait;
+        public Image Job;
         public TMP_Text Name;
         public Image HpFill;
         public TMP_Text HpValue;
@@ -304,6 +305,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             CharacterView view = views[i] ?? new CharacterView();
             view.Root = root;
             view.Portrait = GetImage(FindPath(root, "Icon/Mask/Image")) ?? GetIconInSection(root, "Icon");
+            view.Job = GetImage(FindPath(root, "Job/Image"));
             view.Name = FindPath(root, "Name")?.GetComponentInChildren<TMP_Text>(true);
             Transform hp = FindPath(root, "Resources/HP") ?? FindPath(root, "Resources/Hp");
             view.HpFill = GetImage(FindPath(hp, "Fill"));
@@ -848,6 +850,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         if (portrait == null)
             manager.CharacterIconDatabase?.TryGetIcon(snapshot.CharacterId, out portrait);
         ApplySprite(view.Portrait, portrait);
+        ApplySprite(view.Job, ResolveJobIcon(manager.CharacterIconDatabase, snapshot.CharacterId));
 
         if (view.Name != null)
             view.Name.text = master != null ? GameDataLocalization.CharacterName(master) : snapshot.CharacterId;
@@ -897,6 +900,14 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
                 manager.RelicIconDatabase?.TryGetIcon("Relic_A_" + id.Substring("Compound_".Length), out icon);
         }
         ApplySprite(target, icon);
+    }
+
+    public static Sprite ResolveJobIcon(CharacterIconDatabase database, string characterId)
+    {
+        if (database == null || string.IsNullOrWhiteSpace(characterId))
+            return null;
+
+        return database.TryGetMark(characterId, out Sprite icon) ? icon : null;
     }
 
     private static int CalculateHash(CharacterSnapshot snapshot)
