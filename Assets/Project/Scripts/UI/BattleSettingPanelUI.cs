@@ -126,6 +126,9 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     private TMP_Text skillTooltipDetail;
     private TMP_Text skillTooltipType;
     private TMP_Text skillTooltipResourceValue;
+    private float skillTooltipResourceOriginalFontSize;
+    private bool skillTooltipResourceOriginalAutoSizing;
+    private bool skillTooltipResourceStyleCaptured;
     private Image skillTooltipResourceIcon;
     private Image skillTooltipRangeIcon;
     private Image skillTooltipLine;
@@ -135,9 +138,71 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     private TMP_Text equipmentTooltipName;
     private TMP_Text equipmentTooltipDetail;
     private Image equipmentTooltipLine;
+
+    [Header("Setting Tooltip Rarity Line Colors")]
+    [SerializeField] private Color tooltipCommonLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    [SerializeField] private Color tooltipRareLineColor = new Color32(0x52, 0x86, 0xC7, 0xFF);
+    [SerializeField] private Color tooltipEpicLineColor = new Color32(0xA0, 0x72, 0xC2, 0xFF);
+    [SerializeField] private Color tooltipUniqueLineColor = new Color32(0xCD, 0xA4, 0x52, 0xFF);
+    [SerializeField] private Color tooltipExclusiveLineColor = Color.white;
     private UnitStatusEffectTooltipUI effectTooltip;
     private readonly List<StatusEffectRuntimeData> effectPreview = new List<StatusEffectRuntimeData>(1);
     private string activeEffectId;
+    private RectTransform activeEffectAnchor;
+    [Header("Setting Linked Effect Tooltips")]
+    [SerializeField] private Vector2 linkedEffectTooltipOffset = new Vector2(0f, 8f);
+    [SerializeField, Min(0f)] private float linkedEffectTooltipSpacing = 8f;
+    [Header("Setting Tooltip Fade")]
+    [SerializeField, Min(0f)] private float tooltipFadeInDuration = 0.15f;
+    [SerializeField, Min(0f)] private float tooltipFadeOutDuration = 0.12f;
+    private CanvasGroup skillTooltipFadeGroup;
+    private CanvasGroup equipmentTooltipFadeGroup;
+    private CanvasGroup statTooltipFadeGroup;
+    private bool skillTooltipVisible;
+    private bool equipmentTooltipVisible;
+    private bool statTooltipVisible;
+    private int effectTooltipPreviousSortingOrder = -1;
+    private Canvas effectTooltipSortingCanvas;
+
+    private static CanvasGroup EnsureTooltipCanvasGroup(GameObject go)
+    {
+        if (go == null) return null;
+        CanvasGroup group = go.GetComponent<CanvasGroup>();
+        if (group == null) group = go.AddComponent<CanvasGroup>();
+        group.interactable = false;
+        group.blocksRaycasts = false;
+        return group;
+    }
+
+    private void SetTooltipFadeTarget(GameObject go, ref CanvasGroup group, ref bool target, bool visible)
+    {
+        if (go == null) return;
+        group ??= EnsureTooltipCanvasGroup(go);
+        if (visible && !go.activeSelf)
+        {
+            go.SetActive(true);
+            if (group != null) group.alpha = 0f;
+        }
+        target = visible;
+        if (visible && group != null) group.alpha = Mathf.Clamp01(group.alpha);
+    }
+
+    private static void AdvanceTooltipFade(GameObject go, CanvasGroup group, bool visible, float dt, float fadeIn, float fadeOut)
+    {
+        if (go == null || group == null || !go.activeSelf) return;
+        float duration = visible ? fadeIn : fadeOut;
+        float goal = visible ? 1f : 0f;
+        group.alpha = duration <= 0f ? goal : Mathf.MoveTowards(group.alpha, goal, dt / duration);
+        if (!visible && group.alpha <= 0f) go.SetActive(false);
+    }
+
+    private void UpdateTooltipFades()
+    {
+        float dt = Time.unscaledDeltaTime;
+        AdvanceTooltipFade(skillTooltipPanel, skillTooltipFadeGroup, skillTooltipVisible, dt, tooltipFadeInDuration, tooltipFadeOutDuration);
+        AdvanceTooltipFade(equipmentTooltipPanel, equipmentTooltipFadeGroup, equipmentTooltipVisible, dt, tooltipFadeInDuration, tooltipFadeOutDuration);
+        AdvanceTooltipFade(statNameTooltipPanel, statTooltipFadeGroup, statTooltipVisible, dt, tooltipFadeInDuration, tooltipFadeOutDuration);
+    }
     private GameObject statNameTooltipPanel;
     private RectTransform statNameTooltipRect;
     private TMP_Text statNameTooltipText;
@@ -170,6 +235,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             MaintainPause();
             Refresh(false);
             UpdateTooltipHover();
+            UpdateTooltipFades();
         }
     }
 
@@ -204,6 +270,10 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         resourceHoverState.Clear();
         displayedResourceTarget = null;
         HideAllTooltips();
+        // The whole setting window is closing, so discard any remaining fade state.
+        if (skillTooltipPanel != null) skillTooltipPanel.SetActive(false);
+        if (equipmentTooltipPanel != null) equipmentTooltipPanel.SetActive(false);
+        if (statNameTooltipPanel != null) statNameTooltipPanel.SetActive(false);
         if (panelRoot != null)
             panelRoot.SetActive(false);
         ReleasePauseIfNeeded();
@@ -380,11 +450,20 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             skillTooltipDetail = FindPath(skill, "Detail")?.GetComponent<TMP_Text>();
             skillTooltipType = FindPath(skill, "Type/Type_text")?.GetComponent<TMP_Text>();
             skillTooltipResourceValue = FindPath(skill, "Resources_Value")?.GetComponent<TMP_Text>();
+            if (skillTooltipResourceValue != null && !skillTooltipResourceStyleCaptured)
+            {
+                skillTooltipResourceOriginalFontSize = skillTooltipResourceValue.fontSize;
+                skillTooltipResourceOriginalAutoSizing = skillTooltipResourceValue.enableAutoSizing;
+                skillTooltipResourceStyleCaptured = true;
+            }
             skillTooltipResourceIcon = GetImage(FindPath(skill, "Resources_Icon"));
             skillTooltipRangeIcon = GetImage(FindPath(skill, "Range"));
             skillTooltipLine = GetImage(FindPath(skill, "Background/Line"));
             for (int i = 0; i < skillTooltipEntries.Length; i++)
                 skillTooltipEntries[i] = GetImage(FindPath(skill, $"Entry_Slot {i + 1}/Back"));
+            skillTooltipFadeGroup = EnsureTooltipCanvasGroup(skillTooltipPanel);
+            skillTooltipVisible = false;
+            if (skillTooltipFadeGroup != null) skillTooltipFadeGroup.alpha = 0f;
             skillTooltipPanel.SetActive(false);
         }
 
@@ -396,6 +475,9 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             equipmentTooltipName = FindPath(equipment, "Name")?.GetComponent<TMP_Text>();
             equipmentTooltipDetail = FindPath(equipment, "Detail")?.GetComponent<TMP_Text>();
             equipmentTooltipLine = GetImage(FindPath(equipment, "Background/Line"));
+            equipmentTooltipFadeGroup = EnsureTooltipCanvasGroup(equipmentTooltipPanel);
+            equipmentTooltipVisible = false;
+            if (equipmentTooltipFadeGroup != null) equipmentTooltipFadeGroup.alpha = 0f;
             equipmentTooltipPanel.SetActive(false);
         }
 
@@ -424,6 +506,9 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             statNameTooltipText.font = equipmentTooltipName.font;
             statNameTooltipText.fontSharedMaterial = equipmentTooltipName.fontSharedMaterial;
         }
+        statTooltipFadeGroup = EnsureTooltipCanvasGroup(statNameTooltipPanel);
+        statTooltipVisible = false;
+        if (statTooltipFadeGroup != null) statTooltipFadeGroup.alpha = 0f;
         statNameTooltipPanel.SetActive(false);
     }
 
@@ -488,6 +573,11 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         }
 
         TooltipBinding hovered = FindHoveredBinding(tooltipBindings);
+        // When the pointer moves from an icon onto its description, keep that
+        // popup open so its underlined links can actually be hovered.
+        if (hovered == null && activeTooltipBinding != null &&
+            IsPointerInsideActiveTooltip(activeTooltipBinding))
+            hovered = activeTooltipBinding;
 
         if (hovered != activeTooltipBinding)
         {
@@ -506,6 +596,19 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
                     activeTooltipBinding.Kind == TooltipKind.Skill ? skillTooltipRect : equipmentTooltipRect);
             UpdateEffectLinkHover();
         }
+    }
+
+    private bool IsPointerInsideActiveTooltip(TooltipBinding binding)
+    {
+        if (binding == null) return false;
+        RectTransform popup = binding.Kind == TooltipKind.Skill ? skillTooltipRect : equipmentTooltipRect;
+        if (popup == null || !popup.gameObject.activeInHierarchy) return false;
+        Canvas canvas = popup.GetComponentInParent<Canvas>();
+        if (RectTransformUtility.RectangleContainsScreenPoint(popup, Input.mousePosition, ResolveEventCamera(canvas)))
+            return true;
+        // Some prefab backgrounds extend outside the root rect.
+        Rect bounds = GetRenderedTooltipScreenBounds(popup, ResolveEventCamera(canvas));
+        return bounds.Contains(Input.mousePosition);
     }
 
     internal void ResourcePointerEnter(RectTransform target, TooltipKind kind)
@@ -579,8 +682,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     {
         EnsureStatNameTooltip();
         UpdateStatNameTooltipText(kind);
-        if (statNameTooltipPanel != null)
-            statNameTooltipPanel.SetActive(true);
+        SetTooltipFadeTarget(statNameTooltipPanel, ref statTooltipFadeGroup, ref statTooltipVisible, true);
     }
 
     private void UpdateStatNameTooltipText(TooltipKind kind)
@@ -597,7 +699,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     {
         if (skillTooltipPanel == null)
             return;
-        skillTooltipPanel.SetActive(true);
+        SetTooltipFadeTarget(skillTooltipPanel, ref skillTooltipFadeGroup, ref skillTooltipVisible, true);
         if (skillTooltipName != null) skillTooltipName.text = GameDataLocalization.SkillName(skill);
         if (skillTooltipType != null)
         {
@@ -610,7 +712,9 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             string detail = BattlePlayerSkillPreviewCalculator.FormatDescription(
                 skill, GameDataLocalization.SkillDetailsTemplate(skill), preview,
                 SkillDetailNumericLinkHandler.DetailedMode, string.Empty);
-            detail = Regex.Replace(detail ?? string.Empty, "(<link=\"effecticon:[^\"]+\">)(.*?)(</link>)", "$1<u>$2</u>$3", RegexOptions.Singleline);
+            int resolvedResourceCost = Mathf.Max(0, preview != null ? preview.PayAmount : skill.ResourceCostValue);
+            detail = (detail ?? string.Empty).Replace("{ResourceCostValue}", resolvedResourceCost.ToString());
+            detail = Regex.Replace(detail, "(<link=\"effecticon:[^\"]+\">)(.*?)(</link>)", "$1<u>$2</u>$3", RegexOptions.Singleline);
             SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(skillTooltipDetail, detail);
         }
         for (int i = 0; i < skillTooltipEntries.Length; i++)
@@ -640,18 +744,26 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         }
         if (skillTooltipLine != null)
         {
-            Color color;
-            string rarity = skill.Rarity.ToString();
-            if (!RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out color))
-                color = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
-            skillTooltipLine.color = new Color(color.r, color.g, color.b, skillTooltipLine.color.a);
+            ApplyTooltipRarityLineColor(skillTooltipLine, skill.Rarity.ToString());
         }
         if (skillTooltipResourceValue != null)
         {
             BattlePlayerSkillPreview preview = BattlePlayerSkillPreviewCalculator.CreatePreview(runtime, skill, -1, null);
-            skillTooltipResourceValue.text = passive
-                ? GameLocalization.Get("battle.skill.passive_duration", "지속")
-                : Mathf.Max(0, preview != null ? preview.PayAmount : skill.ResourceCostValue).ToString();
+            if (passive)
+            {
+                skillTooltipResourceValue.enableAutoSizing = false;
+                skillTooltipResourceValue.fontSize = 20f;
+                skillTooltipResourceValue.text = GameLocalization.Get("battle.skill.passive_duration", "지속");
+            }
+            else
+            {
+                if (skillTooltipResourceStyleCaptured)
+                {
+                    skillTooltipResourceValue.fontSize = skillTooltipResourceOriginalFontSize;
+                    skillTooltipResourceValue.enableAutoSizing = skillTooltipResourceOriginalAutoSizing;
+                }
+                skillTooltipResourceValue.text = Mathf.Max(0, preview != null ? preview.PayAmount : skill.ResourceCostValue).ToString();
+            }
         }
     }
 
@@ -659,37 +771,190 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     {
         if (equipmentTooltipPanel == null)
             return;
-        equipmentTooltipPanel.SetActive(true);
+        SetTooltipFadeTarget(equipmentTooltipPanel, ref equipmentTooltipFadeGroup, ref equipmentTooltipVisible, true);
         if (equipmentTooltipName != null) equipmentTooltipName.text = name ?? string.Empty;
         if (equipmentTooltipDetail != null)
         {
             equipmentTooltipDetail.gameObject.SetActive(!nameOnly);
-            if (!nameOnly) RelicDescriptionPresenter.Set(equipmentTooltipDetail, detail ?? string.Empty);
+            if (!nameOnly)
+            {
+                RelicDescriptionPresenter.Set(equipmentTooltipDetail, detail ?? string.Empty);
+                RelicEffectTooltipText autoHover = equipmentTooltipDetail.GetComponent<RelicEffectTooltipText>();
+                if (autoHover != null) autoHover.enabled = false;
+                equipmentTooltipDetail.raycastTarget = true;
+            }
         }
         if (equipmentTooltipLine != null)
         {
             equipmentTooltipLine.gameObject.SetActive(!nameOnly);
-            if (!nameOnly && RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out Color color))
-                equipmentTooltipLine.color = new Color(color.r, color.g, color.b, equipmentTooltipLine.color.a);
+            if (!nameOnly)
+            {
+                ApplyTooltipRarityLineColor(equipmentTooltipLine, rarity);
+            }
         }
     }
 
+    // Only Background/Line is tinted. Background/Line2 keeps its prefab color.
+    private void ApplyTooltipRarityLineColor(Image line, string rarity)
+    {
+        if (line == null) return;
+        Color color = GetTooltipRarityLineColor(rarity);
+        // Do not inherit the previous tooltip's alpha or a transparent prefab tint.
+        line.color = color;
+    }
+
+    private Color GetTooltipRarityLineColor(string rarity)
+    {
+        switch ((rarity ?? string.Empty).Trim().ToLowerInvariant())
+        {
+            case "rare": return tooltipRareLineColor;
+            case "epic": return tooltipEpicLineColor;
+            case "unique": case "legendary": return tooltipUniqueLineColor;
+            case "exclusive": return tooltipExclusiveLineColor;
+            default: return tooltipCommonLineColor;
+        }
+    }
+
+    [Header("Setting Tooltip Position")]
+    [SerializeField, Min(0f)] private float tooltipTopGap = 8f;
+    [SerializeField, Min(0f)] private float tooltipScreenPadding = 8f;
+
+    // Position each popup below its hovered icon. Use the actual root Canvas viewport,
+    // not the immediate parent rect, because the parent can be smaller than the screen.
     private void PositionTooltip(RectTransform source, RectTransform tooltip)
     {
-        if (source == null || tooltip == null || tooltip.parent is not RectTransform parent)
+        if (source == null || tooltip == null || !(tooltip.parent is RectTransform parent))
             return;
-        Canvas canvas = tooltip.GetComponentInParent<Canvas>();
-        Camera camera = ResolveEventCamera(canvas);
+
+        Canvas sourceCanvas = source.GetComponentInParent<Canvas>();
+        Canvas tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
+        Camera sourceCamera = ResolveEventCamera(sourceCanvas);
+        Camera tooltipCamera = ResolveEventCamera(tooltipCanvas);
         Vector3[] corners = new Vector3[4];
         source.GetWorldCorners(corners);
-        Vector2 screen = RectTransformUtility.WorldToScreenPoint(camera, corners[2]);
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screen, camera, out Vector2 local))
+        Vector3 topCenter = (corners[1] + corners[2]) * 0.5f;
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(sourceCamera, topCenter);
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screenPoint, tooltipCamera, out Vector2 local))
             return;
-        Vector2 size = tooltip.rect.size;
-        Rect bounds = parent.rect;
-        local.x = Mathf.Clamp(local.x + 12f, bounds.xMin + size.x * tooltip.pivot.x, bounds.xMax - size.x * (1f - tooltip.pivot.x));
-        local.y = Mathf.Clamp(local.y, bounds.yMin + size.y * tooltip.pivot.y, bounds.yMax - size.y * (1f - tooltip.pivot.y));
-        tooltip.localPosition = new Vector3(local.x, local.y, tooltip.localPosition.z);
+
+        // Resolve size after the localized text has been assigned.
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltip);
+        Vector2 size = GetTooltipSizeInParent(tooltip, parent);
+        Vector2 target = new Vector2(
+            local.x + (tooltip.pivot.x - 0.5f) * size.x,
+            local.y + Mathf.Max(0f, tooltipTopGap) + (1f - tooltip.pivot.y) * size.y);
+        tooltip.localPosition = new Vector3(target.x, target.y, tooltip.localPosition.z);
+        ClampTooltipToScreen(tooltip, parent, tooltipCamera);
+    }
+
+    // Clamp the visible contents, not only the TooltipPanel root. Some panels have
+    // backgrounds and localized text extending outside the root RectTransform.
+    // Recompute after layout and on each hover frame so resolution changes are safe.
+    private void ClampTooltipToScreen(RectTransform tooltip, RectTransform parent, Camera camera)
+    {
+        if (tooltip == null || parent == null) return;
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltip);
+        Canvas renderCanvas = tooltip.GetComponentInParent<Canvas>();
+        Canvas rootCanvas = ResolveEventCanvas(renderCanvas);
+        Camera renderCamera = ResolveEventCamera(renderCanvas);
+        Rect viewport = rootCanvas != null ? rootCanvas.pixelRect :
+            new Rect(0f, 0f, Screen.width, Screen.height);
+        float margin = Mathf.Max(0f, tooltipScreenPadding);
+        Rect available = Rect.MinMaxRect(viewport.xMin + margin, viewport.yMin + margin,
+            viewport.xMax - margin, viewport.yMax - margin);
+        if (available.width <= 0f || available.height <= 0f) return;
+
+        // Restore the authored scale when this tooltip was fitted on a smaller screen.
+        if (!tooltipOriginalScales.TryGetValue(tooltip, out Vector3 originalScale))
+        {
+            originalScale = tooltip.localScale;
+            tooltipOriginalScales.Add(tooltip, originalScale);
+        }
+        tooltip.localScale = originalScale;
+        Canvas.ForceUpdateCanvases();
+
+        Rect bounds = GetRenderedTooltipScreenBounds(tooltip, renderCamera);
+        if (bounds.width <= 0f || bounds.height <= 0f) return;
+
+        // If the complete tooltip is larger than the available viewport, fitting it
+        // is the only way to avoid clipping all of its content.
+        float fit = Mathf.Min(1f, available.width / bounds.width, available.height / bounds.height);
+        if (fit < 1f)
+        {
+            tooltip.localScale = originalScale * Mathf.Max(0.01f, fit);
+            Canvas.ForceUpdateCanvases();
+            bounds = GetRenderedTooltipScreenBounds(tooltip, renderCamera);
+        }
+
+        float dx = bounds.xMin < available.xMin ? available.xMin - bounds.xMin :
+            bounds.xMax > available.xMax ? available.xMax - bounds.xMax : 0f;
+        float dy = bounds.yMin < available.yMin ? available.yMin - bounds.yMin :
+            bounds.yMax > available.yMax ? available.yMax - bounds.yMax : 0f;
+        if (Mathf.Abs(dx) < 0.01f && Mathf.Abs(dy) < 0.01f) return;
+
+        Vector2 center = bounds.center;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, center, camera, out Vector2 a) &&
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(parent,
+                center + new Vector2(dx, dy), camera, out Vector2 b))
+        {
+            tooltip.localPosition += (Vector3)(b - a);
+        }
+    }
+
+    private readonly Dictionary<RectTransform, Vector3> tooltipOriginalScales =
+        new Dictionary<RectTransform, Vector3>();
+
+    private static Rect GetRenderedTooltipScreenBounds(RectTransform tooltip, Camera camera)
+    {
+        Vector3[] corners = new Vector3[4];
+        float minX = float.PositiveInfinity, minY = float.PositiveInfinity;
+        float maxX = float.NegativeInfinity, maxY = float.NegativeInfinity;
+        bool found = false;
+
+        // Only visible graphics contribute; disabled panels and invisible hit targets
+        // should not make the tooltip appear much larger than its visible content.
+        Graphic[] graphics = tooltip.GetComponentsInChildren<Graphic>(false);
+        foreach (Graphic graphic in graphics)
+        {
+            if (graphic == null || !graphic.isActiveAndEnabled || graphic.canvasRenderer.GetAlpha() <= 0f)
+                continue;
+            RectTransform rect = graphic.rectTransform;
+            if (rect == null) continue;
+            rect.GetWorldCorners(corners);
+            for (int i = 0; i < corners.Length; i++)
+            {
+                Vector2 point = RectTransformUtility.WorldToScreenPoint(camera, corners[i]);
+                minX = Mathf.Min(minX, point.x);
+                minY = Mathf.Min(minY, point.y);
+                maxX = Mathf.Max(maxX, point.x);
+                maxY = Mathf.Max(maxY, point.y);
+                found = true;
+            }
+        }
+
+        // A background-only tooltip may not have enabled Graphic descendants.
+        if (!found)
+        {
+            tooltip.GetWorldCorners(corners);
+            for (int i = 0; i < corners.Length; i++)
+            {
+                Vector2 point = RectTransformUtility.WorldToScreenPoint(camera, corners[i]);
+                minX = Mathf.Min(minX, point.x);
+                minY = Mathf.Min(minY, point.y);
+                maxX = Mathf.Max(maxX, point.x);
+                maxY = Mathf.Max(maxY, point.y);
+            }
+        }
+        return Rect.MinMaxRect(minX, minY, maxX, maxY);
+    }
+
+    private static Vector2 GetTooltipSizeInParent(RectTransform tooltip, RectTransform parent)
+    {
+        Vector3 horizontal = parent.InverseTransformVector(tooltip.TransformVector(Vector3.right * tooltip.rect.width));
+        Vector3 vertical = parent.InverseTransformVector(tooltip.TransformVector(Vector3.up * tooltip.rect.height));
+        return new Vector2(Mathf.Abs(horizontal.x), Mathf.Abs(vertical.y));
     }
 
     private static bool IsStatTooltip(TooltipKind kind) =>
@@ -697,91 +962,105 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
 
     private void PositionStatNameTooltip(RectTransform source)
     {
-        if (source == null || statNameTooltipRect == null || statNameTooltipRect.parent is not RectTransform parent)
-            return;
-        Vector3 center = parent.InverseTransformPoint(source.TransformPoint(source.rect.center));
-        statNameTooltipRect.localPosition = new Vector3(center.x, center.y + 30f, statNameTooltipRect.localPosition.z);
+        PositionTooltip(source, statNameTooltipRect);
     }
 
+    // Display every linked effect together with its skill / equipment tooltip.
+    // The pointer does not need to enter the underlined text.
     private void UpdateEffectLinkHover()
     {
-        if (activeTooltipBinding == null || activeTooltipBinding.Kind != TooltipKind.Skill || skillTooltipDetail == null || !skillTooltipDetail.gameObject.activeInHierarchy)
+        if (activeTooltipBinding == null || IsStatTooltip(activeTooltipBinding.Kind))
         {
             HideEffectTooltip();
             return;
         }
-        Canvas canvas = skillTooltipDetail.canvas;
-        Camera camera = ResolveEventCamera(canvas);
-        int index = TMP_TextUtilities.FindIntersectingLink(skillTooltipDetail, Input.mousePosition, camera);
-        if (index < 0)
-        {
-            HideEffectTooltip();
-            return;
-        }
-        skillTooltipDetail.ForceMeshUpdate();
-        TMP_TextInfo info = skillTooltipDetail.textInfo;
-        if (index >= info.linkCount || !MonsterSkillEffectLinkTooltip.TryParseEffectId(info.linkInfo[index].GetLinkID(), out string effectId))
-        {
-            HideEffectTooltip();
-            return;
-        }
-        if (activeEffectId == effectId)
-        {
-            AlignEffectTooltipTopLeftToPointer();
-            return;
-        }
-        DataManager manager = DataManager.Instance;
-        if (manager?.EffectDatabase == null || !manager.EffectDatabase.TryGet(effectId, out EffectMasterData effect) || effect == null)
-        {
-            HideEffectTooltip();
-            return;
-        }
-        effectTooltip ??= UnitStatusEffectTooltipUI.GetOrCreate();
-        if (effectTooltip == null)
-            return;
-        HideEffectTooltip();
-        activeEffectId = effectId;
-        effectPreview.Add(new StatusEffectRuntimeData(effectId, 1));
-        effectTooltip.ShowPinned(this, effectPreview, Input.mousePosition);
-        AlignEffectTooltipTopLeftToPointer();
-    }
 
-    private void AlignEffectTooltipTopLeftToPointer()
-    {
-        if (effectTooltip == null || activeEffectId == null)
-            return;
-        UnitStatusEffectTooltipItemUI[] items = effectTooltip.GetComponentsInChildren<UnitStatusEffectTooltipItemUI>(true);
-        for (int i = 0; i < items.Length; i++)
+        bool skill = activeTooltipBinding.Kind == TooltipKind.Skill;
+        TMP_Text detail = skill ? skillTooltipDetail : equipmentTooltipDetail;
+        RectTransform anchor = skill ? skillTooltipRect : equipmentTooltipRect;
+        if (detail == null || !detail.gameObject.activeInHierarchy ||
+            anchor == null || !anchor.gameObject.activeInHierarchy)
         {
-            UnitStatusEffectTooltipItemUI item = items[i];
-            if (item == null || !item.gameObject.activeInHierarchy || item.gameObject.name != "UnitStatusEffectTooltipItemUI")
-                continue;
-            RectTransform rect = item.transform as RectTransform;
-            RectTransform parent = rect != null ? rect.parent as RectTransform : null;
-            if (rect == null || parent == null)
-                return;
-            Canvas canvas = rect.GetComponentInParent<Canvas>();
-            Camera camera = ResolveEventCamera(canvas);
-            if (RectTransformUtility.ScreenPointToWorldPointInRectangle(parent, Input.mousePosition, camera, out Vector3 world))
-                MonsterSkillEffectLinkTooltip.AlignTopLeftToWorldPoint(rect, world);
+            HideEffectTooltip();
             return;
+        }
+
+        List<string> ids = SkillDescriptionFormatter.ExtractLinkedEffectIds(detail.text);
+        DataManager manager = DataManager.Instance;
+        effectPreview.Clear();
+        if (manager?.EffectDatabase != null)
+        {
+            foreach (string id in ids)
+            {
+                if (manager.EffectDatabase.TryGet(id, out EffectMasterData effect) && effect != null)
+                    effectPreview.Add(new StatusEffectRuntimeData(id, 1));
+            }
+        }
+        if (effectPreview.Count == 0)
+        {
+            HideEffectTooltip();
+            return;
+        }
+
+        string signature = string.Join("|", ids);
+        effectTooltip ??= UnitStatusEffectTooltipUI.GetOrCreate();
+        if (effectTooltip == null) return;
+
+        if (activeEffectId != signature || activeEffectAnchor != anchor)
+        {
+            List<StatusEffectRuntimeData> currentEffects = new List<StatusEffectRuntimeData>(effectPreview);
+            HideEffectTooltip();
+            effectPreview.AddRange(currentEffects);
+            activeEffectId = signature;
+            activeEffectAnchor = anchor;
+            effectTooltip.ShowSkillEffectList(this, effectPreview, anchor, null,
+                linkedEffectTooltipOffset, linkedEffectTooltipSpacing,
+                tooltipFadeInDuration, tooltipFadeOutDuration);
+        }
+        else
+        {
+            effectTooltip.UpdateSkillEffectListPosition(this, anchor, null,
+                linkedEffectTooltipOffset, linkedEffectTooltipSpacing);
+        }
+
+        // The setting panel is a high-sorting-order modal, so the linked
+        // effect tooltips must draw above it without changing the prefab.
+        Canvas effectCanvas = effectTooltip.GetComponentInChildren<Canvas>(true);
+        if (effectCanvas != null)
+        {
+            if (effectTooltipSortingCanvas != effectCanvas)
+            {
+                effectTooltipSortingCanvas = effectCanvas;
+                effectTooltipPreviousSortingOrder = effectCanvas.sortingOrder;
+            }
+            effectCanvas.overrideSorting = true;
+            Canvas settingCanvas = panelRoot != null ? panelRoot.GetComponent<Canvas>() : null;
+            effectCanvas.sortingOrder = Mathf.Max(effectCanvas.sortingOrder,
+                settingCanvas != null ? settingCanvas.sortingOrder + 1 : MenuMaximumSortingOrder + 2);
         }
     }
 
     private void HideEffectTooltip()
     {
         if (activeEffectId != null)
-            effectTooltip?.Hide(this);
+            effectTooltip?.HideSkillEffectList(this);
+        if (effectTooltipSortingCanvas != null && effectTooltipPreviousSortingOrder >= 0)
+        {
+            effectTooltipSortingCanvas.sortingOrder = effectTooltipPreviousSortingOrder;
+            effectTooltipSortingCanvas = null;
+            effectTooltipPreviousSortingOrder = -1;
+        }
         activeEffectId = null;
+        activeEffectAnchor = null;
         effectPreview.Clear();
     }
 
     private void HideAllTooltips(bool clearBinding = true)
     {
         HideEffectTooltip();
-        if (skillTooltipPanel != null) skillTooltipPanel.SetActive(false);
-        if (equipmentTooltipPanel != null) equipmentTooltipPanel.SetActive(false);
-        if (statNameTooltipPanel != null) statNameTooltipPanel.SetActive(false);
+        SetTooltipFadeTarget(skillTooltipPanel, ref skillTooltipFadeGroup, ref skillTooltipVisible, false);
+        SetTooltipFadeTarget(equipmentTooltipPanel, ref equipmentTooltipFadeGroup, ref equipmentTooltipVisible, false);
+        SetTooltipFadeTarget(statNameTooltipPanel, ref statTooltipFadeGroup, ref statTooltipVisible, false);
         if (equipmentTooltipDetail != null) equipmentTooltipDetail.gameObject.SetActive(true);
         if (equipmentTooltipLine != null) equipmentTooltipLine.gameObject.SetActive(true);
         if (clearBinding) activeTooltipBinding = null;

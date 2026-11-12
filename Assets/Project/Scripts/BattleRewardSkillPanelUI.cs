@@ -126,8 +126,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private RectTransform equippedSkillTooltipAnchor;
     private readonly Vector3[] equippedSkillTooltipCorners = new Vector3[4];
 
-    [Header("Offered Skill Effect Tooltip")]
-    [SerializeField] private Vector2 offeredSkillEffectTooltipOffset = new Vector2(320f, -100f);
+    [Header("Offered Skill Effect Tooltip (Card Top Right)")]
     [SerializeField, Min(0f)] private float offeredSkillEffectTooltipVerticalSpacing = 8f;
     private UnitStatusEffectTooltipUI offeredSkillEffectTooltip;
     private readonly List<StatusEffectRuntimeData> offeredSkillEffectPreview = new();
@@ -614,18 +613,19 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             return;
 
         offeredSkillEffectCardIndex = index;
+        // The attached card is the anchor; no resolution-dependent pixel offset.
         offeredSkillEffectTooltip.ShowSkillEffectList(
             this,
             offeredSkillEffectPreview,
             anchor,
             null,
-            offeredSkillEffectTooltipOffset,
+            Vector2.zero,
             offeredSkillEffectTooltipVerticalSpacing);
         SkillEffectTooltipDownwardLayout.Apply(
             offeredSkillEffectTooltip,
             anchor,
             null,
-            offeredSkillEffectTooltipOffset,
+            Vector2.zero,
             offeredSkillEffectTooltipVerticalSpacing);
     }
 

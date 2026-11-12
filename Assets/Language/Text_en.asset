@@ -1307,7 +1307,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797794
-    m_Localized: Spawn Spider Egg
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797795
@@ -1315,7 +1315,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797796
-    m_Localized: Spawn Spider Web
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797
