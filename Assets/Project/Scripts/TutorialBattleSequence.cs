@@ -181,6 +181,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             if (dialogRoot != null) dialogRoot.SetActive(false);
         }
         Cleanup();
+        // Release the dialogue raycast shield before displaying the guide.
+        // Spawn next frame so Destroy(shield) completes first.
+        yield return null;
+        TutorialGuideController.UnlockIndex("Index01");
+        BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+        if (scene != null) scene.SpawnTutorialGuideAfterDialogue("Index01");
+        else Debug.LogError("[TutorialBattleSequence] BattleSceneController missing; guide not opened.", this);
         enabled = false;
     }
 
