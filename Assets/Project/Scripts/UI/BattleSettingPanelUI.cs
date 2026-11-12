@@ -14,6 +14,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     private const int MenuMaximumSortingOrder = 30003;
     private static readonly Color32 KarmaOnColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
     private static readonly Color32 KarmaOffColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private static int lastClosedByEscapeFrame = -1;
 
     public enum TooltipKind
     {
@@ -278,6 +279,49 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             panelRoot.SetActive(false);
         ReleasePauseIfNeeded();
     }
+
+    public static bool TryCloseOpenPanel()
+    {
+        BattleSettingPanelUI[] controllers = FindObjectsByType<BattleSettingPanelUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        for (int i = 0; i < controllers.Length; i++)
+        {
+            BattleSettingPanelUI controller = controllers[i];
+            if (controller == null || controller.panelRoot == null ||
+                !controller.panelRoot.activeInHierarchy)
+            {
+                continue;
+            }
+
+            controller.Close();
+            lastClosedByEscapeFrame = Time.frameCount;
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool IsAnyPanelOpen()
+    {
+        BattleSettingPanelUI[] controllers = FindObjectsByType<BattleSettingPanelUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        for (int i = 0; i < controllers.Length; i++)
+        {
+            BattleSettingPanelUI controller = controllers[i];
+            if (controller != null && controller.panelRoot != null &&
+                controller.panelRoot.activeInHierarchy)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool WasClosedByEscapeThisFrame =>
+        lastClosedByEscapeFrame == Time.frameCount;
 
     public static bool CanShowTooltip(TooltipKind kind, string dataId)
     {

@@ -2,6 +2,72 @@ using System.Collections.Generic;
 
 public static class TimelineReservationLayoutUtility
 {
+    public sealed class InsertionPreviewLayout
+    {
+        public int PlaceholderStart { get; }
+        public int[] ItemStarts { get; }
+
+        public InsertionPreviewLayout(int placeholderStart, int[] itemStarts)
+        {
+            PlaceholderStart = placeholderStart;
+            ItemStarts = itemStarts;
+        }
+    }
+
+    public static InsertionPreviewLayout BuildInsertionPreview(
+        IReadOnlyList<int> occupiedOrders,
+        int movingItemIndex,
+        int insertionIndex,
+        int movingOccupiedOrders,
+        int maximumOrders)
+    {
+        if (occupiedOrders == null || maximumOrders <= 0)
+            return null;
+
+        int safeMovingOrders = UnityEngine.Mathf.Max(1, movingOccupiedOrders);
+        List<int> remainingIndices = new(occupiedOrders.Count);
+        int total = safeMovingOrders;
+        for (int i = 0; i < occupiedOrders.Count; i++)
+        {
+            if (i == movingItemIndex)
+                continue;
+
+            remainingIndices.Add(i);
+            total += UnityEngine.Mathf.Max(1, occupiedOrders[i]);
+        }
+
+        if (total > maximumOrders)
+            return null;
+
+        int normalizedInsertion = UnityEngine.Mathf.Clamp(
+            insertionIndex,
+            0,
+            remainingIndices.Count);
+        int[] itemStarts = new int[occupiedOrders.Count];
+        for (int i = 0; i < itemStarts.Length; i++)
+            itemStarts[i] = -1;
+
+        int cursor = 0;
+        int placeholderStart = -1;
+        for (int position = 0; position <= remainingIndices.Count; position++)
+        {
+            if (position == normalizedInsertion)
+            {
+                placeholderStart = cursor;
+                cursor += safeMovingOrders;
+            }
+
+            if (position >= remainingIndices.Count)
+                continue;
+
+            int sourceIndex = remainingIndices[position];
+            itemStarts[sourceIndex] = cursor;
+            cursor += UnityEngine.Mathf.Max(1, occupiedOrders[sourceIndex]);
+        }
+
+        return new InsertionPreviewLayout(placeholderStart, itemStarts);
+    }
+
     public static int FindNearestInsertion(float pointerPosition, IReadOnlyList<float> actionCenters)
     {
         if (actionCenters == null || actionCenters.Count == 0)

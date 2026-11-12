@@ -241,5 +241,30 @@ public sealed class BattleSettingPanelTests
             Object.DestroyImmediate(database);
         }
     }
+
+    [Test]
+    public void TryCloseOpenPanel_ClosesActiveSettingPanel()
+    {
+        GameObject owner = new GameObject("SettingButtonOwner");
+        GameObject panel = new GameObject("Setting_panel");
+        try
+        {
+            BattleSettingPanelUI controller = owner.AddComponent<BattleSettingPanelUI>();
+            FieldInfo panelRootField = typeof(BattleSettingPanelUI).GetField(
+                "panelRoot",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(panelRootField, Is.Not.Null);
+            panelRootField.SetValue(controller, panel);
+            panel.SetActive(true);
+
+            Assert.That(BattleSettingPanelUI.TryCloseOpenPanel(), Is.True);
+            Assert.That(panel.activeSelf, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(panel);
+            Object.DestroyImmediate(owner);
+        }
+    }
 }
 

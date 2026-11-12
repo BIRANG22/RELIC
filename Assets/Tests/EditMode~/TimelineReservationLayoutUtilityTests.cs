@@ -1,8 +1,75 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;
 
 public class TimelineReservationLayoutUtilityTests
 {
+    [TestCase(1, 0)]
+    [TestCase(2, 1)]
+    [TestCase(3, 2)]
+    [TestCase(99, 2)]
+    public void ResolveReservationDragHighlightSprite_UsesOccupiedOrderVariant(
+        int occupiedOrders,
+        int expectedIndex)
+    {
+        Texture2D texture = new Texture2D(2, 2);
+        Sprite[] sprites =
+        {
+            Sprite.Create(texture, new Rect(0, 0, 1, 1), Vector2.one * 0.5f),
+            Sprite.Create(texture, new Rect(0, 0, 1, 1), Vector2.one * 0.5f),
+            Sprite.Create(texture, new Rect(0, 0, 1, 1), Vector2.one * 0.5f)
+        };
+        try
+        {
+            Assert.That(
+                BattleTimelineGroupUI.ResolveReservationDragHighlightSprite(
+                    occupiedOrders,
+                    sprites[0],
+                    sprites[1],
+                    sprites[2]),
+                Is.SameAs(sprites[expectedIndex]));
+        }
+        finally
+        {
+            for (int i = 0; i < sprites.Length; i++)
+                Object.DestroyImmediate(sprites[i]);
+            Object.DestroyImmediate(texture);
+        }
+    }
+
+    [Test]
+    public void BuildInsertionPreview_NewTwoCellAction_ShiftsFollowingActionsByTwoCells()
+    {
+        TimelineReservationLayoutUtility.InsertionPreviewLayout result =
+            TimelineReservationLayoutUtility.BuildInsertionPreview(
+                new[] { 1, 1, 1 }, -1, 1, 2, 5);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.PlaceholderStart, Is.EqualTo(1));
+        Assert.That(result.ItemStarts, Is.EqualTo(new[] { 0, 3, 4 }));
+    }
+
+    [Test]
+    public void BuildInsertionPreview_MovingTwoCellAction_RemovesOriginalSpaceBeforeInsertion()
+    {
+        TimelineReservationLayoutUtility.InsertionPreviewLayout result =
+            TimelineReservationLayoutUtility.BuildInsertionPreview(
+                new[] { 2, 1, 1 }, 0, 2, 2, 5);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.PlaceholderStart, Is.EqualTo(2));
+        Assert.That(result.ItemStarts, Is.EqualTo(new[] { -1, 0, 1 }));
+    }
+
+    [Test]
+    public void BuildInsertionPreview_WhenCapacityExceeded_ReturnsNull()
+    {
+        Assert.That(
+            TimelineReservationLayoutUtility.BuildInsertionPreview(
+                new[] { 2, 2 }, -1, 1, 2, 5),
+            Is.Null);
+    }
+
     [Test]
     public void ReorderSameList_MovingFirstBetweenSecondAndThird_ShiftsExistingCommands()
     {
