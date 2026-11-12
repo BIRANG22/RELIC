@@ -1775,6 +1775,39 @@ public class BattleCharacterPanelUI : MonoBehaviour
         equipmentTooltipRectTransform.localPosition = localPosition;
     }
 
+    // The battle loader selects the first character while player input is still locked.
+    // Refresh the selection visuals explicitly before the tutorial dialogue.
+    public void RefreshTutorialInitialSelectionHighlight()
+    {
+        ResolvePartyReferences();
+        if (battleTimelineController == null)
+            battleTimelineController = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Exclude);
+        RefreshPartySelectPortraits(battleTimelineController != null ? battleTimelineController.SelectedCharacter : null);
+    }
+
+    // The initial tutorial dialogue must wait until the selection feedback is visible.
+    // This is a read-only query; normal selection and animation behavior are unchanged.
+    public bool IsCharacterSelectionHighlightVisible(string characterId)
+    {
+        if (string.IsNullOrEmpty(characterId) || !isActiveAndEnabled || !gameObject.activeInHierarchy)
+            return false;
+
+        for (int i = 0; i < partySlots.Length; i++)
+        {
+            PartySlotView slot = partySlots[i];
+            if (slot == null || slot.Runtime == null || slot.Runtime.CharacterId != characterId)
+                continue;
+            if (slot.Root == null || !slot.Root.gameObject.activeInHierarchy)
+                return false;
+            if (selectedCharacterVfxPrefab == null)
+                return true;
+            return slot.SelectionVfx != null && slot.SelectionVfx.activeInHierarchy &&
+                   slot.SelectionVfxCanvasGroup != null &&
+                   slot.SelectionVfxCanvasGroup.alpha >= 0.99f;
+        }
+        return false;
+    }
+
     private void RefreshPartySelectPortraits(CharacterRuntimeData selectedRuntime)
     {
         CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;

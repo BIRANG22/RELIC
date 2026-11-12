@@ -357,9 +357,10 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         targetRedDustium = Mathf.FloorToInt(Mathf.Max(0, remnantAmount) * Mathf.Max(0f, rewardMultiplier));
         if (isTutorialBattle)
         {
-            targetNormalBattleCount = 2;
+            // The new tutorial route contains three battles and two events.
+            targetNormalBattleCount = 3;
             targetEliteBattleCount = 0;
-            targetEventCount = 1;
+            targetEventCount = 2;
         }
         hasResultCountUpTargets = true;
         hasAudibleCountUpValue = targetElapsedSeconds > 0f
@@ -1657,19 +1658,14 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         }
 
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
-        if (isTutorial)
-        {
-            // 튜토리얼은 탐사 보고만 표시하고 로비 연구 정산 UI를 열지 않습니다.
-            PendingResearchSettlementService.Clear(lobby);
-        }
-        else
-        {
-            lobby.PendingResearchResult = ExplorationResearchService.CreatePending(
-                result,
-                DataManager.Instance,
-                researchRewardMultiplier);
-            lobby.HasPendingResearchResult = true;
-        }
+        // Tutorial rewards are real exploration rewards: preserve collected
+        // materials and red Dustium for the standard lobby settlement/conversion.
+        // This also prevents the tutorial from silently discarding acquired loot.
+        lobby.PendingResearchResult = ExplorationResearchService.CreatePending(
+            result,
+            DataManager.Instance,
+            researchRewardMultiplier);
+        lobby.HasPendingResearchResult = true;
         lobby.OwnedRelicIds.Clear();
         ClearLobbyEquippedRelics(lobby);
         DataManager.Instance.LobbyRuntimeStore.Set(lobby);

@@ -300,32 +300,6 @@ public class EventRoomController : MonoBehaviour
             TryStartDataEventMode();
     }
 
-    private bool tutorialEventDialoguePending;
-    private bool IsTutorialEventMap()
-    {
-        var data = DataManager.Instance;
-        return data?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
-               string.Equals(data.MapRuntimeStore?.Get()?.CurrentMapId,
-                   "Map_28", System.StringComparison.OrdinalIgnoreCase);
-    }
-
-    private IEnumerator RunTutorialEventDialogue()
-    {
-        yield return null;
-        TutorialBattleSequence.StartContinuation("Map_28", 1, 4);
-        while (TutorialBattleSequence.IsContinuationActive) yield return null;
-        tutorialEventDialoguePending = false;
-    }
-
-    private IEnumerator RunTutorialEventChoiceGuide()
-    {
-        TutorialBattleSequence.StartContinuation("Map_28", 5, 5);
-        // ClickTarget must be clickable while the guide is showing.
-        // Keeping slots disabled until completion deadlocks the tutorial.
-        SetChoiceSlotsInteractable(true);
-        while (TutorialBattleSequence.IsContinuationActive) yield return null;
-    }
-
     private void OnEnable()
     {
         LocalizationSettings.SelectedLocaleChanged -= OnEventLocaleChanged;
@@ -387,8 +361,6 @@ public class EventRoomController : MonoBehaviour
 
         if (TryStartDataEventMode())
         {
-            tutorialEventDialoguePending = IsTutorialEventMap();
-            // The tutorial dialogue is triggered after the room intro and title typing.
             return;
         }
 
@@ -520,7 +492,10 @@ public class EventRoomController : MonoBehaviour
             if (IsEvent05CommitTerminal(currentEventDefinition?.EventId))
             {
                 if (dustiumAcquireRoutine == null)
+                {
+                    BattleRewardPanelUI.LockNextButtonVisual(nextButton);
                     dustiumAcquireRoutine = StartCoroutine(CommitEvent05AccumulatedDustiumAndExit());
+                }
                 return;
             }
 
@@ -574,13 +549,16 @@ public class EventRoomController : MonoBehaviour
             return true;
         }
 
-        // 헤이즈를 기존 힐트/카야 파티에 추가하고 두 번째 전투로 넘어갑니다.
-        if (!TutorialBattleEntrySetup.TryPrepareSecondBattleParty(data))
+        // Haze joins only after the second tutorial event (Event_T_02 / Map_29).
+        if (string.Equals(currentMapId, TutorialBattleEntrySetup.SecondTutorialEventMapId,
+            System.StringComparison.OrdinalIgnoreCase) &&
+            !TutorialBattleEntrySetup.TryPrepareSecondBattleParty(data))
         {
-            Debug.LogError("[EventRoomController] Failed to prepare the tutorial companion.", this);
+            Debug.LogError("[EventRoomController] Failed to prepare Haze after tutorial event 2.", this);
             return true;
         }
 
+        BattleRewardPanelUI.LockNextButtonVisual(nextButton);
         sceneController.OpenTutorialMapDirect(nextMapId, () => SetNextButtonVisible(false));
         return true;
     }
@@ -1675,11 +1653,6 @@ public class EventRoomController : MonoBehaviour
         EventChoiceSkillAwakenTarget selectedSkillAwakenTarget = default,
         int[] forcedDiceFaces = null)
     {
-        if (TutorialBattleSequence.IsContinuationActive && IsTutorialEventMap())
-        {
-            if (TutorialBattleSequence.CurrentContinuationOrder != 5) return;
-            TutorialBattleSequence.NotifyTargetSelected("event");
-        }
         SetChoiceSlotsInteractable(false);
 
         int accumulatedRemnantBeforeChoice = eventChoiceSessionState.AccumulatedRemnant;
@@ -1863,6 +1836,29 @@ public class EventRoomController : MonoBehaviour
             SetNextButtonVisible(false);
             SetChoiceSlotsInteractable(false);
             return;
+        }
+
+        // The tutorial chest has an explicitly selected fixed relic in the Event sheet.
+        // Use the regular reward panel so it is actually granted and can be saved.
+        if (result.Accepted &&
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(DataManager.Instance.MapRuntimeStore?.Get()?.CurrentMapId,
+                TutorialBattleEntrySetup.FirstTutorialEventMapId, System.StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(choice.ResultType?.Trim(), "Gain", System.StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(choice.ResultTarget) &&
+            choice.ResultTarget.StartsWith("Relic_", System.StringComparison.OrdinalIgnoreCase) &&
+            !pendingEventRewards.Exists(r => r != null && r.Type == BattleRewardType.Relic &&
+                string.Equals(r.RewardId, choice.ResultTarget, System.StringComparison.OrdinalIgnoreCase)))
+        {
+            if (DataManager.Instance.RelicDatabase != null &&
+                DataManager.Instance.RelicDatabase.TryGet(choice.ResultTarget.Trim(), out RelicData fixedRelic) &&
+                fixedRelic != null)
+            {
+                Sprite fixedIcon = null;
+                DataManager.Instance.RelicIconDatabase?.TryGetIcon(fixedRelic.FragmentId, out fixedIcon);
+                pendingEventRewards.Add(EventRoomRewardFlowUtility.CreateRelicReward(fixedRelic, fixedIcon));
+            }
+            else Debug.LogError("[EventRoomController] Tutorial chest relic not found: " + choice.ResultTarget, this);
         }
 
         // A queued reward must be claimed before any next event is loaded.
@@ -6674,18 +6670,6 @@ public class EventRoomController : MonoBehaviour
         while (BattleMapIntroText.IsAnyPlayingOrVisible())
             yield return null;
 
-        // Map_28: do not reveal choices before the tutorial conversation.
-        // The room intro and EventTitleText typing must both finish first.
-        if (tutorialEventDialoguePending && IsTutorialEventMap())
-        {
-            yield return RunTutorialEventDialogue();
-            if (!isActiveAndEnabled || !isDataEventActive || isEventResolved)
-            {
-                eventEntranceTitleRoutine = null;
-                yield break;
-            }
-        }
-
         eventEntranceTitleRoutine = null;
         if (isActiveAndEnabled && isDataEventActive && !isEventResolved)
             StartEventChoiceScrollViewAnimation();
@@ -6809,12 +6793,8 @@ public class EventRoomController : MonoBehaviour
         if (eventChoiceGradationCanvasGroup != null)
             eventChoiceGradationCanvasGroup.alpha = 1f;
 
-        // Tutorial step 5 waits for a click on the first choice.
-        // The choice must remain interactable while that step is displayed.
-        bool tutorialChoiceGuide = IsTutorialEventMap();
         SetChoiceSlotsInteractable(true);
         eventChoiceScrollMoveRoutine = null;
-        if (tutorialChoiceGuide) StartCoroutine(RunTutorialEventChoiceGuide());
     }
 
     private void EnsureNextButtonRoot()
@@ -6900,6 +6880,7 @@ public class EventRoomController : MonoBehaviour
                     DisableStaticLocalizedText(label);
                     label.text = GameLocalization.Get("common.proceed", "진행");
                 }
+                BattleRewardPanelUI.UnlockNextButtonVisual(nextButton);
                 nextButton.interactable = true;
                 BindNextButton();
             }
@@ -6949,7 +6930,10 @@ public class EventRoomController : MonoBehaviour
             Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
 
         if (sceneController != null)
+        {
+            BattleRewardPanelUI.LockNextButtonVisual(nextButton);
             sceneController.ReturnToMap(onCovered);
+        }
         else
             Debug.LogWarning("[EventRoomController] BattleSceneController not found");
     }

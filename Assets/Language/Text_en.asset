@@ -4499,11 +4499,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 27586697539477505
-    m_Localized: Unexpected joining
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 27586697539477506
-    m_Localized: Rest together.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 4547655072889828093
@@ -4688,157 +4688,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 6579587282193344706
-    m_Localized: 'Restore 15 HP to the entire party
-
-      Hayes joins the party'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909925765120
-    m_Localized: Near the Base
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909976096768
-    m_Localized: "Phew\u2026 That was a longer walk than I expected. My legs are
-      starting to feel heavy."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 29397909976096769
     m_Localized: Click anywhere to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909976096770
-    m_Localized: At this rate, we'll be exhausted before we even reach the outpost!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291072
-    m_Localized: We should avoid wasting our strength. The outpost isn't much farther.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291073
-    m_Localized: Erosion increases during expeditions.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291074
-    m_Localized: Erosion increases by 3 when entering a room, 1 when ending a turn
-      or taking damage, and 10 when incapacitated.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291075
-    m_Localized: At 100 Erosion, you take 10 damage each turn.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291076
-    m_Localized: A mutant. It seems we won't be able to pass without a fight.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291077
-    m_Localized: Then let's take it down first!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291078
-    m_Localized: The Character Status Panel shows combat information such as HP,
-      Mana, and Karma.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291079
-    m_Localized: Mana and Karma are resources used for actions. Mana regenerates
-      according to its recovery rate, while Karma recovers by 1 each turn.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291080
-    m_Localized: You can also inspect your equipped Artifacts and Runes in their
-      slots.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291081
-    m_Localized: The Status Panel also shows buffs and debuffs affecting the selected
-      character.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291082
-    m_Localized: All right! Why don't we take it out before it can move?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291083
-    m_Localized: It would be wiser to act carefully than to rush in blindly.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291084
-    m_Localized: I'll get close and give it a proper beating!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291085
-    m_Localized: "Sigh\u2026 Very well. I'll finish things from behind."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291086
-    m_Localized: The timeline consists of 5 slots, each divided into 5 spaces.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291087
-    m_Localized: Mutants queue their actions first. Only one character's actions
-      can be queued in each slot.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291088
-    m_Localized: "Actions occupy 1\u20133 spaces and execute in order, starting from
-      the first slot when you end the turn."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291089
-    m_Localized: Characters can perform basic actions such as moving and changing
-      direction.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291090
-    m_Localized: You can also use Memories with effects such as damage, buffs, and
-      debuffs.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291091
-    m_Localized: Press A or click the button to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291092
-    m_Localized: Movement occupies 1 space and costs Mana based on the distance traveled.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291093
-    m_Localized: Click a destination to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291094
-    m_Localized: Selecting a destination queues the movement on the timeline.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291095
-    m_Localized: Press Q or click the button to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291096
-    m_Localized: Selecting another character automatically changes the active reservation
-      slot.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291097
-    m_Localized: A Memory's area of effect depends on the direction the character
-      is facing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291098
-    m_Localized: Press Tab or click the button to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291099
-    m_Localized: Press Q or click the button twice to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291100
-    m_Localized: The same Memory can be queued multiple times.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29397909980291101
-    m_Localized: Press Space or click the button to continue
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554314
@@ -5094,63 +4948,6 @@ MonoBehaviour:
     m_Localized: A core infused with intense crimson light and unstable power.
     m_Metadata:
       m_Items: []
-  - m_Id: 30183422303641600
-    m_Localized: When you've finished queuing actions, end the turn. Your queued
-      actions will execute in order.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361861
-    m_Localized: Oh, this looks pretty useful! I'll take this one!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361862
-    m_Localized: Go ahead. I think it suits you quite well.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361863
-    m_Localized: Artifacts are placed in limited equipment slots. Different combinations
-      provide various effects.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361856
-    m_Localized: I could take on a whole bunch of these guys!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361857
-    m_Localized: That went more smoothly than expected. Let's take the artifact with
-      us.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361858
-    m_Localized: Nice! Wonder if we got something useful this time?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361859
-    m_Localized: You receive rewards after combat. Equip Artifacts on characters
-      to gain special effects.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361869
-    m_Localized: During expeditions, you'll encounter various events. Your choices
-      may earn you rewards or cause you to suffer losses.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361865
-    m_Localized: Um... may I ask where you're headed?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361866
-    m_Localized: We're heading back to base!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361867
-    m_Localized: If you're heading the same way, you're welcome to join us.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30183422362361868
-    m_Localized: R-really? Then... would it be okay if we rested for a bit first?
-    m_Metadata:
-      m_Items: []
   - m_Id: 30184713507545088
     m_Localized: Click to continue
     m_Metadata:
@@ -5337,11 +5134,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150537
-    m_Localized: On the road to the outpost, an explorer is taking a break.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150538
-    m_Localized: After a short rest, the party regains its strength.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373547
@@ -6482,153 +6279,6 @@ MonoBehaviour:
     m_Localized: No expedition is in progress.
     m_Metadata:
       m_Items: []
-  - m_Id: 32740484132872216
-    m_Localized: Press S or click the button to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872195
-    m_Localized: Click the mutant to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872207
-    m_Localized: Press R or click the button to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872219
-    m_Localized: Click the button to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872202
-    m_Localized: Click a character to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872204
-    m_Localized: Press D or click the button to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484128677891
-    m_Localized: "A-a mutant! W-what should we do\u2026?!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872192
-    m_Localized: What's there to think about? We just charge in, right?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872193
-    m_Localized: Rushing in blindly is dangerous. We need to learn about our opponent
-      first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872199
-    m_Localized: "I-I think I can help too\u2026!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872200
-    m_Localized: "I'll use a Compound\u2026 to make your attacks stronger!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872208
-    m_Localized: I'll circle behind the mutant and limit its movements.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872209
-    m_Localized: Then I'll keep the pressure on from the front!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872210
-    m_Localized: Just be careful of its counterattacks from the front.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872211
-    m_Localized: Tch, so the front's no good. Then I'll hit it from the side!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872194
-    m_Localized: Click a mutant to inspect its information.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872196
-    m_Localized: You can see the mutant's planned actions in its Action List.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872197
-    m_Localized: You can see the mutant's special effects, buffs, and debuffs in
-      its Status List.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872198
-    m_Localized: You can click a mutant at any time during battle to inspect its
-      information.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872201
-    m_Localized: You can also click a character directly to select them.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872203
-    m_Localized: Compounds are used immediately without queuing an action.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872205
-    m_Localized: Amplification increases attack damage by its effect value.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872206
-    m_Localized: Use Karma to activate powerful Memories. Grit increases damage dealt
-      by 30%.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872212
-    m_Localized: You can queue actions for multiple characters and execute them together
-      in a single turn.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872213
-    m_Localized: Use movement to evade enemy attacks or secure a favorable position.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872214
-    m_Localized: Anticipating a mutant's movement and positioning yourself accordingly
-      can influence where it moves next turn.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872215
-    m_Localized: Changing direction occupies 1 space and turns the character without
-      moving.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872217
-    m_Localized: Attacking a mutant from behind can force it to turn around.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872218
-    m_Localized: Combining your characters' actions opens up a variety of tactics.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872220
-    m_Localized: Knowing which way a mutant counterattacks lets you dodge its counterattack
-      by moving.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872221
-    m_Localized: It's best to choose your movement destination with the next turn
-      in mind.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872222
-    m_Localized: Combining movement and attacks lets you strike from an advantageous
-      position.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872223
-    m_Localized: Coordinating multiple characters' actions makes combat even more
-      effective.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32740484132872224
-    m_Localized: Use the tactics you've learned to defeat the mutant.
-    m_Metadata:
-      m_Items: []
   - m_Id: 32716823346028544
     m_Localized: Move 2 tiles away from the nearest character.
     m_Metadata:
@@ -6690,16 +6340,8 @@ MonoBehaviour:
     m_Localized: Character Information
     m_Metadata:
       m_Items: []
-  - m_Id: 32765697239261184
-    m_Localized: Expedition
-    m_Metadata:
-      m_Items: []
   - m_Id: 32765776591298560
     m_Localized: Times Incapacitated
-    m_Metadata:
-      m_Items: []
-  - m_Id: 32768073908068352
-    m_Localized: Logbook
     m_Metadata:
       m_Items: []
   - m_Id: 32786741371052032
@@ -6729,6 +6371,22 @@ MonoBehaviour:
   - m_Id: 33021496949334016
     m_Localized: Deals additional fixed damage equal to the value after consecutive
       attacks.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582403
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582404
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582405
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582406
+    m_Localized: 
     m_Metadata:
       m_Items: []
   references:

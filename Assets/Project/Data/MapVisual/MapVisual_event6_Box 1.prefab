@@ -68,7 +68,7 @@ GameObject:
   - component: {fileID: 5954468834033624657}
   - component: {fileID: 1655522861738633303}
   m_Layer: 0
-  m_Name: MapVisual_event6_Box
+  m_Name: MapVisual_event6_Box 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

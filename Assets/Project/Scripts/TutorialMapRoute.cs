@@ -3,54 +3,66 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
-/// <summary>
-/// Resolves the initial tutorial battle, tutorial event, and final tutorial battle
-/// from the Tutorial and Map worksheets without fixed map identifiers.
-/// </summary>
+/// <summary>Resolves an ordered alternating tutorial route from Map sheet.</summary>
 public static class TutorialMapRoute
 {
+    private static List<MapData> GetRoute(DataManager data)
+    {
+        var result = new List<MapData>();
+        if (data?.MapDatabase == null || data.TutorialDatabase == null) return result;
+        string firstId = data.TutorialDatabase.GetFirstEntry()?.MapId;
+        if (string.IsNullOrWhiteSpace(firstId)) return result;
+        List<MapData> maps = data.MapDatabase.GetAll();
+        foreach (MapData map in maps)
+            if (map != null && string.Equals(map.Type, "Tutorial", StringComparison.OrdinalIgnoreCase))
+                result.Add(map);
+        result.Sort((a, b) => MapNumber(a.MapId).CompareTo(MapNumber(b.MapId)));
+        int firstIndex = result.FindIndex(m => string.Equals(m.MapId, firstId, StringComparison.OrdinalIgnoreCase));
+        if (firstIndex < 0) { Debug.LogError("[TutorialMapRoute] First tutorial map is absent from Map sheet: " + firstId); return new List<MapData>(); }
+        if (firstIndex > 0) result.RemoveRange(0, firstIndex);
+        if (result.Count == 0 || result.Count % 2 == 0) { Debug.LogError("[TutorialMapRoute] Expected odd number of Battle/Event tutorial maps."); return new List<MapData>(); }
+        for (int i = 0; i < result.Count; i++)
+        {
+            bool battle = !string.IsNullOrWhiteSpace(result[i].BattleMapId) && result[i].BattleMapId != "0";
+            bool eventRoom = !string.IsNullOrWhiteSpace(result[i].EventId) && result[i].EventId != "0";
+            if (battle == eventRoom || battle != (i % 2 == 0))
+            {
+                Debug.LogError("[TutorialMapRoute] Expected alternating Battle/Event: " + result[i].MapId);
+                return new List<MapData>();
+            }
+        }
+        return result;
+    }
+
+    private static int MapNumber(string value)
+    {
+        if (!string.IsNullOrEmpty(value) && value.StartsWith("Map_", StringComparison.OrdinalIgnoreCase) &&
+            int.TryParse(value.Substring(4), out int number)) return number;
+        return int.MaxValue;
+    }
+
+    public static bool IsTutorialMap(DataManager data, string mapId)
+    {
+        if (string.IsNullOrWhiteSpace(mapId)) return false;
+        return GetRoute(data).Exists(m => string.Equals(m.MapId, mapId, StringComparison.OrdinalIgnoreCase));
+    }
+
     public static bool TryGetNext(DataManager data, string currentMapId, out string nextMapId)
     {
         nextMapId = null;
-        if (!TryResolve(data, out string first, out string eventMap, out string last))
-            return false;
-        if (string.Equals(currentMapId, first, StringComparison.OrdinalIgnoreCase))
-            nextMapId = eventMap;
-        else if (string.Equals(currentMapId, eventMap, StringComparison.OrdinalIgnoreCase))
-            nextMapId = last;
-        return !string.IsNullOrEmpty(nextMapId);
+        var route = GetRoute(data);
+        for (int i = 0; i < route.Count - 1; i++)
+            if (string.Equals(route[i].MapId, currentMapId, StringComparison.OrdinalIgnoreCase))
+            {
+                nextMapId = route[i + 1].MapId;
+                return true;
+            }
+        return false;
     }
 
     public static bool IsFinalBattle(DataManager data, string currentMapId)
     {
-        return TryResolve(data, out _, out _, out string last) &&
-            string.Equals(last, currentMapId, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool TryResolve(DataManager data, out string first, out string eventMap, out string last)
-    {
-        first = null;
-        eventMap = null;
-        last = null;
-        if (data?.TutorialDatabase == null || data.MapDatabase == null) return false;
-        first = data.TutorialDatabase.GetFirstEntry()?.MapId;
-        if (string.IsNullOrWhiteSpace(first)) return false;
-        List<MapData> maps = data.MapDatabase.GetAll();
-        foreach (MapData map in maps)
-        {
-            if (map == null || !string.Equals(map.Type, "Tutorial", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(map.MapId, first, StringComparison.OrdinalIgnoreCase)) continue;
-            if (!string.IsNullOrWhiteSpace(map.EventId) && map.EventId != "0")
-            {
-                if (eventMap != null) { Debug.LogError("[TutorialMapRoute] Multiple tutorial event maps found."); return false; }
-                eventMap = map.MapId;
-            }
-            else if (!string.IsNullOrWhiteSpace(map.BattleMapId) && map.BattleMapId != "0")
-            {
-                if (last != null) { Debug.LogError("[TutorialMapRoute] Multiple subsequent tutorial battles found."); return false; }
-                last = map.MapId;
-            }
-        }
-        return eventMap != null && last != null;
+        var route = GetRoute(data);
+        return route.Count > 0 && string.Equals(route[route.Count - 1].MapId, currentMapId, StringComparison.OrdinalIgnoreCase);
     }
 }

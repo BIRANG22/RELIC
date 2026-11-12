@@ -208,6 +208,20 @@ public sealed class LobbyTutorialController : MonoBehaviour
             yield return null;
 
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        // The first lobby entrance after the tutorial must settle the earned
+        // Dustium/materials and finish the conversion presentation first.
+        // The normal Elric introduction then runs with the settled lobby state.
+        if (lobby.TutorialProgress == LobbyTutorialProgress.NotStarted &&
+            PendingResearchSettlementService.HasPending(lobby))
+        {
+            ResearchResultPanelUI.TryOpenPendingResultOnLoadedScene();
+            while (PendingResearchSettlementService.HasPending(lobby))
+            {
+                yield return null;
+                lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+            }
+            yield return null;
+        }
         LobbyQuestManager.Instance?.Refresh();
 
         if (lobby.TutorialProgress == LobbyTutorialProgress.NotStarted)

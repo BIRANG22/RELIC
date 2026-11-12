@@ -1595,6 +1595,20 @@ public class BattleRoomLoader : MonoBehaviour
         if (TutorialBattleSequence.IsPresentationRunning && turnExecutor != null)
             yield return turnExecutor.PlayInitialReservationIntroForTutorial();
 
+        // The reservation intro has completed. Initialise the actual turn UI BEFORE
+        // tutorial dialogue, otherwise the default-slot selection highlight only
+        // appears after the dialogue when the loader unlocks the executor.
+        // TutorialBattleSequence continues to reject gameplay commands and its
+        // input shield intercepts all unrelated UI clicks during the presentation.
+        bool tutorialInputPrepared = TutorialBattleSequence.IsPresentationRunning && turnExecutor != null;
+        if (tutorialInputPrepared)
+        {
+            turnExecutor.SetBattleInputReady(true);
+            EnsureTimelineController();
+            timelineController?.RefocusCurrentSelectedCharacterWhenInputReady();
+            yield return new WaitForEndOfFrame();
+        }
+
         // Battle-start timeline and HUD are now visible; resume post-intro tutorial guides.
         TutorialBattleSequence tutorialSequence = GetComponent<TutorialBattleSequence>();
         if (tutorialSequence != null && TutorialBattleSequence.IsPresentationRunning)
@@ -1606,7 +1620,8 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (turnExecutor != null)
         {
-            turnExecutor.SetBattleInputReady(true);
+            if (!tutorialInputPrepared)
+                turnExecutor.SetBattleInputReady(true);
             // 입력 잠금 중 먼저 선택된 캐릭터는 카메라 포커스가 누락될 수 있습니다.
             // 일반 전투와 튜토리얼 종료 후 모두 같은 선택 캐릭터로 카메라를 복원합니다.
             EnsureTimelineController();
