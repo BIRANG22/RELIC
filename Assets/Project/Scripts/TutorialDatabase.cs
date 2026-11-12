@@ -32,7 +32,6 @@ namespace Relic.Gameplay.Data
         public string StartParty;
         public int InitialErosion;
         public string InitialHpPercent;
-        public int DeferMonsterSpawn;
         public string Phase;
         public string SpeakerId;
         public string TextOutput;

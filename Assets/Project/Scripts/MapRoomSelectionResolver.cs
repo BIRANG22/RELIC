@@ -10,13 +10,6 @@ namespace Relic.Gameplay.Data
     /// </summary>
     public static class MapRoomSelectionResolver
     {
-        private static readonly HashSet<string> TutorialCombatMapIds = new(StringComparer.OrdinalIgnoreCase)
-        {
-            TutorialBattleEntrySetup.FirstTutorialMapId,
-            TutorialBattleEntrySetup.SecondTutorialMapId,
-            TutorialBattleEntrySetup.ThirdTutorialMapId
-        };
-
         public static bool IsNormalRandomEventMap(MapData map)
         {
             return map != null && Same(map.Type, "Special");
@@ -24,7 +17,8 @@ namespace Relic.Gameplay.Data
 
         public static bool IsTutorialCombatMap(MapData map)
         {
-            return map != null && TutorialCombatMapIds.Contains(map.MapId?.Trim() ?? string.Empty);
+            return map != null && Same(map.Type, "Tutorial") &&
+                   !string.IsNullOrWhiteSpace(map.BattleMapId) && map.BattleMapId != "0";
         }
 
         public static MapData ResolveForVisit(

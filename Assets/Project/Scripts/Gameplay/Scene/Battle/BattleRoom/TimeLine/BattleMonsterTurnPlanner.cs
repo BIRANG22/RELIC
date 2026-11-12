@@ -1494,23 +1494,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     /// 몬스터가 타임라인 1~2번 슬롯을 사용하지 않습니다.
     /// 허용 슬롯은 3~5번(index 2~4)뿐입니다.
     /// </summary>
-    private static bool IsTutorialBattleWithDelayedMonsterSlots()
-    {
-        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
-        string currentMapId = mapRuntime?.CurrentMapId?.Trim();
-
-        if (string.IsNullOrWhiteSpace(currentMapId))
-            return false;
-
-        return string.Equals(
-                   currentMapId,
-                   TutorialBattleEntrySetup.SecondTutorialMapId,
-                   System.StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(
-                   currentMapId,
-                   TutorialBattleEntrySetup.ThirdTutorialMapId,
-                   System.StringComparison.OrdinalIgnoreCase);
-    }
+    // Old tutorial-only forced monster slot delay was removed in the rebuilt tutorial.
+    private static bool IsTutorialBattleWithDelayedMonsterSlots() => false;
 
     private int GetMonsterMinimumSlotIndex()
     {

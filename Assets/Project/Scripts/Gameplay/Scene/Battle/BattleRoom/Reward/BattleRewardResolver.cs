@@ -20,7 +20,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (monsters == null)
             monsters = System.Array.Empty<MonsterRuntimeData>();
 
-        bool suppressMonsterLoot = IsTutorialBattle();
+        bool guaranteeTutorialMonsterItems = IsTutorialBattle();
 
         HashSet<string> resolvedMonsterKeys = new();
         HashSet<string> uniqueItemResolvedMonsterKeys = new();
@@ -40,16 +40,25 @@ public class BattleRewardResolver : MonoBehaviour
                 continue;
             }
 
-            TryResolveMonster(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys, suppressMonsterLoot);
+            TryResolveMonster(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys, guaranteeTutorialMonsterItems);
         }
 
-        int uniqueMonsterCount = resolvedMonsterKeys.Count;
-        int sceneMonsterCount = GetCurrentBattleMonsterUnitCount();
-        int uniqueItemLimit = sceneMonsterCount > 0
-            ? Mathf.Min(uniqueMonsterCount, sceneMonsterCount)
-            : uniqueMonsterCount;
+        // Tutorial drops are derived from the configured battle-map spawns, not from
+        // the death collector. That collector can be empty by the reward-screen phase.
+        if (guaranteeTutorialMonsterItems)
+        {
+            AddTutorialBattleMapMonsterItems(rewards);
+        }
+        else
+        {
+            int uniqueMonsterCount = resolvedMonsterKeys.Count;
+            int sceneMonsterCount = GetCurrentBattleMonsterUnitCount();
+            int uniqueItemLimit = sceneMonsterCount > 0
+                ? Mathf.Min(uniqueMonsterCount, sceneMonsterCount)
+                : uniqueMonsterCount;
 
-        TrimUniqueItemRewardsToMonsterCount(rewards, uniqueItemLimit);
+            TrimUniqueItemRewardsToMonsterCount(rewards, uniqueItemLimit);
+        }
 
         BattleMapData dropSettings = GetCurrentBattleMapDropSettings();
         AddBattleMapRelicReward(rewards, dropSettings);
@@ -241,20 +250,18 @@ public class BattleRewardResolver : MonoBehaviour
         List<BattleRewardData> rewards,
         string monsterKey,
         HashSet<string> uniqueItemResolvedMonsterKeys,
-        bool suppressMonsterLoot)
+        bool guaranteeTutorialMonsterItems)
     {
         if (monster == null)
             return;
 
         Debug.Log($"[BattleRewardResolver] Monster:{monster.MonsterId} / Key:{monsterKey} / Remnant:{monster.MinRemnant}-{monster.MaxRemnant} / Item:{monster.UniqueItemId}({monster.UniqueItemChance})");
 
-        // 튜토리얼 전투에서는 몬스터가 주는 레드 더스티움과 고유 아이템을 획득하지 않습니다.
-        // 전투 맵 자체에서 지급되는 유물/기억 보상은 기존 규칙을 그대로 사용합니다.
-        if (suppressMonsterLoot)
-            return;
-
+        // Monster currency follows the normal reward rules in all battles.
+        // Tutorial unique items are granted from the actual configured battle map below.
         AddRemnant(monster, rewards);
-        AddUniqueItem(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys);
+        if (!guaranteeTutorialMonsterItems)
+            AddUniqueItem(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys, false);
     }
 
     private static bool IsTutorialBattle()
@@ -297,11 +304,73 @@ public class BattleRewardResolver : MonoBehaviour
         });
     }
 
+    private void AddTutorialBattleMapMonsterItems(List<BattleRewardData> rewards)
+    {
+        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (mapRuntime == null || string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
+        {
+            Debug.LogWarning("[BattleRewardResolver] Tutorial monster drops: current map missing.");
+            return;
+        }
+
+        MapData map = DataManager.Instance.MapDatabase?.Get(mapRuntime.CurrentMapId);
+        if (map == null || string.IsNullOrWhiteSpace(map.BattleMapId))
+        {
+            Debug.LogWarning($"[BattleRewardResolver] Tutorial monster drops: battle map missing for {mapRuntime.CurrentMapId}.");
+            return;
+        }
+
+        IReadOnlyList<BattleMapData> spawns = DataManager.Instance.BattleMapDatabase?.GetSpawns(map.BattleMapId);
+        if (spawns == null || spawns.Count == 0)
+        {
+            Debug.LogWarning($"[BattleRewardResolver] Tutorial monster drops: no spawns for {map.BattleMapId}.");
+            return;
+        }
+
+        int added = 0;
+        for (int i = 0; i < spawns.Count; i++)
+        {
+            BattleMapData spawn = spawns[i];
+            if (spawn == null || string.IsNullOrWhiteSpace(spawn.MonsterId))
+                continue;
+
+            MonsterMasterData monster = DataManager.Instance.MonsterDatabase?.Get(spawn.MonsterId.Trim());
+            if (monster == null || string.IsNullOrWhiteSpace(monster.UniqueItemId) || monster.UniqueItemId == "0")
+                continue;
+
+            string itemId = monster.UniqueItemId.Trim();
+            ItemData item = DataManager.Instance.ItemDatabase?.Get(itemId);
+            if (item == null)
+            {
+                Debug.LogWarning($"[BattleRewardResolver] Tutorial drop item not found: {itemId} ({spawn.MonsterId}).");
+                continue;
+            }
+
+            Sprite icon = null;
+            DataManager.Instance.ItemIconDatabase?.TryGetIcon(itemId, out icon);
+            rewards.Add(new BattleRewardData
+            {
+                Type = BattleRewardType.Item,
+                RewardId = itemId,
+                SourceKey = $"TutorialMonster|{map.BattleMapId}|{i}|{itemId}",
+                Amount = 1,
+                Icon = icon,
+                Name = GameDataLocalization.ItemName(item),
+                Description = GameDataLocalization.ItemDescription(item),
+                Value = 0
+            });
+            added++;
+        }
+
+        Debug.Log($"[BattleRewardResolver] Tutorial guaranteed monster items / BattleMap:{map.BattleMapId} / SpawnCount:{spawns.Count} / Added:{added}");
+    }
+
     private void AddUniqueItem(
         MonsterRuntimeData monster,
         List<BattleRewardData> rewards,
         string monsterKey,
-        HashSet<string> uniqueItemResolvedMonsterKeys)
+        HashSet<string> uniqueItemResolvedMonsterKeys,
+        bool guaranteeDrop)
     {
         if (string.IsNullOrWhiteSpace(monster.UniqueItemId))
             return;
@@ -320,7 +389,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (HasRewardSource(rewards, uniqueRewardKey))
             return;
 
-        if (!IsChanceSuccess(monster.UniqueItemChance))
+        if (!guaranteeDrop && !IsChanceSuccess(monster.UniqueItemChance))
             return;
 
         ItemData item = DataManager.Instance.ItemDatabase.Get(uniqueItemId);
@@ -350,16 +419,23 @@ public class BattleRewardResolver : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
-        // Tutorial battles award their designated relic instead of rolling a random one.
-        if (TryResolveTutorialFixedRelicId(out string fixedRelicId))
+        // The second tutorial battle awards a memory instead of a relic.
+        if (IsSecondTutorialBattle())
+            return;
+
+        // Other tutorial battles still award their fixed relic.
+        if (TryGetTutorialBattleRelicId(out string tutorialRelicId))
         {
-            if (!DataManager.Instance.RelicDatabase.TryGet(fixedRelicId, out RelicData fixedRelic) || fixedRelic == null)
+            if (DataManager.Instance.RelicDatabase == null ||
+                !DataManager.Instance.RelicDatabase.TryGet(tutorialRelicId, out RelicData tutorialRelic) ||
+                tutorialRelic == null)
             {
-                Debug.LogError($"[BattleRewardResolver] Tutorial relic not found: {fixedRelicId}");
+                Debug.LogError($"[BattleRewardResolver] Tutorial relic not found: {tutorialRelicId}");
                 return;
             }
 
-            AddRelicReward(rewards, fixedRelic, dropSettings != null ? dropSettings.BattleMapId : "Tutorial");
+            string battleMapId = dropSettings != null ? dropSettings.BattleMapId : "Tutorial";
+            AddRelicReward(rewards, tutorialRelic, battleMapId);
             return;
         }
 
@@ -400,24 +476,30 @@ public class BattleRewardResolver : MonoBehaviour
         AddRelicReward(rewards, relic, dropSettings.BattleMapId);
     }
 
-    private static bool TryResolveTutorialFixedRelicId(out string relicId)
+    private static bool TryGetTutorialBattleRelicId(out string relicId)
     {
         relicId = null;
-        DataManager data = DataManager.Instance;
-        if (data?.BattleRuntimeStore?.Get()?.IsTutorialBattle != true)
+        if (!IsTutorialBattle())
             return false;
 
-        string currentMapId = data.MapRuntimeStore?.Get()?.CurrentMapId;
-        if (string.IsNullOrWhiteSpace(currentMapId))
+        string mapId = DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId;
+        if (string.IsNullOrWhiteSpace(mapId))
             return false;
 
-        string firstMapId = data.TutorialDatabase?.GetFirstEntry()?.MapId;
-        if (string.Equals(currentMapId, firstMapId, System.StringComparison.OrdinalIgnoreCase))
-            relicId = "Relic_P_06";
-        else if (TutorialMapRoute.IsFinalBattle(data, currentMapId))
-            relicId = "Relic_P_68";
+        switch (mapId.Trim())
+        {
+            case "Map_26": relicId = "Relic_P_14"; break;
+            case "Map_30": relicId = "Relic_P_68"; break;
+        }
 
         return relicId != null;
+    }
+
+    private static bool IsSecondTutorialBattle()
+    {
+        return IsTutorialBattle() &&
+            string.Equals(DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId?.Trim(),
+                "Map_28", System.StringComparison.OrdinalIgnoreCase);
     }
 
     private static void AddRelicReward(List<BattleRewardData> rewards, RelicData relic, string battleMapId)
@@ -498,10 +580,20 @@ public class BattleRewardResolver : MonoBehaviour
         if (DataManager.Instance == null || dropSettings == null)
             return;
 
+        // The second tutorial battle always offers these three Hilt core memories,
+        // in this exact card order. The player chooses one; they are not all granted.
+        if (IsSecondTutorialBattle())
+        {
+            AddSecondTutorialFixedMemoryOffer(rewards, dropSettings);
+            return;
+        }
+
         IReadOnlyList<SkillMasterData> candidates = GetAvailableSkillRewardCandidates(rewards);
 
+        BattleMapData memorySettings = dropSettings;
+
         if (!SkillRewardRoller.TryRoll(
-                dropSettings,
+                memorySettings,
                 candidates,
                 GetPartyCharacterIds(),
                 new BattleSkillRewardRandom(),
@@ -526,6 +618,57 @@ public class BattleRewardResolver : MonoBehaviour
             Description = BuildSkillRewardDescription(skill),
             Value = 0
         });
+    }
+
+    private void AddSecondTutorialFixedMemoryOffer(
+        List<BattleRewardData> rewards,
+        BattleMapData dropSettings)
+    {
+        const string ownerId = "Char_01";
+        string[] memoryIds = { "S_Core_01", "S_Core_04", "S_Core_03" };
+        var skillDatabase = DataManager.Instance?.SkillDatabase;
+        if (skillDatabase == null)
+        {
+            Debug.LogError("[BattleRewardResolver] Map_28: skill database missing.");
+            return;
+        }
+
+        SkillMasterData first = null;
+        foreach (string memoryId in memoryIds)
+        {
+            if (!skillDatabase.TryGet(memoryId, out SkillMasterData skill) || skill == null)
+            {
+                Debug.LogError($"[BattleRewardResolver] Map_28: fixed memory missing: {memoryId}");
+                return;
+            }
+            if (!string.Equals(skill.CharacterId?.Trim(), ownerId,
+                System.StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.LogError($"[BattleRewardResolver] Map_28: {memoryId} is not owned by {ownerId}.");
+                return;
+            }
+            if (first == null)
+                first = skill;
+        }
+
+        Sprite icon = first.Icon;
+        if (icon == null)
+            DataManager.Instance.SkillIconDatabase?.TryGetIcon(first.SkillId, out icon);
+
+        // BattleRewardSkillPanelUI reads BattleOwner and BattleOffers from SourceKey.
+        // This bypasses its random character and memory selection for this map only.
+        rewards.Add(new BattleRewardData
+        {
+            Type = BattleRewardType.Skill,
+            RewardId = first.SkillId,
+            SourceKey = $"Skill|{dropSettings.BattleMapId}|BattleOwner={ownerId}|BattleOffers={string.Join(",", memoryIds)}",
+            Amount = 1,
+            Icon = icon,
+            Name = string.IsNullOrWhiteSpace(first.Name) ? first.SkillId : GameDataLocalization.SkillName(first),
+            Description = BuildSkillRewardDescription(first),
+            Value = 0
+        });
+        Debug.Log($"[BattleRewardResolver] Map_28 fixed Hilt memory offers: {string.Join(", ", memoryIds)}");
     }
 
     private BattleMapData GetCurrentBattleMapDropSettings()

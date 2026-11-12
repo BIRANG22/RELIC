@@ -121,7 +121,7 @@ namespace Relic.Gameplay.Data
             Image icon = CreateIcon(cardRect);
             TMP_Text title = CreateText(cardRect, "Title", 58f, -10f, 290f, 28f, 20f, FontStyles.Bold);
             TMP_Text description = CreateText(cardRect, "Description", 58f, -38f, 290f, 48f, 15f, FontStyles.Normal);
-            description.enableWordWrapping = true;
+            description.textWrappingMode = TextWrappingModes.Normal;
 
             UnitStatusEffectTooltipItemUI item = card.GetComponent<UnitStatusEffectTooltipItemUI>();
             item.BindFallbackReferences(background, icon, title, description);

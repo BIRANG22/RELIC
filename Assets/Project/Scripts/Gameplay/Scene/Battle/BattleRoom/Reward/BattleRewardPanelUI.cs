@@ -100,6 +100,38 @@ public class BattleRewardPanelUI : MonoBehaviour
     // Only the reward flow may control the shared NextButton visibility.
     private bool rewardFlowActive;
 
+    // The event and battle reward screens share a single NextButton.
+    // Keep the Button's Inspector transition (ColorTint / SpriteSwap / Animation)
+    // untouched: changing it to None removes the white pointer-hover background.
+    // Only disable interaction AFTER a confirmed click and while changing rooms.
+    public static void LockNextButtonVisual(Button button)
+    {
+        if (button == null) return;
+
+        // Clear the hover/click transforms without changing the configured hover
+        // animation. The component will suppress future pointer events while the
+        // owning Button is non-interactable.
+        var animations = button.GetComponentsInChildren<ButtonAnimationCoroutine>(true);
+        foreach (var animation in animations)
+            if (animation != null) animation.ForceClearState(false);
+
+        button.interactable = false;
+
+        // Revert the graphic to its default color for the transition. Do not
+        // modify button.transition; it must continue to supply hover visuals
+        // when this shared button is next shown.
+        if (button.targetGraphic != null && button.transition == Selectable.Transition.ColorTint)
+            button.targetGraphic.CrossFadeColor(button.colors.normalColor * button.colors.colorMultiplier,
+                0f, true, true);
+    }
+
+    public static void UnlockNextButtonVisual(Button button)
+    {
+        // There is no global visual lock to restore. The owning panels already
+        // set interactable = true when making their NextButton available.
+        // Keeping the Inspector-defined transition intact preserves white hover.
+    }
+
     public Button SharedNextButton => gainButton;
 
     public void HideNextButtonAfterCover()
@@ -162,6 +194,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     public bool ShowArrivalAfterResult(System.Action onArrival)
     {
         if (gainButton == null || onArrival == null) return false;
+        UnlockNextButtonVisual(gainButton);
         resultArrivalCallback = onArrival;
         rewardFlowActive = true;
         gameObject.SetActive(true);
@@ -282,6 +315,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     public void Open(List<BattleRewardData> rewards, Action completedCallback, ResumeData resumeData)
     {
+        UnlockNextButtonVisual(gainButton);
         rewardFlowActive = true;
         resultArrivalCallback = null;
         StopAutoGain();
@@ -306,10 +340,6 @@ public class BattleRewardPanelUI : MonoBehaviour
                 if (reward == null)
                     continue;
 
-                // 이전 저장 데이터에 튜토리얼 몬스터 보상이 남아 있어도 표시하거나 획득하지 않습니다.
-                if (ShouldSuppressTutorialMonsterLoot(reward))
-                    continue;
-
                 if (ShouldPopulateRewardPresentation(reward))
                     PopulateRewardPresentation(reward);
                 currentRewards.Add(reward);
@@ -325,12 +355,6 @@ public class BattleRewardPanelUI : MonoBehaviour
         EnsureVerticalRewardLayout();
         Refresh();
         UpdateGainButton();
-
-        var tutorialData = DataManager.Instance;
-        if (tutorialData?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
-            string.Equals(tutorialData.MapRuntimeStore?.Get()?.CurrentMapId,
-                "Map_26", StringComparison.OrdinalIgnoreCase) && currentRewards.Count > 0)
-            TutorialBattleSequence.StartContinuation("Map_26", 30, 33);
 
         if (currentRewards.Count <= 0)
         {
@@ -504,6 +528,7 @@ public class BattleRewardPanelUI : MonoBehaviour
             System.Action callback = resultArrivalCallback;
             resultArrivalCallback = null;
             rewardFlowActive = false;
+            LockNextButtonVisual(gainButton);
             if (gainButton != null) gainButton.interactable = false;
             callback.Invoke();
             return;
@@ -1039,9 +1064,6 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (reward == null || DataManager.Instance == null)
             return;
 
-        if (ShouldSuppressTutorialMonsterLoot(reward))
-            return;
-
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
 
         runtime.BagItemIds ??= new List<string>();
@@ -1081,18 +1103,6 @@ public class BattleRewardPanelUI : MonoBehaviour
         }
 
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
-    }
-
-    private static bool ShouldSuppressTutorialMonsterLoot(BattleRewardData reward)
-    {
-        if (reward == null ||
-            (reward.Type != BattleRewardType.Remnant && reward.Type != BattleRewardType.Item))
-        {
-            return false;
-        }
-
-        BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
-        return battle?.IsTutorialBattle == true;
     }
 
     private void PlayRewardAcquireSfx(BattleRewardData reward)
@@ -1280,6 +1290,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         StopAutoGain();
         rewardFlowActive = false;
+        LockNextButtonVisual(gainButton);
         // Keep the visible "진행" button on screen until the destination transition
         // handles panel teardown. Lock further clicks without hiding its visuals.
         if (gainButton != null)

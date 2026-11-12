@@ -9,10 +9,10 @@ using UnityEngine;
 public static class TutorialBattleEntrySetup
 {
     public static string FirstTutorialMapId => DataManager.Instance?.TutorialDatabase?.GetFirstEntry()?.MapId ?? string.Empty;
-    public const string SecondTutorialMapId = "Map_29";
-    public const string FirstTutorialEventMapId = "Map_31";
-    public const string SecondTutorialEventMapId = "Map_32";
-    public const string ThirdTutorialMapId = "Map_27";
+    public const string SecondTutorialMapId = "Map_28";
+    public const string FirstTutorialEventMapId = "Map_27";
+    public const string SecondTutorialEventMapId = "Map_29";
+    public const string ThirdTutorialMapId = "Map_30";
     public const string HiltCharacterId = "Char_01";
     public const string HazeCharacterId = "Char_03";
     public const string KayaCharacterId = "Char_02";

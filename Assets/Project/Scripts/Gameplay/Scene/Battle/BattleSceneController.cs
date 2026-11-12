@@ -1063,11 +1063,7 @@ public class BattleSceneController : MonoBehaviour
             return;
 
         string mapId = mapRuntime.CurrentMapId;
-        bool isTutorialRoute =
-            string.Equals(mapId, TutorialBattleEntrySetup.FirstTutorialMapId, StringComparison.OrdinalIgnoreCase) ||
-            TutorialMapRoute.IsFinalBattle(data, mapId) ||
-            (TutorialMapRoute.TryGetNext(data, TutorialBattleEntrySetup.FirstTutorialMapId, out string eventMapId) &&
-             string.Equals(mapId, eventMapId, StringComparison.OrdinalIgnoreCase));
+        bool isTutorialRoute = TutorialMapRoute.IsTutorialMap(data, mapId);
         if (!isTutorialRoute || !data.MapDatabase.TryGet(mapId, out MapData mapData) || mapData == null)
             return;
 
@@ -3028,8 +3024,7 @@ public class BattleSceneController : MonoBehaviour
         loader.LoadBattleFromSceneController(
             forceReload,
             deferBattlePartyEntryUntilUncover,
-            DataManager.Instance?.TutorialDatabase?.GetForMap(DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId).Count > 0
-            && DataManager.Instance.TutorialDatabase.GetForMap(DataManager.Instance.MapRuntimeStore.Get().CurrentMapId)[0].DeferMonsterSpawn != 0);
+            false);
     }
 
     private static bool HasMappedId(string value)
