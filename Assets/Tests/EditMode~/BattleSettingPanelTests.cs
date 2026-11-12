@@ -1,5 +1,7 @@
 using NUnit.Framework;
 using Relic.Gameplay.Data;
+using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 public sealed class BattleSettingPanelTests
@@ -209,6 +211,35 @@ public sealed class BattleSettingPanelTests
         BattleSettingPanelUI.CharacterSnapshot snapshot = BattleSettingPanelUI.BuildSnapshot(runtime);
 
         Assert.That(snapshot.MemorySkillIds[0], Is.EqualTo("Memory_Ability"));
+    }
+
+    [Test]
+    public void ResolveJobIcon_UsesCharacterIconDatabaseMarkAndClearsMissingEntry()
+    {
+        CharacterIconDatabase database = ScriptableObject.CreateInstance<CharacterIconDatabase>();
+        Texture2D texture = new Texture2D(2, 2);
+        Sprite expected = Sprite.Create(texture, new Rect(0, 0, 2, 2), Vector2.one * 0.5f);
+        try
+        {
+            FieldInfo entriesField = typeof(CharacterIconDatabase).GetField(
+                "entries",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(entriesField, Is.Not.Null);
+            entriesField.SetValue(database, new List<CharacterIconEntry>
+            {
+                new CharacterIconEntry { CharacterId = "Character_Job", Mark = expected }
+            });
+
+            Assert.That(BattleSettingPanelUI.ResolveJobIcon(database, "Character_Job"), Is.SameAs(expected));
+            Assert.That(BattleSettingPanelUI.ResolveJobIcon(database, "Missing"), Is.Null);
+            Assert.That(BattleSettingPanelUI.ResolveJobIcon(null, "Character_Job"), Is.Null);
+        }
+        finally
+        {
+            Object.DestroyImmediate(expected);
+            Object.DestroyImmediate(texture);
+            Object.DestroyImmediate(database);
+        }
     }
 }
 
