@@ -142,7 +142,7 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private GameObject timelineGrindVfxPrefab;
     [Tooltip("VFX를 마지막 자식으로 생성할 UI 캔버스 루트입니다. 비어 있으면 상위 BattleHUDCanvas를 자동으로 찾습니다.")]
     [SerializeField] private RectTransform timelineGrindVfxCanvasRoot;
-    [Tooltip("BattleHUDCanvas 기준의 VFX UI 좌표입니다 (RectTransform anchoredPosition).") ]
+    [Tooltip("BattleHUDCanvas 기준의 VFX UI 좌표입니다 (RectTransform anchoredPosition).")]
     [SerializeField] private Vector2 timelineGrindVfxAnchoredPosition = Vector2.zero;
     [SerializeField] private float timelineGrindVfxLifeTime = 2f;
 
@@ -276,7 +276,6 @@ public class BattleTimelineController : MonoBehaviour
     private void Update()
     {
         HandleKeyboardSlotSelectInput();
-        HandleKeyboardUndoRedoReservationInput();
         HandleEndButtonHoverOutsidePolling();
         HandleSelectionCancelRightClick();
         HandleCharacterSelectionOutsideGridClick();
@@ -529,6 +528,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void HandleKeyboardSlotSelectInput()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (TutorialBattleSequence.IsPresentationRunning) return;
         if (UIPanelButton.IsMenuPanelOpen)
             return;
@@ -566,6 +566,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void HandleKeyboardSlotMoveInput()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (TutorialBattleSequence.IsPresentationRunning) return;
         if (!enableKeyboardSlotMoveInput)
             return;
@@ -581,9 +582,9 @@ public class BattleTimelineController : MonoBehaviour
 
         int direction = 0;
 
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.D))
             direction = 1;
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        else if (Input.GetKeyDown(KeyCode.A))
             direction = -1;
 
         if (direction == 0)
@@ -592,8 +593,9 @@ public class BattleTimelineController : MonoBehaviour
         MoveSelectedTimelineSlot(direction);
     }
 
-    private void HandleKeyboardUndoRedoReservationInput()
+    private void HandleKeyboardUndoReservationInput()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (TutorialBattleSequence.IsPresentationRunning) return;
         if (!isActiveAndEnabled)
             return;
@@ -604,14 +606,10 @@ public class BattleTimelineController : MonoBehaviour
         if (IsTypingInputFieldSelected())
             return;
 
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Undo))
-        {
-            UndoLastPlayerReservation();
+        if (!Input.GetKeyDown(KeyCode.Q))
             return;
-        }
 
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Redo))
-            RedoLastPlayerReservation();
+        UndoLastPlayerReservation();
     }
 
     public void UndoLastPlayerReservation()
@@ -5217,7 +5215,7 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
-        RemoveCommandFromNetwork(slotIndex, orderIndex, true);
+        RemoveCommandFromNetwork(slotIndex, orderIndex);
     }
 
 
@@ -5514,10 +5512,7 @@ public class BattleTimelineController : MonoBehaviour
         return removedCount;
     }
 
-    public bool RemoveCommandFromNetwork(
-        int slotIndex,
-        int orderIndex,
-        bool recordRedoHistory = false)
+    public bool RemoveCommandFromNetwork(int slotIndex, int orderIndex)
     {
         if (reserveSlots == null)
             return false;
@@ -5538,14 +5533,6 @@ public class BattleTimelineController : MonoBehaviour
         playerReservationRedoHistory.Clear();
         RemoveReservedCosts(removedCommand);
         RemovePlayerReservationHistoryEntries(removedCommand);
-
-        if (recordRedoHistory && removedCommand != null)
-        {
-            playerReservationRedoHistory.Add(new PlayerReservationHistoryEntry(
-                slotIndex,
-                removedCommand,
-                orderIndex));
-        }
 
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();

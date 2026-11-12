@@ -284,6 +284,7 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (IsTutorialHighlightBlocked())
             return;
 
@@ -387,6 +388,7 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         // 튜토리얼 안내 및 전투방 진입 연출 중에는 캐릭터 선택만 차단합니다.
         if ((TutorialBattleSequence.IsPresentationRunning &&
              !TutorialBattleSequence.CanClickTutorialPlayer()) ||

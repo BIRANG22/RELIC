@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[DefaultExecutionOrder(-10000)]
 public class BattleMenuEscapeInputController : MonoBehaviour
 {
     private static int lastHandledEscapeFrame = -1;
@@ -101,6 +100,23 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
     private void Update()
     {
+        // Tutorial Guide owns Escape while its modal panel is open.
+        // Do not allow the same Escape key press to open or toggle Battle Menu.
+        if (TutorialGuideController.IsModalOpen)
+        {
+            if (enableEscapeInput && lastHandledEscapeFrame != Time.frameCount &&
+                WasEscapePressedThisFrame() && !IsTypingInputFieldSelected())
+            {
+                lastHandledEscapeFrame = Time.frameCount;
+                TutorialGuideController guide = FindFirstObjectByType<TutorialGuideController>();
+                if (guide != null && guide.isActiveAndEnabled)
+                    guide.Close(); // Same path as the guide's CancelButton.
+            }
+            return;
+        }
+
+        // Avoid a second controller handling Escape after the guide was closed.
+        if (lastHandledEscapeFrame == Time.frameCount) return;
         // 우클릭은 전면 팝업을 먼저 닫고, 그 다음 입력에서 배틀 메뉴를 닫습니다.
         // 메뉴가 닫혀 있을 때는 우클릭으로 메뉴를 새로 열지 않습니다.
         if (WasRightMousePressedThisFrame() && !IsTypingInputFieldSelected() &&
@@ -139,15 +155,6 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
             if (UIManager.Instance != null && UIManager.Instance.TryHideOptionIfOpen(true))
                 return;
-
-            // 설정 패널은 MenuPanel보다 앞에 표시되는 모달입니다. 같은 ESC 입력으로
-            // 설정을 닫은 뒤 뒤쪽 MenuPanel까지 열리지 않도록 이 프레임을 소비합니다.
-            if (BattleSettingPanelUI.TryCloseOpenPanel())
-            {
-                lastHandledEscapeFrame = Time.frameCount;
-                Input.ResetInputAxes();
-                return;
-            }
 
             // MenuPanel이 이미 열려 있다면 ESC의 최우선 대상은 MenuPanel입니다.
             // MonsterInfoPanel이 뒤에 열려 있더라도 이번 ESC에서는 닫지 않습니다.

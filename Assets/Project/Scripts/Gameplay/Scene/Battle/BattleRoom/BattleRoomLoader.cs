@@ -160,6 +160,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void HandleCharacterCycleInput()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (!TutorialBattleSequence.IsShortcutAllowed(KeyCode.Tab))
             return;
         if (!Input.GetKeyDown(KeyCode.Tab))
@@ -204,6 +205,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void HandleCharacterNumberSelectInput()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (!enableCharacterNumberSelectInput)
             return;
 

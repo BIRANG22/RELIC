@@ -24,6 +24,7 @@ public sealed class BattleMapCharacterResourceHover : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         resourcesUI?.ShowForPartySlot(partySlotIndex, worldAnchor, anchorMode);
     }
 

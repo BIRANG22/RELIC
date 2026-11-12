@@ -25,6 +25,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
     private void Update()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (!isTargeting)
             return;
 

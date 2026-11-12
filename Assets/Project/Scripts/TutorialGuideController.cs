@@ -7,14 +7,18 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Components;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 /// <summary>Data-driven TutorialGuide index list and per-index page viewer.</summary>
 public sealed class TutorialGuideController : MonoBehaviour
 {
     private const string UnlockKey = "Dustium.TutorialGuide.HighestUnlockedIndex";
+    private const string IndividualKeyPrefix = "Dustium.TutorialGuide.Seen.";
+    private const string MigrationKey = "Dustium.TutorialGuide.SeenMigrated";
     [Header("Auto-bind by the supplied TutorialGuidePanel hierarchy")]
     [SerializeField] private Transform indexContent;
-    [SerializeField] private GameObject index01Template;
+    [Header("Assign the new TutorialIndex prefab (not a child in Content)")]
+    [SerializeField] private GameObject tutorialIndexPrefab;
     [SerializeField] private TMP_Text infoName;
     [SerializeField] private Image infoPreview;
     [SerializeField] private TMP_Text infoExplanation;
@@ -25,17 +29,56 @@ public sealed class TutorialGuideController : MonoBehaviour
     [Header("Preview sprites (assign a TutorialGuideSpriteDatabase asset)")]
     [SerializeField] private TutorialGuideSpriteDatabase spriteDatabase;
 
+    [Header("Index appearance")]
+    [SerializeField] private Color lockedIndexTextColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    [SerializeField] private Color unlockedIndexTextColor = Color.white;
+    [SerializeField] private Color selectedIndexBackColor = new Color32(0x24, 0x39, 0x52, 0xFF);
+    [SerializeField] private Color hoveredIndexBackColor = new Color32(0x1A, 0x23, 0x2E, 0xFF);
+
     private readonly List<GameObject> generatedIndexes = new();
+    private readonly Dictionary<string, Image> indexBacks = new();
+    private readonly Dictionary<string, Color> indexDefaultBackColors = new();
+    private string hoveredIndex;
     private string selectedIndex;
     private int selectedPage;
     private bool bound;
+    private GameObject modalBlocker;
+    // OnMouseEnter is driven by Physics, not UI GraphicRaycaster.
+    // World hover scripts check this flag while the guide is open.
+    public static bool IsModalOpen { get; private set; }
+
 
     public static int HighestUnlockedIndex => PlayerPrefs.GetInt(UnlockKey, 0);
+
+    private static string GetSeenKey(string indexId) => IndividualKeyPrefix + indexId.Trim();
+
+    // One-time migration from the previous version that tracked a highest unlocked index.
+    // New unlocks use individual flags, so unlocking Index03 does not implicitly unlock Index02.
+    private static void MigrateLegacyProgress()
+    {
+        if (PlayerPrefs.GetInt(MigrationKey, 0) != 0) return;
+        int legacyHighest = HighestUnlockedIndex;
+        for (int number = 1; number <= legacyHighest; number++)
+            PlayerPrefs.SetInt(GetSeenKey($"Index{number:00}"), 1);
+        PlayerPrefs.SetInt(MigrationKey, 1);
+        PlayerPrefs.Save();
+    }
+
+    public static bool HasSeenIndex(string indexId)
+    {
+        if (string.IsNullOrWhiteSpace(indexId)) return false;
+        MigrateLegacyProgress();
+        return PlayerPrefs.GetInt(GetSeenKey(indexId), 0) == 1;
+    }
+
     public static void UnlockIndex(string indexId)
     {
+        if (string.IsNullOrWhiteSpace(indexId) || TutorialGuideDatabase.ParseIndexNumber(indexId) < 1) return;
+        MigrateLegacyProgress();
+        if (HasSeenIndex(indexId)) return;
+        PlayerPrefs.SetInt(GetSeenKey(indexId), 1);
         int number = TutorialGuideDatabase.ParseIndexNumber(indexId);
-        if (number < 1 || number <= HighestUnlockedIndex) return;
-        PlayerPrefs.SetInt(UnlockKey, number);
+        if (number > HighestUnlockedIndex) PlayerPrefs.SetInt(UnlockKey, number);
         PlayerPrefs.Save();
     }
 
@@ -49,8 +92,41 @@ public sealed class TutorialGuideController : MonoBehaviour
     }
 
     private void Awake() => EnsureBound();
+
+    private void Start() => CreateModalBlocker();
+
+    private void CreateModalBlocker()
+    {
+        if (modalBlocker != null || transform.parent == null) return;
+        RectTransform parentRect = transform.parent as RectTransform;
+        if (parentRect == null)
+        {
+            Debug.LogWarning("[TutorialGuideController] Parent must be a Canvas RectTransform for modal raycast blocking.", this);
+            return;
+        }
+
+        // A full-screen invisible UI graphic behind the guide, but in front of battle UI.
+        // Do not put it inside Background: a centered background image may not cover the screen.
+        modalBlocker = new GameObject("__TutorialGuideModalBlocker", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        var blockRect = (RectTransform)modalBlocker.transform;
+        blockRect.SetParent(parentRect, false);
+        blockRect.anchorMin = Vector2.zero;
+        blockRect.anchorMax = Vector2.one;
+        blockRect.offsetMin = Vector2.zero;
+        blockRect.offsetMax = Vector2.zero;
+        blockRect.localScale = Vector3.one;
+        var image = modalBlocker.GetComponent<Image>();
+        image.color = new Color(0f, 0f, 0f, 0f);
+        image.raycastTarget = true;
+        // Guarantee the blocker and the panel are above siblings in the same Canvas.
+        blockRect.SetAsLastSibling();
+        transform.SetAsLastSibling();
+    }
+
     private void OnEnable()
     {
+        IsModalOpen = true;
+        if (modalBlocker != null) modalBlocker.SetActive(true);
         LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
         EnsureBound();
         RebuildIndexes();
@@ -59,14 +135,21 @@ public sealed class TutorialGuideController : MonoBehaviour
             var database = DataManager.Instance?.TutorialGuideDatabase;
             if (database != null)
                 foreach (string index in database.IndexIds)
-                    if (TutorialGuideDatabase.ParseIndexNumber(index) <= HighestUnlockedIndex)
+                    if (HasSeenIndex(index))
                     { SelectIndex(index); break; }
         }
         RefreshPage();
     }
-    private void OnDisable() => LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+    private void OnDisable()
+    {
+        IsModalOpen = false;
+        if (modalBlocker != null) modalBlocker.SetActive(false);
+        LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+    }
     private void OnDestroy()
     {
+        IsModalOpen = false;
+        if (modalBlocker != null) Destroy(modalBlocker);
         if (beforeButton != null) beforeButton.onClick.RemoveListener(ShowPreviousPage);
         if (nextButton != null) nextButton.onClick.RemoveListener(ShowNextPage);
         if (cancelButton != null) cancelButton.onClick.RemoveListener(Close);
@@ -77,7 +160,17 @@ public sealed class TutorialGuideController : MonoBehaviour
         if (bound) return;
         Transform root = transform;
         indexContent ??= Find(root, "Index/Viewport/Content");
-        index01Template ??= Find(indexContent, "Index01")?.gameObject;
+        // Remove the old embedded Index01 template if it remains in an older panel prefab.
+        // Content should be empty in the new prefab; only seen indexes are instantiated.
+        if (indexContent != null)
+        {
+            Transform legacy = indexContent.Find("Index01");
+            if (legacy != null && !generatedIndexes.Contains(legacy.gameObject))
+            {
+                legacy.gameObject.SetActive(false);
+                Destroy(legacy.gameObject);
+            }
+        }
         infoName ??= Find(root, "Info/Name")?.GetComponent<TMP_Text>();
         infoPreview ??= Find(root, "Info/Preview")?.GetComponent<Image>();
         infoExplanation ??= Find(root, "Info/Explanation")?.GetComponent<TMP_Text>();
@@ -89,8 +182,6 @@ public sealed class TutorialGuideController : MonoBehaviour
         if (nextButton != null) nextButton.onClick.AddListener(ShowNextPage);
         if (cancelButton != null) cancelButton.onClick.AddListener(Close);
         Protect(infoName); Protect(infoExplanation); Protect(pageLabel);
-        // The original Index01 is the inactive template, not a visible index.
-        if (index01Template != null) index01Template.SetActive(false);
         bound = true;
     }
 
@@ -98,40 +189,108 @@ public sealed class TutorialGuideController : MonoBehaviour
     {
         foreach (GameObject obj in generatedIndexes) if (obj != null) Destroy(obj);
         generatedIndexes.Clear();
-        if (index01Template == null || indexContent == null) return;
+        indexBacks.Clear();
+        indexDefaultBackColors.Clear();
+        hoveredIndex = null;
+        if (indexContent == null || tutorialIndexPrefab == null)
+        {
+            Debug.LogWarning("[TutorialGuideController] Assign Tutorial Index Prefab and Index/Viewport/Content.", this);
+            return;
+        }
         TutorialGuideDatabase db = DataManager.Instance?.TutorialGuideDatabase;
         if (db == null) return;
         foreach (string indexId in db.IndexIds)
         {
-            if (TutorialGuideDatabase.ParseIndexNumber(indexId) > HighestUnlockedIndex) continue;
+            bool seen = HasSeenIndex(indexId);
             string capturedId = indexId;
-            GameObject item = Instantiate(index01Template, indexContent, false);
+            GameObject item = Instantiate(tutorialIndexPrefab, indexContent, false);
             item.name = indexId;
             item.SetActive(true);
             TMP_Text text = Find(item.transform, "Text")?.GetComponent<TMP_Text>();
+            if (text == null) text = item.GetComponentInChildren<TMP_Text>(true);
             if (text != null)
             {
                 Protect(text);
-                var indexInfo = db.GetIndexInfo(indexId);
-                string fallback = indexInfo?.IndexNameKO;
-                if (string.IsNullOrWhiteSpace(fallback)) fallback = indexId;
-                SetLocalized(text, indexInfo?.IndexNameKey, fallback);
+                if (seen)
+                {
+                    var indexInfo = db.GetIndexInfo(indexId);
+                    string fallback = indexInfo?.IndexNameKO;
+                    if (string.IsNullOrWhiteSpace(fallback)) fallback = indexId;
+                    SetLocalized(text, indexInfo?.IndexNameKey, fallback);
+                    text.color = unlockedIndexTextColor;
+                }
+                else
+                {
+                    text.text = "???";
+                    text.color = lockedIndexTextColor;
+                }
+            }
+
+            Image back = Find(item.transform, "Back")?.GetComponent<Image>();
+            if (back != null)
+            {
+                indexBacks[indexId] = back;
+                indexDefaultBackColors[indexId] = back.color;
             }
             Button button = item.GetComponent<Button>() ?? item.GetComponentInChildren<Button>(true);
-            if (button != null) button.onClick.AddListener(() => SelectIndex(capturedId));
+            if (button != null)
+            {
+                // Locked indices remain visible but cannot open unrevealed information.
+                button.interactable = seen;
+                if (seen) button.onClick.AddListener(() => SelectIndex(capturedId));
+                // Avoid Button tint overriding the inspector-controlled Back color.
+                button.transition = Selectable.Transition.None;
+            }
+            if (seen)
+            {
+                EventTrigger trigger = item.GetComponent<EventTrigger>();
+                if (trigger == null) trigger = item.AddComponent<EventTrigger>();
+                AddPointerEvent(trigger, EventTriggerType.PointerEnter, () => SetIndexHovered(capturedId, true));
+                AddPointerEvent(trigger, EventTriggerType.PointerExit, () => SetIndexHovered(capturedId, false));
+            }
             generatedIndexes.Add(item);
         }
-        index01Template.SetActive(false);
+        RefreshIndexBackColors();
+    }
+
+    private static void AddPointerEvent(EventTrigger trigger, EventTriggerType type, UnityEngine.Events.UnityAction callback)
+    {
+        var entry = new EventTrigger.Entry { eventID = type };
+        entry.callback.AddListener(_ => callback());
+        trigger.triggers.Add(entry);
+    }
+
+    private void SetIndexHovered(string indexId, bool entered)
+    {
+        if (entered) hoveredIndex = indexId;
+        else if (hoveredIndex == indexId) hoveredIndex = null;
+        RefreshIndexBackColors();
+    }
+
+    private void RefreshIndexBackColors()
+    {
+        foreach (var pair in indexBacks)
+        {
+            if (pair.Value == null) continue;
+            string id = pair.Key;
+            if (id == selectedIndex && HasSeenIndex(id))
+                pair.Value.color = selectedIndexBackColor;
+            else if (id == hoveredIndex && HasSeenIndex(id))
+                pair.Value.color = hoveredIndexBackColor;
+            else
+                pair.Value.color = indexDefaultBackColors[id];
+        }
     }
 
     public void SelectIndex(string indexId)
     {
-        if (TutorialGuideDatabase.ParseIndexNumber(indexId) > HighestUnlockedIndex) return;
+        if (!HasSeenIndex(indexId)) return;
         var pages = DataManager.Instance?.TutorialGuideDatabase?.GetPages(indexId);
         if (pages == null || pages.Count == 0) return;
         selectedIndex = indexId;
         selectedPage = 0;
         RefreshPage();
+        RefreshIndexBackColors();
     }
     public void ShowPreviousPage() { selectedPage--; RefreshPage(); }
     public void ShowNextPage() { selectedPage++; RefreshPage(); }

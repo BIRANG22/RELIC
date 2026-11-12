@@ -356,6 +356,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void Update()
     {
+        if (TutorialGuideController.IsModalOpen) return;
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
