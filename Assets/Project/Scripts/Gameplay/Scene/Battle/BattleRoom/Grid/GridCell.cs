@@ -117,6 +117,7 @@ public class GridCell : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (TutorialFocusGuideRunner.IsRunning && !TutorialFocusGuideRunner.AllowsGrid(Index)) return;
         if (TutorialGuideController.IsModalOpen) return;
         if (owner != null)
             owner.NotifyCellHovered(this);

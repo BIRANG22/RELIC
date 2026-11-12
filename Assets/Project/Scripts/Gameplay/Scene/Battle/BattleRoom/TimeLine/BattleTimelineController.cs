@@ -529,7 +529,7 @@ public class BattleTimelineController : MonoBehaviour
     private void HandleKeyboardSlotSelectInput()
     {
         if (TutorialGuideController.IsModalOpen) return;
-        if (TutorialBattleSequence.IsPresentationRunning) return;
+        if (TutorialBattleSequence.IsPresentationRunning && !TutorialFocusGuideRunner.IsRunning) return;
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
@@ -561,6 +561,7 @@ public class BattleTimelineController : MonoBehaviour
         if (slotIndex < 0)
             return;
 
+        if (!TutorialFocusGuideRunner.AllowsSlot(slotIndex)) return;
         OnTimelineSlotClicked(slotIndex);
     }
 
@@ -1203,6 +1204,7 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool OnTimelineSlotClicked(int slotIndex)
     {
+        if (!TutorialFocusGuideRunner.AllowsSlot(slotIndex)) return false;
         if (isSlotSelectionLocked)
         {
             if (showWarningWhenSlotSelectionLocked)

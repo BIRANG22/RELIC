@@ -966,16 +966,14 @@ Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,70",Dialogue,Char_01,Dialogbox,tut
 Tutorial_01,2,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.encounter.dialogue.02,변이체군요. 그냥 지나가긴 어렵겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,3,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.encounter.dialogue.03,겨우 한 마리잖아? 금방 처리하고 가자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,4,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.encounter.dialogue.04,방심은 금물입니다. 먼저 상황부터 확인하시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,,,,,,
-,,,,,
-,,,,,
+Tutorial_01,5,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.01,실제 이동을 예약해 보겠습니다.,ClickTarget,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,F 또는 버튼을 클릭하여 계속,Below
+Tutorial_01,6,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.02,이동할 위치를 선택해 행동을 예약하세요.,ReserveMove,Grid_16,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Below
+Tutorial_01,7,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.03,기억의 범위는 캐릭터가 바라보는 방향에 따라 결정됩니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
+Tutorial_01,8,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.04,두 번째 캐릭터의 행동을 예약하기 전에 2번 슬롯을 선택하세요.,ClickTarget,BattleSlot/TimelineSlot02,tutorial.prompt.select_slot02,2 또는 슬롯을 클릭하여 계속,Below
+Tutorial_01,9,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.05,캐릭터를 변경하여 행동을 예약해 보겠습니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,Tab 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,10,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,기억은 사용에 필요한 자원이 충분하다면 여러 번 예약할 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
+Tutorial_01,11,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,같은 기억을 한 번 더 예약해 보세요.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
+Tutorial_01,12,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,모든 행동을 예약했다면 턴을 종료하세요.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Left
 
 
 
@@ -983,96 +981,64 @@ Tutorial_01,4,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.encounter.dialog
 
 ,,,,,,,,,,
 ,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
+
+
+
+
+,,,,,,,,,,
+
+
+
+
+
+
+
+
 ,,,,,,,,,,,,,
-,,,,,
-,,,,,
+
+
 ,,,,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
+
+
+
+
 ,,,,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,,,
 
 
 
 
 
-,,,,,,,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 ,,,,,,,,,,
-
-
-
-
-
-
-
-
-
-
-
-
-
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,,,,,,
-,,,,,
-,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
 ,,,,,,,,,,,,,
-,,,,,
-,,,,,
 ,,,,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,
 ,,,,,,,,,,,,,
-,,,,,
-,,,,,
-,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,,,,
 
 # TutorialGuide
 인덱스 ID,페이지 번호,인덱스 이름 로컬라이징 키,인덱스 이름 한국어,페이지 이름 로컬라이징 키,페이지 이름 한국어,설명 로컬라이징 키,설명 한국어
