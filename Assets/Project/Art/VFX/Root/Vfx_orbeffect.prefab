@@ -19482,6 +19482,9 @@ MonoBehaviour:
   playOnClick: 0
   clickSoundId: ui.normal.click
   clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &8176044118567605243
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,13 +1,158 @@
 using System.Collections;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public sealed class ResearchResultPanelUI : MonoBehaviour
 {
     private const string LobbySceneName = "Lobby";
+
+    [Header("Presentation Root (separate from Wagon)")]
+    [Tooltip("The Canvas/DustiumConversionPresentation object. Only this object is hidden; Wagon remains active.")]
+    [SerializeField] private GameObject presentationRoot;
+
+    [Header("Wagon Red Dustium Shader Fade")]
+    [Tooltip("Assign Background / Interaction / Wagon / red_dustium.")]
+    [SerializeField] private GameObject wagonRedDustium;
+    [Tooltip("Renderer of red_dustium using M_dissolve_dustium. Can be found automatically in children.")]
+    [SerializeField] private Renderer wagonRedDustiumRenderer;
+    [Tooltip("Shader Graph Fade reference is _Fade (capital F).")]
+    [SerializeField] private string wagonFadeProperty = "_Fade";
+    [SerializeField, Min(0.01f)] private float wagonRedDustiumFadeDuration = 1.1f;
+
+    [Header("Wagon Conversion VFX")]
+    [Tooltip("Scene VFX under Background / Interaction / Wagon / Vfx_dustium_change.")]
+    [SerializeField] private GameObject wagonConversionVfx;
+    [Tooltip("Seconds to smoothly fade existing particles and trails after the conversion transfers finish.")]
+    [SerializeField, Min(0.01f)] private float wagonConversionVfxFadeOutDuration = 0.5f;
+
+    private Coroutine wagonConversionVfxFadeCoroutine;
+    private ParticleSystem[] wagonVfxFadeParticles;
+    private SpriteRenderer[] wagonVfxFadeSprites;
+    private Color[] wagonVfxFadeSpriteOriginalColors;
+    private TrailRenderer[] wagonVfxFadeTrails;
+    private Gradient[] wagonVfxFadeTrailOriginalGradients;
+
+    private void SetWagonConversionVfxActive(bool active)
+    {
+        CancelWagonConversionVfxFade();
+        if (wagonConversionVfx == null || wagonConversionVfx == gameObject) return;
+        wagonConversionVfx.SetActive(active);
+        if (active)
+        {
+            // Reusing the scene object must restart its effects from a clean state.
+            foreach (ParticleSystem particle in wagonConversionVfx.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                if (particle == null || !particle.gameObject.activeInHierarchy) continue;
+                particle.Clear(true);
+                particle.Play(true);
+            }
+        }
+    }
+
+    private void CancelWagonConversionVfxFade()
+    {
+        if (wagonConversionVfxFadeCoroutine != null)
+        {
+            StopCoroutine(wagonConversionVfxFadeCoroutine);
+            wagonConversionVfxFadeCoroutine = null;
+        }
+        RestoreWagonConversionVfxVisuals();
+    }
+
+    private void RestoreWagonConversionVfxVisuals()
+    {
+        if (wagonVfxFadeSprites != null)
+            for (int i = 0; i < wagonVfxFadeSprites.Length; i++)
+                if (wagonVfxFadeSprites[i] != null)
+                    wagonVfxFadeSprites[i].color = wagonVfxFadeSpriteOriginalColors[i];
+        if (wagonVfxFadeTrails != null)
+            for (int i = 0; i < wagonVfxFadeTrails.Length; i++)
+                if (wagonVfxFadeTrails[i] != null)
+                    wagonVfxFadeTrails[i].colorGradient = wagonVfxFadeTrailOriginalGradients[i];
+        wagonVfxFadeSprites = null;
+        wagonVfxFadeSpriteOriginalColors = null;
+        wagonVfxFadeTrails = null;
+        wagonVfxFadeTrailOriginalGradients = null;
+        wagonVfxFadeParticles = null;
+    }
+
+    private IEnumerator FadeOutWagonConversionVfx()
+    {
+        if (wagonConversionVfx == null || !wagonConversionVfx.activeInHierarchy)
+            yield break;
+
+        wagonVfxFadeParticles = wagonConversionVfx.GetComponentsInChildren<ParticleSystem>(true);
+        wagonVfxFadeSprites = wagonConversionVfx.GetComponentsInChildren<SpriteRenderer>(true);
+        wagonVfxFadeTrails = wagonConversionVfx.GetComponentsInChildren<TrailRenderer>(true);
+        wagonVfxFadeSpriteOriginalColors = new Color[wagonVfxFadeSprites.Length];
+        wagonVfxFadeTrailOriginalGradients = new Gradient[wagonVfxFadeTrails.Length];
+        for (int i = 0; i < wagonVfxFadeSprites.Length; i++)
+            if (wagonVfxFadeSprites[i] != null)
+                wagonVfxFadeSpriteOriginalColors[i] = wagonVfxFadeSprites[i].color;
+        for (int i = 0; i < wagonVfxFadeTrails.Length; i++)
+            if (wagonVfxFadeTrails[i] != null)
+                wagonVfxFadeTrailOriginalGradients[i] = wagonVfxFadeTrails[i].colorGradient;
+
+        // Stop spawning NEW particles, but allow already spawned particles to fade.
+        foreach (ParticleSystem particle in wagonVfxFadeParticles)
+            if (particle != null)
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+
+        float duration = Mathf.Max(0.01f, wagonConversionVfxFadeOutDuration);
+        float elapsed = 0f;
+        float previousAlpha = 1f;
+        while (elapsed < duration)
+        {
+            elapsed = Mathf.Min(duration, elapsed + Time.unscaledDeltaTime);
+            float alpha = 1f - Mathf.SmoothStep(0f, 1f, elapsed / duration);
+            // Relative factor preserves particles' original per-particle alpha and
+            // any pre-existing Color over Lifetime alpha changes.
+            float multiplier = previousAlpha > 0.00001f ? alpha / previousAlpha : 0f;
+            foreach (ParticleSystem particle in wagonVfxFadeParticles)
+            {
+                if (particle == null) continue;
+                int count = particle.particleCount;
+                if (count == 0) continue;
+                ParticleSystem.Particle[] buffer = new ParticleSystem.Particle[count];
+                count = particle.GetParticles(buffer);
+                for (int i = 0; i < count; i++)
+                {
+                    Color32 c = buffer[i].startColor;
+                    c.a = (byte)Mathf.Clamp(Mathf.RoundToInt(c.a * multiplier), 0, 255);
+                    buffer[i].startColor = c;
+                }
+                particle.SetParticles(buffer, count);
+            }
+            for (int i = 0; i < wagonVfxFadeSprites.Length; i++)
+            {
+                if (wagonVfxFadeSprites[i] == null) continue;
+                Color c = wagonVfxFadeSpriteOriginalColors[i];
+                c.a *= alpha;
+                wagonVfxFadeSprites[i].color = c;
+            }
+            for (int i = 0; i < wagonVfxFadeTrails.Length; i++)
+            {
+                if (wagonVfxFadeTrails[i] == null) continue;
+                Gradient original = wagonVfxFadeTrailOriginalGradients[i];
+                GradientAlphaKey[] keys = original.alphaKeys;
+                for (int k = 0; k < keys.Length; k++) keys[k].alpha *= alpha;
+                Gradient faded = new Gradient();
+                faded.SetKeys(original.colorKeys, keys);
+                wagonVfxFadeTrails[i].colorGradient = faded;
+            }
+            previousAlpha = alpha;
+            yield return null;
+        }
+
+        if (wagonConversionVfx != null) wagonConversionVfx.SetActive(false);
+        RestoreWagonConversionVfxVisuals();
+        wagonConversionVfxFadeCoroutine = null;
+    }
 
     [Header("Dustium Conversion Presentation")]
     [SerializeField] private CanvasGroup presentationCanvasGroup;
@@ -17,20 +162,45 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
     [SerializeField] private Graphic transferBlurGraphic;
     [SerializeField] private LobbyBlueDustiumHudUI blueDustiumHud;
 
-    [Header("Shared Lobby Acquisition Transfer VFX")]
-    [Tooltip("Use the same ScreenSpaceTransferOrbEffect prefab as the lobby artifact/compound acquisition effect. If unassigned, uses the original transfer blur.")]
-    [SerializeField] private ScreenSpaceTransferOrbEffect acquisitionTransferEffectPrefab;
-    [Header("Conversion Orb Color Transition")]
-    [Tooltip("Color at launch from the Red Dustium icon.")]
-    [SerializeField] private Color conversionOrbStartColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
-    [Tooltip("Color on arrival at the Blue Dustium HUD.")]
-    [SerializeField] private Color conversionOrbEndColor = new Color32(0x3F, 0x6F, 0xBB, 0xFF);
-    [Tooltip("Normalized progress at which the orb begins changing color.")]
-    [SerializeField, Range(0f, 1f)] private float conversionColorChangeStart = 0.35f;
-    [Tooltip("Normalized progress at which the orb has fully changed to blue.")]
-    [SerializeField, Range(0f, 1f)] private float conversionColorChangeEnd = 0.65f;
+    [Header("Conversion VFX")]
+    [Tooltip("Assign a regular VFX prefab (GameObject, Particle System / Trails). No transfer controller is required on the prefab.")]
+    [FormerlySerializedAs("acquisitionTransferVfxPrefab")]
+    [SerializeField] private GameObject conversionVfxPrefab;
+    [Tooltip("Seconds each conversion VFX takes to reach the Blue Dustium HUD.")]
+    [SerializeField, Min(0.01f)] private float conversionVfxDuration = 0.6f;
+    [Tooltip("Sideways screen-space arc deviation in pixels (random left/right per transfer).")]
+    [SerializeField] private Vector2 conversionVfxSideSpread = new Vector2(240f, 460f);
+    [Tooltip("Vertical screen-space arc deviation in pixels.")]
+    [SerializeField] private Vector2 conversionVfxVerticalSpread = new Vector2(-170f, 210f);
+    [Tooltip("Random travel duration multiplier range.")]
+    [SerializeField] private Vector2 conversionVfxDurationMultiplier = new Vector2(0.9f, 1.08f);
+    [Header("Conversion VFX Color over Lifetime")]
+    [Tooltip("Applied to every Particle System Color over Lifetime module in the conversion VFX. Time 0 is particle birth; time 1 is particle death. Start Color is set to white to avoid multiplying the gradient by a second tint.")]
+    [SerializeField] private Gradient conversionColorOverLifetime = CreateDefaultConversionLifetimeGradient();
 
-    [Header("Repeated Acquisition Transfers")]
+    private static Gradient CreateDefaultConversionLifetimeGradient()
+    {
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(
+            new[]
+            {
+                new GradientColorKey(new Color32(0x9F, 0x2B, 0x2B, 0xFF), 0f),
+                new GradientColorKey(new Color32(0x3F, 0x6F, 0xBB, 0xFF), 1f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(1f, 0f),
+                new GradientAlphaKey(1f, 1f)
+            });
+        return gradient;
+    }
+
+    // One deterministic gradient shared by the moving VFX and the legacy fallback.
+    // The transition spans the entire flight: 0% = red, 100% = blue.
+    private static readonly Color ConversionStartColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
+    private static readonly Color ConversionEndColor = new Color32(0x3F, 0x6F, 0xBB, 0xFF);
+
+    [Header("Repeated Conversion Transfers")]
     [Tooltip("Amount at or below this threshold uses the small transfer count. Exactly 100 uses 5 transfers by default.")]
     [SerializeField, Min(1)] private int smallConversionThreshold = 100;
     [Tooltip("Number of transfers when the converted amount is at or below the threshold.")]
@@ -63,13 +233,15 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
     [SerializeField, Min(0f)] private float introDuration = 0.25f;
     [SerializeField, Min(0.01f)] private float transferDuration = 1.1f;
     [SerializeField, Min(0f)] private float transferCurveHeight = 180f;
-    [SerializeField, Range(0f, 1f)] private float colorTransitionStart = 0.3f;
     [SerializeField, Min(1f)] private float arrivalPulseScale = 1.25f;
     [SerializeField, Min(0f)] private float arrivalPulseDuration = 0.18f;
-    [SerializeField] private Color redDustiumColor = new Color(1f, 0.16f, 0.12f, 1f);
-    [SerializeField] private Color blueDustiumColor = new Color(0.27f, 0.49f, 0.9f, 1f);
 
+    private readonly List<GameObject> activeConversionVfx = new List<GameObject>();
     private Coroutine presentationCoroutine;
+    private Coroutine wagonFadeCoroutine;
+    private MaterialPropertyBlock wagonPropertyBlock;
+    private int wagonFadePropertyId;
+
     private bool isOpening;
     private bool ownsHudPresentationState;
     private bool hudWasEnabled;
@@ -94,6 +266,76 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
     private void Start()
     {
         OpenIfPending();
+    }
+
+    private GameObject GetPresentationRoot()
+    {
+        return presentationRoot != null ? presentationRoot :
+            (presentationCanvasGroup != null ? presentationCanvasGroup.gameObject : null);
+    }
+
+    private void SetPresentationVisible(bool visible)
+    {
+        GameObject root = GetPresentationRoot();
+        // Never turn Wagon (the script host) off when hiding the presentation.
+        if (root != null && root != gameObject)
+            root.SetActive(visible);
+    }
+
+    private void SetWagonRedDustiumVisible(bool visible)
+    {
+        if (wagonRedDustium == null)
+            return;
+        if (visible)
+        {
+            wagonRedDustium.SetActive(true);
+            SetWagonShaderFade(1f);
+        }
+        else
+        {
+            SetWagonShaderFade(0f);
+            wagonRedDustium.SetActive(false);
+        }
+    }
+
+    private void SetWagonShaderFade(float value)
+    {
+        if (wagonRedDustiumRenderer == null && wagonRedDustium != null)
+            wagonRedDustiumRenderer = wagonRedDustium.GetComponentInChildren<Renderer>(true);
+        if (wagonRedDustiumRenderer == null)
+            return;
+        if (wagonFadePropertyId == 0)
+            wagonFadePropertyId = Shader.PropertyToID(
+                string.IsNullOrEmpty(wagonFadeProperty) ? "_Fade" : wagonFadeProperty);
+        if (wagonPropertyBlock == null)
+            wagonPropertyBlock = new MaterialPropertyBlock();
+        wagonRedDustiumRenderer.GetPropertyBlock(wagonPropertyBlock);
+        wagonPropertyBlock.SetFloat(wagonFadePropertyId, Mathf.Clamp01(value));
+        wagonRedDustiumRenderer.SetPropertyBlock(wagonPropertyBlock);
+    }
+
+    private void BeginWagonRedDustiumFade()
+    {
+        if (wagonRedDustium == null)
+            return;
+        if (wagonFadeCoroutine != null)
+            StopCoroutine(wagonFadeCoroutine);
+        SetWagonRedDustiumVisible(true);
+        wagonFadeCoroutine = StartCoroutine(FadeWagonRedDustium());
+    }
+
+    private IEnumerator FadeWagonRedDustium()
+    {
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.01f, wagonRedDustiumFadeDuration);
+        while (elapsed < duration)
+        {
+            elapsed = Mathf.Min(duration, elapsed + Time.unscaledDeltaTime);
+            SetWagonShaderFade(1f - elapsed / duration);
+            yield return null;
+        }
+        SetWagonRedDustiumVisible(false);
+        wagonFadeCoroutine = null;
     }
 
     public static bool TryOpenPendingResultOnLoadedScene()
@@ -130,13 +372,15 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (!PendingResearchSettlementService.HasPending(lobby))
         {
-            gameObject.SetActive(false);
+            SetWagonConversionVfxActive(false);
+            SetWagonRedDustiumVisible(false);
+            SetPresentationVisible(false);
             return false;
         }
 
         if (!CanLocalPlayerMutateHostOnlyState())
         {
-            gameObject.SetActive(false);
+            SetPresentationVisible(false);
             return false;
         }
 
@@ -145,7 +389,7 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         if (pending.IsApplied)
         {
             ClearPendingAndSave(lobby);
-            gameObject.SetActive(false);
+            SetPresentationVisible(false);
             isOpening = false;
             return false;
         }
@@ -161,12 +405,12 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         {
             ClearPendingAndSave(lobby);
             LobbyBlueDustiumHudUI.RefreshAll();
-            gameObject.SetActive(false);
+            SetPresentationVisible(false);
             isOpening = false;
             return false;
         }
 
-        gameObject.SetActive(true);
+        SetPresentationVisible(true);
         PrepareHud(settlement.BlueBefore);
         PreparePresentation(settlement.ConvertedRedDustium);
         presentationCoroutine = StartCoroutine(PlayConversionPresentation(lobby, settlement));
@@ -208,7 +452,7 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             return false;
 
         isOpening = true;
-        gameObject.SetActive(true);
+        SetPresentationVisible(true);
         int blueBefore = Mathf.Max(0, lobby.BlueDustium);
         PendingResearchSettlementResult preview = new PendingResearchSettlementResult(
             true, blueBefore, blueBefore + amount, amount);
@@ -225,10 +469,10 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
     private bool HasPresentationReferences()
     {
-        return presentationCanvasGroup != null && redDustiumValueText != null &&
+        return GetPresentationRoot() != null && GetPresentationRoot() != gameObject &&
+               presentationCanvasGroup != null && redDustiumValueText != null &&
                fixedRedDustiumIcon != null && blueDustiumHud != null &&
-               ((acquisitionTransferEffectPrefab != null &&
-                 acquisitionTransferEffectPrefab.HasMovingVfxPrefab) ||
+               (conversionVfxPrefab != null ||
                 (transferBlur != null && transferBlurGraphic != null));
     }
 
@@ -248,7 +492,7 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         presentationCanvasGroup.blocksRaycasts = false;
         redDustiumValueText.gameObject.SetActive(true);
         redDustiumValueText.text = convertedRedDustium.ToString();
-        redDustiumValueText.color = redDustiumColor;
+        redDustiumValueText.color = ConversionStartColor;
         fixedRedDustiumIcon.gameObject.SetActive(true);
         // Respect the RectTransform position authored in the Inspector.
         // Transfer effects originate from the icon's actual screen-space center.
@@ -274,13 +518,12 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         }
         if (transferBlur != null)
         {
-            bool useLegacyBlur = (acquisitionTransferEffectPrefab == null ||
-                                  !acquisitionTransferEffectPrefab.HasMovingVfxPrefab) &&
+            bool useLegacyBlur = conversionVfxPrefab == null &&
                                  transferBlurGraphic != null;
             transferBlur.gameObject.SetActive(useLegacyBlur);
             if (useLegacyBlur)
             {
-                transferBlurGraphic.color = redDustiumColor;
+                transferBlurGraphic.color = ConversionStartColor;
                 transferBlur.position = fixedRedDustiumIcon.position;
                 transferBlur.localScale = Vector3.one;
             }
@@ -295,33 +538,46 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         if (introDuration > 0f)
             yield return new WaitForSecondsRealtime(introDuration);
 
+        BeginWagonRedDustiumFade();
+        SetWagonConversionVfxActive(true);
+
         Vector3 startPosition = fixedRedDustiumIcon.position;
         Vector3 endPosition = blueDustiumHud.transform.position;
-        bool useSharedTransfer = acquisitionTransferEffectPrefab != null &&
-                                 acquisitionTransferEffectPrefab.HasMovingVfxPrefab;
-        if (useSharedTransfer)
+        bool useConversionVfx = conversionVfxPrefab != null;
+        if (useConversionVfx)
         {
             // Arrival-driven updates keep the balance synchronized with the actual VFX,
             // including the last transfer (which can be smaller than dustiumPerTransfer).
-            yield return PlayRepeatedAcquisitionTransfers(settlement);
+            yield return PlayRepeatedConversionTransfers(settlement);
         }
         else
         {
             yield return PlayLegacyConversionTransfer(settlement, startPosition, endPosition);
         }
 
+        // All conversion transfers have reached their destination (or timed out).
+        // Fade the Wagon scene VFX out after the last conversion transfer arrives.
+        if (wagonConversionVfx != null && wagonConversionVfx.activeInHierarchy)
+            wagonConversionVfxFadeCoroutine = StartCoroutine(FadeOutWagonConversionVfx());
+
+        if (wagonFadeCoroutine != null)
+        {
+            StopCoroutine(wagonFadeCoroutine);
+            wagonFadeCoroutine = null;
+        }
+        SetWagonRedDustiumVisible(false);
         ResetFixedRedIconScale();
         fixedRedDustiumIcon.gameObject.SetActive(false);
         redDustiumValueText.gameObject.SetActive(false);
         blueDustiumHud.SetValueImmediate(settlement.BlueAfter);
-        if (!useSharedTransfer && transferBlur != null && transferBlurGraphic != null)
+        if (!useConversionVfx && transferBlur != null && transferBlurGraphic != null)
         {
             transferBlur.position = endPosition;
-            transferBlurGraphic.color = blueDustiumColor;
+            transferBlurGraphic.color = ConversionEndColor;
         }
         if (arrivalPulseDuration > 0f)
             yield return PlayArrivalPulse();
-        if (useSharedTransfer)
+        if (useConversionVfx)
             yield return PlayFinalCompletionRing();
 
         presentationCoroutine = null;
@@ -331,10 +587,10 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         presentationCanvasGroup.alpha = 0f;
         if (transferBlur != null)
             transferBlur.gameObject.SetActive(false);
-        gameObject.SetActive(false);
+        SetPresentationVisible(false);
     }
 
-    private IEnumerator PlayRepeatedAcquisitionTransfers(PendingResearchSettlementResult settlement)
+    private IEnumerator PlayRepeatedConversionTransfers(PendingResearchSettlementResult settlement)
     {
         int total = Mathf.Max(0, settlement.ConvertedRedDustium);
         float interval = Mathf.Max(0.005f, acquisitionLaunchInterval);
@@ -349,10 +605,10 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         int thisSession = ++conversionSession;
 
         RectTransform targetRect = blueDustiumHud.transform as RectTransform;
-        Camera sourceCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(fixedRedDustiumIcon, Camera.main);
-        Camera targetCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(targetRect, Camera.main);
-        Vector2 startScreen = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(fixedRedDustiumIcon, sourceCamera);
-        Vector2 endScreen = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(targetRect, targetCamera);
+        Camera sourceCamera = ResolveConversionUiCamera(fixedRedDustiumIcon);
+        Camera targetCamera = ResolveConversionUiCamera(targetRect);
+        Vector2 startScreen = GetConversionScreenCenter(fixedRedDustiumIcon, sourceCamera);
+        Vector2 endScreen = GetConversionScreenCenter(targetRect, targetCamera);
 
         for (int i = 0; i < numberOfTransfers; i++)
         {
@@ -361,20 +617,18 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             int transferAmount = total / numberOfTransfers +
                 (i < total % numberOfTransfers ? 1 : 0);
             launchedAmount += transferAmount;
-            ScreenSpaceTransferOrbEffect effect = Instantiate(acquisitionTransferEffectPrefab);
-            effect.ReachedDestination += () =>
+            // Spawn the selected VFX directly. Do not instantiate or attach
+            // The acquisition orb controller; this animation is fully self-contained.
+            int thisTransferAmount = transferAmount;
+            StartCoroutine(PlayDirectConversionVfx(startScreen, endScreen, () =>
             {
-                // An interrupted/closed presentation must not affect a future session.
                 if (thisSession != conversionSession || !isActiveAndEnabled)
                     return;
-                arrivedAmount += transferAmount;
+                arrivedAmount += thisTransferAmount;
                 arrivedCount++;
                 blueDustiumHud.SetValueImmediate(settlement.BlueBefore + arrivedAmount);
                 QueueArrivalPulse();
-            };
-            effect.PlayDetachedConversionGradient(startScreen, endScreen,
-                conversionOrbStartColor, conversionOrbEndColor,
-                conversionColorChangeStart, conversionColorChangeEnd);
+            }));
             redDustiumValueText.text = (total - launchedAmount).ToString();
             // One and only one complete icon pulse for each VFX launch.
             // Waiting for the pulse prevents rapid launches from merging into a
@@ -408,6 +662,165 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             yield return null;
         }
         blueDustiumHud.transform.localScale = hudOriginalScale;
+    }
+
+    // Only conversion uses this direct prefab path; the shared acquisition orb
+    // component is neither required nor created.
+    private static Camera ResolveConversionUiCamera(RectTransform rect)
+    {
+        Canvas canvas = rect != null ? rect.GetComponentInParent<Canvas>() : null;
+        return canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null : (canvas.worldCamera != null ? canvas.worldCamera : Camera.main);
+    }
+
+    private static Vector2 GetConversionScreenCenter(RectTransform rect, Camera camera)
+    {
+        Vector3[] corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        return RectTransformUtility.WorldToScreenPoint(camera, (corners[0] + corners[2]) * 0.5f);
+    }
+
+    private IEnumerator PlayDirectConversionVfx(Vector2 startScreen, Vector2 endScreen,
+        System.Action reachedDestination)
+    {
+        if (conversionVfxPrefab == null)
+            yield break;
+
+        // Screen-space overlay host keeps the source/destination aligned with HUD.
+        GameObject host = new GameObject("DustiumConversionVFX", typeof(RectTransform), typeof(Canvas));
+        activeConversionVfx.Add(host);
+        Canvas canvas = host.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 20000;
+        RectTransform root = host.GetComponent<RectTransform>();
+        root.localScale = Vector3.one;
+
+        // Inactive staging prevents prefab playOnAwake and renderer caches from
+        // showing an uncolored first frame.
+        GameObject stage = new GameObject("VFXPosition", typeof(RectTransform), typeof(CanvasGroup));
+        stage.SetActive(false);
+        RectTransform mover = stage.GetComponent<RectTransform>();
+        mover.SetParent(root, false);
+        mover.anchorMin = mover.anchorMax = new Vector2(0.5f, 0.5f);
+        mover.pivot = new Vector2(0.5f, 0.5f);
+        mover.sizeDelta = Vector2.zero;
+        CanvasGroup visibility = stage.GetComponent<CanvasGroup>();
+        visibility.alpha = 0f;
+        visibility.blocksRaycasts = false;
+        visibility.interactable = false;
+        MoveConversionToScreen(mover, root, startScreen);
+
+        GameObject visual = Instantiate(conversionVfxPrefab, mover, false);
+        visual.name = conversionVfxPrefab.name + "_Conversion";
+        visual.transform.localPosition = Vector3.zero;
+        ParticleSystem[] particles = visual.GetComponentsInChildren<ParticleSystem>(true);
+        TrailRenderer[] trails = visual.GetComponentsInChildren<TrailRenderer>(true);
+        SpriteRenderer[] sprites = visual.GetComponentsInChildren<SpriteRenderer>(true);
+        Graphic[] graphics = visual.GetComponentsInChildren<Graphic>(true);
+        // Color over Lifetime is responsible for the VFX color.
+        // Do not change particle Start Color every frame.
+        for (int i = 0; i < sprites.Length; i++)
+            if (sprites[i] != null) sprites[i].color = Color.white;
+        for (int i = 0; i < graphics.Length; i++)
+            if (graphics[i] != null) graphics[i].color = Color.white;
+
+        // Neutralize baked material tints on this instance only. Never modify
+        // the source prefab or shared acquisition-effect materials.
+        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null) continue;
+            Material[] materials = renderer.materials;
+            foreach (Material material in materials)
+            {
+                if (material == null) continue;
+                if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", Color.white);
+                if (material.HasProperty("_Color")) material.SetColor("_Color", Color.white);
+                if (material.HasProperty("_TintColor")) material.SetColor("_TintColor", Color.white);
+            }
+        }
+        foreach (TrailRenderer trail in trails)
+        {
+            if (trail == null) continue;
+            trail.Clear();
+            // Trails inherit their particle tint (where supported), rather than
+            // adding a second red/blue color gradient.
+            trail.colorGradient = CreateWhiteGradient();
+        }
+        foreach (ParticleSystem particle in particles)
+        {
+            if (particle == null) continue;
+            particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            particle.Clear(true);
+            var lifeColor = particle.colorOverLifetime;
+            lifeColor.enabled = true;
+            lifeColor.color = new ParticleSystem.MinMaxGradient(conversionColorOverLifetime);
+            var speedColor = particle.colorBySpeed;
+            speedColor.enabled = false;
+            var trailModule = particle.trails;
+            if (trailModule.enabled)
+            {
+                trailModule.inheritParticleColor = true;
+                trailModule.colorOverLifetime = new ParticleSystem.MinMaxGradient(Color.white);
+                trailModule.colorOverTrail = new ParticleSystem.MinMaxGradient(Color.white);
+            }
+            var main = particle.main;
+            main.playOnAwake = false;
+            main.prewarm = false;
+            main.startColor = new ParticleSystem.MinMaxGradient(Color.white);
+        }
+        stage.SetActive(true);
+        foreach (ParticleSystem particle in particles)
+        {
+            if (particle != null && particle.gameObject.activeInHierarchy)
+                particle.Play(true);
+        }
+        // Initial particle/UI mesh update happens before revealing the effect.
+        yield return null;
+        if (visibility != null) visibility.alpha = 1f;
+
+        float durationMin = Mathf.Min(conversionVfxDurationMultiplier.x, conversionVfxDurationMultiplier.y);
+        float durationMax = Mathf.Max(conversionVfxDurationMultiplier.x, conversionVfxDurationMultiplier.y);
+        float duration = Mathf.Max(0.01f, conversionVfxDuration * Random.Range(durationMin, durationMax));
+        float side = Random.value < 0.5f ? -1f : 1f;
+        float deviation = Random.Range(Mathf.Max(0f, Mathf.Min(conversionVfxSideSpread.x, conversionVfxSideSpread.y)),
+            Mathf.Max(0f, Mathf.Max(conversionVfxSideSpread.x, conversionVfxSideSpread.y)));
+        float vertical = Random.Range(Mathf.Min(conversionVfxVerticalSpread.x, conversionVfxVerticalSpread.y),
+            Mathf.Max(conversionVfxVerticalSpread.x, conversionVfxVerticalSpread.y));
+        Vector2 control = (startScreen + endScreen) * 0.5f + new Vector2(side * deviation, vertical) * 2f;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed = Mathf.Min(duration, elapsed + Time.unscaledDeltaTime);
+            float t = elapsed / duration;
+            t = t * t * (3f - 2f * t);
+            Vector2 point = (1f - t) * (1f - t) * startScreen +
+                2f * (1f - t) * t * control + t * t * endScreen;
+            MoveConversionToScreen(mover, root, point);
+            yield return null;
+        }
+        MoveConversionToScreen(mover, root, endScreen);
+        reachedDestination?.Invoke();
+        activeConversionVfx.Remove(host);
+        Destroy(host);
+    }
+
+    private static void MoveConversionToScreen(RectTransform mover, RectTransform root, Vector2 screenPosition)
+    {
+        if (mover == null || root == null) return;
+        Vector2 local;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(root, screenPosition, null, out local))
+            mover.anchoredPosition = local;
+    }
+
+    private static Gradient CreateWhiteGradient()
+    {
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(
+            new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+            new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
+        return gradient;
     }
 
     private void QueueArrivalPulse()
@@ -485,10 +898,9 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             if (transferBlur != null && transferBlurGraphic != null)
             {
                 transferBlur.position = position;
-                float colorProgress = Mathf.InverseLerp(
-                    Mathf.Clamp01(colorTransitionStart), 1f, progress);
+                float colorProgress = progress;
                 transferBlurGraphic.color = EvaluateTransferColor(
-                    redDustiumColor, blueDustiumColor, colorProgress);
+                    ConversionStartColor, ConversionEndColor, colorProgress);
             }
             int remainingRedDustium = CalculateRemainingRedDustium(
                 settlement.ConvertedRedDustium, progress);
@@ -593,6 +1005,13 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        SetWagonConversionVfxActive(false);
+        if (wagonFadeCoroutine != null)
+        {
+            StopCoroutine(wagonFadeCoroutine);
+            wagonFadeCoroutine = null;
+        }
+        SetWagonRedDustiumVisible(false);
         ResetFixedRedIconScale();
         if (redLaunchGlow != null)
         {
@@ -613,6 +1032,9 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             finalCompletionRing.gameObject.SetActive(false);
         }
         conversionSession++;
+        foreach (GameObject vfx in activeConversionVfx)
+            if (vfx != null) Destroy(vfx);
+        activeConversionVfx.Clear();
         if (presentationCoroutine != null)
         {
             StopCoroutine(presentationCoroutine);

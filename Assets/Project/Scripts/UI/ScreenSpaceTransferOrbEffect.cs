@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -76,6 +77,9 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     private float conversionColorStart;
     private float conversionColorEnd;
     private ParticleSystem.Particle[][] conversionParticleBuffers;
+    // Conversion-only material copies: prefab particle shaders can multiply vertex colors
+    // by an existing blue material tint, making an otherwise red particle look blue.
+    private readonly List<Material> conversionMaterialInstances = new List<Material>();
     // Each spawned transfer owns these visuals. No shared prefab/material tint is changed.
     private TrailRenderer[] conversionTrails;
     private SpriteRenderer[] conversionSprites;
@@ -83,6 +87,26 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     private Color[] conversionSpriteBaseColors;
     private Color[] conversionUiBaseColors;
     public bool HasMovingVfxPrefab => vfxPrefab != null;
+
+    /// <summary>
+    /// Allows callers to supply a plain VFX prefab, without a controller component
+    /// on that prefab. Intended for runtime-created conversion transfer controllers.
+    /// Other existing uses of this class remain unchanged.
+    /// </summary>
+    public void ConfigureMovingVfx(GameObject prefab, float travelDuration,
+        Vector2 sideSpread, Vector2 verticalSpread, Vector2 durationRange)
+    {
+        if (started)
+        {
+            Debug.LogWarning("[ScreenSpaceTransferOrbEffect] Cannot configure an active transfer.", this);
+            return;
+        }
+        vfxPrefab = prefab;
+        duration = Mathf.Max(0.01f, travelDuration);
+        conversionSideSpreadRange = sideSpread;
+        conversionVerticalSpreadRange = verticalSpread;
+        durationMultiplierRange = durationRange;
+    }
     /// <summary>Invoked the instant the moving VFX reaches its destination, before trail cleanup.</summary>
     public event System.Action ReachedDestination;
 
@@ -230,6 +254,9 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
                 conversionSpriteBaseColors[i] = conversionSprites[i].color;
             for (int i = 0; i < conversionUiGraphics.Length; i++)
                 conversionUiBaseColors[i] = conversionUiGraphics[i].color;
+            // Neutralize existing blue material tints on this instance only.
+            // Other artifact/compound reward effects keep their original materials.
+            PrepareConversionMaterials();
             foreach (TrailRenderer trail in conversionTrails)
                 if (trail != null) trail.Clear();
             foreach (ParticleSystem particle in particles)
@@ -286,6 +313,67 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         yield return smoothRandomLaunch
             ? PlaySmoothRandomRoutine(startScreen, endScreen)
             : PlayRoutine(startScreen, endScreen);
+    }
+
+    // Material color multiplies particle vertex/start colors. A blue material tint can
+    // therefore make the beginning of a red-to-blue transfer appear blue, regardless
+    // of ParticleSystem.main.startColor. Never edit sharedMaterial in place.
+    private void PrepareConversionMaterials()
+    {
+        if (vfxInstance == null) return;
+        foreach (Renderer renderer in vfxInstance.GetComponentsInChildren<Renderer>(true))
+        {
+            if (renderer == null) continue;
+            Material[] originals = renderer.sharedMaterials;
+            bool changed = false;
+            for (int i = 0; i < originals.Length; i++)
+            {
+                if (originals[i] == null) continue;
+                Material copy = new Material(originals[i]);
+                copy.name = originals[i].name + " (Conversion Neutral Tint)";
+                NeutralizeMaterialTint(copy);
+                conversionMaterialInstances.Add(copy);
+                originals[i] = copy;
+                changed = true;
+            }
+            if (changed) renderer.sharedMaterials = originals;
+
+            // ParticleSystemRenderer has a separate material for particle trails.
+            if (renderer is ParticleSystemRenderer particleRenderer &&
+                particleRenderer.trailMaterial != null)
+            {
+                Material copy = new Material(particleRenderer.trailMaterial);
+                copy.name += " (Conversion Trail Neutral Tint)";
+                NeutralizeMaterialTint(copy);
+                conversionMaterialInstances.Add(copy);
+                particleRenderer.trailMaterial = copy;
+            }
+        }
+        foreach (Graphic graphic in conversionUiGraphics)
+        {
+            if (graphic == null || graphic.material == null) continue;
+            Material copy = new Material(graphic.material);
+            copy.name += " (Conversion UI Neutral Tint)";
+            NeutralizeMaterialTint(copy);
+            conversionMaterialInstances.Add(copy);
+            graphic.material = copy;
+        }
+    }
+
+    private static void NeutralizeMaterialTint(Material material)
+    {
+        // These are the common URP, built-in particle and UI tint properties.
+        // Preserve the shader, texture, blending and per-pixel alpha.
+        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", Color.white);
+        if (material.HasProperty("_Color")) material.SetColor("_Color", Color.white);
+        if (material.HasProperty("_TintColor")) material.SetColor("_TintColor", Color.white);
+    }
+
+    private void OnDestroy()
+    {
+        foreach (Material material in conversionMaterialInstances)
+            if (material != null) Destroy(material);
+        conversionMaterialInstances.Clear();
     }
 
     // Conversion-only trajectory: one quadratic Bezier from the source to the HUD.
