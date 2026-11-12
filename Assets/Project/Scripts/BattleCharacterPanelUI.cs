@@ -181,8 +181,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [Tooltip("현재 선택 캐릭터의 방향을 반전해 현재 타임라인 슬롯에 예약합니다. 비어 있으면 Active/Flip을 자동 탐색합니다.")]
     [SerializeField] private Button flipButton;
 
-    [Tooltip("현재 턴에 플레이어 캐릭터가 등록한 모든 예약을 취소합니다. 비어 있으면 BattleCharacterPanel/ResetButton을 자동 탐색합니다.")]
-    [SerializeField] private Button resetButton;
+    [Tooltip("마지막 플레이어 예약 행동을 취소합니다. 비어 있으면 BattleCharacterPanel/CancelButton을 자동 탐색합니다.")]
+    [SerializeField] private Button cancelButton;
+
+    [Tooltip("마지막으로 취소한 플레이어 예약 행동을 복원합니다. 비어 있으면 BattleCharacterPanel/RestoreButton을 자동 탐색합니다.")]
+    [SerializeField] private Button restoreButton;
 
     [Header("Item Button")]
     private Button itemButton;
@@ -608,6 +611,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         skillReservationTooltipRestarting = false;
         pendingSkillReservationVersion = -1;
         pendingSkillReservationButton = null;
+        skillEffectTooltipReadyFrame = -1;
+        HideSkillDetailEffectHover();
         isSkillTooltipVisible = false; for (int i = 0; i < PartySlotCount; i++)
         {
             if (runeSlideCoroutines[i] != null)
@@ -975,6 +980,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void ResolveNewActiveReferences()
     {
+        if (cancelButton == null) cancelButton = EnsureButton(FindDirectChild(transform, "CancelButton"));
+        if (restoreButton == null) restoreButton = EnsureButton(FindDirectChild(transform, "RestoreButton"));
+
         Transform active = FindDirectChild(transform, "Active");
         if (active == null)
             return;
@@ -989,7 +997,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (moveButton == null) moveButton = EnsureButton(move);
         if (flipButton == null) flipButton = EnsureButton(flip);
-        if (resetButton == null) resetButton = EnsureButton(FindDirectChild(transform, "ResetButton"));
         if (itemButton == null) itemButton = EnsureButton(compound);
         if (skill01Button == null) skill01Button = EnsureButton(skill01);
         if (skill02Button == null) skill02Button = EnsureButton(skill02);
@@ -2821,8 +2828,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
-            OnResetButtonClicked();
     }
 
     private void StartKeyboardSkillWithRangePreview(int displaySlotIndex, Button sourceButton)
@@ -2880,9 +2885,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void LateUpdate()
     {
         UpdateSkillTooltipHoverRetention();
-        UpdateAllSkillEffectTooltips();
         if (isSkillTooltipVisible)
             UpdateSkillTooltipPosition();
+        UpdateAllSkillEffectTooltips();
         if (isEquipmentTooltipVisible)
             UpdateEquipmentTooltipPosition();
 
@@ -3829,7 +3834,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
             BattleCharacterSkillLineFeedbackMode.Instant);
 
         ConfigureButtonHover(
-            resetButton,
+            cancelButton,
+            null,
+            null,
+            null,
+            BattleCharacterSkillLineFeedbackMode.Instant);
+
+        ConfigureButtonHover(
+            restoreButton,
             null,
             null,
             null,
@@ -4030,8 +4042,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (flipButton != null)
             flipButton.onClick.AddListener(OnFlipButtonClicked);
 
-        if (resetButton != null)
-            resetButton.onClick.AddListener(OnResetButtonClicked);
+        if (cancelButton != null)
+            cancelButton.onClick.AddListener(OnCancelButtonClicked);
+
+        if (restoreButton != null)
+            restoreButton.onClick.AddListener(OnRestoreButtonClicked);
 
         if (itemButton != null)
             itemButton.onClick.AddListener(OnItemButtonClicked);
@@ -4045,8 +4060,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (flipButton != null)
             flipButton.onClick.RemoveListener(OnFlipButtonClicked);
 
-        if (resetButton != null)
-            resetButton.onClick.RemoveListener(OnResetButtonClicked);
+        if (cancelButton != null)
+            cancelButton.onClick.RemoveListener(OnCancelButtonClicked);
+
+        if (restoreButton != null)
+            restoreButton.onClick.RemoveListener(OnRestoreButtonClicked);
 
         if (itemButton != null)
             itemButton.onClick.RemoveListener(OnItemButtonClicked);
@@ -4098,8 +4116,15 @@ public class BattleCharacterPanelUI : MonoBehaviour
         AudioManager.Instance?.PlaySfx(moveFlipClickSfxId);
     }
 
-    private void OnResetButtonClicked()
+    private void OnCancelButtonClicked()
     {
+        if (!CanUseReservationHistoryButtons(
+                UIPanelButton.IsMenuPanelOpen,
+                TutorialBattleSequence.IsPresentationRunning))
+        {
+            return;
+        }
+
         EnsureTurnExecutor();
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
@@ -4111,9 +4136,41 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        resetButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
-        battleTimelineController.ClearAllPlayerReservations();
+        cancelButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
+        battleTimelineController.UndoLastPlayerReservation();
         AudioManager.Instance?.PlaySfx(resetCancelSfxId);
+    }
+
+    private void OnRestoreButtonClicked()
+    {
+        if (!CanUseReservationHistoryButtons(
+                UIPanelButton.IsMenuPanelOpen,
+                TutorialBattleSequence.IsPresentationRunning))
+        {
+            return;
+        }
+
+        EnsureTurnExecutor();
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        EnsureBattleTimelineController();
+        if (battleTimelineController == null)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
+            return;
+        }
+
+        restoreButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
+        battleTimelineController.RedoLastPlayerReservation();
+        AudioManager.Instance?.PlaySfx(resetCancelSfxId);
+    }
+
+    public static bool CanUseReservationHistoryButtons(
+        bool menuPanelOpen,
+        bool tutorialPresentationRunning)
+    {
+        return !menuPanelOpen && !tutorialPresentationRunning;
     }
 
     private void OnItemButtonClicked()
@@ -4769,6 +4826,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private IEnumerator RestartSkillTooltipAfterReservationRoutine(Button sourceButton)
     {
         skillReservationTooltipRestarting = true;
+        skillEffectTooltipReadyFrame = -1;
         if (skillTooltipFadeCoroutine != null)
         {
             StopCoroutine(skillTooltipFadeCoroutine);
@@ -4919,6 +4977,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         // 첫 프레임부터 호버한 버튼의 중심을 기준으로 위치를 배치합니다.
         UpdateSkillTooltipPosition();
+        skillEffectTooltipReadyFrame = Time.frameCount + 1;
         StartSkillTooltipFade(1f, skillTooltipFadeInDuration, false);
     }
 
@@ -5114,11 +5173,18 @@ public class BattleCharacterPanelUI : MonoBehaviour
     }
 
     private string activeSkillEffectSignature;
+    private int skillEffectTooltipReadyFrame = -1;
+
+    public static bool IsSkillEffectTooltipLayoutReady(int currentFrame, int readyFrame)
+    {
+        return readyFrame >= 0 && currentFrame >= readyFrame;
+    }
 
     // Display all distinct linked effects at once; no hover over the detail text is needed.
     private void UpdateAllSkillEffectTooltips()
     {
         if (!isSkillTooltipVisible || skillReservationTooltipRestarting ||
+            !IsSkillEffectTooltipLayoutReady(Time.frameCount, skillEffectTooltipReadyFrame) ||
             !IsPointerOverSkillTooltipSource() || skillTooltipDetailText == null ||
             !skillTooltipDetailText.gameObject.activeInHierarchy)
         {
@@ -5146,7 +5212,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         if (activeSkillEffectSignature == signature)
         {
-            detailEffectTooltip.UpdateSkillEffectListPosition(this, skillTooltipRectTransform, skillEffectTooltipAnchor, skillEffectTooltipOffset, skillEffectTooltipVerticalSpacing);
+            detailEffectTooltip.UpdateSkillEffectListPosition(
+                this,
+                skillTooltipRectTransform,
+                skillEffectTooltipAnchor,
+                skillEffectTooltipOffset,
+                skillEffectTooltipVerticalSpacing);
             return;
         }
 
@@ -5159,12 +5230,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 detailEffectPreview.Add(new StatusEffectRuntimeData(id, 1));
         }
         detailEffectTooltip.ShowSkillEffectList(this, detailEffectPreview, skillTooltipRectTransform, skillEffectTooltipAnchor, skillEffectTooltipOffset, skillEffectTooltipVerticalSpacing);
-        SkillEffectTooltipDownwardLayout.Apply(
-            detailEffectTooltip,
-            skillTooltipRectTransform,
-            skillEffectTooltipAnchor,
-            skillEffectTooltipOffset,
-            skillEffectTooltipVerticalSpacing);
         activeSkillEffectSignature = signature;
     }
 
@@ -5182,6 +5247,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         skillReservationTooltipCoroutine = null;
         skillReservationTooltipRestarting = false;
         HideSkillDetailEffectHover();
+        skillEffectTooltipReadyFrame = -1;
         isSkillTooltipVisible = false;
         hoveredActiveSkillButton = null;
 

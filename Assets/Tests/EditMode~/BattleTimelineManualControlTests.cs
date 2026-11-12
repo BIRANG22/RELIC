@@ -2,11 +2,13 @@ using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleTimelineManualControlTests
 {
     private GameObject controllerObject;
     private GameObject[] slotObjects;
+    private GameObject characterPanelObject;
 
     [Test]
     public void RedoModifier_UsesEitherAltKey()
@@ -14,6 +16,34 @@ public class BattleTimelineManualControlTests
         Assert.That(BattleTimelineController.IsRedoModifierPressed(true, false), Is.True);
         Assert.That(BattleTimelineController.IsRedoModifierPressed(false, true), Is.True);
         Assert.That(BattleTimelineController.IsRedoModifierPressed(false, false), Is.False);
+    }
+
+    [TestCase(false, false, true)]
+    [TestCase(true, false, false)]
+    [TestCase(false, true, false)]
+    [TestCase(true, true, false)]
+    public void ReservationHistoryButtons_RespectMenuAndTutorialInputLocks(
+        bool menuOpen,
+        bool tutorialPresentationRunning,
+        bool expected)
+    {
+        Assert.That(
+            BattleCharacterPanelUI.CanUseReservationHistoryButtons(menuOpen, tutorialPresentationRunning),
+            Is.EqualTo(expected));
+    }
+
+    [TestCase(100, -1, false)]
+    [TestCase(100, 101, false)]
+    [TestCase(101, 101, true)]
+    [TestCase(102, 101, true)]
+    public void SkillEffectTooltip_WaitsUntilBaseTooltipLayoutReadyFrame(
+        int currentFrame,
+        int readyFrame,
+        bool expected)
+    {
+        Assert.That(
+            BattleCharacterPanelUI.IsSkillEffectTooltipLayoutReady(currentFrame, readyFrame),
+            Is.EqualTo(expected));
     }
 
     [TearDown]
@@ -27,6 +57,9 @@ public class BattleTimelineManualControlTests
 
         if (controllerObject != null)
             Object.DestroyImmediate(controllerObject);
+
+        if (characterPanelObject != null)
+            Object.DestroyImmediate(characterPanelObject);
     }
 
     [Test]
@@ -137,6 +170,29 @@ public class BattleTimelineManualControlTests
         Assert.That(controller.RedoLastPlayerReservation(), Is.True);
 
         Assert.That(Slot(0).Commands, Is.EqualTo(new[] { before, restored, after }));
+    }
+
+    [Test]
+    public void CancelAndRestoreButtons_InvokeReservationUndoAndRedo()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("ButtonHistory", BattleDirection.Right);
+        PlayerReservedCommand command = Attack(runtime);
+        Assert.That(controller.ConfirmPlayerCommand(0, command), Is.True);
+
+        characterPanelObject = new GameObject("BattleCharacterPanel", typeof(RectTransform));
+        characterPanelObject.SetActive(false);
+        Button cancelButton = CreateButton(characterPanelObject.transform, "CancelButton");
+        Button restoreButton = CreateButton(characterPanelObject.transform, "RestoreButton");
+        BattleCharacterPanelUI panel = characterPanelObject.AddComponent<BattleCharacterPanelUI>();
+        SetPrivate(panel, "battleTimelineController", controller);
+        InvokePrivate(panel, "Awake");
+
+        cancelButton.onClick.Invoke();
+        Assert.That(Slot(0).Commands, Is.Empty);
+
+        restoreButton.onClick.Invoke();
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { command }));
     }
 
     [Test]
@@ -518,6 +574,13 @@ public class BattleTimelineManualControlTests
         FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(field, Is.Not.Null, fieldName);
         field.SetValue(target, value);
+    }
+
+    private static Button CreateButton(Transform parent, string name)
+    {
+        GameObject buttonObject = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+        buttonObject.transform.SetParent(parent, false);
+        return buttonObject.GetComponent<Button>();
     }
 
     private static void InvokePrivate(object target, string methodName)
