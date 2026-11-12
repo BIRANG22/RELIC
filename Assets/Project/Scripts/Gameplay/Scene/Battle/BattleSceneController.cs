@@ -82,6 +82,10 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private TutorialPanelController tutorialPanelPrefab;
     [SerializeField] private Transform tutorialPanelParent;
 
+    [Header("New Tutorial Guide (after four dialogues)")]
+    [SerializeField] private TutorialGuideController tutorialGuidePrefab;
+    [SerializeField] private Transform tutorialGuideParent;
+
     private bool isTutorialSkipProcessing;
 
     [Header("Room Change Auto Close")]
@@ -396,6 +400,37 @@ public class BattleSceneController : MonoBehaviour
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
         isStarted = true;
+    }
+
+    // New data-driven tutorial guide. This is separate from the demo entry panel.
+    // Called only when the four opening dialogues have fully closed.
+    public void SpawnTutorialGuideAfterDialogue(string indexId)
+    {
+        if (tutorialGuidePrefab == null)
+        {
+            Debug.LogError("[BattleSceneController] TutorialGuidePrefab is not assigned. Assign the NEW TutorialGuidePanel prefab with TutorialGuideController.", this);
+            return;
+        }
+
+        Transform parent = tutorialGuideParent != null ? tutorialGuideParent : tutorialPanelParent;
+        if (parent == null)
+        {
+            Debug.LogError("[BattleSceneController] TutorialGuideParent is not assigned.", this);
+            return;
+        }
+
+        TutorialGuideController existing = parent.GetComponentInChildren<TutorialGuideController>(true);
+        if (existing != null)
+        {
+            existing.OpenIndex(indexId);
+            existing.transform.SetAsLastSibling();
+            return;
+        }
+
+        TutorialGuideController panel = Instantiate(tutorialGuidePrefab, parent, false);
+        panel.name = tutorialGuidePrefab.gameObject.name + "(Clone)";
+        panel.transform.SetAsLastSibling();
+        panel.OpenIndex(indexId);
     }
 
     private void TrySpawnTutorialEntryGuide()
