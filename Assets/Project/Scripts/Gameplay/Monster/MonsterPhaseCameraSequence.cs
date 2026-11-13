@@ -14,6 +14,12 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
     public class CameraStep
     {
         public bool enabled = true;
+        [Header("Step SFX (Sound DB)")]
+        [Tooltip("이 카메라 스텝 시작 시 재생할 Sound DB SFX ID입니다. 비워두면 재생하지 않습니다.")]
+        public string sfxId;
+        [Tooltip("스텝 SFX 볼륨 배율입니다 (0~1).")]
+        [Range(0f, 1f)] public float sfxVolume = 1f;
+
         [Header("Global Light 2D")]
         [Tooltip("Override the assigned Global Light 2D intensity during this step.")]
         public bool overrideLightIntensity = false;
@@ -60,6 +66,10 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
     [Tooltip("BattleUnitAnimator on the same monster. If empty, resolved from this object, its parents, or children.")]
     [SerializeField] private BattleUnitAnimator unitAnimator;
 
+    // Camera steps are executed by BattleCameraController. Match its per-step
+    // movement, shake, and hold timing without requiring changes to that controller.
+    private Coroutine stepSfxRoutine;
+
     private Coroutine phaseAnimationMonitor;
     private bool phaseAnimationMonitoring;
     private bool phaseAnimationComplete = true;
@@ -75,12 +85,55 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
         if (phaseAnimationMonitor != null)
             StopCoroutine(phaseAnimationMonitor);
         phaseAnimationMonitor = null;
+        if (stepSfxRoutine != null)
+            StopCoroutine(stepSfxRoutine);
+        stepSfxRoutine = null;
+        if (enablePhaseCamera && isActiveAndEnabled && steps != null)
+            stepSfxRoutine = StartCoroutine(PlayStepSfxTimeline());
+
         phaseAnimationSeen = false;
         phaseAnimationInterrupted = false;
         phaseAnimationMonitoring = phaseAnimator != null && !string.IsNullOrEmpty(phaseStateName);
         phaseAnimationComplete = !phaseAnimationMonitoring;
         if (phaseAnimationMonitoring && isActiveAndEnabled)
             phaseAnimationMonitor = StartCoroutine(MonitorPhaseAnimation());
+    }
+
+    private IEnumerator PlayStepSfxTimeline()
+    {
+        for (int i = 0; i < steps.Length; i++)
+        {
+            CameraStep step = steps[i];
+            if (step == null || !step.enabled)
+                continue;
+
+            PlayStepSfx(step);
+
+            // The controller moves first, then shakes, then holds each step.
+            float elapsed = 0f;
+            float time = Mathf.Max(0f, step.duration)
+                + (step.shake ? Mathf.Max(0f, step.shakeDuration) : 0f)
+                + Mathf.Max(0f, step.holdDuration);
+            while (elapsed < time)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+        stepSfxRoutine = null;
+    }
+
+    // Can also be called directly from BattleCameraController when precise
+    // step-boundary synchronization is required.
+    public void PlayStepSfx(CameraStep step)
+    {
+        if (step == null || string.IsNullOrWhiteSpace(step.sfxId))
+            return;
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager != null)
+            audioManager.PlaySfx(step.sfxId.Trim(), Mathf.Clamp01(step.sfxVolume));
+        else
+            Debug.LogWarning("[MonsterPhaseCameraSequence] AudioManager.Instance가 없어 스텝 SFX를 재생할 수 없습니다.", this);
     }
 
     private IEnumerator MonitorPhaseAnimation()
@@ -176,6 +229,9 @@ public class MonsterPhaseCameraSequence : MonoBehaviour
 
     private void OnDisable()
     {
+        if (stepSfxRoutine != null)
+            StopCoroutine(stepSfxRoutine);
+        stepSfxRoutine = null;
         if (phaseAnimationMonitor != null)
             StopCoroutine(phaseAnimationMonitor);
         phaseAnimationMonitor = null;

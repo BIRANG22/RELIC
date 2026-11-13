@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,7 +10,9 @@ public class ButtonAnimationCoroutine :
     MonoBehaviour,
     IPointerEnterHandler,
     IPointerExitHandler,
-    IPointerClickHandler
+    IPointerClickHandler,
+    IPointerDownHandler,
+    IPointerUpHandler
 {
     [Header("시작 화면 차단")]
     [Tooltip("이 오브젝트가 활성화되어 있는 동안 버튼 입력이 동작하지 않습니다.")]
@@ -55,6 +57,9 @@ public class ButtonAnimationCoroutine :
     [Tooltip("다른 버튼에 호버했을 때 기존 클릭 상태를 해제합니다.")]
     [SerializeField] private bool clearClickedStateWhenAnotherButtonHovered = true;
 
+    [Tooltip("마우스를 놓은 후 Unity Button의 선택을 해제하고 실제 Normal 상태로 복귀합니다. 기본 비활성화입니다.")]
+    [SerializeField] private bool usePressOnlyClickedState = false;
+
     [Header("Hover Hit Area")]
     [Tooltip("호버 판정에 사용할 영역입니다. 비워두면 이 스크립트가 붙은 RectTransform을 사용합니다.")]
     [SerializeField] private RectTransform hoverHitArea;
@@ -79,6 +84,9 @@ public class ButtonAnimationCoroutine :
     private bool interactionEnabled = true;
 
     private Coroutine visualCoroutine;
+
+    // Press Only 옵션에서만 Button의 기본 Color Tint를 잠시 조정합니다.
+    private Coroutine pressOnlyResetCoroutine;
 
     public void SetClickSoundEnabled(bool enabled)
     {
@@ -146,6 +154,11 @@ public class ButtonAnimationCoroutine :
 
     private void OnDisable()
     {
+        if (pressOnlyResetCoroutine != null)
+        {
+            StopCoroutine(pressOnlyResetCoroutine);
+            pressOnlyResetCoroutine = null;
+        }
         ForceClearState(false);
     }
 
@@ -327,10 +340,69 @@ public class ButtonAnimationCoroutine :
         return hoverHitArea;
     }
 
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (!usePressOnlyClickedState || IsInteractionBlocked()) return;
+
+        if (pressOnlyResetCoroutine != null)
+        {
+            StopCoroutine(pressOnlyResetCoroutine);
+            pressOnlyResetCoroutine = null;
+        }
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (!usePressOnlyClickedState || IsInteractionBlocked()) return;
+        SchedulePressOnlyNormalReset();
+    }
+
+    // 클릭 이벤트가 모두 처리된 뒤 Button 자체의 선택/호버 상태를 해제합니다.
+    private void SchedulePressOnlyNormalReset()
+    {
+        if (pressOnlyResetCoroutine != null) StopCoroutine(pressOnlyResetCoroutine);
+        pressOnlyResetCoroutine = StartCoroutine(ResetPressOnlyToNormalAfterClick());
+    }
+
+    private IEnumerator ResetPressOnlyToNormalAfterClick()
+    {
+        // Button.onClick / EventSystem이 끝난 다음 최종 상태를 정리합니다.
+        yield return new WaitForEndOfFrame();
+        pressOnlyResetCoroutine = null;
+        if (!usePressOnlyClickedState || IsInteractionBlocked()) yield break;
+
+        Button button = GetComponent<Button>();
+        if (button == null) button = GetComponentInParent<Button>();
+
+        EventSystem eventSystem = EventSystem.current;
+        if (button != null && eventSystem != null)
+        {
+            if (eventSystem.currentSelectedGameObject == button.gameObject)
+                eventSystem.SetSelectedGameObject(null);
+
+            // Selectable.currentSelectionState는 내부 포인터 상태도 참조합니다.
+            // 실제 Normal이 되도록 Button의 포인터 내부 플래그를 해제합니다.
+            button.OnPointerExit(new PointerEventData(eventSystem));
+        }
+
+        isClicked = false;
+        isPointerInside = false;
+        hasCachedHoverScreenRect = false;
+        pointerOutsideTime = 0f;
+        if (currentClickedButton == this) currentClickedButton = null;
+        StartVisualAnimationIfNeeded();
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         if (IsInteractionBlocked())
         {
+            return;
+        }
+
+        if (usePressOnlyClickedState)
+        {
+            SchedulePressOnlyNormalReset();
             return;
         }
 
