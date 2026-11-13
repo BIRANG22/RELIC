@@ -891,9 +891,9 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: boss.phase
+  - id: exploration.faild
     aliases: []
-    clip: {fileID: 8300000, guid: 4812ad74eebfb415c89f624086adc518, type: 3}
+    clip: {fileID: 8300000, guid: 841891e8732234db8a9465da95f27fe5, type: 3}
     volume: 0.3
     pitch: 1
     loop: 0
