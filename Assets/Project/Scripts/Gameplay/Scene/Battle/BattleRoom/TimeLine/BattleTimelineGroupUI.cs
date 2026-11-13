@@ -2340,7 +2340,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
         Color rootColor = ownerDead
             ? deadReservationColor
-            : entry.IsPlayer && entry.PlayerCommand != null && entry.PlayerCommand.FlipBeforeAction
+            : entry.HasMergedFacingFlip
                 ? flipMergedHighlightColor
                 : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
         Color contentColor = ownerDead ? deadReservationColor : Color.white;

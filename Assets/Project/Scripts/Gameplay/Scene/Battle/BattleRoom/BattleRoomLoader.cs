@@ -1937,6 +1937,7 @@ public class BattleRoomLoader : MonoBehaviour
                         RangeOriginCasterGridIndex = command.RangeOriginCasterGridIndex,
                         HasForcedDirection = command.HasForcedDirection,
                         ForcedDirection = (int)command.ForcedDirection,
+                        FlipBeforeAction = command.FlipBeforeAction,
                         IsPortalMove = command.IsPortalMove,
                         HasExplicitRangeResult = command.HasExplicitRangeResult,
                         AttackSpatialPolicy = (int)command.AttackSpatialPolicy,

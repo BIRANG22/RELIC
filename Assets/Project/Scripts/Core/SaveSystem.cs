@@ -616,6 +616,7 @@ public class SaveSystem : Singleton<SaveSystem>
                 RangeOriginCasterGridIndex = item.RangeOriginCasterGridIndex,
                 HasForcedDirection = item.HasForcedDirection,
                 ForcedDirection = item.ForcedDirection,
+                FlipBeforeAction = item.FlipBeforeAction,
                 IsPortalMove = item.IsPortalMove,
                 HasExplicitRangeResult = item.HasExplicitRangeResult,
                 AttackSpatialPolicy = item.AttackSpatialPolicy,
@@ -1297,6 +1298,7 @@ public class BattleRoomMonsterCommandSaveData
     public int RangeOriginCasterGridIndex = -1;
     public bool HasForcedDirection;
     public int ForcedDirection;
+    public bool FlipBeforeAction;
     public bool IsPortalMove;
     public bool HasExplicitRangeResult;
     public int AttackSpatialPolicy;

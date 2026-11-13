@@ -82,6 +82,42 @@ public static class BattleMonsterCommandRangeSnapshotPolicy
     }
 }
 
+public static class MonsterFlipBeforeActionPolicy
+{
+    public static BattleDirection ResolveProjectedDirection(
+        BattleDirection projectedDirection,
+        bool isMoveAction,
+        Vector2Int moveOffset,
+        bool hasForcedDirection,
+        BattleDirection forcedDirection,
+        out bool flipBeforeAction)
+    {
+        flipBeforeAction = false;
+
+        if (isMoveAction)
+        {
+            if (moveOffset.x != 0)
+                return moveOffset.x > 0 ? BattleDirection.Right : BattleDirection.Left;
+
+            if (hasForcedDirection)
+            {
+                flipBeforeAction = projectedDirection != forcedDirection;
+                return forcedDirection;
+            }
+
+            return projectedDirection;
+        }
+
+        if (hasForcedDirection)
+        {
+            flipBeforeAction = projectedDirection != forcedDirection;
+            return forcedDirection;
+        }
+
+        return projectedDirection;
+    }
+}
+
 public class MonsterReservedCommand
 {
     public MonsterRuntimeData UserRuntime { get; private set; }
@@ -102,6 +138,7 @@ public class MonsterReservedCommand
     public int RangeOriginCasterGridIndex { get; private set; } = -1;
     public bool HasForcedDirection { get; private set; }
     public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
+    public bool FlipBeforeAction { get; private set; }
     public bool IsPortalMove { get; private set; }
     public bool HasExplicitRangeResult { get; private set; }
     public MonsterAttackSpatialPolicy AttackSpatialPolicy { get; private set; }
@@ -172,6 +209,11 @@ public class MonsterReservedCommand
     public void ClearForcedDirection()
     {
         HasForcedDirection = false;
+    }
+
+    public void SetFlipBeforeAction(bool enabled = true)
+    {
+        FlipBeforeAction = enabled;
     }
 
     public void SetPortalMove(bool isPortalMove)

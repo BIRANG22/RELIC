@@ -159,6 +159,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 command.SetRangeOriginGridIndex(saved.RangeOriginGridIndex);
                 command.SetRangeOriginCasterGridIndex(saved.RangeOriginCasterGridIndex);
                 command.SetPortalMove(saved.IsPortalMove);
+                command.SetFlipBeforeAction(saved.FlipBeforeAction);
                 command.SetAttackSpatialPolicy(
                     MonsterAttackSpatialPolicyResolver.ResolveSaved(
                         saved.AttackSpatialPolicy,
@@ -925,7 +926,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             CinderAI.SetPreviouslyVacatedCells(GetPreviouslyVacatedMonsterCells(monsterUnits, plans));
             CinderAI.SetReservedDestinationCells(GetPreviouslyReservedMonsterDestinations(monsterUnits, plans));
             Stopwatch aiWatch = logReservationPerformance ? Stopwatch.StartNew() : null;
-            MonsterAIPlan plan = monsterUnit.CreateAIPlan(context, gridManager);
+            BattleDirection projectedDirection = runtime.Direction;
+            MonsterAIPlan plan = null;
+            try
+            {
+                plan = monsterUnit.CreateAIPlan(context, gridManager);
+                PreserveLegacyPlanningFacingIntent(plan, runtime.Direction);
+            }
+            finally
+            {
+                RestoreMonsterPlanningDirection(monsterUnit, projectedDirection);
+            }
             CinderAI.SetPreviouslyVacatedCells(null);
             CinderAI.SetReservedDestinationCells(null);
             if (aiWatch != null)
@@ -1129,22 +1140,83 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                     continue;
                 }
 
-                // 신더는 실제 이동이 예약된 경우에만 방향을 미리 바꿉니다.
-                if (isCinderMove && action.MoveOffset.x != 0)
-                {
-                    BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
-                    if (facing != null) facing.FaceRight(action.MoveOffset.x > 0);
-                    runtime.Direction = action.MoveOffset.x > 0
-                        ? BattleDirection.Right : BattleDirection.Left;
-                }
-
                 plans.Add(new MonsterReservedCommandPlan(slotIndex, command));
                 if (action.SameSlotGroup >= 0 && !resolvedGroupSlots.ContainsKey(action.SameSlotGroup))
                     resolvedGroupSlots.Add(action.SameSlotGroup, slotIndex);
             }
         }
 
+        AssignMonsterMergedFlips(plans);
         return plans;
+    }
+
+    private void AssignMonsterMergedFlips(List<MonsterReservedCommandPlan> plans)
+    {
+        if (plans == null || plans.Count <= 0 || timelineController == null)
+            return;
+
+        Dictionary<string, BattleDirection> projectedDirections = new();
+
+        for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
+        {
+            for (int i = 0; i < plans.Count; i++)
+            {
+                MonsterReservedCommandPlan planned = plans[i];
+                MonsterReservedCommand command = planned.Command;
+                if (planned.SlotIndex != slotIndex || command == null || command.UserRuntime == null)
+                    continue;
+
+                if (!projectedDirections.TryGetValue(command.RuntimeId, out BattleDirection projectedDirection))
+                    projectedDirection = command.UserRuntime.Direction;
+
+                projectedDirection = MonsterFlipBeforeActionPolicy.ResolveProjectedDirection(
+                    projectedDirection,
+                    IsMoveSkill(command.SkillData),
+                    command.MoveOffset,
+                    command.HasForcedDirection,
+                    command.ForcedDirection,
+                    out bool flipBeforeAction);
+
+                command.SetFlipBeforeAction(flipBeforeAction);
+                projectedDirections[command.RuntimeId] = projectedDirection;
+            }
+        }
+    }
+
+    private static void RestoreMonsterPlanningDirection(
+        MonsterUnit monsterUnit,
+        BattleDirection direction)
+    {
+        if (monsterUnit == null || monsterUnit.RuntimeData == null)
+            return;
+
+        monsterUnit.RuntimeData.Direction = direction;
+        BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+        facing?.FaceRight(direction == BattleDirection.Right);
+    }
+
+    private static void PreserveLegacyPlanningFacingIntent(
+        MonsterAIPlan plan,
+        BattleDirection plannedDirection)
+    {
+        if (plan == null || plan.Actions == null)
+            return;
+
+        for (int i = 0; i < plan.Actions.Count; i++)
+        {
+            MonsterAIAction action = plan.Actions[i];
+            if (action == null || action.HasForcedDirection || action.IsPortalMove ||
+                action.MoveOffset != Vector2Int.zero ||
+                action.ExplicitRangeGridIndices == null ||
+                action.ExplicitRangeGridIndices.Count <= 0)
+            {
+                continue;
+            }
+
+            action.HasForcedDirection = true;
+            action.ForcedDirection = plannedDirection;
+            break;
+        }
     }
 
     private HashSet<int> GetPreviouslyReservedMonsterDestinations(

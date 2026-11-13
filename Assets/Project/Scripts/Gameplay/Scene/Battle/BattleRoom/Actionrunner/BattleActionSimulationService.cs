@@ -10,6 +10,7 @@ public class BattleActionSimulationService
     private readonly Dictionary<string, int> playerPositions = new();
     private readonly Dictionary<string, BattleDirection> playerDirections = new();
     private readonly Dictionary<string, List<int>> monsterPositions = new();
+    private readonly Dictionary<string, BattleDirection> monsterDirections = new();
     private BattleGridEffectController gridEffectController;
 
     public BattleActionSimulationService(GridManager gridManager)
@@ -809,10 +810,23 @@ public class BattleActionSimulationService
         if (!monsterPositions.TryGetValue(command.RuntimeId, out List<int> currentCells))
             return;
 
+        BattleDirection direction = GetMonsterDirection(command.RuntimeId);
+        if (command.FlipBeforeAction)
+        {
+            direction = GetOppositeDirection(direction);
+            monsterDirections[command.RuntimeId] = direction;
+        }
+
         bool isMove = command.SkillData.TimelineNotation == TimelineActionType.Move;
 
         if (isMove)
         {
+            if (command.MoveOffset.x != 0)
+            {
+                monsterDirections[command.RuntimeId] = command.MoveOffset.x > 0
+                    ? BattleDirection.Right
+                    : BattleDirection.Left;
+            }
             SimulateMonsterMove(command, currentCells);
             return;
         }
@@ -1177,6 +1191,12 @@ public class BattleActionSimulationService
 
     private BattleDirection GetMonsterDirection(string runtimeId)
     {
+        if (!string.IsNullOrWhiteSpace(runtimeId) &&
+            monsterDirections.TryGetValue(runtimeId, out BattleDirection projectedDirection))
+        {
+            return projectedDirection;
+        }
+
         MonsterUnit monster = FindMonster(runtimeId);
 
         if (monster == null)
@@ -1281,6 +1301,7 @@ public class BattleActionSimulationService
         playerPositions.Clear();
         playerDirections.Clear();
         monsterPositions.Clear();
+        monsterDirections.Clear();
 
         BattleCharacter[] players = Object.FindObjectsByType<BattleCharacter>(
             FindObjectsInactive.Exclude,
@@ -1316,6 +1337,8 @@ public class BattleActionSimulationService
 
             monsterPositions[monsters[i].RuntimeData.RuntimeId] =
                 new List<int>(occupiedGridIndices);
+            monsterDirections[monsters[i].RuntimeData.RuntimeId] =
+                monsters[i].RuntimeData.Direction;
         }
     }
 
