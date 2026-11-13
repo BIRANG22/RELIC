@@ -82,6 +82,15 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         public int OriginalLayer;
     }
 
+    private void Awake()
+    {
+        // The scene may serialize HighlightFrame as active. Hide it before the
+        // first rendered frame; DisplayStep enables it for an actual focus.
+        Transform tutorialMode = FindTutorialMode();
+        Transform frame = tutorialMode != null ? FindDescendant(tutorialMode, highlightObjectName) : null;
+        if (frame != null) frame.gameObject.SetActive(false);
+    }
+
     public void BeginAfterPanel(string mapId)
     {
         if (routine != null) StopCoroutine(routine);

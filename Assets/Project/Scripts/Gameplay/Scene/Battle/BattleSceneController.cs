@@ -164,6 +164,10 @@ public class BattleSceneController : MonoBehaviour
             resultOpen);
     }
 
+    // Hide the focus artwork before TutorialMode is ever shown. The focus runner
+    // is created after the opening dialogues, which is too late for scene entry.
+    private bool initialFocusFrameHidden;
+
     private void AutoFindTutorialModeUIIfNeeded()
     {
         if (tutorialMode == null)
@@ -171,6 +175,16 @@ public class BattleSceneController : MonoBehaviour
             Transform found = FindSceneTransformByName("TutorialMode");
             if (found != null)
                 tutorialMode = found.gameObject;
+        }
+
+        if (!initialFocusFrameHidden && tutorialMode != null)
+        {
+            Transform frame = FindChildRecursive(tutorialMode.transform, "HighlightFrame");
+            if (frame != null)
+            {
+                frame.gameObject.SetActive(false);
+                initialFocusFrameHidden = true;
+            }
         }
 
         if (tutorialSkipButton == null && tutorialMode != null)
