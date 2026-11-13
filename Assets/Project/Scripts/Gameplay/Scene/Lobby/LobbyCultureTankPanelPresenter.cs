@@ -67,7 +67,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private Coroutine automaticClaimCoroutine;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
-    private void Awake() { BindSceneObjects(); BindCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); }
+    private void Awake() { BindSceneObjects(); BindCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); if (compoundCombineVfx != null) compoundCombineVfx.SetActive(false); }
     private void OnEnable() { BindSceneObjects(); BindCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); RefreshAll(); RefreshPanelText(); }
 
     private void BindCultureStorageHeader()
@@ -356,7 +356,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private void Combine()
     {
         DataManager data = DataManager.Instance;
-        if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CompoundDatabase, out string compoundId, out string error))
+        LobbyRuntimeData lobby = GetLobby();
+        // 이미 완성된 연성제가 남아 있다면 새 생성으로 취급하지 않습니다.
+        bool hadCompletedCompound = !string.IsNullOrWhiteSpace(lobby?.CompletedCultureTankCombinationId);
+        if (!CultureTankResearchService.TryCombine(lobby, data?.ItemDatabase, data?.CompoundDatabase, out string compoundId, out string error))
         {
             bool invalidRecipe = string.Equals(
                 error,
@@ -383,7 +386,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         SaveAndPublish();
         RefreshAll();
         RefreshCompoundReferenceNow();
-        PlayCompoundCombineVfx();
+        // 버튼 클릭이나 조합 시도만으로는 VFX가 나오지 않도록,
+        // 실제 새 연성제 ID가 런타임 완료 상태에 등록되었는지 확인합니다.
+        bool compoundCreated = !hadCompletedCompound &&
+                               !string.IsNullOrWhiteSpace(compoundId) &&
+                               string.Equals(lobby?.CompletedCultureTankCombinationId, compoundId, StringComparison.Ordinal);
+        if (compoundCreated)
+            PlayCompoundCombineVfx();
+
         AudioManager.Instance?.PlaySfx(materialCombineSoundId);
     }
 
@@ -392,16 +402,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         if (compoundCombineVfx == null)
             return;
 
-        // 이미 활성화되어 있더라도 다음 조합에서 이펙트를 처음부터 재생합니다.
-        compoundCombineVfx.SetActive(false);
-        compoundCombineVfx.SetActive(true);
+        // 원본 VFX는 재사용 가능한 템플릿으로 유지하고 복제본만 실행/제거합니다.
+        GameObject instance = Instantiate(compoundCombineVfx, compoundCombineVfx.transform.parent, false);
+        instance.name = compoundCombineVfx.name + "(CombineVFX)";
+        instance.SetActive(true);
 
-        ParticleSystem[] particles = compoundCombineVfx.GetComponentsInChildren<ParticleSystem>(true);
-        for (int i = 0; i < particles.Length; i++)
-        {
-            if (particles[i] != null && particles[i].gameObject.activeInHierarchy)
-                particles[i].Play(true);
-        }
+        // 모니터는 프리젠터/패널이 꺼져도 복제본의 종료를 감지합니다.
+        LobbyCompoundCombineVfxLifetime lifetime = instance.AddComponent<LobbyCompoundCombineVfxLifetime>();
+        lifetime.Begin();
     }
 
     private void ClaimCompletion()
@@ -1263,5 +1271,65 @@ public sealed class LobbyCultureTankRowHoverRelay : MonoBehaviour, IPointerEnter
 
         hovered = false;
         onHoverChanged?.Invoke(false);
+    }
+}
+
+// 조합 VFX 복제본 전용 수명 관리. 원본 VFX에는 추가하지 않습니다.
+[DisallowMultipleComponent]
+public sealed class LobbyCompoundCombineVfxLifetime : MonoBehaviour
+{
+    private ParticleSystem[] particles;
+    private bool started;
+    private bool destroying;
+    private int elapsedFrames;
+
+    public void Begin()
+    {
+        particles = GetComponentsInChildren<ParticleSystem>(true);
+        started = true;
+        elapsedFrames = 0;
+
+        for (int i = 0; i < particles.Length; i++)
+        {
+            ParticleSystem particle = particles[i];
+            if (particle == null || !particle.gameObject.activeInHierarchy)
+                continue;
+
+            particle.Clear(true);
+            particle.Play(true);
+        }
+
+        // 파티클이 없는 프리팹의 경우 완료를 판단할 수 없으므로 경고합니다.
+        if (particles.Length == 0)
+            Debug.LogWarning("[LobbyCompoundCombineVfxLifetime] 조합 VFX에 ParticleSystem이 없어 자동 종료를 감지할 수 없습니다.", this);
+    }
+
+    private void Update()
+    {
+        if (!started || destroying || ++elapsedFrames < 2 || particles.Length == 0)
+            return;
+
+        for (int i = 0; i < particles.Length; i++)
+        {
+            if (particles[i] != null && particles[i].gameObject.activeInHierarchy && particles[i].IsAlive(true))
+                return;
+        }
+
+        RemoveInstance();
+    }
+
+    private void OnDisable()
+    {
+        // 외부 애니메이션/스크립트가 복제본을 끄거나 부모가 비활성화되어도 제거합니다.
+        RemoveInstance();
+    }
+
+    private void RemoveInstance()
+    {
+        if (destroying)
+            return;
+
+        destroying = true;
+        Destroy(gameObject);
     }
 }
