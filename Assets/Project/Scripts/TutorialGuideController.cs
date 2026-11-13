@@ -223,6 +223,8 @@ public sealed class TutorialGuideController : MonoBehaviour
             if (text == null) text = item.GetComponentInChildren<TMP_Text>(true);
             if (text != null)
             {
+                // Text and Back are siblings: let Back receive the pointer input.
+                text.raycastTarget = false;
                 Protect(text);
                 if (seen)
                 {
@@ -239,25 +241,32 @@ public sealed class TutorialGuideController : MonoBehaviour
                 }
             }
 
-            Image back = Find(item.transform, "Back")?.GetComponent<Image>();
+            Transform backTransform = Find(item.transform, "Back");
+            Image back = backTransform != null ? backTransform.GetComponent<Image>() : null;
             if (back != null)
             {
+                back.raycastTarget = true;
                 indexBacks[indexId] = back;
                 indexDefaultBackColors[indexId] = back.color;
             }
-            Button button = item.GetComponent<Button>() ?? item.GetComponentInChildren<Button>(true);
+
+            // The clickable graphic is Back, not the sibling Text or the root.
+            Button button = backTransform != null ? backTransform.GetComponent<Button>() : null;
+            if (button == null && backTransform != null && back != null)
+                button = backTransform.gameObject.AddComponent<Button>();
+            if (button == null) button = item.GetComponent<Button>();
             if (button != null)
             {
-                // Locked indices remain visible but cannot open unrevealed information.
                 button.interactable = seen;
                 if (seen) button.onClick.AddListener(() => SelectIndex(capturedId));
-                // Avoid Button tint overriding the inspector-controlled Back color.
                 button.transition = Selectable.Transition.None;
             }
             if (seen)
             {
-                EventTrigger trigger = item.GetComponent<EventTrigger>();
-                if (trigger == null) trigger = item.AddComponent<EventTrigger>();
+                // Attach the hover events to the same graphic that receives clicks.
+                GameObject pointerTarget = backTransform != null ? backTransform.gameObject : item;
+                EventTrigger trigger = pointerTarget.GetComponent<EventTrigger>();
+                if (trigger == null) trigger = pointerTarget.AddComponent<EventTrigger>();
                 AddPointerEvent(trigger, EventTriggerType.PointerEnter, () => SetIndexHovered(capturedId, true));
                 AddPointerEvent(trigger, EventTriggerType.PointerExit, () => SetIndexHovered(capturedId, false));
             }
