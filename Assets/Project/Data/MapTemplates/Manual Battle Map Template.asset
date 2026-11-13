@@ -23,8 +23,8 @@ MonoBehaviour:
   layer1:
     Slot1:
       Enabled: 1
-      Type: Elite
-      MapIdOverride: Map_12
+      Type: Boss
+      MapIdOverride: Map_14
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 

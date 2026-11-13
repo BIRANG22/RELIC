@@ -43,6 +43,16 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     ambienceClips: []
+  - state: 9
+    mainClip:
+      clip: {fileID: 8300000, guid: 1cbf15fc1d6947f49944a76ca7bab0fd, type: 3}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
   ambienceList:
   - id: Fire Burning
     aliases: []
@@ -893,7 +903,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: exploration.faild
     aliases: []
-    clip: {fileID: 8300000, guid: 841891e8732234db8a9465da95f27fe5, type: 3}
+    clip: {fileID: 8300000, guid: 144b91aef7426462d8cf13e13c54eaef, type: 3}
     volume: 0.3
     pitch: 1
     loop: 0
