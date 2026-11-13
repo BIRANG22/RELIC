@@ -9,11 +9,12 @@ public sealed class TimelineReservationDragContext
     public SkillMasterData Skill { get; private set; }
     public PlayerReservedCommand Command { get; private set; }
     public bool IsExistingReservation => Command != null;
+    public bool IsFacingFlip { get; private set; }
     public bool DropHandled { get; private set; }
     public bool HasSwift => Command != null
         ? BattleActionOrderUtility.HasSwift(Command)
         : (Skill != null && Skill.IsFastSkill == 1) || BattleActionOrderUtility.HasSwift(Runtime);
-    public int OccupiedOrders => Command != null
+    public int OccupiedOrders => IsFacingFlip ? 0 : Command != null
         ? BattleTimelineCapacityPolicy.NormalizeOccupiedOrders(Command.TimelineEntryCost)
         : ResolveSkillOccupiedOrders(Skill);
 
@@ -39,6 +40,24 @@ public sealed class TimelineReservationDragContext
             return;
 
         Active = new TimelineReservationDragContext { Runtime = runtime, Skill = skill };
+        CreateVisual(icon, eventData);
+    }
+
+    public static void BeginNewFacingFlip(
+        CharacterRuntimeData runtime,
+        SkillMasterData moveSkill,
+        Sprite icon,
+        PointerEventData eventData)
+    {
+        if (runtime == null || moveSkill == null)
+            return;
+
+        Active = new TimelineReservationDragContext
+        {
+            Runtime = runtime,
+            Skill = moveSkill,
+            IsFacingFlip = true
+        };
         CreateVisual(icon, eventData);
     }
 
@@ -234,12 +253,22 @@ public sealed class BattleCharacterSkillDragSource : MonoBehaviour,
     private BattleCharacterPanelUI owner;
     private int displaySlotIndex;
     private Image iconImage;
+    private bool isFacingFlip;
 
     public void Configure(BattleCharacterPanelUI panel, int slotIndex, Image icon)
     {
         owner = panel;
         displaySlotIndex = slotIndex;
         iconImage = icon;
+        isFacingFlip = false;
+    }
+
+    public void ConfigureFacingFlip(BattleCharacterPanelUI panel, Image icon)
+    {
+        owner = panel;
+        displaySlotIndex = -1;
+        iconImage = icon;
+        isFacingFlip = true;
     }
 
     public void OnInitializePotentialDrag(PointerEventData eventData)
@@ -250,7 +279,10 @@ public sealed class BattleCharacterSkillDragSource : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        owner?.TryBeginTimelineSkillDrag(displaySlotIndex, iconImage, eventData);
+        if (isFacingFlip)
+            owner?.TryBeginTimelineFacingFlipDrag(iconImage, eventData);
+        else
+            owner?.TryBeginTimelineSkillDrag(displaySlotIndex, iconImage, eventData);
     }
 
     public void OnDrag(PointerEventData eventData) =>

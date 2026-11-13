@@ -276,6 +276,7 @@ public class BattleTimelineController : MonoBehaviour
     private void Update()
     {
         HandleKeyboardSlotSelectInput();
+        HandleKeyboardUndoRedoReservationInput();
         HandleEndButtonHoverOutsidePolling();
         HandleSelectionCancelRightClick();
         HandleCharacterSelectionOutsideGridClick();
@@ -583,9 +584,9 @@ public class BattleTimelineController : MonoBehaviour
 
         int direction = 0;
 
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.RightArrow))
             direction = 1;
-        else if (Input.GetKeyDown(KeyCode.A))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
             direction = -1;
 
         if (direction == 0)
@@ -594,7 +595,7 @@ public class BattleTimelineController : MonoBehaviour
         MoveSelectedTimelineSlot(direction);
     }
 
-    private void HandleKeyboardUndoReservationInput()
+    private void HandleKeyboardUndoRedoReservationInput()
     {
         if (TutorialGuideController.IsModalOpen) return;
         if (TutorialBattleSequence.IsPresentationRunning) return;
@@ -607,10 +608,14 @@ public class BattleTimelineController : MonoBehaviour
         if (IsTypingInputFieldSelected())
             return;
 
-        if (!Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Undo))
+        {
+            UndoLastPlayerReservation();
             return;
+        }
 
-        UndoLastPlayerReservation();
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Redo))
+            RedoLastPlayerReservation();
     }
 
     public void UndoLastPlayerReservation()
@@ -1054,6 +1059,16 @@ public class BattleTimelineController : MonoBehaviour
         if (!SelectTimelineSlotFromNetwork(slotIndex, false, false))
             return false;
 
+        if (context.IsFacingFlip)
+        {
+            CancelSkillReservationPreviewFromSkillList(context.Runtime);
+            SelectCharacter(context.Runtime);
+            SetPendingPlayerInsertion(slotIndex, playerInsertionIndex);
+            bool reserved = TryReserveFacingFlip(context.Runtime, context.Skill);
+            ClearPendingPlayerInsertion();
+            return reserved;
+        }
+
         SetPendingPlayerInsertion(slotIndex, playerInsertionIndex);
         SelectCharacter(context.Runtime);
         SelectSkill(context.Skill);
@@ -1120,14 +1135,19 @@ public class BattleTimelineController : MonoBehaviour
 
         // Flip은 이동 예약 여부와 관계없이 독립된 타임라인 행동으로 등록합니다.
         // 그래야 같은 슬롯에서 Flip 전/후에 등록한 행동이 서로 다른 방향을 유지할 수 있습니다.
-        int previewGridIndex = GetPreviewGridIndexAtSlotEnd(runtimeData, activeSlotIndex);
+        int insertionIndex = GetPendingPlayerInsertionIndex(activeSlotIndex);
+        int previewGridIndex = insertionIndex >= 0
+            ? GetPreviewGridIndexBeforeCommand(runtimeData, activeSlotIndex, insertionIndex)
+            : GetPreviewGridIndexAtSlotEnd(runtimeData, activeSlotIndex);
         if (previewGridIndex < 0)
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterPositionMissing));
             return false;
         }
 
-        BattleDirection currentDirection = GetPreviewDirection(runtimeData, activeSlotIndex);
+        BattleDirection currentDirection = insertionIndex >= 0
+            ? GetPreviewDirectionBeforeCommand(runtimeData, activeSlotIndex, insertionIndex)
+            : GetPreviewDirection(runtimeData, activeSlotIndex);
         BattleDirection flippedDirection = currentDirection == BattleDirection.Right
             ? BattleDirection.Left
             : BattleDirection.Right;
@@ -3638,7 +3658,9 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (!hasExplicitInsertion && TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
+        if (!hasExplicitInsertion &&
+            !HasTrailingFacingFlip(slot, command) &&
+            TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
         {
             if (mergeSucceeded)
             {
@@ -3676,6 +3698,8 @@ public class BattleTimelineController : MonoBehaviour
             Debug.LogWarning("[BattleTimelineController] 예약 슬롯이 가득 찼습니다.");
             return false;
         }
+
+        MergePrecedingFacingFlipIntoCommand(slot, command);
 
         BattleEquipmentEffectService.TryApplyAndConsumeSpiderWebMoveCostPenalty(command);
         RecordPlayerReservation(slotIndex, command);
@@ -3800,6 +3824,19 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    private static bool HasTrailingFacingFlip(
+        ReserveTurnSlotUI slot,
+        PlayerReservedCommand command)
+    {
+        if (slot == null || slot.Commands == null || slot.Commands.Count <= 0 || command == null)
+            return false;
+
+        PlayerReservedCommand trailing = slot.Commands[slot.Commands.Count - 1];
+        return trailing != null &&
+               trailing.IsFacingFlipCommand &&
+               trailing.CharacterId == command.CharacterId;
+    }
+
     private bool IsSelfFlipMoveCommand(PlayerReservedCommand command)
     {
         return IsMoveCommand(command) &&
@@ -3817,6 +3854,9 @@ public class BattleTimelineController : MonoBehaviour
         for (int i = slot.Commands.Count - 1; i >= 0; i--)
         {
             PlayerReservedCommand command = slot.Commands[i];
+
+            if (command == null || command.IsFacingFlipCommand)
+                continue;
 
             if (!IsMoveCommand(command))
                 continue;
@@ -3946,7 +3986,7 @@ public class BattleTimelineController : MonoBehaviour
         PlayerReservedCommand command,
         bool preserveRedoHistory = false)
     {
-        if (command == null)
+        if (command == null || command.IsFacingFlipCommand)
             return;
 
         if (slotIndex < 0)
@@ -3963,6 +4003,64 @@ public class BattleTimelineController : MonoBehaviour
             slotIndex,
             command,
             orderIndex));
+    }
+
+    private static void MergePrecedingFacingFlipIntoCommand(
+        ReserveTurnSlotUI slot,
+        PlayerReservedCommand command)
+    {
+        if (slot == null || command == null || command.IsFacingFlipCommand)
+            return;
+
+        int commandIndex = slot.IndexOfCommand(command);
+        if (commandIndex <= 0)
+            return;
+
+        PlayerReservedCommand previous = slot.Commands[commandIndex - 1];
+        if (previous == null || !previous.IsFacingFlipCommand ||
+            previous.UserRuntime == null || command.UserRuntime == null ||
+            previous.UserRuntime.CharacterId != command.UserRuntime.CharacterId)
+        {
+            return;
+        }
+
+        command.SetFlipBeforeAction();
+        slot.RemoveCommandAt(commandIndex - 1, out _);
+    }
+
+    public int CancelUnmergedFacingFlips()
+    {
+        if (reserveSlots == null)
+            return 0;
+
+        int removedCount = 0;
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int commandIndex = slot.Commands.Count - 1; commandIndex >= 0; commandIndex--)
+            {
+                PlayerReservedCommand command = slot.Commands[commandIndex];
+                if (command == null || !command.IsFacingFlipCommand)
+                    continue;
+
+                if (slot.RemoveCommandAt(commandIndex, out _))
+                    removedCount++;
+            }
+        }
+
+        if (removedCount > 0)
+        {
+            RecalculateAllReservedCosts();
+            RefreshReservationSimulation();
+            RefreshTimeline();
+            RefreshPlayerHUDs();
+            RefreshMoveGhostPreview();
+        }
+
+        return removedCount;
     }
 
     private int GetSlotIndexOf(ReserveTurnSlotUI slot)
@@ -4169,6 +4267,9 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
             return false;
+
+        if (requestedOccupiedOrders <= 0)
+            return true;
 
         return slot.CanAddCommand() && BattleTimelineCapacityPolicy.CanFit(
             ReserveTurnSlotUI.MaxCommandCount,
@@ -4971,6 +5072,14 @@ public class BattleTimelineController : MonoBehaviour
 
     public BattleDirection GetPreviewDirection(CharacterRuntimeData runtimeData, int targetSlotIndex)
     {
+        return GetPreviewDirectionBeforeCommand(runtimeData, targetSlotIndex, int.MaxValue);
+    }
+
+    public BattleDirection GetPreviewDirectionBeforeCommand(
+        CharacterRuntimeData runtimeData,
+        int targetSlotIndex,
+        int targetPlayerCommandIndex)
+    {
         if (runtimeData == null)
             return BattleDirection.Right;
 
@@ -4993,6 +5102,9 @@ public class BattleTimelineController : MonoBehaviour
 
             for (int i = 0; i < slot.Commands.Count; i++)
             {
+                if (slotIndex == lastSlotIndex && i >= targetPlayerCommandIndex)
+                    break;
+
                 PlayerReservedCommand command = slot.Commands[i];
 
                 if (command == null || command.UserRuntime == null)
@@ -5014,6 +5126,9 @@ public class BattleTimelineController : MonoBehaviour
     {
         if (command == null)
             return currentDirection;
+
+        if (command.FlipBeforeAction)
+            return command.Direction;
 
         if (command.ReservedMoveGridIndex < 0)
             return currentDirection;
@@ -5896,7 +6011,7 @@ public class BattleTimelineController : MonoBehaviour
                     afterLastMove = true;
                     hasFlip = false;
                 }
-                else if (afterLastMove && command.IsFacingFlipCommand)
+                else if (afterLastMove && (command.IsFacingFlipCommand || command.FlipBeforeAction))
                 {
                     hasFlip = true;
                 }
@@ -5931,7 +6046,7 @@ public class BattleTimelineController : MonoBehaviour
                 {
                     if (command == null || command.CharacterId != characterId)
                         continue;
-                    hasFlip |= command.IsFacingFlipCommand;
+                    hasFlip |= command.IsFacingFlipCommand || command.FlipBeforeAction;
                     hasActualMove |= IsGhostMoveCommandForRuntime(command, characterId);
                 }
             }

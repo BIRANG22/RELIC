@@ -144,7 +144,8 @@ public class BattleMenuEscapeInputController : MonoBehaviour
                 return;
             if (UIManager.WasConfirmDialogClosedByEscapeThisFrame ||
                 UIManager.WasRecordPanelClosedByEscapeThisFrame ||
-                UIManager.WasOptionPanelClosedByEscapeThisFrame)
+                UIManager.WasOptionPanelClosedByEscapeThisFrame ||
+                BattleSettingPanelUI.WasClosedByEscapeThisFrame)
                 return;
 
             if (UIManager.Instance != null && UIManager.Instance.TryHideConfirmDialogIfOpen(true))
@@ -155,6 +156,12 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
             if (UIManager.Instance != null && UIManager.Instance.TryHideOptionIfOpen(true))
                 return;
+
+            if (BattleSettingPanelUI.TryCloseOpenPanel())
+            {
+                lastHandledEscapeFrame = Time.frameCount;
+                return;
+            }
 
             // MenuPanel이 이미 열려 있다면 ESC의 최우선 대상은 MenuPanel입니다.
             // MonsterInfoPanel이 뒤에 열려 있더라도 이번 ESC에서는 닫지 않습니다.

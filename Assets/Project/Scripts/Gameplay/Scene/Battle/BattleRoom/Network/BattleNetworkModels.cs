@@ -52,6 +52,8 @@ public sealed class BattleNetworkCommand
     public int[] targetGridIndices;
     public int[] moveStepX;
     public int[] moveStepY;
+    public bool isFacingFlipCommand;
+    public bool flipBeforeAction;
     public bool ready;
     public long knownRevision;
 }
@@ -142,6 +144,8 @@ public sealed class BattleNetworkPlayerCommandSnapshot
     public string characterId;
     public string skillId;
     public int direction;
+    public bool isFacingFlipCommand;
+    public bool flipBeforeAction;
     public int selectedGridIndex = -1;
     public int moveOffsetX;
     public int moveOffsetY;

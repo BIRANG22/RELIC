@@ -347,6 +347,7 @@ public class BattleActionRunner
         if (command == null || command.UserRuntime == null || command.UserRuntime.IsDead)
             yield break;
 
+        ApplyFlipBeforePlayerAction(command);
         BattleEffectInfoFeed.ShowPlayer(command);
 
         bool consumeSmiteAfterAttack = ShouldConsumeSmite(command);
@@ -362,6 +363,23 @@ public class BattleActionRunner
 
         if (command != null && command.UserRuntime != null && !command.UserRuntime.IsDead)
             onPlayerCommandExecuted?.Invoke(command, timelineSlotIndex);
+    }
+
+    private void ApplyFlipBeforePlayerAction(PlayerReservedCommand command)
+    {
+        if (command == null || !command.FlipBeforeAction || command.UserRuntime == null)
+            return;
+
+        BattleDirection flippedDirection = command.UserRuntime.Direction == BattleDirection.Right
+            ? BattleDirection.Left
+            : BattleDirection.Right;
+        command.UserRuntime.Direction = flippedDirection;
+
+        BattleCharacter character = unitFinder?.FindBattleCharacter(command.CharacterId);
+        BattleUnitFacing facing = character != null
+            ? character.GetComponent<BattleUnitFacing>()
+            : null;
+        facing?.FaceRight(flippedDirection == BattleDirection.Right);
     }
 
     private IEnumerator ShowMonsterEffectInfoAndExecute(MonsterReservedCommand command)

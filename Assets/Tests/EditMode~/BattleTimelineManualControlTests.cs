@@ -491,6 +491,130 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
+    public void FacingFlipReservation_UsesPendingInsertionIndex()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("FlipDrop", BattleDirection.Right);
+        SkillMasterData moveSkill = new()
+        {
+            SkillId = "S_Move_1",
+            Category = Category.Move,
+            Entry = 1
+        };
+        PlayerReservedCommand before = Attack(runtime);
+        PlayerReservedCommand after = Attack(runtime);
+        before.SetSelectionResult(
+            BattleDirection.Left,
+            3,
+            new System.Collections.Generic.List<int> { 3 },
+            Vector2Int.zero);
+        after.SetSelectionResult(
+            BattleDirection.Right,
+            3,
+            new System.Collections.Generic.List<int> { 3 },
+            Vector2Int.zero);
+        Assert.That(Slot(0).AddCommand(before), Is.True);
+        Assert.That(Slot(0).AddCommand(after), Is.True);
+
+        controller.SetPendingPlayerInsertion(0, 1);
+        Assert.That(controller.TryReserveFacingFlip(runtime, moveSkill), Is.True);
+
+        Assert.That(Slot(0).Commands[0], Is.SameAs(before));
+        Assert.That(Slot(0).Commands[1].IsFacingFlipCommand, Is.True);
+        Assert.That(Slot(0).Commands[1].Direction, Is.EqualTo(BattleDirection.Right));
+        Assert.That(Slot(0).Commands[2], Is.SameAs(after));
+    }
+
+    [Test]
+    public void FacingFlipFollowedByAttack_MergesIntoAttackAndUndoRemovesAttack()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("FlipMerge", BattleDirection.Right);
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 3, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+        PlayerReservedCommand attack = Attack(runtime);
+        attack.SetDirectionResult(BattleDirection.Left, new System.Collections.Generic.List<int> { 3 }, new System.Collections.Generic.List<int> { 3 });
+
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, attack), Is.True);
+
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(1));
+        Assert.That(Slot(0).Commands[0], Is.SameAs(attack));
+        Assert.That(attack.FlipBeforeAction, Is.True);
+        Assert.That(controller.GetPreviewDirection(runtime, 0), Is.EqualTo(BattleDirection.Left));
+
+        controller.UndoLastPlayerReservation();
+        Assert.That(Slot(0).Commands, Is.Empty);
+
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(1));
+        Assert.That(Slot(0).Commands[0], Is.SameAs(attack));
+        Assert.That(attack.FlipBeforeAction, Is.True);
+    }
+
+    [Test]
+    public void FacingFlip_CanBeReservedWhenTimelineCapacityIsFull()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("FullSlotFlip", BattleDirection.Right);
+
+        for (int i = 0; i < ReserveTurnSlotUI.MaxCommandCount; i++)
+            Assert.That(Slot(0).AddCommand(Attack(runtime)), Is.True);
+
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 3, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(ReserveTurnSlotUI.MaxCommandCount + 1));
+        Assert.That(Slot(0).Commands[ReserveTurnSlotUI.MaxCommandCount], Is.SameAs(flip));
+    }
+
+    [Test]
+    public void FacingFlipFollowedByMove_MergesIntoMoveAndUndoRemovesMove()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("FlipMoveMerge", BattleDirection.Right);
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 3, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+        PlayerReservedCommand move = Move(runtime, BattleDirection.Left, 2, Vector2Int.left);
+
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, move), Is.True);
+
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(1));
+        Assert.That(Slot(0).Commands[0], Is.SameAs(move));
+        Assert.That(move.FlipBeforeAction, Is.True);
+
+        controller.UndoLastPlayerReservation();
+        Assert.That(Slot(0).Commands, Is.Empty);
+
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(1));
+        Assert.That(Slot(0).Commands[0], Is.SameAs(move));
+        Assert.That(move.FlipBeforeAction, Is.True);
+    }
+
+    [Test]
+    public void FacingFlipFollowedByZeroOffsetMove_DoesNotMergeIntoEarlierMove()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("FlipZeroMoveMerge", BattleDirection.Right);
+        PlayerReservedCommand earlierMove = Move(runtime, BattleDirection.Right, 4, Vector2Int.right);
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 4, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+        PlayerReservedCommand nextMove = Move(runtime, BattleDirection.Left, 4, Vector2Int.zero);
+
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, earlierMove), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, nextMove), Is.True);
+
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(2));
+        Assert.That(Slot(0).Commands[0], Is.SameAs(earlierMove));
+        Assert.That(Slot(0).Commands[1], Is.SameAs(nextMove));
+        Assert.That(nextMove.FlipBeforeAction, Is.True);
+    }
+
+    [Test]
     public void CancelPendingSelection_ClearsPendingDragInsertion()
     {
         BattleTimelineController controller = CreateControllerWithSlots(1, 0);

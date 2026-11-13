@@ -36,6 +36,7 @@ public class PlayerReservedCommand
     public bool ReservationCostModifiersApplied { get; private set; }
     public bool IsMoveContinuationCommand { get; private set; }
     public bool IsFacingFlipCommand { get; private set; }
+    public bool FlipBeforeAction { get; private set; }
     public bool IsFirstSkillInSlot { get; private set; } = true;
     public bool HadEarlierMoveInSlot { get; private set; }
     public int SameSlotMoveCostBeforeCommand { get; private set; }
@@ -60,7 +61,7 @@ public class PlayerReservedCommand
 
     public string CharacterId => UserRuntime != null ? UserRuntime.CharacterId : "";
     // A reservation occupies Entry orders but executes only once.
-    public int TimelineEntryCost => IsFacingFlipCommand || IsMoveContinuationCommand ||
+    public int TimelineEntryCost => IsFacingFlipCommand ? 0 : IsMoveContinuationCommand ||
         (SkillData != null && SkillData.Category == Category.Move)
         ? 1 : SkillData != null && SkillData.Category == Category.Passive
             ? 0 : Mathf.Clamp(SkillData != null ? SkillData.Entry : 1, 1, 3);
@@ -246,6 +247,11 @@ public class PlayerReservedCommand
     public void SetFacingFlipCommand(bool isFacingFlip = true)
     {
         IsFacingFlipCommand = isFacingFlip;
+    }
+
+    public void SetFlipBeforeAction(bool enabled = true)
+    {
+        FlipBeforeAction = enabled;
     }
 
     public void SetDirectionalMoveDistanceOverride(int signedDistance)

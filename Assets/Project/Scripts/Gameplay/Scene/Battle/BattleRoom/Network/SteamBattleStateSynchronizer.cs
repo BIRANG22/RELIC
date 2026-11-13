@@ -599,6 +599,8 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         dto.characterId = command.CharacterId;
         dto.skillId = command.SkillId;
         dto.direction = (int)command.Direction;
+        dto.isFacingFlipCommand = command.IsFacingFlipCommand;
+        dto.flipBeforeAction = command.FlipBeforeAction;
         dto.selectedGridIndex = command.SelectedGridIndex;
         dto.moveOffsetX = command.MoveOffset.x;
         dto.moveOffsetY = command.MoveOffset.y;
@@ -1723,6 +1725,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return null;
 
         PlayerReservedCommand command = new(runtime, skill);
+        if (snapshot.isFacingFlipCommand)
+            command.SetFacingFlipCommand();
+        command.SetFlipBeforeAction(snapshot.flipBeforeAction);
         command.SetMoveDirection((BattleDirection)snapshot.direction);
 
         if (snapshot.plannedMoveDistance > 0)
@@ -1749,6 +1754,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     {
         BattleDirection direction = (BattleDirection)command.direction;
         rebuilt.SetMoveDirection(direction);
+        if (command.isFacingFlipCommand)
+            rebuilt.SetFacingFlipCommand();
+        rebuilt.SetFlipBeforeAction(command.flipBeforeAction);
 
         if (command.plannedMoveDistance > 0)
         {
@@ -1783,6 +1791,13 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         List<int> range = ToList(rangeGridIndices);
         List<int> targets = ToList(targetGridIndices);
         Vector2Int moveOffset = new(moveOffsetX, moveOffsetY);
+
+        if (command.IsFacingFlipCommand && selectedGridIndex >= 0)
+        {
+            command.SetSelectionResult(direction, selectedGridIndex, range, Vector2Int.zero);
+            command.SetVisualMoveResult(selectedGridIndex, Vector2Int.zero, new List<Vector2Int>());
+            return;
+        }
 
         if (selectedGridIndex >= 0 && moveOffset != Vector2Int.zero)
         {
@@ -2029,6 +2044,8 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             characterId = command.CharacterId,
             skillId = command.SkillId,
             direction = (int)command.Direction,
+            isFacingFlipCommand = command.IsFacingFlipCommand,
+            flipBeforeAction = command.FlipBeforeAction,
             selectedGridIndex = command.SelectedGridIndex,
             moveOffsetX = command.MoveOffset.x,
             moveOffsetY = command.MoveOffset.y,

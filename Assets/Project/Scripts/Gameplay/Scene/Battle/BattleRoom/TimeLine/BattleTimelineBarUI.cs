@@ -230,6 +230,9 @@ public class BattleTimelineBarUI : MonoBehaviour
             {
                 PlayerReservedCommand command = playerCommands[j];
 
+                if (command.IsFacingFlipCommand)
+                    continue;
+
                 if (!BattleActionOrderUtility.HasSwift(command))
                     continue;
 
@@ -263,6 +266,9 @@ public class BattleTimelineBarUI : MonoBehaviour
             for (int j = 0; j < playerCommands.Count; j++)
             {
                 PlayerReservedCommand command = playerCommands[j];
+
+                if (command.IsFacingFlipCommand)
+                    continue;
 
                 if (BattleActionOrderUtility.HasSwift(command))
                     continue;

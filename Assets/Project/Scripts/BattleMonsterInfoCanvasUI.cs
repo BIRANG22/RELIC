@@ -179,6 +179,11 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            // 배틀 세팅 패널이 ESC의 최우선 대상입니다. Update 실행 순서와 무관하게
+            // 같은 입력으로 뒤의 MonsterInfoPanel까지 함께 닫히지 않도록 합니다.
+            if (ShouldDeferEscapeToBattleSettingPanel())
+                return;
+
             // MenuPanel이 MonsterInfoPanel 위에 열려 있는 동안에는
             // ESC를 MonsterInfo에서 소비하지 않습니다. 먼저 MenuPanel이 닫혀야 합니다.
             if (IsMenuPanelOpen())
@@ -207,6 +212,12 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
             lastStatusSignature = statusSignature;
             RefreshBlurReplica();
         }
+    }
+
+    public static bool ShouldDeferEscapeToBattleSettingPanel()
+    {
+        return BattleSettingPanelUI.IsAnyPanelOpen() ||
+               BattleSettingPanelUI.WasClosedByEscapeThisFrame;
     }
 
     private bool IsMenuPanelOpen()

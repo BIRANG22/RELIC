@@ -486,6 +486,13 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
         }
 
+        if (timelineController.CancelUnmergedFacingFlips() > 0)
+        {
+            ShowBattleWarning(GameLocalization.Get(
+                "warning.battle.flip_requires_followup",
+                "다음 행동이 없는 방향 전환 예약을 취소했습니다."));
+        }
+
         CaptureSelectedCharacterBeforeExecution();
 
         MonsterUnit.ClearMonsterInfoSelection();
