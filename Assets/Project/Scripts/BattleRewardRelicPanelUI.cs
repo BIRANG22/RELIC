@@ -94,6 +94,19 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private BattleRewardData current;
     private Action onResolved;
     private bool resolving;
+    private bool firstTutorialRelicDialoguePlayed;
+    private bool firstTutorialRelicGuideActive;
+    private bool firstTutorialRelicEquipStep;
+    public bool FirstTutorialHiltEquipCommitted { get; private set; }
+
+    public void SetFirstTutorialRelicEquipStep(bool canEquipHilt)
+    {
+        firstTutorialRelicEquipStep = canEquipHilt;
+        if (panelCanvasGroup != null && gameObject.activeInHierarchy && current != null)
+            panelCanvasGroup.interactable = canEquipHilt;
+        RefreshSlotPreviewVfx();
+    }
+
 
     [Header("Relic Equip VFX")]
     [Tooltip("VFX appears at the center of the relic slot in content/Char1~3/Relic after equip or replacement.")]
@@ -195,7 +208,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     public void SkipReward()
     {
-        if (current == null || resolving || itemIntroCoroutine != null) return;
+        if (current == null || resolving || itemIntroCoroutine != null || firstTutorialRelicGuideActive) return;
         resolving = true;
         ClearRarityIndicatorVfx();
         rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
@@ -203,7 +216,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     public void ExtractReward()
     {
-        if (current == null || resolving || itemIntroCoroutine != null) return;
+        if (current == null || resolving || itemIntroCoroutine != null || firstTutorialRelicGuideActive) return;
         DataManager dataManager = DataManager.Instance;
         if (dataManager == null ||
             !BattleRelicExtractionService.TryExtract(
@@ -346,6 +359,9 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         onResolved = callback;
         resolving = false;
         lockedEquipCharacterIndex = -1;
+        firstTutorialRelicGuideActive = false;
+        firstTutorialRelicEquipStep = false;
+        FirstTutorialHiltEquipCommitted = false;
         if (equipCloseCoroutine != null)
         {
             StopCoroutine(equipCloseCoroutine);
@@ -469,12 +485,44 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         // Refresh names after its localization/OnEnable callbacks have run.
         RefreshCharacterNames();
         SetIntroInputBlocked(false);
-        panelCanvasGroup.interactable = true;
-        panelCanvasGroup.blocksRaycasts = true;
         RestoreIntroItemCanvasGroup();
         introItemRect = null;
-        itemIntroCoroutine = null;
         RefreshSlotPreviewVfx();
+
+        // Both "Gain" and direct relic selection arrive here. Wait until the
+        // entire panel entrance animation finishes, then play the dialogue once.
+        // Keep the relic panel non-interactive while dialogue is on screen.
+        MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+        bool isFirstTutorialRelic =
+            !firstTutorialRelicDialoguePlayed &&
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(map?.CurrentMapId, "Map_26", StringComparison.OrdinalIgnoreCase);
+        if (isFirstTutorialRelic)
+        {
+            firstTutorialRelicDialoguePlayed = true;
+            firstTutorialRelicGuideActive = true;
+            TutorialBattleSequence tutorial = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            if (tutorial != null)
+                yield return tutorial.PlayFirstRelicRewardDialogue();
+            TutorialFocusGuideRunner rewardGuide = FindFirstObjectByType<TutorialFocusGuideRunner>(FindObjectsInactive.Include);
+            if (rewardGuide == null)
+            {
+                // Index01 normally creates the runner. Starting from the reward
+                // phase skips that entry point, so initialize it on demand.
+                BattleSceneController sceneController = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+                if (sceneController != null)
+                    rewardGuide = sceneController.gameObject.AddComponent<TutorialFocusGuideRunner>();
+            }
+            if (rewardGuide != null)
+                yield return rewardGuide.PlayFirstRelicRewardGuide(this);
+            else
+                Debug.LogWarning("[BattleRewardRelicPanelUI] BattleSceneController unavailable: reward tutorial skipped.", this);
+            firstTutorialRelicGuideActive = false;
+        }
+
+        panelCanvasGroup.interactable = true;
+        panelCanvasGroup.blocksRaycasts = true;
+        itemIntroCoroutine = null;
     }
 
     private IEnumerator FadeInOtherIntroObjects()
@@ -1031,7 +1079,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         int selectedCharacter = -1;
         int selectedSlot = -1;
         if (current != null && !resolving && lockedEquipCharacterIndex < 0 &&
-            itemIntroCoroutine == null && slotPreviewVfxPrefab != null)
+            (itemIntroCoroutine == null || (firstTutorialRelicGuideActive && firstTutorialRelicEquipStep)) &&
+            slotPreviewVfxPrefab != null)
         {
             for (int i = 0; i < entries.Length; i++)
             {
@@ -1040,7 +1089,10 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
                     continue;
                 int firstEmpty = FindFirstEmptyRelicSlot(entry);
                 int highlighted = -1;
-                if (entry.characterHovered || entry.hoveredSlot >= 0)
+                // The preview is a hover effect, including during the tutorial.
+                // Tutorial step 19 only limits the eligible character to Hilt.
+                if ((!firstTutorialRelicGuideActive || (firstTutorialRelicEquipStep && i == 0)) &&
+                    (entry.characterHovered || entry.hoveredSlot >= 0))
                 {
                     bool hoveringOccupiedSlot = entry.hoveredSlot >= 0 &&
                         entry.hoveredSlot < entry.tooltipHovers.Length &&
@@ -1333,8 +1385,10 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void EquipTo(int index)
     {
         if (resolving || current == null || index < 0 || index >= entries.Length) return;
+        if (firstTutorialRelicGuideActive && (!firstTutorialRelicEquipStep || index != 0)) return;
         CharacterEntry e = entries[index];
         if (e == null || string.IsNullOrWhiteSpace(e.id) || DataManager.Instance == null) return;
+        if (firstTutorialRelicGuideActive && !string.Equals(e.id, "Char_01", StringComparison.OrdinalIgnoreCase)) return;
         if (!DataManager.Instance.CharacterRuntimeStore.TryGet(e.id, out CharacterRuntimeData runtime) || runtime == null) return;
         if (!DataManager.Instance.RelicDatabase.TryGet(current.RewardId, out RelicData relic) || relic == null) return;
         ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
@@ -1382,6 +1436,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
         // Update the actual equipped slot before playing its VFX.
         runtime.EquippedRelicIds[destination] = current.RewardId.Trim();
+        if (firstTutorialRelicGuideActive && characterIndex == 0)
+        {
+            // Restore normal canvas ordering before the original equipped-slot
+            // effect is spawned at content/Char1/Relic/Relic01~06.
+            TutorialFocusGuideRunner focus = FindFirstObjectByType<TutorialFocusGuideRunner>(FindObjectsInactive.Include);
+            if (focus != null) focus.CloseFirstRelicEquipFocus();
+            FirstTutorialHiltEquipCommitted = true;
+        }
         if (active) ActiveRelicRuntimeUtility.ResetUses(runtime, relic);
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtime);
         Refresh();

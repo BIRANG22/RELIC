@@ -110,7 +110,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         if (all == null) yield break;
         var guideSteps = new List<TutorialData>();
         foreach (var item in all)
-            if (item != null && item.Order > 4 &&
+            if (item != null && item.Order >= 5 && item.Order <= 12 &&
                 string.Equals(item.TextOutput, "TutorialTooltip", StringComparison.OrdinalIgnoreCase))
                 guideSteps.Add(item);
         if (guideSteps.Count == 0) yield break;
@@ -147,9 +147,82 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         routine = null;
     }
 
+    // End the focus overlay before the equipped slot's existing VFX begins.
+    private bool relicEquipFocusClosed;
+
+    public void CloseFirstRelicEquipFocus()
+    {
+        if (!running || step == null || step.Order != 19 || relicEquipFocusClosed) return;
+        relicEquipFocusClosed = true;
+        HidePresentation();
+    }
+
+    // Separate reward-panel tutorial. Reuse the existing overlay/tooltip layout,
+    // without adding orders 18-19 to the battle timeline reservation guide.
+    public IEnumerator PlayFirstRelicRewardGuide(BattleRewardRelicPanelUI rewardPanel)
+    {
+        if (rewardPanel == null) yield break;
+        var all = DataManager.Instance?.TutorialDatabase?.GetForMap("Map_26");
+        if (all == null) yield break;
+        var rewardSteps = new List<TutorialData>();
+        foreach (var item in all)
+            if (item != null && item.Order >= 18 && item.Order <= 19 &&
+                string.Equals(item.TextOutput, "TutorialTooltip", StringComparison.OrdinalIgnoreCase))
+                rewardSteps.Add(item);
+        rewardSteps.Sort((a, b) => a.Order.CompareTo(b.Order));
+        if (rewardSteps.Count == 0) yield break;
+
+        Active = this;
+        running = true;
+        relicEquipFocusClosed = false;
+        // Reward UI can be in a higher sorting canvas than the battle HUD.
+        int normalOverlayOrder = overlaySortingOrder;
+        overlaySortingOrder = 32500;
+        ResolvePresentation();
+        rewardPanel.SetFirstTutorialRelicEquipStep(false);
+        try
+        {
+            foreach (TutorialData item in rewardSteps)
+            {
+                step = item;
+                // Focus the complete item container rather than its ItemImage child.
+                RectTransform relicItem = item.Order == 18
+                    ? rewardPanel.transform.Find("item") as RectTransform : null;
+                DisplayStep(item, relicItem);
+                // Skip is not allowed during the first relic equip walkthrough.
+                if (skipButton != null) skipButton.gameObject.SetActive(false);
+                if (item.Order == 18)
+                {
+                    // Do not consume the click that dismissed the previous dialogue.
+                    yield return null;
+                    yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+                    yield return null;
+                }
+                else if (item.Order == 19)
+                {
+                    rewardPanel.SetFirstTutorialRelicEquipStep(true);
+                    while (!rewardPanel.FirstTutorialHiltEquipCommitted)
+                    {
+                        if (!relicEquipFocusClosed) UpdatePresentation();
+                        yield return null;
+                    }
+                }
+            }
+        }
+        finally
+        {
+            rewardPanel.SetFirstTutorialRelicEquipStep(false);
+            HidePresentation();
+            overlaySortingOrder = normalOverlayOrder;
+            running = false;
+            if (Active == this) Active = null;
+            step = null;
+        }
+    }
+
     private void Update()
     {
-        if (!running) return;
+        if (!running || relicEquipFocusClosed) return;
         UpdatePresentation();
         // TooltipPanel and TooltipUI may be instantiated after this guide begins.
         if (Time.unscaledTime >= nextTooltipLayerCheck)
@@ -640,7 +713,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         raisedTooltipRoots.Clear();
     }
 
-    private void DisplayStep(TutorialData current)
+    private void DisplayStep(TutorialData current, RectTransform overrideTarget = null)
     {
         tooltipPositionLocked = false;
         if (tooltip != null) tooltip.gameObject.SetActive(true);
@@ -651,7 +724,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         if (skipButton != null) skipButton.gameObject.SetActive(true);
         // The timeline slots are nested under BattleSlot/TimelineBar in the live HUD.
         // Prefer that concrete hierarchy, even when the Excel path omits TimelineBar.
-        uiTarget = FindTimelineSlotTarget(current.HighlightTarget);
+        uiTarget = overrideTarget != null ? overrideTarget : FindTimelineSlotTarget(current.HighlightTarget);
         if (uiTarget == null) uiTarget = FindUi(current.HighlightTarget);
         worldTarget = uiTarget == null ? FindGrid(current.HighlightTarget) : null;
         if (uiTarget == null && worldTarget == null)

@@ -977,18 +977,18 @@ Tutorial_01,12,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,모든 �
 Tutorial_01,13,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.victory.dialogue.01,이 정도 녀석이라면 몇 마리가 덤벼도 문제없지!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 Tutorial_01,14,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.victory.dialogue.02,생각보다 수월하게 끝났군요. 전리품도 빠짐없이 챙겨 가시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 Tutorial_01,15,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.victory.dialogue.03,좋았어! 뭐가 나왔는지 한번 볼까?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_01,16,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.relic.dialogue.01,"오, 이 유물 나한테 잘 어울릴 것 같은데? 내가 챙겨도 되지?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_01,17,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.relic.dialogue.02,좋습니다. 그렇게 하시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_01,18,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.01,유물의 다양한 효과를 조합하여 자신만의 전략적인 빌드를 구성할 수 있습니다.,ClickAny,item,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_01,19,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.02,유물의 고유한 효과는 장착한 캐릭터에게만 적용됩니다.,EquipRelic,content/Char1,tutorial.prompt.equip_relic,힐트에게 유물을 장착하여 계속,Below
+
+
+
+
 
 
 ,,,,,,,,,,
 ,,,,,,,,,,
-
-
-
-
-,,,,,,,,,,
-
-
-
 
 
 
