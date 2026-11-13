@@ -207,6 +207,14 @@ public class BattleResultChecker : MonoBehaviour
         if (!battleEnded)
             yield break;
 
+        // The tutorial dialogue runs only once the reward slots are visible.
+        MapRuntimeData tutorialMap = DataManager.Instance?.MapRuntimeStore?.Get();
+        bool isFirstTutorialReward =
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(tutorialMap?.CurrentMapId, "Map_26", System.StringComparison.OrdinalIgnoreCase);
+        if (isFirstTutorialReward && rewardPanel != null)
+            rewardPanel.SetTutorialRewardIntroPending(true);
+
         battleWinPresentationRoutine = null;
         bool isLastTutorialBattle =
             DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
@@ -227,6 +235,18 @@ public class BattleResultChecker : MonoBehaviour
         else
         {
             OpenRewardPanel();
+        }
+
+        if (isFirstTutorialReward && rewardPanel != null && rewardPanel.isActiveAndEnabled)
+        {
+            // Let every RewardSlot finish its sequential spawn and reveal before dialogue.
+            yield return rewardPanel.WaitForAllRewardSlotsRevealed();
+            TutorialBattleSequence tutorial = Object.FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            if (tutorial != null)
+                yield return tutorial.PlayVictoryDialogueAndGuide("Map_26");
+            else
+                Debug.LogWarning("[BattleResultChecker] TutorialBattleSequence missing; victory dialogue skipped.", this);
+            rewardPanel.SetTutorialRewardIntroPending(false);
         }
     }
 

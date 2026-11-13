@@ -85,6 +85,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     private Action onRewardFlowCompleted;
     private bool pendingEquipmentReward;
     private Coroutine rewardSpawnCoroutine;
+    private bool tutorialRewardIntroPending;
     private Coroutine autoGainCoroutine;
     private bool autoGaining;
     private bool gainButtonUsed;
@@ -262,6 +263,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        tutorialRewardIntroPending = false;
         rewardFlowActive = false;
         StopRewardSpawn();
         StopAutoGain();
@@ -306,6 +308,40 @@ public class BattleRewardPanelUI : MonoBehaviour
             gainButtonText.text = GameLocalization.FormatWithFallback(
                 "battle.reward.acquire_count_format", "획득 {0}",
                 Mathf.Max(0, currentRewards.Count - claimedRewards.Count));
+    }
+
+    // Prevent collecting rewards until the first tutorial victory presentation finishes.
+    public void SetTutorialRewardIntroPending(bool pending)
+    {
+        tutorialRewardIntroPending = pending;
+        UpdateGainButton();
+    }
+
+    // Wait for the final slot's reveal animation, not just its instantiation.
+    public IEnumerator WaitForAllRewardSlotsRevealed()
+    {
+        while (isActiveAndEnabled)
+        {
+            if (rewardSpawnCoroutine != null)
+            {
+                yield return null;
+                continue;
+            }
+
+            bool allRevealed = true;
+            foreach (BattleRewardSlotUI slot in activeSlots)
+            {
+                if (slot == null) continue;
+                CanvasGroup group = slot.GetComponent<CanvasGroup>();
+                if (group == null || !group.interactable)
+                {
+                    allRevealed = false;
+                    break;
+                }
+            }
+            if (allRevealed) yield break;
+            yield return null;
+        }
     }
 
     public void Open(List<BattleRewardData> rewards, Action completedCallback = null)
@@ -523,6 +559,8 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void OnClickGainButton()
     {
+        if (tutorialRewardIntroPending) return;
+
         if (resultArrivalCallback != null)
         {
             System.Action callback = resultArrivalCallback;
@@ -681,7 +719,7 @@ public class BattleRewardPanelUI : MonoBehaviour
                 break;
             }
         }
-        gainButton.interactable = !gainButtonUsed && !autoGaining && remaining > 0 && hasReadySlot;
+        gainButton.interactable = !tutorialRewardIntroPending && !gainButtonUsed && !autoGaining && remaining > 0 && hasReadySlot;
     }
 
     private void OnClickRewardSlot(BattleRewardSlotUI slot)
@@ -691,6 +729,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void OnClickRewardSlot(BattleRewardSlotUI slot, bool fromAutoGain)
     {
+        if (tutorialRewardIntroPending) return;
         if (autoGaining && !fromAutoGain)
             return;
         if (TutorialBattleSequence.IsContinuationActive &&
