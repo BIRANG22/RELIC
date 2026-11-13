@@ -27,9 +27,9 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 
     // Compatibility entrypoints for callers that have not yet migrated to the
     // new tutorial step API. No legacy tutorial state machine is retained.
-    public static bool CanClickTutorialMonster() => !IsPresentationRunning;
+    public static bool CanClickTutorialMonster() => !IsPresentationRunning || TutorialFocusGuideRunner.IsMonsterInspectClickStep;
     public static bool CanClickTutorialPlayer() => !IsPresentationRunning;
-    public static bool CanClickFinalTutorialWorldMonster(MonsterUnit monster) => false;
+    public static bool CanClickFinalTutorialWorldMonster(MonsterUnit monster) => TutorialFocusGuideRunner.AllowsMonsterInfoWorldClick(monster);
     public static bool CanClickFinalTutorialWorldCharacter(string characterId) => false;
     public static void NotifyFinalTutorialWorldCharacterClicked(string characterId) { }
     public static void NotifyFinalTutorialCompoundUsed() { }
@@ -277,13 +277,16 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             yield return RevealAndAdvance();
             if (dialogRoot != null) dialogRoot.SetActive(false);
         }
+        // Preserve the current map before Cleanup resets ActiveTutorialMapId.
+        string guideIndex = string.Equals(ActiveTutorialMapId, "Map_28", StringComparison.OrdinalIgnoreCase)
+            ? "Index04" : "Index01";
         Cleanup();
         // Release the dialogue raycast shield before displaying the guide.
         // Spawn next frame so Destroy(shield) completes first.
         yield return null;
-        TutorialGuideController.UnlockIndex("Index01");
+        TutorialGuideController.UnlockIndex(guideIndex);
         BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
-        if (scene != null) scene.SpawnTutorialGuideAfterDialogue("Index01");
+        if (scene != null) scene.SpawnTutorialGuideAfterDialogue(guideIndex);
         else Debug.LogError("[TutorialBattleSequence] BattleSceneController missing; guide not opened.", this);
         enabled = false;
     }
@@ -335,6 +338,66 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         yield return null;
         while (TutorialGuideController.IsModalOpen)
             yield return null;
+    }
+
+    // Event tutorial: play the two opening lines after the title and room intro,
+    // before the event choices enter the screen.
+    public IEnumerator PlayFirstEventEntranceDialogue()
+    {
+        const string mapId = TutorialBattleEntrySetup.FirstTutorialEventMapId;
+        IReadOnlyList<TutorialData> steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        if (steps == null || steps.Count == 0)
+        {
+            Debug.LogError("[TutorialBattleSequence] Tutorial_02 Map_27 rows are not loaded in TutorialDatabase. Reimport the Tutorial sheet from GameData.xlsx into Unity game data.", this);
+            yield break;
+        }
+
+        var lines = new List<TutorialData>();
+        foreach (TutorialData step in steps)
+        {
+            if (step != null && step.TutorialId == "Tutorial_02" &&
+                step.Order >= 1 && step.Order <= 2 &&
+                string.Equals(step.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
+                lines.Add(step);
+        }
+        if (lines.Count == 0)
+        {
+            Debug.LogWarning("[TutorialBattleSequence] Tutorial_02 dialogue Order 1-2 not found for Map_27. Check the loaded GameData Tutorial sheet and TextOutput=Dialogbox.", this);
+            yield break;
+        }
+        lines.Sort((a, b) => a.Order.CompareTo(b.Order));
+        Debug.Log($"[TutorialBattleSequence] Tutorial_02 event dialogue ready: {lines.Count} line(s).", this);
+
+        dialoguePresentationRunning = true;
+        dialogueInputActive = true;
+        ActiveTutorialMapId = mapId;
+        ResolveUi();
+        if (dialogRoot == null || dialogText == null)
+        {
+            Debug.LogError("[TutorialBattleSequence] Event dialogue UI not found under TutorialMode/Dialogbox.", this);
+            Cleanup();
+            yield break;
+        }
+        HideUi();
+        CreateDialogueShield();
+        // EventRoom uses a separate foreground UI layer. Reuse the existing
+        // overlay path (including its original on-screen size compensation)
+        // rather than creating another dialog presentation mechanism.
+        PutRelicDialogueInFront();
+        if (dialogCanvas != null) dialogCanvas.sortingOrder = 32765;
+        try
+        {
+            foreach (TutorialData line in lines)
+            {
+                ShowDialogue(line);
+                yield return RevealAndAdvance();
+                if (dialogRoot != null) dialogRoot.SetActive(false);
+            }
+        }
+        finally
+        {
+            Cleanup();
+        }
     }
 
     // Triggered only after the first tutorial relic panel has finished its entrance animation.

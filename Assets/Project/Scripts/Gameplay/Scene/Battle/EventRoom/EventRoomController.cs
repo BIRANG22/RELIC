@@ -208,6 +208,7 @@ public class EventRoomController : MonoBehaviour
     private CanvasGroup eventChoiceGradationCanvasGroup;
     private Coroutine terminalChoiceFadeRoutine;
     private bool waitForEventEntranceReveal;
+    private bool pendingTutorialEventGuide;
 
     /// <summary>
     /// 현재 마우스 위치에서 실제 이벤트 UI가 월드 캐릭터를 가리고 있는지 확인합니다.
@@ -356,6 +357,7 @@ public class EventRoomController : MonoBehaviour
         if (coinFlipPresenter != null) coinFlipPresenter.Hide();
         SetNextButtonVisible(false);
         waitForEventEntranceReveal = true;
+        pendingTutorialEventGuide = false;
         ResetEventChoiceScrollViewPosition();
         ResetTerminalChoiceVisuals();
 
@@ -680,6 +682,7 @@ public class EventRoomController : MonoBehaviour
 
         StopEventEntranceTitleRoutine();
         waitForEventEntranceReveal = true;
+        pendingTutorialEventGuide = false;
         ResetEventChoiceScrollViewPosition();
         ResetEventChoiceScrollViewVisualState();
         ResetTerminalChoiceVisuals();
@@ -6670,6 +6673,40 @@ public class EventRoomController : MonoBehaviour
         while (BattleMapIntroText.IsAnyPlayingOrVisible())
             yield return null;
 
+        // MapRuntimeStore.CurrentMapId can lag behind an event room restored from a save.
+        // The event definition is already bound here, so recognize the tutorial chest by
+        // its EventId as well as the map ID, for both normal entry and resumed entry.
+        string currentMapId = DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId;
+        string currentEventId = EventIdUtility.Normalize(currentEventDefinition?.EventId ?? pendingEventId);
+        bool isFirstTutorialEvent =
+            string.Equals(currentMapId, TutorialBattleEntrySetup.FirstTutorialEventMapId,
+                StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(currentEventId, "Event_T_01", StringComparison.OrdinalIgnoreCase);
+        if (isFirstTutorialEvent && isActiveAndEnabled && isDataEventActive && !isEventResolved)
+        {
+            TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            if (sequence == null)
+            {
+                BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+                if (scene != null)
+                    sequence = scene.gameObject.AddComponent<TutorialBattleSequence>();
+            }
+            if (sequence != null)
+            {
+                Debug.Log($"[EventRoomController] Starting Tutorial_02 dialogue; map={currentMapId}, event={currentEventId}.", this);
+                yield return sequence.PlayFirstEventEntranceDialogue();
+                // Show the event guide only after the choices finish entering.
+                pendingTutorialEventGuide = isActiveAndEnabled && isDataEventActive && !isEventResolved;
+            }
+            else
+                Debug.LogError($"[EventRoomController] Tutorial_02 dialogue cannot start: TutorialBattleSequence/BattleSceneController missing; map={currentMapId}, event={currentEventId}.", this);
+        }
+        else if (string.Equals(currentEventId, "Event_T_01", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(currentMapId, TutorialBattleEntrySetup.FirstTutorialEventMapId, StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.LogWarning($"[EventRoomController] Tutorial_02 dialogue skipped: active={isActiveAndEnabled}, dataEvent={isDataEventActive}, resolved={isEventResolved}, map={currentMapId}, event={currentEventId}.", this);
+        }
+
         eventEntranceTitleRoutine = null;
         if (isActiveAndEnabled && isDataEventActive && !isEventResolved)
             StartEventChoiceScrollViewAnimation();
@@ -6784,16 +6821,36 @@ public class EventRoomController : MonoBehaviour
         }
 
         if (eventChoiceScrollCanvasGroup != null)
-        {
             eventChoiceScrollCanvasGroup.alpha = 1f;
-            eventChoiceScrollCanvasGroup.interactable = true;
-            eventChoiceScrollCanvasGroup.blocksRaycasts = true;
-        }
-
         if (eventChoiceGradationCanvasGroup != null)
             eventChoiceGradationCanvasGroup.alpha = 1f;
 
-        SetChoiceSlotsInteractable(true);
+        // The first event's choices are now fully visible. Keep their input
+        // disabled until the newly unlocked Index03 guide has been closed.
+        if (pendingTutorialEventGuide)
+        {
+            pendingTutorialEventGuide = false;
+            BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+            if (scene != null)
+            {
+                scene.SpawnTutorialGuideAfterDialogue("Index03");
+                yield return null;
+                while (TutorialGuideController.IsModalOpen && isActiveAndEnabled && !isEventResolved)
+                    yield return null;
+            }
+            else
+                Debug.LogError("[EventRoomController] BattleSceneController missing; Index03 guide cannot open.", this);
+        }
+
+        if (isActiveAndEnabled && isDataEventActive && !isEventResolved)
+        {
+            if (eventChoiceScrollCanvasGroup != null)
+            {
+                eventChoiceScrollCanvasGroup.interactable = true;
+                eventChoiceScrollCanvasGroup.blocksRaycasts = true;
+            }
+            SetChoiceSlotsInteractable(true);
+        }
         eventChoiceScrollMoveRoutine = null;
     }
 

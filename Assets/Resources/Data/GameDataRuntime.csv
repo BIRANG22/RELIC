@@ -981,16 +981,16 @@ Tutorial_01,16,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.relic.dialogue.
 Tutorial_01,17,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.relic.dialogue.02,좋습니다. 그렇게 하시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 Tutorial_01,18,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.01,유물의 다양한 효과를 조합하여 자신만의 전략적인 빌드를 구성할 수 있습니다.,ClickAny,item,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_01,19,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.02,유물의 고유한 효과는 장착한 캐릭터에게만 적용됩니다.,EquipRelic,content/Char1,tutorial.prompt.equip_relic,힐트에게 유물을 장착하여 계속,Below
-
-
-
-
-
-
-,,,,,,,,,,
-,,,,,,,,,,
-
-
+Tutorial_02,1,Map_27,,,,Dialogue,Char_01,Dialogbox,tutorial.t02.encounter.dialogue.01,어? 저기 상자가 하나 있는데?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,2,Map_27,,,,Dialogue,Char_02,Dialogbox,tutorial.t02.encounter.dialogue.02,누군가 두고 간 것 같군요. 쓸 만한 물건이 있을지도 모르겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,1,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.encounter.dialogue.01	,이번 녀석은 아까보다 훨씬 강해 보이는데?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,2,Map_28,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.encounter.dialogue.02	,이전과는 확실히 다르군요. 섣불리 움직여선 안 되겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,3,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.encounter.dialogue.03	,그렇다고 가만히 있을 순 없지! 정면으로 밀어붙이자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,4,Map_28,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.encounter.dialogue.04	,무작정 덤비기보다는 빈틈을 노리는 편이 좋겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,5,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.01,변이체를 선택하여 상세 정보를 확인해 보겠습니다.,ClickTarget,드라우그 Collider2D,tutorial.prompt.click_monster,변이체를 클릭하여 계속,Below
+Tutorial_03,6,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.02,보유 능력의 효과를 확인하면 변이체의 행동을 예측하는 데 도움이 됩니다.,ClickAny,MonsterInfoPanel/SkillList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_03,7,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.03,변이체가 보유한 고유 효과와 현재 적용된 상태 효과를 확인할 수 있습니다.,ClickAny,MonsterInfoPanel/StatusEffectList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_03,8,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.04,정보를 확인했다면 패널을 닫고 전투를 준비하세요.,ClickTarget,MonsterInfoPanel/BackButton,tutorial.prompt.click_button,버튼을 클릭하여 계속,Right
 
 
 
@@ -1069,5 +1069,13 @@ Index02,2,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02
 변환된 블루 더스티움은 다양한 기능(해금, 성장 등)에 사용됩니다."
 Index02,3,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02.page03.name,아이템,tutorial.guide.index02.page03.explanation,"각 변이체는 고유한 아이템을 가지고 있으며, 처치 시 일정 확률로 획득할 수 있습니다.
 이러한 아이템은 거점에서 소모품을 제작하는 재료로 사용됩니다."
+Index03,1,tutorial.guide.index03.name,탐사 이벤트,tutorial.guide.index02.page01.name,사건 구역,tutorial.guide.index03.page01.explanation,"탐사 중에는 다양한 사건을 경험할 수 있는 구역이 존재합니다.
+해당 구역에 진입하면 여러 상황을 마주하고 선택을 통해 사건을 진행하게 됩니다."
+Index03,2,tutorial.guide.index03.name,탐사 이벤트,tutorial.guide.index02.page02.name,사건의 종류,tutorial.guide.index03.page02.explanation,"사건에는 확률에 따라 보상을 얻거나, 대가를 지불하고 보상을 획득하는 유형이 있습니다.
+또한 기억 발현과 유물 획득, 휴식과 상점 등 다양한 사건도 존재합니다."
+Index04,1,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page01.name,정보 확인,tutorial.guide.index04.page01.explanation,변이체를 선택하면 보유 능력과 상태 효과 등 전투에 필요한 정보를 확인할 수 있습니다.
+Index04,2,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page02.name,보유 능력,tutorial.guide.index04.page02.explanation,"변이체가 행동 타임라인에 등록하는 능력의 효과를 확인하고, 다음 행동을 예측할 수 있습니다."
+Index04,3,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page03.name,상태 효과,tutorial.guide.index04.page03.explanation,변이체가 보유한 고유 효과와 현재 적용된 강화 및 약화 효과를 확인할 수 있습니다.
+
 
 
