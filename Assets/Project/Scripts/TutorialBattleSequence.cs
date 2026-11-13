@@ -182,7 +182,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         dialogueInputActive = true;
         foreach (TutorialData step in steps)
         {
-            if (step == null || !string.Equals(step.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
+            if (step == null || step.Order > 4 ||
+                !string.Equals(step.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
                 continue;
             ShowDialogue(step);
             yield return RevealAndAdvance();
@@ -197,6 +198,55 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (scene != null) scene.SpawnTutorialGuideAfterDialogue("Index01");
         else Debug.LogError("[TutorialBattleSequence] BattleSceneController missing; guide not opened.", this);
         enabled = false;
+    }
+
+    // Reuse the opening dialogue presentation for the first battle's victory lines.
+    // Called after the battle-end text and before the reward panel is opened.
+    public IEnumerator PlayVictoryDialogueAndGuide(string mapId)
+    {
+        IReadOnlyList<TutorialData> steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        if (steps == null) yield break;
+
+        var victoryLines = new List<TutorialData>();
+        foreach (TutorialData item in steps)
+            if (item != null && item.Order > 12 &&
+                string.Equals(item.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
+                victoryLines.Add(item);
+        if (victoryLines.Count == 0) yield break;
+        victoryLines.Sort((a, b) => a.Order.CompareTo(b.Order));
+
+        dialoguePresentationRunning = true;
+        dialogueInputActive = true;
+        ActiveTutorialMapId = mapId;
+        ResolveUi();
+        HideUi();
+        CreateDialogueShield();
+        try
+        {
+            foreach (TutorialData line in victoryLines)
+            {
+                ShowDialogue(line);
+                yield return RevealAndAdvance();
+                if (dialogRoot != null) dialogRoot.SetActive(false);
+            }
+        }
+        finally
+        {
+            Cleanup();
+        }
+
+        // The shield must be destroyed before the modal guide takes input.
+        yield return null;
+        BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+        if (scene == null)
+        {
+            Debug.LogError("[TutorialBattleSequence] BattleSceneController missing; Index02 not opened.", this);
+            yield break;
+        }
+        scene.SpawnTutorialGuideAfterDialogue("Index02");
+        yield return null;
+        while (TutorialGuideController.IsModalOpen)
+            yield return null;
     }
 
     private static bool HasVisibleGridCells(GridManager grid)
