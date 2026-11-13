@@ -6,6 +6,7 @@ public static class BattleUIBlurRootCollector
 {
     private const string MenuRootName = "MenuRoot";
     private const string MenuPanelName = "MenuPanel";
+    private const string SettingButtonName = "SettingButton";
 
     public static void ConfigureForPanel(GameObject panelRoot)
     {
@@ -40,7 +41,33 @@ public static class BattleUIBlurRootCollector
         if (blurBackground == null)
             return;
 
-        blurBackground.SetRuntimeBlurredUiRoots(Collect(menuPanel.transform));
+        List<GameObject> roots = Collect(menuPanel.transform);
+        AddMenuSettingButton(roots, menuPanel.transform);
+        blurBackground.SetRuntimeBlurredUiRoots(roots);
+    }
+
+    private static void AddMenuSettingButton(List<GameObject> roots, Transform menuPanelTransform)
+    {
+        GameObject[] activeObjects = UnityEngine.Object.FindObjectsByType<GameObject>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < activeObjects.Length; i++)
+        {
+            GameObject candidate = activeObjects[i];
+            if (candidate == null || !string.Equals(candidate.name, SettingButtonName, StringComparison.Ordinal))
+                continue;
+
+            if (menuPanelTransform != null && candidate.scene != menuPanelTransform.gameObject.scene)
+                continue;
+
+            Transform candidateTransform = candidate.transform;
+            if (IsSelfOrChildOf(menuPanelTransform, candidateTransform))
+                continue;
+
+            if (!roots.Contains(candidate))
+                roots.Add(candidate);
+        }
     }
 
     private static List<GameObject> Collect(Transform ownerTransform)

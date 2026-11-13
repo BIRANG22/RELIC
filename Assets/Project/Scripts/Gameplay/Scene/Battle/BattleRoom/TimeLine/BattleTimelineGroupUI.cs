@@ -31,6 +31,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     [SerializeField] private Color playerReservedColor = new Color32(0x0A, 0x46, 0x9E, 0xFF);
     [SerializeField] private Color enemyReservedColor = new Color32(0xDF, 0x4D, 0x56, 0xFF);
     [SerializeField] private Color deadReservationColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    [SerializeField] private Color flipMergedHighlightColor = new Color32(0xFF, 0xD2, 0x58, 0xFF);
 
     [Header("Empty Use Skill Slots")]
     [SerializeField] private Color emptyUseSkillColor = new Color32(0xFF, 0xFF, 0xFF, 0x05);
@@ -2339,7 +2340,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
         Color rootColor = ownerDead
             ? deadReservationColor
-            : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
+            : entry.IsPlayer && entry.PlayerCommand != null && entry.PlayerCommand.FlipBeforeAction
+                ? flipMergedHighlightColor
+                : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
         Color contentColor = ownerDead ? deadReservationColor : Color.white;
 
         GameObject root = GetSkillHoverObject(skillImage);

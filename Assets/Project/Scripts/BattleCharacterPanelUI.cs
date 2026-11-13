@@ -9,6 +9,20 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 
+public static class BattleKeyboardShortcutBindings
+{
+    public const KeyCode Move = KeyCode.F;
+    public const KeyCode Flip = KeyCode.D;
+    public const KeyCode Compound = KeyCode.C;
+    public const KeyCode Undo = KeyCode.Z;
+    public const KeyCode Redo = KeyCode.X;
+
+    public const KeyCode Skill01 = KeyCode.Q;
+    public const KeyCode Skill02 = KeyCode.W;
+    public const KeyCode Skill03 = KeyCode.E;
+    public const KeyCode Skill04 = KeyCode.R;
+}
+
 /// <summary>
 /// BattleCharacterPanel의 Char01~03 상시 정보, Char_Select 선택, Active 영역과 패널/BattleSlot 이동을 관리합니다.
 /// Char_Select는 HUDPortraitImage / HUDSelectedPortraitImage를 사용하며 선택 상태에서는 1.25 스케일을 유지합니다.
@@ -2772,29 +2786,29 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 첫 전투 데이터 기반 튜토리얼은 안내 단계에서 허용한 단축키만 실행합니다.
         if (TutorialBattleSequence.IsPresentationRunning)
         {
-            if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.A) && Input.GetKeyDown(KeyCode.A))
+            if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Move) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Move))
             {
                 OnMoveButtonClicked();
                 return;
             }
-            if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.Q) && Input.GetKeyDown(KeyCode.Q))
+            if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Skill01) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill01))
             {
                 StartKeyboardSkillWithRangePreview(0, skill01Button);
                 return;
             }
             if (TutorialBattleSequence.IsFinalTutorialRunning)
             {
-                if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.S) && Input.GetKeyDown(KeyCode.S))
+                if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Flip) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Flip))
                 {
                     OnFlipButtonClicked();
                     return;
                 }
-                if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.D) && Input.GetKeyDown(KeyCode.D))
+                if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Compound) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Compound))
                 {
                     OnItemButtonClicked();
                     return;
                 }
-                if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.R) && Input.GetKeyDown(KeyCode.R))
+                if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Skill04) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill04))
                 {
                     StartKeyboardSkillWithRangePreview(3, skill04Button);
                     return;
@@ -2805,13 +2819,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (BattleFirstTutorialController.IsInputRestricted)
         {
-            if (Input.GetKeyDown(KeyCode.A) && BattleFirstTutorialController.CanSelectMove)
+            if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Move) && BattleFirstTutorialController.CanSelectMove)
             {
                 OnMoveButtonClicked();
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.Q) && BattleFirstTutorialController.CanSelectSkill01)
+            if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill01) && BattleFirstTutorialController.CanSelectSkill01)
             {
                 StartKeyboardSkillWithRangePreview(0, skill01Button);
                 return;
@@ -2820,43 +2834,43 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Move))
         {
             OnMoveButtonClicked();
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Flip))
         {
             OnFlipButtonClicked();
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Compound))
         {
             OnItemButtonClicked();
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill01))
         {
             StartKeyboardSkillWithRangePreview(0, skill01Button);
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill02))
         {
             StartKeyboardSkillWithRangePreview(1, skill02Button);
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill03))
         {
             StartKeyboardSkillWithRangePreview(2, skill03Button);
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill04))
         {
             StartKeyboardSkillWithRangePreview(3, skill04Button);
             return;
@@ -3951,6 +3965,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void EnsureTimelineSkillDragSources()
     {
         ConfigureTimelineSkillDragSource(moveButton, moveIconImage, -1);
+        ConfigureTimelineFacingFlipDragSource(
+            flipButton,
+            flipButton != null ? FindIconImage(flipButton.transform) : null);
         ConfigureTimelineSkillDragSource(skill01Button, skill01IconImage, 0);
         ConfigureTimelineSkillDragSource(skill02Button, skill02IconImage, 1);
         ConfigureTimelineSkillDragSource(skill03Button, skill03IconImage, 2);
@@ -3967,6 +3984,18 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (source == null)
             source = button.gameObject.AddComponent<BattleCharacterSkillDragSource>();
         source.Configure(this, displaySlotIndex, icon);
+    }
+
+    private void ConfigureTimelineFacingFlipDragSource(Button button, Image icon)
+    {
+        if (button == null)
+            return;
+
+        BattleCharacterSkillDragSource source =
+            button.GetComponent<BattleCharacterSkillDragSource>();
+        if (source == null)
+            source = button.gameObject.AddComponent<BattleCharacterSkillDragSource>();
+        source.ConfigureFacingFlip(this, icon);
     }
 
     public bool TryBeginTimelineSkillDrag(
@@ -3993,12 +4022,47 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         EnsureTurnExecutor();
-        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+        bool canAcceptInput = turnExecutor == null || turnExecutor.CanAcceptPlayerInput;
+        bool hasPreviewResources = CanUseSkillWithPreviewResource(skillData);
+        if (!CanBeginNewSkillDrag(canAcceptInput, hasPreviewResources))
             return false;
 
         TimelineReservationDragContext.BeginNewSkill(
             boundRuntime,
             skillData,
+            icon != null ? icon.sprite : null,
+            eventData);
+        return TimelineReservationDragContext.Active != null;
+    }
+
+    public static bool CanBeginNewSkillDrag(
+        bool canAcceptInput,
+        bool hasPreviewResources)
+    {
+        return canAcceptInput && hasPreviewResources;
+    }
+
+    public bool TryBeginTimelineFacingFlipDrag(
+        Image icon,
+        PointerEventData eventData)
+    {
+        if (boundRuntime == null || boundRuntime.IsDead ||
+            TimelineReservationDragContext.Active != null)
+        {
+            return false;
+        }
+
+        SkillMasterData moveSkillData = ResolveSkillData(boundRuntime.MoveSkillId);
+        if (moveSkillData == null)
+            return false;
+
+        EnsureTurnExecutor();
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return false;
+
+        TimelineReservationDragContext.BeginNewFacingFlip(
+            boundRuntime,
+            moveSkillData,
             icon != null ? icon.sprite : null,
             eventData);
         return TimelineReservationDragContext.Active != null;
@@ -4737,6 +4801,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (preview?.Command != null && !preview.Command.IsSkillCostResolved)
             return false;
 
+        if (preview?.Command != null)
+        {
+            return CanAffordPreviewCosts(
+                boundRuntime.PreviewHP,
+                boundRuntime.PreviewCost,
+                boundRuntime.PreviewResource,
+                boundRuntime.PreviewShield,
+                preview.Command.HPCost,
+                preview.Command.Cost,
+                preview.Command.ResourceCost,
+                preview.Command.ShieldCost);
+        }
+
         int requiredAmount = preview != null
             ? preview.PayAmount
             : Mathf.Max(0, skillData.ResourceCostValue);
@@ -4755,6 +4832,22 @@ public class BattleCharacterPanelUI : MonoBehaviour
             default:
                 return requiredAmount <= 0 || boundRuntime.PreviewCost >= requiredAmount;
         }
+    }
+
+    public static bool CanAffordPreviewCosts(
+        int previewHP,
+        int previewCost,
+        int previewResource,
+        int previewShield,
+        int hpCost,
+        int cost,
+        int resourceCost,
+        int shieldCost)
+    {
+        return previewHP > Mathf.Max(0, hpCost) &&
+               previewCost >= Mathf.Max(0, cost) &&
+               previewResource >= Mathf.Max(0, resourceCost) &&
+               previewShield >= Mathf.Max(0, shieldCost);
     }
 
     private static void SetSkillBackgroundAlwaysVisible(Button button)

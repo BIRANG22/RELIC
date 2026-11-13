@@ -140,6 +140,9 @@ public class BattleActionSimulationService
         if (!playerPositions.TryGetValue(command.CharacterId, out int currentGrid))
             return;
 
+        if (command.FlipBeforeAction)
+            playerDirections[command.CharacterId] = GetOppositeDirection(GetPlayerDirection(command));
+
         if (command.ReservedMoveGridIndex >= 0)
         {
             SimulatePlayerMove(command, currentGrid);

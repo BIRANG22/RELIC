@@ -145,7 +145,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public bool CanAddCommand(PlayerReservedCommand command)
     {
-        return command != null && command.TimelineEntryCost > 0 &&
+        return command != null && (command.IsFacingFlipCommand || command.TimelineEntryCost > 0) &&
                RemainingCommandCapacity >= command.TimelineEntryCost;
     }
 

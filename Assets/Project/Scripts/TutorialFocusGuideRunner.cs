@@ -229,10 +229,10 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         if (key == KeyCode.Escape) return true;
         switch (Active.step?.Order ?? -1)
         {
-            case 5: return key == KeyCode.A;
+            case 5: return key == BattleKeyboardShortcutBindings.Move;
             case 7:
             case 10:
-            case 11: return key == KeyCode.Q;
+            case 11: return key == BattleKeyboardShortcutBindings.Skill01;
             case 8: return key == KeyCode.Alpha2;
             case 9: return key == KeyCode.Tab;
             case 12: return key == KeyCode.Space;

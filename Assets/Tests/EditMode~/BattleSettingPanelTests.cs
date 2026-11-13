@@ -3,6 +3,8 @@ using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Linq;
 
 public sealed class BattleSettingPanelTests
 {
@@ -259,6 +261,57 @@ public sealed class BattleSettingPanelTests
 
             Assert.That(BattleSettingPanelUI.TryCloseOpenPanel(), Is.True);
             Assert.That(panel.activeSelf, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(panel);
+            Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void ConfigureForMenuPanel_IncludesSettingButtonAndItsImageHierarchy()
+    {
+        GameObject menuRoot = new GameObject("MenuRoot", typeof(RectTransform));
+        GameObject settingButton = new GameObject("SettingButton", typeof(RectTransform));
+        GameObject settingImage = new GameObject("Image", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        GameObject menuPanel = new GameObject("MenuPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(UIBlurBackground));
+        try
+        {
+            settingButton.transform.SetParent(menuRoot.transform, false);
+            settingImage.transform.SetParent(settingButton.transform, false);
+            menuPanel.transform.SetParent(menuRoot.transform, false);
+
+            BattleUIBlurRootCollector.ConfigureForMenuPanel(menuPanel);
+
+            UIBlurBackground blur = menuPanel.GetComponent<UIBlurBackground>();
+            Assert.That(blur.BlurredUiRoots.Contains(settingButton), Is.True);
+            Assert.That(settingImage.transform.IsChildOf(settingButton.transform), Is.True);
+        }
+        finally
+        {
+            Object.DestroyImmediate(menuRoot);
+        }
+    }
+
+    [Test]
+    public void MonsterInfoEscape_DefersWhileSettingPanelIsOpenAndAfterItCloses()
+    {
+        GameObject owner = new GameObject("SettingButtonOwner");
+        GameObject panel = new GameObject("Setting_panel");
+        try
+        {
+            BattleSettingPanelUI controller = owner.AddComponent<BattleSettingPanelUI>();
+            FieldInfo panelRootField = typeof(BattleSettingPanelUI).GetField(
+                "panelRoot",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(panelRootField, Is.Not.Null);
+            panelRootField.SetValue(controller, panel);
+            panel.SetActive(true);
+
+            Assert.That(BattleMonsterInfoCanvasUI.ShouldDeferEscapeToBattleSettingPanel(), Is.True);
+            Assert.That(BattleSettingPanelUI.TryCloseOpenPanel(), Is.True);
+            Assert.That(BattleMonsterInfoCanvasUI.ShouldDeferEscapeToBattleSettingPanel(), Is.True);
         }
         finally
         {
