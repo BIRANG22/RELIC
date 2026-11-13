@@ -1036,7 +1036,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: event..09.Skylight
+  soundId:
   volume: 1
   playDelay: 0
   playOnEnable: 0
@@ -1706,8 +1706,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startImageObject: {fileID: 0}
   buttonContent: {fileID: 910000000000000016}
-  hoverButtonMoveOffset: {x: 0, y: 5, z: 0}
-  hoverButtonScale: {x: 1, y: 1, z: 1}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
   useHoverZRotation: 0
   hoverRotationTarget: {fileID: 0}
@@ -2216,7 +2216,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: 
+  soundId:
   volume: 1
   playDelay: 0
   playOnEnable: 0
@@ -23025,7 +23025,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: 
+  soundId:
   volume: 1
   playDelay: 0
   playOnEnable: 0
@@ -27619,10 +27619,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: event..09.Skylight
+  soundId:
   volume: 1
   playDelay: 0
-  playOnEnable: 1
+  playOnEnable: 0
   playOnHover: 0
   hoverSoundId: ui.normal.click
   hoverVolume: 1
@@ -32643,7 +32643,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: 
+  soundId:
   volume: 1
   playDelay: 0
   playOnEnable: 0
@@ -46002,7 +46002,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: 
+  soundId:
   volume: 1
   playDelay: 0
   playOnEnable: 0
@@ -79817,7 +79817,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: event..09.Skylight
+  soundId: 
   volume: 1
   playDelay: 0
   playOnEnable: 0
@@ -114976,8 +114976,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startImageObject: {fileID: 0}
   buttonContent: {fileID: 910000000000000038}
-  hoverButtonMoveOffset: {x: 0, y: 5, z: 0}
-  hoverButtonScale: {x: 1, y: 1, z: 1}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
   useHoverZRotation: 0
   hoverRotationTarget: {fileID: 0}
@@ -146833,8 +146833,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startImageObject: {fileID: 0}
   buttonContent: {fileID: 910000000000000060}
-  hoverButtonMoveOffset: {x: 0, y: 5, z: 0}
-  hoverButtonScale: {x: 1, y: 1, z: 1}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
   useHoverZRotation: 0
   hoverRotationTarget: {fileID: 0}
