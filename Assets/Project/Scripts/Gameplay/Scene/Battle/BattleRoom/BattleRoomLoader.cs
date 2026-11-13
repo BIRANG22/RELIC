@@ -655,11 +655,28 @@ public class BattleRoomLoader : MonoBehaviour
 
     public void BeginDeferredTutorialSequence()
     {
-        if (!IsTutorialBattleRun()) return;
         if (!isLoaded || string.IsNullOrEmpty(loadedMapId)) return;
         var data = DataManager.Instance;
         var steps = data?.TutorialDatabase?.GetForMap(loadedMapId);
         if (steps == null || steps.Count == 0) return;
+        // The second tutorial battle can be entered after resuming a run, even if
+        // the battle runtime no longer carries the original tutorial flag.
+        bool isThirdTutorial = string.Equals(loadedMapId, TutorialBattleEntrySetup.SecondTutorialMapId,
+            System.StringComparison.OrdinalIgnoreCase);
+        if (isThirdTutorial)
+        {
+            isThirdTutorial = false;
+            foreach (var step in steps)
+            {
+                if (step != null && string.Equals(step.TutorialId, "Tutorial_03",
+                    System.StringComparison.OrdinalIgnoreCase))
+                {
+                    isThirdTutorial = true;
+                    break;
+                }
+            }
+        }
+        if (!IsTutorialBattleRun() && !isThirdTutorial) return;
         var runner = GetComponent<TutorialBattleSequence>();
         if (runner == null) runner = gameObject.AddComponent<TutorialBattleSequence>();
         // Reactivate the shared runner when continuing after a previous tutorial.

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,8 +17,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     public static TutorialFocusGuideRunner Active { get; private set; }
     public static bool IsRunning => Active != null && Active.running;
 
-    [SerializeField] private Vector2 tooltipOffset = new Vector2(0f, 165f);
-    [SerializeField, Min(0f)] private float tooltipSideGap = 18f;
+    private const float TooltipGap = 10f;
     [SerializeField] private Vector2 highlightPadding = new Vector2(14f, 14f);
     [SerializeField] private string tooltipObjectName = "TutorialTooltip";
     [SerializeField] private string highlightObjectName = "HighlightFrame";
@@ -146,6 +146,137 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         step = null;
         routine = null;
     }
+
+    // Tutorial_03: inspect the world monster, then the dynamically populated info panel.
+    public void BeginMonsterInfoAfterPanel(string mapId)
+    {
+        if (routine != null) StopCoroutine(routine);
+        running = false;
+        routine = StartCoroutine(RunMonsterInfoGuide(mapId));
+    }
+
+    private IEnumerator RunMonsterInfoGuide(string mapId)
+    {
+        yield return null;
+        while (TutorialGuideController.IsModalOpen) yield return null;
+        yield return null;
+
+        var all = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        var steps = new List<TutorialData>();
+        if (all != null)
+            foreach (var item in all)
+                if (item != null && item.Order >= 5 && item.Order <= 8 &&
+                    string.Equals(item.TextOutput, "TutorialTooltip", StringComparison.OrdinalIgnoreCase))
+                    steps.Add(item);
+        steps.Sort((a, b) => a.Order.CompareTo(b.Order));
+        if (steps.Count != 4)
+        {
+            Debug.LogWarning("[TutorialFocusGuideRunner] Tutorial_03 requires Tooltip orders 5-8 in the Tutorial sheet.", this);
+            yield break;
+        }
+
+        Active = this;
+        running = true;
+        ResolvePresentation();
+        BattleMonsterInfoCanvasUI panel = FindFirstObjectByType<BattleMonsterInfoCanvasUI>(FindObjectsInactive.Include);
+        try
+        {
+            foreach (TutorialData item in steps)
+            {
+                step = item;
+                // Allow the monster's real Collider2D to receive the initial click.
+                if (item.Order == 5)
+                {
+                    MonsterUnit monster = FindTutorialMonster();
+                    worldTarget = monster != null ? monster.transform : null;
+                    DisplayStep(item);
+                    if (skipButton != null) skipButton.gameObject.SetActive(false);
+                    uiTarget = null;
+                    worldTarget = monster != null ? monster.transform : null;
+                    UpdatePresentation();
+                    while (running && (monster == null || MonsterUnit.CurrentInfoSelectedMonster != monster))
+                    {
+                        UpdatePresentation();
+                        yield return null;
+                    }
+                    // Wait for the monster-info panel's reveal and spawned UI.
+                    while (running && !IsMonsterInfoReady(panel)) yield return null;
+                }
+                else
+                {
+                    // The actual list roots contain instantiated skill/status prefabs.
+                    string path = item.Order == 6 ? "MonsterInfoPanel/SkillList" :
+                                  item.Order == 7 ? "MonsterInfoPanel/StatusEffectList" :
+                                  "MonsterInfoPanel/BackButton";
+                    RectTransform target = FindUi(path);
+                    if (target == null)
+                    {
+                        // Older prefab variants may have additional wrappers.
+                        string leaf = item.Order == 6 ? "SkillList" : item.Order == 7 ? "StatusEffectList" : "BackButton";
+                        Transform panelRoot = panel != null ? FindDescendant(panel.transform, "MonsterInfoPanel") : null;
+                        target = FindDescendant(panelRoot, leaf) as RectTransform;
+                    }
+                    DisplayStep(item, target);
+                    // Guided inspection is mandatory; don't let SkipButton bypass it.
+                    if (skipButton != null) skipButton.gameObject.SetActive(false);
+                    if (item.Order == 6 || item.Order == 7)
+                    {
+                        yield return null;
+                        while (Input.GetMouseButton(0)) yield return null;
+                        while (running && !Input.GetMouseButtonDown(0))
+                        {
+                            UpdatePresentation();
+                            yield return null;
+                        }
+                    }
+                    else
+                    {
+                        while (running && MonsterUnit.CurrentInfoSelectedMonster != null)
+                        {
+                            UpdatePresentation();
+                            yield return null;
+                        }
+                    }
+                }
+                yield return null;
+            }
+        }
+        finally
+        {
+            HidePresentation();
+            running = false;
+            step = null;
+            if (Active == this) Active = null;
+            routine = null;
+        }
+    }
+
+    private static MonsterUnit FindTutorialMonster()
+    {
+        // Tutorial_03 inspects Draugr (Mon_07), not the first active monster.
+        // RuntimeData.MonsterId remains stable when hierarchy names/order change.
+        foreach (MonsterUnit monster in FindObjectsByType<MonsterUnit>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead &&
+                string.Equals(monster.RuntimeData.MonsterId, "Mon_07", StringComparison.OrdinalIgnoreCase))
+                return monster;
+        return null;
+    }
+
+    private static bool IsMonsterInfoReady(BattleMonsterInfoCanvasUI canvas)
+    {
+        if (canvas == null || MonsterUnit.CurrentInfoSelectedMonster == null) return false;
+        Transform root = FindDescendant(canvas.transform, "MonsterInfoPanel");
+        if (root == null || !root.gameObject.activeInHierarchy) return false;
+        CanvasGroup group = root.GetComponent<CanvasGroup>();
+        return group == null || (group.alpha >= 0.999f && group.blocksRaycasts);
+    }
+
+    public static bool IsMonsterInspectClickStep => IsRunning && Active.step != null &&
+        Active.step.Order == 5 && string.Equals(Active.step.TutorialId, "Tutorial_03", StringComparison.OrdinalIgnoreCase);
+
+    public static bool AllowsMonsterInfoWorldClick(MonsterUnit monster) =>
+        IsRunning && Active.step != null && Active.step.Order == 5 &&
+        monster != null && monster == FindTutorialMonster();
 
     // End the focus overlay before the equipped slot's existing VFX begins.
     private bool relicEquipFocusClosed;
@@ -727,6 +858,11 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         uiTarget = overrideTarget != null ? overrideTarget : FindTimelineSlotTarget(current.HighlightTarget);
         if (uiTarget == null) uiTarget = FindUi(current.HighlightTarget);
         worldTarget = uiTarget == null ? FindGrid(current.HighlightTarget) : null;
+        if (worldTarget == null && IsMonsterInspectClickStep)
+        {
+            MonsterUnit monster = FindTutorialMonster();
+            if (monster != null) worldTarget = monster.transform;
+        }
         if (uiTarget == null && worldTarget == null)
             Debug.LogWarning($"[TutorialFocusGuideRunner] Highlight target missing: {current.HighlightTarget} (order {current.Order})", this);
         if (tooltipText != null)
@@ -862,8 +998,38 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         {
             screenMin = new Vector2(float.MaxValue, float.MaxValue);
             screenMax = new Vector2(float.MinValue, float.MinValue);
-            AddRectScreenBounds(uiTarget, ref screenMin, ref screenMax);
-            ExpandTimelineSlotScreenBounds(uiTarget, ref screenMin, ref screenMax);
+            // For monster-info lists, fit the actual instantiated item prefabs.
+            // The list/viewport RectTransform can be wider than its visible items.
+            bool foundItems = false;
+            if (uiTarget.name == "SkillList")
+            {
+                foreach (MonsterInfoSkillItemUI item in uiTarget.GetComponentsInChildren<MonsterInfoSkillItemUI>(false))
+                {
+                    if (item == null || !item.gameObject.activeInHierarchy) continue;
+                    if (item.transform is RectTransform itemRect)
+                    {
+                        AddRectScreenBounds(itemRect, ref screenMin, ref screenMax);
+                        foundItems = true;
+                    }
+                }
+            }
+            else if (uiTarget.name == "StatusEffectList")
+            {
+                foreach (MonsterInfoStatusItemUI item in uiTarget.GetComponentsInChildren<MonsterInfoStatusItemUI>(false))
+                {
+                    if (item == null || !item.gameObject.activeInHierarchy) continue;
+                    if (item.transform is RectTransform itemRect)
+                    {
+                        AddRectScreenBounds(itemRect, ref screenMin, ref screenMax);
+                        foundItems = true;
+                    }
+                }
+            }
+            if (!foundItems)
+            {
+                AddRectScreenBounds(uiTarget, ref screenMin, ref screenMax);
+                ExpandTimelineSlotScreenBounds(uiTarget, ref screenMin, ref screenMax);
+            }
         }
         else
         {
@@ -871,14 +1037,6 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             // actual tile bounds, not a fixed 76-pixel square. This stays aligned
             // when the battle camera moves, zooms, or changes resolution.
             if (!TryGetGridScreenBounds(worldTarget, out screenMin, out screenMax)) return;
-        }
-
-        // Button hover animations may scale their RectTransform. Position the
-        // tooltip only once per tutorial step so it does not chase that scaling.
-        if (tooltip != null && !tooltipPositionLocked)
-        {
-            SetScreenCenter(tooltip, GetTooltipScreenPosition(screenMin, screenMax));
-            tooltipPositionLocked = true;
         }
 
         RectTransform parent = highlight.parent as RectTransform;
@@ -919,6 +1077,18 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             highlightLine.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, highlight.rect.height);
             UpdateHighlightLinePieces();
         }
+        // Set the tooltip once, measuring the visible Line after its frame size
+        // has been updated. The 10-pixel gap is from the actual focus border,
+        // not the unpadded target. Hover scale changes cannot move the tooltip.
+        if (tooltip != null && !tooltipPositionLocked)
+        {
+            Vector2 borderMin = new Vector2(float.MaxValue, float.MaxValue);
+            Vector2 borderMax = new Vector2(float.MinValue, float.MinValue);
+            AddRectScreenBounds(highlightLine != null ? highlightLine : highlight,
+                ref borderMin, ref borderMax);
+            SetScreenCenter(tooltip, GetTooltipScreenPosition(borderMin, borderMax));
+            tooltipPositionLocked = true;
+        }
         UpdateDimmingMask((screenMin + screenMax) * 0.5f);
     }
 
@@ -934,9 +1104,14 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         if (gridTransform == null || camera == null) return false;
 
         Bounds bounds;
+        // Monster focus must use its actual 2D click collider, not the sprite renderer.
+        MonsterUnit monster = gridTransform.GetComponent<MonsterUnit>();
+        Collider2D monsterCollider = monster != null ? monster.GetClickCollider2D() : null;
         Renderer cellRenderer = gridTransform.GetComponent<Renderer>();
         Collider cellCollider = gridTransform.GetComponent<Collider>();
-        if (cellRenderer != null && cellRenderer.enabled &&
+        if (monsterCollider != null && monsterCollider.bounds.size.sqrMagnitude > 0.000001f)
+            bounds = monsterCollider.bounds;
+        else if (cellRenderer != null && cellRenderer.enabled &&
             cellRenderer.bounds.size.sqrMagnitude > 0.000001f)
             bounds = cellRenderer.bounds;
         else if (cellCollider != null && cellCollider.bounds.size.sqrMagnitude > 0.000001f)
@@ -979,7 +1154,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             return new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
 
         Vector2 center = (targetMin + targetMax) * 0.5f;
-        float gap = tooltipSideGap;
+        float gap = TooltipGap;
         float tooltipHalfWidth = GetScreenWidth(tooltip) * 0.5f;
         float tooltipHalfHeight = GetScreenHeight(tooltip) * 0.5f;
         if (string.Equals(placement, "Left", StringComparison.OrdinalIgnoreCase))
@@ -987,10 +1162,10 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         if (string.Equals(placement, "Right", StringComparison.OrdinalIgnoreCase))
             return new Vector3(targetMax.x + tooltipHalfWidth + gap, center.y, 0f);
         if (string.Equals(placement, "Below", StringComparison.OrdinalIgnoreCase))
-            return new Vector3(center.x + tooltipOffset.x,
+            return new Vector3(center.x,
                 targetMin.y - tooltipHalfHeight - gap, 0f);
         // Above, including a blank value, maintains a small gap from the target edge.
-        return new Vector3(center.x + tooltipOffset.x,
+        return new Vector3(center.x,
             targetMax.y + tooltipHalfHeight + gap, 0f);
     }
 
@@ -1021,12 +1196,22 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
 
     private static void SetScreenCenter(RectTransform rect, Vector3 position)
     {
-        var parent = rect.parent as RectTransform;
+        RectTransform parent = rect.parent as RectTransform;
         if (parent == null) return;
-        Canvas c = rect.GetComponentInParent<Canvas>();
-        Camera cam = c != null && c.renderMode != RenderMode.ScreenSpaceOverlay ? c.worldCamera : null;
-        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(parent, position, cam, out var world))
-            rect.position = world;
+        Canvas canvas = rect.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.rootCanvas.worldCamera : null;
+
+        // RectTransform.position is the pivot, not the visible rectangle center.
+        // Move by the actual screen-space center delta so all four edge gaps
+        // remain correct even when the tooltip pivot is not (0.5, 0.5).
+        var corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        Vector2 currentCenter = (RectTransformUtility.WorldToScreenPoint(camera, corners[0]) +
+                                 RectTransformUtility.WorldToScreenPoint(camera, corners[2])) * 0.5f;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, currentCenter, camera, out Vector2 from) &&
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, position, camera, out Vector2 to))
+            rect.anchoredPosition += to - from;
     }
 
     private void BindExistingFocusOverlay()
