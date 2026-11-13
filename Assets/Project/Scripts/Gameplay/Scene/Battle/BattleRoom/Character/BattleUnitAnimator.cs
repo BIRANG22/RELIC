@@ -239,6 +239,9 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayIdle()
     {
+        if (deathPresentationPlayed)
+            return;
+
         if (lastCombatActionAnimator == this)
             lastCombatActionAnimator = null;
 
@@ -255,7 +258,7 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         BattleUnitAnimator unit = lastCombatActionAnimator;
         lastCombatActionAnimator = null;
-        if (unit == null || !unit.isActiveAndEnabled || !unit.EnsureAnimator() ||
+        if (unit == null || unit.deathPresentationPlayed || !unit.isActiveAndEnabled || !unit.EnsureAnimator() ||
             unit.animator == null || !unit.animator.isActiveAndEnabled)
             return;
 

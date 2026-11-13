@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -135,6 +136,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [Header("Skip Reward Button")]
     [Tooltip("Assign Skill_panel/SkipButton. If empty, the direct child SkipButton is found automatically.")]
     [SerializeField] private Button skipButton;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string skipClickSfxId = AudioIds.Sfx.NormalButtonClick;
 
     private static readonly Color SkipDisabledColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     private static readonly Color SkipEnabledColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
@@ -816,7 +818,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         TMP_Text resourceValue = GetText(equippedSkillTooltipPanel, "Resources_Value");
         if (resourceValue != null)
             SetDynamicText(resourceValue, skill.Category == Category.Passive ?
-                GameLocalization.Get("battle.skill.passive_duration") : skill.ResourceCostValue.ToString());
+                GameLocalization.Get("battle.skill.passive_duration") : GetResourceCostDisplayText(skill));
         for (int i = 0; i < 3; i++)
         {
             Image back = GetImage(equippedSkillTooltipPanel, "Entry_Slot/Entry0" + (i + 1) + "/Back");
@@ -1623,11 +1625,18 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     public void DiscardReward()
     {
         if (reward == null || processing || !skipRevealComplete || !gameObject.activeInHierarchy) return;
+        PlaySkipClickSfx();
         HideOfferedSkillEffectTooltip();
         processing = true;
         ClearSkillSlotPreviewVfx();
         SetSkipRevealState(false);
         StartCoroutine(CloseAfterSkippedReward());
+    }
+
+    private void PlaySkipClickSfx()
+    {
+        if (!string.IsNullOrWhiteSpace(skipClickSfxId))
+            AudioManager.Instance?.PlaySfx(skipClickSfxId);
     }
 
     private IEnumerator CloseAfterSkippedReward()
@@ -1966,7 +1975,17 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
         SetSprite(cost, resource);
         if (cost != null) cost.color = color;
-        if (value != null) SetDynamicText(value, skill.ResourceCostValue.ToString());
+        if (value != null) SetDynamicText(value, GetResourceCostDisplayText(skill));
+    }
+
+    public static string GetResourceCostDisplayText(SkillMasterData skill)
+    {
+        if (skill == null)
+            return string.Empty;
+
+        return string.IsNullOrWhiteSpace(skill.ResourceCostFormula)
+            ? skill.ResourceCostValue.ToString()
+            : skill.ResourceCostFormula.Trim();
     }
 
     private static string GetSkillTypeName(SkillMasterData skill)
@@ -2185,7 +2204,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             totalWeight += 1f / (1f + equippedMemoryCount);
         }
         if (totalWeight <= 0f) return offers;
-        float roll = UnityEngine.Random.value * totalWeight;
+        float roll = (isBattleDrop ? BattleRandom.Value() : UnityEngine.Random.value) * totalWeight;
         foreach (string id in eligibleOwners)
         {
             if (pools[id].Count == 0 || (hasFullOfferPool && pools[id].Count < 3)) continue;
@@ -2210,45 +2229,24 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             if (sourceParts.Length > 1 && !string.IsNullOrWhiteSpace(sourceParts[1]))
                 dropSettings = dm.BattleMapDatabase.GetDropSettings(sourceParts[1]);
         }
-        while (offers.Count < 3 && candidates.Count > 0)
+        if (isBattleDrop && dropSettings != null)
         {
-            int index = isBattleDrop && dropSettings != null
-                ? RollMemoryIndexByRarityWeight(candidates, dropSettings)
-                : UnityEngine.Random.Range(0, candidates.Count);
-            offers.Add(candidates[index]);
-            candidates.RemoveAt(index);
+            offers.AddRange(SkillRewardRoller.RollOffersWithoutReplacement(
+                dropSettings,
+                candidates,
+                3,
+                new BattleSkillRewardRandom()));
+        }
+        else
+        {
+            while (offers.Count < 3 && candidates.Count > 0)
+            {
+                int index = UnityEngine.Random.Range(0, candidates.Count);
+                offers.Add(candidates[index]);
+                candidates.RemoveAt(index);
+            }
         }
         return offers;
-    }
-
-    // Draw each available memory independently without replacement. A rarity weight
-    // influences each candidate's chance; it does not filter the pool beforehand.
-    private static int RollMemoryIndexByRarityWeight(List<SkillMasterData> candidates, BattleMapData settings)
-    {
-        float total = 0f;
-        foreach (SkillMasterData candidate in candidates)
-            total += GetMemoryRarityWeight(candidate.Rarity, settings);
-        if (total <= 0f) return UnityEngine.Random.Range(0, candidates.Count);
-
-        float roll = UnityEngine.Random.value * total;
-        for (int i = 0; i < candidates.Count; i++)
-        {
-            roll -= GetMemoryRarityWeight(candidates[i].Rarity, settings);
-            if (roll <= 0f) return i;
-        }
-        return candidates.Count - 1;
-    }
-
-    private static float GetMemoryRarityWeight(SkillRarity rarity, BattleMapData settings)
-    {
-        switch (rarity)
-        {
-            case SkillRarity.Common: return Mathf.Max(0f, settings.MemoryCommonChance);
-            case SkillRarity.Rare: return Mathf.Max(0f, settings.MemoryRareChance);
-            case SkillRarity.Epic: return Mathf.Max(0f, settings.MemoryEpicChance);
-            case SkillRarity.Unique: return Mathf.Max(0f, settings.MemoryUniqueChance);
-            default: return 0f;
-        }
     }
 
     private static void BlockSkillAndVariant(HashSet<string> blocked, string skillId)

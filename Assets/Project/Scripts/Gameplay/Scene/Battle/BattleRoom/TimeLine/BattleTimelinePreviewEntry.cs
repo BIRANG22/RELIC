@@ -23,7 +23,8 @@ public class BattleTimelinePreviewEntry
     public MonsterReservedCommand MonsterCommand { get; private set; }
     public bool HasMergedFacingFlip =>
         IsPlayer && PlayerCommand != null && PlayerCommand.FlipBeforeAction ||
-        IsMonster && MonsterCommand != null && MonsterCommand.FlipBeforeAction;
+        IsMonster && MonsterCommand != null &&
+        (MonsterCommand.FlipBeforeAction || MonsterCommand.ShowMovementFacingTransition);
 
     public string OwnerId
     {

@@ -17,11 +17,28 @@ public class SpawnSpiderEggEffect : BattleEffectBase
         if (requestedGridIndex < 0 || controller == null || context?.GridManager == null)
             return;
 
-        // ¿¹¾à ÀÌÈÄ À§Ä¡°¡ ¹Ù²î¾ú´Ù¸é Àå¾Ö¹°ÀÌ³ª À¯´ÖÀ» ¹Ð¾î³»Áö ¾Ê°í
-        // ¾Æ¶óº§¶ó ÁÖº¯ÀÇ ºñ¾î ÀÖ´Â ´Ù¸¥ ±×¸®µå¸¦ Ã£¾Æ °íÄ¡¸¦ »ý¼ºÇÕ´Ï´Ù.
-        int placementIndex = FindAvailableEggGrid(context, controller, requestedGridIndex);
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½Ö¹ï¿½ï¿½Ì³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾î³»ï¿½ï¿½ ï¿½Ê°ï¿½
+        // ï¿½Æ¶óº§¶ï¿½ ï¿½Öºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½Ù¸ï¿½ ï¿½×¸ï¿½ï¿½å¸¦ Ã£ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+        int placementIndex = context.MonsterCommand != null &&
+            context.MonsterCommand.HasFinalPlacementGridIndex
+                ? context.MonsterCommand.FinalPlacementGridIndex
+                : FindAvailableEggGrid(context, controller, requestedGridIndex);
+        context.MonsterCommand?.SetFinalPlacementGridIndex(placementIndex);
         if (placementIndex >= 0)
             controller.TryPlaceEffect(placementIndex, SpiderEggGridEffectId);
+    }
+
+    public static int ResolveFinalPlacementGrid(BattleEffectContext context)
+    {
+        int requestedGridIndex = ResolveTargetGridIndex(context);
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+        if (requestedGridIndex < 0 || controller == null || context?.GridManager == null)
+            return -1;
+
+        int placementIndex = FindAvailableEggGrid(context, controller, requestedGridIndex);
+        context.MonsterCommand?.SetFinalPlacementGridIndex(placementIndex);
+        return placementIndex;
     }
 
     private static int FindAvailableEggGrid(

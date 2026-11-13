@@ -8,6 +8,32 @@ public sealed class SoundDatabaseVfxOwnershipTests
 {
     private const string DatabasePath = "Assets/DB/SoundDatabase.asset";
 
+    [TestCase(0.5f, 2f, 1f)]
+    [TestCase(1f, 4f, 3f)]
+    [TestCase(2f, 1.5f, 3f)]
+    public void VfxCuePlaybackPitch_CombinesCuePitchAndPresentationSpeed(
+        float cuePitch,
+        float presentationSpeed,
+        float expected)
+    {
+        Assert.That(
+            BattleVfxAudioUtility.CalculatePlaybackPitch(cuePitch, presentationSpeed),
+            Is.EqualTo(expected).Within(0.0001f));
+    }
+
+    [Test]
+    public void ArabellaAttack02PrepareSound_PlaysOncePerAction()
+    {
+        SoundDatabase database = AssetDatabase.LoadAssetAtPath<SoundDatabase>(DatabasePath);
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+            "Assets/Project/Art/VFX/Mon/Vfx_Mon_B_01_attack_02_pre.prefab");
+        database.Initialize();
+
+        Assert.That(database.TryGetSkillVfxSfx(prefab, out VfxSoundData data), Is.True);
+        Assert.That(data.Cues, Has.Count.EqualTo(1));
+        Assert.That(data.Cues[0].playOncePerAction, Is.True);
+    }
+
     private static readonly string[] DatabaseOwnedVfxPrefabPaths =
     {
         "Assets/Project/Art/VFX/Cha/Vfx_core_03.prefab",

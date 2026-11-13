@@ -15,6 +15,7 @@ public class BattleResultChecker : MonoBehaviour
 
     public static BattleResultChecker Instance { get; private set; }
     public static event System.Action BattleFinished;
+    public static event System.Action DefeatStarted;
 
     public bool BattleEnded => battleEnded;
 
@@ -98,6 +99,7 @@ public class BattleResultChecker : MonoBehaviour
             return;
 
         battleEnded = true;
+        DefeatStarted?.Invoke();
         PrepareBattleFinishedPresentation();
         ResetBattleEffectOnFinish();
         BattleFinished?.Invoke();
@@ -137,6 +139,7 @@ public class BattleResultChecker : MonoBehaviour
         if (IsAllPlayersDead())
         {
             battleEnded = true;
+            DefeatStarted?.Invoke();
             PrepareBattleFinishedPresentation();
             ResetBattleEffectOnFinish();
             BattleFinished?.Invoke();

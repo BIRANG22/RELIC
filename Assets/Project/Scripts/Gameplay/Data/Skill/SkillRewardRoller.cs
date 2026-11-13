@@ -38,6 +38,88 @@ namespace Relic.Gameplay.Data
 
     public static class SkillRewardRoller
     {
+        public static List<SkillMasterData> RollOffersWithoutReplacement(
+            BattleMapData mapData,
+            IReadOnlyList<SkillMasterData> candidates,
+            int count,
+            ISkillRewardRandom random)
+        {
+            List<SkillMasterData> remaining = candidates != null
+                ? new List<SkillMasterData>(candidates)
+                : new List<SkillMasterData>();
+            List<SkillMasterData> offers = new();
+
+            if (mapData == null || random == null || count <= 0)
+                return offers;
+
+            while (offers.Count < count && remaining.Count > 0)
+            {
+                float totalRarityWeight = 0f;
+                foreach (SkillRarity rarity in CoreDropRarities)
+                {
+                    if (HasCandidateOfRarity(remaining, rarity))
+                        totalRarityWeight += GetRarityWeight(mapData, rarity);
+                }
+
+                if (totalRarityWeight <= 0f)
+                    break;
+
+                float rarityRoll = random.Value() * totalRarityWeight;
+                SkillRarity selectedRarity = SkillRarity.Common;
+                foreach (SkillRarity rarity in CoreDropRarities)
+                {
+                    if (!HasCandidateOfRarity(remaining, rarity))
+                        continue;
+
+                    float weight = GetRarityWeight(mapData, rarity);
+                    if (weight <= 0f)
+                        continue;
+
+                    selectedRarity = rarity;
+                    rarityRoll -= weight;
+                    if (rarityRoll <= 0f)
+                        break;
+                }
+
+                List<int> matchingIndices = new();
+                for (int i = 0; i < remaining.Count; i++)
+                {
+                    if (remaining[i] != null && remaining[i].Rarity == selectedRarity)
+                        matchingIndices.Add(i);
+                }
+
+                if (matchingIndices.Count == 0)
+                    break;
+
+                int selectedIndex = matchingIndices[random.Range(0, matchingIndices.Count)];
+                offers.Add(remaining[selectedIndex]);
+                remaining.RemoveAt(selectedIndex);
+            }
+
+            return offers;
+        }
+
+        private static readonly SkillRarity[] CoreDropRarities =
+        {
+            SkillRarity.Common,
+            SkillRarity.Rare,
+            SkillRarity.Epic,
+            SkillRarity.Unique
+        };
+
+        private static bool HasCandidateOfRarity(
+            IReadOnlyList<SkillMasterData> candidates,
+            SkillRarity rarity)
+        {
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                if (candidates[i] != null && candidates[i].Rarity == rarity)
+                    return true;
+            }
+
+            return false;
+        }
+
         public static bool TryRoll(
             BattleMapData mapData,
             IReadOnlyList<SkillMasterData> allSkills,

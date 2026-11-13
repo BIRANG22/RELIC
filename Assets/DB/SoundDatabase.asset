@@ -53,6 +53,136 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     ambienceClips: []
+  - state: 7
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 8
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 10
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 11
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 12
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 13
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 14
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 15
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 16
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 17
+    mainClip:
+      clip: {fileID: 0}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
   ambienceList:
   - id: Fire Burning
     aliases: []
@@ -3252,7 +3382,7 @@ MonoBehaviour:
       volume: 1
       pitch: 1
       loop: 0
-      playOncePerAction: 0
+      playOncePerAction: 1
       useRandomPitch: 0
       overrideSpatialBlend: 1
       spatialBlend: 1

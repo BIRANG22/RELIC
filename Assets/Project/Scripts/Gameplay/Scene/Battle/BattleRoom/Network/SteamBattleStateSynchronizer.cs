@@ -1840,6 +1840,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         command.SetRangeOriginCasterGridIndex(snapshot.rangeOriginCasterGridIndex);
         command.SetPortalMove(snapshot.isPortalMove);
         command.SetFlipBeforeAction(snapshot.flipBeforeAction);
+        command.SetShowMovementFacingTransition(snapshot.showMovementFacingTransition);
 
         if (snapshot.reservedDamage > 0)
             command.SetReservedDamage(snapshot.reservedDamage);
@@ -2133,6 +2134,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             hasForcedDirection = command.HasForcedDirection,
             forcedDirection = (int)command.ForcedDirection,
             flipBeforeAction = command.FlipBeforeAction,
+            showMovementFacingTransition = command.ShowMovementFacingTransition,
             isPortalMove = command.IsPortalMove,
             hasExplicitRangeResult = command.HasExplicitRangeResult,
             attackSpatialPolicy = (int)command.AttackSpatialPolicy,

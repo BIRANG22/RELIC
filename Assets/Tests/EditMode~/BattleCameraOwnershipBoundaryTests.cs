@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -54,5 +55,48 @@ public sealed class BattleCameraOwnershipBoundaryTests
             "Assets/Project/Scripts/Art/SpriteTransformSequence.cs");
 
         Assert.That(source, Does.Contain("EndCinematicCameraKeepingCurrentPose"));
+    }
+
+    [Test]
+    public void EndCinematicCameraKeepingCurrentPose_RemovesPresentationOffsetsAndMotion()
+    {
+        GameObject cameraObject = new GameObject("CinematicCamera", typeof(Camera));
+        BattleCameraController controller = cameraObject.AddComponent<BattleCameraController>();
+
+        try
+        {
+            cameraObject.transform.position = new Vector3(2f, 3f, -10f);
+            SetPrivate(controller, "targetCamera", cameraObject.GetComponent<Camera>());
+            SetPrivate(controller, "hasCinematicCameraState", true);
+            SetPrivate(controller, "hasAppliedExternalShake", true);
+            SetPrivate(controller, "appliedExternalShakeOffset", new Vector3(0.25f, -0.2f, 0f));
+            SetPrivate(controller, "externalShakeOffset", new Vector3(0.25f, -0.2f, 0f));
+            SetPrivate(controller, "movementFocusVelocity", new Vector3(1f, 2f, 0f));
+
+            controller.EndCinematicCameraKeepingCurrentPose();
+
+            Assert.That(cameraObject.transform.position, Is.EqualTo(new Vector3(1.75f, 3.2f, -10f)));
+            Assert.That(GetPrivate<bool>(controller, "hasCinematicCameraState"), Is.False);
+            Assert.That(GetPrivate<Vector3>(controller, "externalShakeOffset"), Is.EqualTo(Vector3.zero));
+            Assert.That(GetPrivate<Vector3>(controller, "movementFocusVelocity"), Is.EqualTo(Vector3.zero));
+        }
+        finally
+        {
+            Object.DestroyImmediate(cameraObject);
+        }
+    }
+
+    private static void SetPrivate(object target, string name, object value)
+    {
+        FieldInfo field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, name);
+        field.SetValue(target, value);
+    }
+
+    private static T GetPrivate<T>(object target, string name)
+    {
+        FieldInfo field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, name);
+        return (T)field.GetValue(target);
     }
 }

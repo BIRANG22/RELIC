@@ -171,6 +171,7 @@ public sealed class BattleNetworkMonsterCommandSnapshot
     public bool hasForcedDirection;
     public int forcedDirection;
     public bool flipBeforeAction;
+    public bool showMovementFacingTransition;
     public bool isPortalMove;
     public bool hasExplicitRangeResult;
     public int attackSpatialPolicy;
