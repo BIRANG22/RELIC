@@ -882,6 +882,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: dustium.change
+    aliases: []
+    clip: {fileID: 8300000, guid: 65737576388e94cd9a7444a00ee6d836, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   eventSfxList:
   - id: event.01.Skylight
     aliases: []

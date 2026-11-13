@@ -62402,7 +62402,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3131458352354300073, guid: 30243e8b7ebdea24e81fba255168acde, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1057374192}
   m_SourcePrefab: {fileID: 100100000, guid: 30243e8b7ebdea24e81fba255168acde, type: 3}
 --- !u!4 &1057374190 stripped
 Transform:
@@ -62414,6 +62417,31 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3131458352354300073, guid: 30243e8b7ebdea24e81fba255168acde, type: 3}
   m_PrefabInstance: {fileID: 1057374189}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1057374192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1057374191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: dustium.change
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
+  playOnDisable: 0
+  disableSoundId: ui.normal.click
+  disableVolume: 1
 --- !u!1 &1061132647
 GameObject:
   m_ObjectHideFlags: 0
@@ -79537,7 +79565,7 @@ MonoBehaviour:
   - {fileID: 0}
   autoBindCharButtons: 1
   charButtonRoot: {fileID: 1408734956}
-  characterPointerDownSfxId: char.pick
+  characterPointerDownSfxId: 
   characterPointerUpSfxId: char.drop
   characterPointerDownSfxVolume: 1
   characterPointerUpSfxVolume: 1
