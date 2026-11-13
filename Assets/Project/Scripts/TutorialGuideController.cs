@@ -64,6 +64,19 @@ public sealed class TutorialGuideController : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    // Called by the full progress reset shortcut. Guide unlocks are stored in
+    // PlayerPrefs separately from the save file and tutorial-seen flag.
+    public static void ResetSeenProgress()
+    {
+        // Index IDs use the IndexNN format. Clear existing and future guide
+        // flags without depending on whether the database is initialized yet.
+        for (int number = 1; number <= 999; number++)
+            PlayerPrefs.DeleteKey(GetSeenKey($"Index{number:00}"));
+        PlayerPrefs.DeleteKey(UnlockKey);
+        PlayerPrefs.DeleteKey(MigrationKey);
+        PlayerPrefs.Save();
+    }
+
     public static bool HasSeenIndex(string indexId)
     {
         if (string.IsNullOrWhiteSpace(indexId)) return false;
