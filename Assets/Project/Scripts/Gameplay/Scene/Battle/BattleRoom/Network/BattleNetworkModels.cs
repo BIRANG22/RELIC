@@ -170,6 +170,7 @@ public sealed class BattleNetworkMonsterCommandSnapshot
     public int rangeOriginCasterGridIndex = -1;
     public bool hasForcedDirection;
     public int forcedDirection;
+    public bool flipBeforeAction;
     public bool isPortalMove;
     public bool hasExplicitRangeResult;
     public int attackSpatialPolicy;

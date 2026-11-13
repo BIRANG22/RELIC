@@ -387,8 +387,26 @@ public class BattleActionRunner
         if (command == null || command.UserRuntime == null || command.UserRuntime.IsDead)
             yield break;
 
+        ApplyFlipBeforeMonsterAction(command);
         BattleEffectInfoFeed.ShowMonster(command);
         yield return ExecuteMonsterCommand(command);
+    }
+
+    private void ApplyFlipBeforeMonsterAction(MonsterReservedCommand command)
+    {
+        if (command == null || !command.FlipBeforeAction || command.UserRuntime == null)
+            return;
+
+        BattleDirection flippedDirection = command.UserRuntime.Direction == BattleDirection.Right
+            ? BattleDirection.Left
+            : BattleDirection.Right;
+        command.UserRuntime.Direction = flippedDirection;
+
+        MonsterUnit monster = unitFinder?.FindMonsterUnit(command.RuntimeId);
+        BattleUnitFacing facing = monster != null
+            ? monster.GetComponentInChildren<BattleUnitFacing>(true)
+            : null;
+        facing?.FaceRight(flippedDirection == BattleDirection.Right);
     }
 
     private static bool ShouldConsumeSmite(PlayerReservedCommand command)

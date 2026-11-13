@@ -21,6 +21,9 @@ public class BattleTimelinePreviewEntry
     public PlayerReservedCommand PlayerCommand { get; private set; }
     public int PlayerCommandIndex = -1;
     public MonsterReservedCommand MonsterCommand { get; private set; }
+    public bool HasMergedFacingFlip =>
+        IsPlayer && PlayerCommand != null && PlayerCommand.FlipBeforeAction ||
+        IsMonster && MonsterCommand != null && MonsterCommand.FlipBeforeAction;
 
     public string OwnerId
     {
