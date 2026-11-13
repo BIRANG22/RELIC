@@ -974,9 +974,9 @@ Tutorial_01,9,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.05,캐릭터�
 Tutorial_01,10,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,기억은 사용에 필요한 자원이 충분하다면 여러 번 예약할 수 있습니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
 Tutorial_01,11,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,같은 기억을 한 번 더 예약해 보세요.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
 Tutorial_01,12,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,모든 행동을 예약했다면 턴을 종료하세요.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Left
-
-
-
+Tutorial_01,13,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.victory.dialogue.01,이 정도 녀석이라면 몇 마리가 덤벼도 문제없지!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_01,14,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.victory.dialogue.02,생각보다 수월하게 끝났군요. 전리품도 빠짐없이 챙겨 가시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_01,15,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.victory.dialogue.03,좋았어! 뭐가 나왔는지 한번 볼까?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 
 
 ,,,,,,,,,,
@@ -1061,5 +1061,13 @@ Index01,4,tutorial.guide.index01.name,전투 화면 안내,tutorial.guide.index0
 기억 : 공격, 강화, 약화 등 다양한 효과를 가지며 자원을 소모합니다.
 
 예약한 행동을 되돌리거나 다시 적용하고, 턴 종료 시 행동을 실행합니다."
-Index02,1,tutorial.guide.index02.name,,tutorial.guide.index02.page01.name,,tutorial.guide.index02.page01.explanation,
+Index02,1,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02.page01.name,전투 보상,tutorial.guide.index02.page01.explanation,"전투에서 승리하면 레드 더스티움, 아이템, 유물, 기억 등 다양한 보상을 획득할 수 있습니다.
+
+각 전리품은 서로 다른 용도를 가지고 있으며,
+탐사를 진행하거나 거점에서 새로운 준비를 하는 데 활용됩니다."
+Index02,2,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02.page02.name,레드 더스티움,tutorial.guide.index02.page02.explanation,"획득한 레드 더스티움은 거점으로 복귀하면 자동으로 블루 더스티움으로 변환되며,
+변환된 블루 더스티움은 다양한 기능(해금, 성장 등)에 사용됩니다."
+Index02,3,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02.page03.name,아이템,tutorial.guide.index02.page03.explanation,"각 변이체는 고유한 아이템을 가지고 있으며, 처치 시 일정 확률로 획득할 수 있습니다.
+이러한 아이템은 거점에서 소모품을 제작하는 재료로 사용됩니다."
+
 
