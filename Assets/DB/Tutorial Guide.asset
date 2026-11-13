@@ -26,8 +26,22 @@ MonoBehaviour:
   - indexId: Index02
     pages:
     - page: 1
-      sprite: {fileID: 21300000, guid: 438f6544192dba84eb8baa9ff39bc493, type: 3}
+      sprite: {fileID: 21300000, guid: 3c4cb6b48bd036943916812a417fecad, type: 3}
     - page: 2
-      sprite: {fileID: 21300000, guid: a362b07ee6f8f094a9a1eb4cd1677460, type: 3}
+      sprite: {fileID: 21300000, guid: de5513176fac81e4e8e5918ece2ae066, type: 3}
     - page: 3
-      sprite: {fileID: 21300000, guid: cf5a1c5092dec1540a85b1b7d24c5689, type: 3}
+      sprite: {fileID: 21300000, guid: 607b623ec3be2134cb6fdf855d35381a, type: 3}
+  - indexId: Index03
+    pages:
+    - page: 1
+      sprite: {fileID: 21300000, guid: 08722f14052ea834ba43729ad9735f27, type: 3}
+    - page: 2
+      sprite: {fileID: 21300000, guid: ec6660f6ca25a40459eb92d69aa65633, type: 3}
+  - indexId: Index04
+    pages:
+    - page: 1
+      sprite: {fileID: 21300000, guid: 5985d920b0f9ae94dbe4048e232dc704, type: 3}
+    - page: 2
+      sprite: {fileID: 21300000, guid: 2db4147dfeb5c3b4e9ef921d61d92414, type: 3}
+    - page: 3
+      sprite: {fileID: 21300000, guid: 6142aac2f74f54b4e9e2163b9c35511b, type: 3}

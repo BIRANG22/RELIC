@@ -179,6 +179,13 @@ namespace Relic.Gameplay.Monster
                     return Vector2Int.zero;
             }
             // 아군이 경로를 막아도 공격 위치까지 갈 수 있는 안전한 우회로를 우선합니다.
+            // Counter positioning: if a player is already on our row, first try
+            // a safe horizontal step toward that player. The generic attack-path
+            // search can otherwise select a diagonal step for sweep coverage.
+            Vector2Int alignedStep = FindSafeSameRowApproach(monsterUnit, gridManager);
+            if (alignedStep != Vector2Int.zero)
+                return alignedStep;
+
             Vector2Int routeStep = FindSafeRouteStepToAttack(monsterUnit, gridManager);
             if (routeStep != Vector2Int.zero)
                 return routeStep;
@@ -252,6 +259,58 @@ namespace Relic.Gameplay.Monster
         /// 아군 몬스터가 앞을 막고 있어도 돌아서 캐릭터를 공격할 위치를 찾습니다.
         /// 첫 이동은 실제 이동 가능 여부를 확인하고, 이후 경로도 전체 점유 칸을 검사합니다.
         /// </summary>
+        private Vector2Int FindSafeSameRowApproach(MonsterUnit unit, GridManager gridManager)
+        {
+            Vector2Int origin = gridManager.IndexToCoord(unit.MainGridIndex);
+            List<int> targets = FindCharacterTargetGridIndices();
+            BattleGridEffectController effects =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+            Vector2Int best = Vector2Int.zero;
+            int bestDistance = int.MaxValue;
+
+            foreach (int targetIndex in targets)
+            {
+                if (targetIndex < 0 || gridManager.GetCellByIndex(targetIndex) == null)
+                    continue;
+                Vector2Int target = gridManager.IndexToCoord(targetIndex);
+                if (target.y != origin.y || Mathf.Abs(target.x - origin.x) <= 1)
+                    continue;
+
+                Vector2Int step = target.x < origin.x ? Vector2Int.left : Vector2Int.right;
+                if (!GetSkillRangeOffsets(unit, MoveSkillId).Contains(step) ||
+                    !CanMonsterMove(unit, gridManager, step))
+                    continue;
+
+                bool blocked = false;
+                foreach (int occupiedIndex in unit.OccupiedGridIndices)
+                {
+                    Vector2Int nextCoord = gridManager.IndexToCoord(occupiedIndex) + step;
+                    if (!gridManager.IsValidCoord(nextCoord))
+                    {
+                        blocked = true;
+                        break;
+                    }
+                    int nextIndex = gridManager.CoordToIndex(nextCoord);
+                    if (BattleOccupancyService.IsOccupiedByAnyUnit(nextIndex, null, unit) ||
+                        (effects != null && effects.HasEffect(nextIndex)))
+                    {
+                        blocked = true;
+                        break;
+                    }
+                }
+                if (blocked)
+                    continue;
+
+                int remainingDistance = Mathf.Abs(target.x - origin.x - step.x);
+                if (remainingDistance < bestDistance)
+                {
+                    bestDistance = remainingDistance;
+                    best = step;
+                }
+            }
+            return best;
+        }
+
         private Vector2Int FindSafeRouteStepToAttack(MonsterUnit unit, GridManager gridManager)
         {
             List<int> targets = FindCharacterTargetGridIndices();
