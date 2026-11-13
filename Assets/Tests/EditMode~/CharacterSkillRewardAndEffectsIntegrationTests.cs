@@ -5,6 +5,80 @@ using Relic.Gameplay.Data;
 
 public class CharacterSkillRewardAndEffectsIntegrationTests
 {
+    private sealed class SequenceRandom : ISkillRewardRandom
+    {
+        private readonly Queue<float> values = new();
+        private readonly Queue<int> ranges = new();
+
+        public SequenceRandom(IEnumerable<float> valueSequence, IEnumerable<int> rangeSequence)
+        {
+            foreach (float value in valueSequence) values.Enqueue(value);
+            foreach (int value in rangeSequence) ranges.Enqueue(value);
+        }
+
+        public float Value() => values.Dequeue();
+        public int Range(int minInclusive, int maxExclusive) => ranges.Dequeue();
+    }
+
+    [Test]
+    public void RewardOffers_RollRarityIndependentlyAndRenormalizeAvailableRarities()
+    {
+        BattleMapData settings = new()
+        {
+            MemoryRareChance = 10,
+            MemoryEpicChance = 60,
+            MemoryUniqueChance = 30
+        };
+        List<SkillMasterData> candidates = new()
+        {
+            RewardSkill("Rare_1", SkillRarity.Rare),
+            RewardSkill("Rare_2", SkillRarity.Rare),
+            RewardSkill("Rare_3", SkillRarity.Rare),
+            RewardSkill("Epic_1", SkillRarity.Epic),
+            RewardSkill("Unique_1", SkillRarity.Unique)
+        };
+        SequenceRandom random = new(new[] { 0.05f, 0.20f, 0.90f }, new[] { 2, 0, 0 });
+
+        List<SkillMasterData> offers = SkillRewardRoller.RollOffersWithoutReplacement(
+            settings, candidates, 3, random);
+
+        Assert.That(offers, Has.Count.EqualTo(3));
+        Assert.That(offers.ConvertAll(skill => skill.Rarity), Is.EqualTo(new[]
+        {
+            SkillRarity.Rare, SkillRarity.Epic, SkillRarity.Unique
+        }));
+        Assert.That(offers[0].SkillId, Is.EqualTo("Rare_3"));
+
+        List<SkillMasterData> sparseCandidates = new()
+        {
+            RewardSkill("Sparse_Rare", SkillRarity.Rare),
+            RewardSkill("Sparse_Unique", SkillRarity.Unique)
+        };
+        SequenceRandom fallbackRandom = new(new[] { 0.50f, 0.50f }, new[] { 0, 0 });
+
+        List<SkillMasterData> fallbackOffers = SkillRewardRoller.RollOffersWithoutReplacement(
+            settings, sparseCandidates, 2, fallbackRandom);
+
+        Assert.That(fallbackOffers.ConvertAll(skill => skill.Rarity), Is.EqualTo(new[]
+        {
+            SkillRarity.Unique, SkillRarity.Rare
+        }));
+    }
+
+    [TestCase("X", 0, "X")]
+    [TestCase("3X", 0, "3X")]
+    [TestCase("", 4, "4")]
+    public void RewardCostDisplay_PrefersFormula(string formula, int numericCost, string expected)
+    {
+        SkillMasterData skill = new()
+        {
+            ResourceCostFormula = formula,
+            ResourceCostValue = numericCost
+        };
+
+        Assert.That(BattleRewardSkillPanelUI.GetResourceCostDisplayText(skill), Is.EqualTo(expected));
+    }
+
     [Test]
     public void CompatibleReward_XReservation_ResultAndPermanentGrowth_KeepStableIds()
     {
@@ -76,4 +150,11 @@ public class CharacterSkillRewardAndEffectsIntegrationTests
         BattleRandom.ClearSeed();
         return result;
     }
+
+    private static SkillMasterData RewardSkill(string id, SkillRarity rarity) => new()
+    {
+        SkillId = id,
+        Category = Category.Core,
+        Rarity = rarity
+    };
 }

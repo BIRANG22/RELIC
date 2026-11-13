@@ -643,6 +643,10 @@ public class BattleCameraController : MonoBehaviour
 
     public void EndCinematicCameraKeepingCurrentPose()
     {
+        StopExternalShake();
+        ClearMouseParallaxImmediate();
+        EndZoomFollowTarget();
+        movementFocusVelocity = Vector3.zero;
         hasCinematicCameraState = false;
     }
 

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class BattleRewardSkillSkipButtonLockTests
 {
     private const string SourcePath = "Assets/Project/Scripts/BattleRewardSkillPanelUI.cs";
+    private const string BattleScenePath = "Assets/Project/Scenes/YDM/Battle.unity";
 
     [Test]
     public void LockSkipButtonForSelection_DisablesButtonInteraction()
@@ -78,6 +79,32 @@ public class BattleRewardSkillSkipButtonLockTests
         {
             Object.DestroyImmediate(panelObject);
         }
+    }
+
+    [Test]
+    public void DiscardReward_PlaysClickSoundBeforeLockingInteraction()
+    {
+        string source = File.ReadAllText(SourcePath);
+        string method = ExtractMethod(source, "public void DiscardReward()");
+
+        int play = method.IndexOf("PlaySkipClickSfx();", System.StringComparison.Ordinal);
+        int lockButton = method.IndexOf("SetSkipRevealState(false);", System.StringComparison.Ordinal);
+
+        Assert.That(play, Is.GreaterThanOrEqualTo(0));
+        Assert.That(lockButton, Is.GreaterThan(play));
+    }
+
+    [Test]
+    public void SkillRewardSkipButton_DisablesPointerClickAudioToAvoidDuplicateSound()
+    {
+        string scene = File.ReadAllText(BattleScenePath).Replace("\r\n", "\n");
+        int button = scene.IndexOf("--- !u!1 &1618098816\n", System.StringComparison.Ordinal);
+        int nextObject = scene.IndexOf("--- !u!1 &", button + 12, System.StringComparison.Ordinal);
+        string block = scene.Substring(button, nextObject - button);
+
+        Assert.That(block, Does.Contain("m_Name: SkipButton\n"));
+        Assert.That(block, Does.Contain("playOnClick: 0\n"));
+        Assert.That(block, Does.Contain("clickSoundId: ui.normal.click\n"));
     }
 
     private static string ExtractMethod(string source, string signature)

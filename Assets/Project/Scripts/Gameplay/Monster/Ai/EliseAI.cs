@@ -5,6 +5,20 @@ using UnityEngine;
 
 namespace Relic.Gameplay.Monster
 {
+    public static class ArabellaPhaseOneEscapePolicy
+    {
+        public static bool IsBetterCandidate(
+            int candidateMoveDistance, int candidateThreatDistance, int candidateSpaceScore,
+            int bestMoveDistance, int bestThreatDistance, int bestSpaceScore)
+        {
+            if (candidateMoveDistance != bestMoveDistance)
+                return candidateMoveDistance < bestMoveDistance;
+            if (candidateThreatDistance != bestThreatDistance)
+                return candidateThreatDistance > bestThreatDistance;
+            return candidateSpaceScore > bestSpaceScore;
+        }
+    }
+
     public class EliseAI : MonsterAIBase
     {
         private const string MoveSkillId = "S_Monster_33";
@@ -84,8 +98,8 @@ namespace Relic.Gameplay.Monster
             bool nearby = HasPlayerInAttackRange(unit, players, gridManager);
             if (nearby)
             {
-                // Ã¹ Çàµ¿ÀÎ »ç¹æ Âõ±â´Â µÚ¿¡ ¿¹¾àµÉ ÀÌµ¿ ¹æÇâÀ» µû¶ó°¡Áö ¾Ê½À´Ï´Ù.
-                // ÇöÀç À§Ä¡¿¡¼­ °¡Àå °¡±î¿î »ì¾ÆÀÖ´Â Ä³¸¯ÅÍ¸¦ ±âÁØÀ¸·Î ¹æÇâÀ» °íÁ¤ÇÕ´Ï´Ù.
+                // Ã¹ ï¿½àµ¿ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
                 BattleCharacter attackTarget = FindNearestPlayer(unit, gridManager);
                 bool hasAttackDirection = IsAlivePlayer(attackTarget) &&
                     attackTarget.CurrentGridIndex >= 0 && unit.MainGridIndex >= 0 &&
@@ -113,7 +127,7 @@ namespace Relic.Gameplay.Monster
             }
             if (escape != Vector2Int.zero)
             {
-                // ÀÌµ¿ ¿¹¾à°ú ½ÇÇàÀÌ °°Àº ¹æÇâÀ» »ç¿ëÇÏµµ·Ï ÁÂ¿ì ¹æÇâÀ» ¸í½ÃÇÕ´Ï´Ù.
+                // ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½Â¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
                 bool hasMoveDirection = escape.x != 0;
                 BattleDirection moveDirection = hasMoveDirection
                     ? (escape.x > 0 ? BattleDirection.Right : BattleDirection.Left)
@@ -131,9 +145,9 @@ namespace Relic.Gameplay.Monster
 
             AddPositionPressureActions(plan, players, priority);
 
-            // Ã¹ ¿¹¾à Çàµ¿ÀÌ ÀÌµ¿ÀÎ °æ¿ì, ÅÏ ½ÇÇà Àü¿¡ º»Ã¼ ¹æÇâÀ» ¸ÂÃä´Ï´Ù.
-            // °Å¹ÌÁÙ ¼³Ä¡ ¹æÇâÀÌ ¿ÞÂÊÀÌ¾îµµ Ã¹ ÀÌµ¿ÀÌ ¿À¸¥ÂÊÀÌ¸é ¿À¸¥ÂÊÀ» ¹Ù¶óº¾´Ï´Ù.
-            // °ø°ÝÀÌ³ª º¸È£¸·ÀÌ ¼±ÇàµÇ´Â ÅÏÀº ±× Çàµ¿ÀÇ ¹æÇâÀ» °­Á¦·Î ¹Ù²ÙÁö ¾Ê½À´Ï´Ù.
+            // Ã¹ ï¿½ï¿½ï¿½ï¿½ ï¿½àµ¿ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
+            // ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì¾îµµ Ã¹ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¶óº¾´Ï´ï¿½.
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ì³ï¿½ ï¿½ï¿½È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½àµ¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
             // The planner applies facing from the actual earliest reserved slot.
             // Do not alter the sprite while assembling tentative AI actions.
         }
@@ -285,8 +299,8 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager,
             int priority)
         {
-            // È¦¼ö ÅÏ¸¶´Ù À¯È¿ÇÑ ¼³Ä¡ Ä­ÀÌ ÀÖÀ¸¸é °íÄ¡¸¦ ½É½À´Ï´Ù.
-            // ÀÌÀü ÅÏ¿¡ ¼³Ä¡ÇÑ °íÄ¡°¡ ³²¾Æ ÀÖ´õ¶óµµ ÀÌ¹ø ÅÏÀÇ ¼³Ä¡¸¦ ¸·Áö ¾Ê½À´Ï´Ù.
+            // È¦ï¿½ï¿½ ï¿½Ï¸ï¿½ï¿½ï¿½ ï¿½ï¿½È¿ï¿½ï¿½ ï¿½ï¿½Ä¡ Ä­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½É½ï¿½ï¿½Ï´ï¿½.
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ï¿ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
             int eggGridIndex = FindClosestEggGridTowardPlayer(monsterUnit, players, gridManager);
             if (eggGridIndex >= 0)
             {
@@ -357,8 +371,8 @@ namespace Relic.Gameplay.Monster
                 explicitRangeGridIndices: targetGridIndices));
         }
 
-        // ¿¹¾à ´Ü°è¿¡¼­ °¡Àå °¡±î¿î ÇÑ ¸íÀ» °íÁ¤ÇØ ÆÇ´ÜÇÕ´Ï´Ù.
-        // ´Ù¸¥ Ä³¸¯ÅÍ¿ÍÀÇ °Å¸®´Â µµÁÖ ¹æÇâÀ» ¸·´Â Á¶°ÇÀ¸·Î »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°è¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½ï¿½Õ´Ï´ï¿½.
+        // ï¿½Ù¸ï¿½ Ä³ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
         public static bool IsStrictEscapePath(
             Vector2Int origin, Vector2Int offset,
             BattleCharacter[] players, GridManager gridManager)
@@ -440,46 +454,47 @@ namespace Relic.Gameplay.Monster
                 return Vector2Int.zero;
 
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            // ¿¹¾à ½ÃÁ¡ÀÇ °¡Àå °¡±î¿î Ä³¸¯ÅÍ ÇÑ ¸íÀ» µµÁÖ ±âÁØÀ¸·Î °íÁ¤ÇÕ´Ï´Ù.
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
             if (!TryGetNearestPlayerCoord(currentCoord, players, gridManager, out Vector2Int threat))
                 return Vector2Int.zero;
             int currentThreatDistance = ManhattanDistance(currentCoord, threat);
 
             Vector2Int bestOffset = Vector2Int.zero;
-            int bestScore = int.MinValue;
             int bestThreatDistance = int.MinValue;
+            int bestMoveDistance = int.MaxValue;
+            int bestSpaceScore = int.MinValue;
 
             List<Vector2Int> moveOffsets = GetSkillRangeOffsets(monsterUnit, MoveSkillId);
             for (int i = 0; i < moveOffsets.Count; i++)
             {
                 Vector2Int offset = moveOffsets[i];
 
-                // 1Ä­°ú 2Ä­ ÀÌµ¿À» ¸ðµÎ ÈÄº¸·Î µÎ°í, ½ÇÁ¦ ÀÌµ¿ °¡´ÉÇÑ °æ·Î¸¸ Æò°¡ÇÕ´Ï´Ù.
+                // 1Ä­ï¿½ï¿½ 2Ä­ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Äºï¿½ï¿½ï¿½ ï¿½Î°ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))
                     continue;
 
                 Vector2Int movedCoord = currentCoord + offset;
                 int threatDistance = ManhattanDistance(movedCoord, threat);
-                // µµÂø Ä­»Ó ¾Æ´Ï¶ó ÀÌµ¿ Áß°£ Ä­¿¡¼­µµ °Å¸®°¡ ¹Ýµå½Ã Áõ°¡ÇØ¾ß ÇÕ´Ï´Ù.
-                // ´ë°¢¼±Àº ½ÇÁ¦ ½ÇÇà ½Ã °¡·Î/¼¼·Î ¼ø¼­°¡ ¹Ù²ð ¼ö ÀÖ¾î ¾çÂÊ ¼ø¼­¸¦ °Ë»çÇÕ´Ï´Ù.
+                // ï¿½ï¿½ï¿½ï¿½ Ä­ï¿½ï¿½ ï¿½Æ´Ï¶ï¿½ ï¿½Ìµï¿½ ï¿½ß°ï¿½ Ä­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½Ýµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Õ´Ï´ï¿½.
+                // ï¿½ë°¢ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ ï¿½ï¿½ ï¿½Ö¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½ï¿½Õ´Ï´ï¿½.
                 if (threatDistance <= currentThreatDistance ||
                     !IsStrictEscapePath(currentCoord, offset, players, gridManager))
                     continue;
 
                 int spaceScore = GetEscapeSpaceScore(movedCoord, monsterUnit, gridManager);
 
-                // °¡Àå °¡±î¿ü´ø ¸ñÇ¥·ÎºÎÅÍ ¸Ö¾îÁö´Â Á¤µµ¸¦ ÃÖ¿ì¼±À¸·Î Æò°¡ÇÕ´Ï´Ù.
-                // °ø°£ Á¡¼ö´Â °°Àº °Å¸®¿¡¼­¸¸ º¸Á¶ ÆÇ´Ü¿¡ »ç¿ëÇÕ´Ï´Ù.
-                int score = threatDistance * 1000 + spaceScore;
-
-                if (score < bestScore)
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½Îºï¿½ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¿ì¼±ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´Ü¿ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+                int moveDistance = Mathf.Abs(offset.x) + Mathf.Abs(offset.y);
+                if (bestOffset != Vector2Int.zero &&
+                    !ArabellaPhaseOneEscapePolicy.IsBetterCandidate(
+                        moveDistance, threatDistance, spaceScore,
+                        bestMoveDistance, bestThreatDistance, bestSpaceScore))
                     continue;
 
-                if (score == bestScore && threatDistance <= bestThreatDistance)
-                    continue;
-
-                bestScore = score;
+                bestMoveDistance = moveDistance;
                 bestThreatDistance = threatDistance;
+                bestSpaceScore = spaceScore;
                 bestOffset = offset;
             }
 
@@ -561,7 +576,7 @@ namespace Relic.Gameplay.Monster
 
             int reachableOpenArea = GetReachableOpenAreaScore(originCoord, monsterUnit, gridManager);
 
-            // °¡ÀåÀÚ¸®/¸ð¼­¸®´Â À¯È¿ÇÑ ÁÖº¯ Ä­ ÀÚÃ¼°¡ ÀûÀ¸¹Ç·Î ÀÚ¿¬½º·´°Ô Å« °¨Á¡À» ¹Þ½À´Ï´Ù.
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½/ï¿½ð¼­¸ï¿½ï¿½ï¿½ ï¿½ï¿½È¿ï¿½ï¿½ ï¿½Öºï¿½ Ä­ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½Ú¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å« ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½Ï´ï¿½.
             return
                 immediateOpenCount * 18 +
                 reachableOpenArea * 8 +

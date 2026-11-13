@@ -128,6 +128,35 @@ public class AudioManager : Singleton<AudioManager>
         bgmTransitionRoutine = StartCoroutine(BgmTransitionRoutine(state, layers));
     }
 
+    public bool IsBgmConfigured(BgmState state)
+    {
+        return soundDatabase != null &&
+            soundDatabase.TryGetBgm(state, out BgmData data) &&
+            data?.mainClip?.clip != null;
+    }
+
+    private void Update()
+    {
+        MaintainLoopRegion(bgmSource, 0);
+        for (int i = 0; i < bgmLayerSources.Count; i++)
+            MaintainLoopRegion(bgmLayerSources[i], i + 1);
+    }
+
+    private void MaintainLoopRegion(AudioSource source, int layerIndex)
+    {
+        if (source == null || !source.isPlaying || activeBgmLayers == null ||
+            layerIndex < 0 || layerIndex >= activeBgmLayers.Count)
+            return;
+
+        BgmClipData data = activeBgmLayers[layerIndex];
+        if (data == null || !data.TryGetLoopSamples(out int start, out int end))
+            return;
+
+        int current = source.timeSamples;
+        if (current >= end)
+            source.timeSamples = BgmClipData.WrapLoopSample(current, start, end);
+    }
+
     public void PlayBgmState(BgmState state)
     {
         PlayBgm(state);
@@ -337,7 +366,8 @@ public class AudioManager : Singleton<AudioManager>
         VfxSoundCue cue,
         Vector3 worldPosition,
         Quaternion worldRotation,
-        float volumeMultiplier = 1f)
+        float volumeMultiplier = 1f,
+        float pitchMultiplier = 1f)
     {
         if (cue == null || cue.clip == null)
             return null;
@@ -347,11 +377,15 @@ public class AudioManager : Singleton<AudioManager>
             AudioSourcePlaybackSettings settings =
                 AudioSourcePlaybackSettings.From(cue, worldPosition, worldRotation, sfxSource);
 
+            settings?.MultiplyPitch(pitchMultiplier);
+
             return PlaySfxClip(settings, volumeMultiplier);
         }
 
         AudioSourcePlaybackSettings oneShotSettings =
             AudioSourcePlaybackSettings.From(cue, worldPosition, worldRotation, sfxSource);
+
+        oneShotSettings?.MultiplyPitch(pitchMultiplier);
 
         return PlaySfxClip(oneShotSettings, volumeMultiplier);
     }
@@ -573,7 +607,7 @@ public class AudioManager : Singleton<AudioManager>
         if (layers == null || layers.Count == 0)
             return false;
 
-        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip, layers[0].loop))
+        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip, UsesAudioSourceLoop(layers[0])))
             return false;
 
         for (int i = 1; i < layers.Count; i++)
@@ -583,7 +617,7 @@ public class AudioManager : Singleton<AudioManager>
             if (layerIndex >= bgmLayerSources.Count)
                 return false;
 
-            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip, layers[i].loop))
+            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip, UsesAudioSourceLoop(layers[i])))
                 return false;
         }
 
@@ -609,9 +643,14 @@ public class AudioManager : Singleton<AudioManager>
             source.clip = data.clip;
         }
 
-        source.loop = data.loop;
+        source.loop = UsesAudioSourceLoop(data);
         source.pitch = data.GetPlaybackPitch();
         source.Play();
+    }
+
+    private static bool UsesAudioSourceLoop(BgmClipData data)
+    {
+        return data != null && data.loop && !data.TryGetLoopSamples(out _, out _);
     }
 
     private void EnsureBgmLayerSourceCount(int count)
@@ -999,6 +1038,11 @@ public sealed class AudioSourcePlaybackSettings
         Clip = clip;
         Loop = false;
         Pitch = SoundData.ClampPlaybackPitch(pitch);
+    }
+
+    public void MultiplyPitch(float multiplier)
+    {
+        Pitch = BattleVfxAudioUtility.CalculatePlaybackPitch(Pitch, multiplier);
     }
 
     public void Force2DLoop()

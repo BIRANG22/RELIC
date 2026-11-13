@@ -16,6 +16,7 @@ public class BattleSceneController : MonoBehaviour
 
     public static bool IsBattleRoomIntroPlaying { get; private set; }
     public static event Action BattleRoomIntroStarted;
+    public static event Action<string, string, bool> BattleRoomSelected;
     public static event Action BattleRoomIntroCompleted;
     [Header("Panels")]
     [SerializeField] private BattleMapPanel battleMapPanel;
@@ -2470,6 +2471,23 @@ public class BattleSceneController : MonoBehaviour
 
     private void HandleSelectedMap(GeneratedMapNodeData nodeData)
     {
+        if (nodeData == null)
+            return;
+
+        string stage = DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentStage;
+        bool hasBattleMap = false;
+        if (DataManager.Instance?.MapDatabase != null &&
+            DataManager.Instance.MapDatabase.TryGet(nodeData.MapId, out MapData selectedMap) &&
+            selectedMap != null)
+        {
+            stage = selectedMap.Stage;
+            hasBattleMap = !string.IsNullOrWhiteSpace(selectedMap.BattleMapId) && selectedMap.BattleMapId != "0";
+        }
+
+        BattleRoomSelected?.Invoke(
+            string.IsNullOrWhiteSpace(stage) ? defaultStage : stage,
+            nodeData.Type,
+            hasBattleMap);
         switch (nodeData.Type)
         {
             case "Common":

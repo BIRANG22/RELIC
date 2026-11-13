@@ -33,7 +33,7 @@ public class BattleState : BaseGameState
 
         await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
 
-        AudioManager.Instance.PlayBgm(BgmState.BattleMain);
+        AudioManager.Instance.PlayBgm(BgmState.Stage1Common);
     }
 
     public override Task Exit()

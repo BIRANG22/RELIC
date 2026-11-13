@@ -3,6 +3,12 @@ using UnityEngine;
 
 public static class BattleVfxAudioUtility
 {
+    public static float CalculatePlaybackPitch(float cuePitch, float presentationSpeed)
+    {
+        return SoundData.ClampPlaybackPitch(
+            SoundData.ClampPlaybackPitch(cuePitch) * Mathf.Max(0.01f, presentationSpeed));
+    }
+
     public static void PlayAndStripEmbeddedAudioSources(
         GameObject vfx,
         GameObject sourcePrefab,
@@ -94,7 +100,9 @@ public static class BattleVfxAudioUtility
         AudioSource routedSource = AudioManager.Instance.PlayVfxSfxCue(
             cue,
             vfxTransform != null ? vfxTransform.position : Vector3.zero,
-            vfxTransform != null ? vfxTransform.rotation : Quaternion.identity);
+            vfxTransform != null ? vfxTransform.rotation : Quaternion.identity,
+            1f,
+            BattlePresentationSpeedSettings.CurrentMultiplier);
 
         if (routedSource != null && routedSource.loop)
             TrackLoopedRoutedAudioSource(vfx, routedSource);

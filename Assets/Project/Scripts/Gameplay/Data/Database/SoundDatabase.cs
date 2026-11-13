@@ -16,14 +16,18 @@ public enum BgmState
     Lobby1 = 3,
     Lobby2 = 4,
     Lobby3 = 5,
-    BattleMain = 6,
-    Battle1 = 7,
-    Battle2 = 8,
-    Battle3 = 9,
-    Event1 = 10,
-    Event2 = 11,
-    Shop = 12,
-    Rest = 13
+    Stage1Common = 6,
+    Stage1Elite = 7,
+    Stage1TutorialBattle = 8,
+    Stage1Boss = 9,
+    Stage1Start = 10,
+    Stage1Special = 11,
+    Stage1Shop = 12,
+    Stage1Rest = 13,
+    Stage1LowHealth = 14,
+    Stage1BossIntro = 15,
+    Stage1Defeat = 16,
+    Stage1TutorialEvent = 17
 }
 
 [AttributeUsage(AttributeTargets.Field)]
@@ -282,6 +286,11 @@ public class BgmClipData
     public float pitch = 1f;
 
     public bool loop = true;
+    [Tooltip("전체 클립 대신 지정 구간을 반복합니다.")]
+    public bool useLoopRegion;
+    [Min(0f)] public float loopStartSeconds;
+    [Min(0f), Tooltip("0 이하면 클립 끝을 사용합니다.")]
+    public float loopEndSeconds;
     public bool useRandomPitch;
 
     [Range(SoundData.MinPitch, SoundData.MaxPitch)]
@@ -311,6 +320,29 @@ public class BgmClipData
         pitch = SoundData.ClampPlaybackPitch(pitch);
         randomPitchMin = SoundData.ClampPlaybackPitch(randomPitchMin);
         randomPitchMax = SoundData.ClampPlaybackPitch(randomPitchMax);
+        loopStartSeconds = Mathf.Max(0f, loopStartSeconds);
+        loopEndSeconds = Mathf.Max(0f, loopEndSeconds);
+    }
+
+    public bool TryGetLoopSamples(out int startSample, out int endSample)
+    {
+        startSample = 0;
+        endSample = 0;
+        if (!loop || !useLoopRegion || clip == null || clip.frequency <= 0 || clip.samples <= 0)
+            return false;
+
+        startSample = Mathf.RoundToInt(loopStartSeconds * clip.frequency);
+        endSample = loopEndSeconds > 0f
+            ? Mathf.RoundToInt(loopEndSeconds * clip.frequency)
+            : clip.samples;
+        endSample = Mathf.Min(endSample, clip.samples);
+        return startSample >= 0 && startSample < endSample;
+    }
+
+    public static int WrapLoopSample(int currentSample, int startSample, int endSample)
+    {
+        int length = endSample - startSample;
+        return length > 0 ? startSample + Mathf.Max(0, currentSample - endSample) % length : currentSample;
     }
 }
 

@@ -118,6 +118,46 @@ public static class MonsterFlipBeforeActionPolicy
     }
 }
 
+public static class MonsterMovementFacingPresentationPolicy
+{
+    public static bool ShouldShowOnMove(BattleDirection projectedDirection, Vector2Int moveOffset)
+    {
+        if (moveOffset.x == 0)
+            return false;
+        BattleDirection moveDirection = moveOffset.x > 0 ? BattleDirection.Right : BattleDirection.Left;
+        return projectedDirection != moveDirection;
+    }
+}
+
+public static class MonsterMoveCollisionPolicy
+{
+    public static bool ShouldApplyCrash(bool blockedByUnit, bool blockedByGridEffect, bool blockedByBoundary)
+    {
+        return !blockedByBoundary && (blockedByUnit || blockedByGridEffect);
+    }
+}
+
+public static class MonsterActionDeathPolicy
+{
+    public static bool ShouldStopAfterStateChange(string monsterId, bool isDead)
+    {
+        return isDead && !string.Equals(monsterId, ArabellaPhaseTransition.PhaseOneMonsterId,
+            System.StringComparison.Ordinal);
+    }
+}
+
+public sealed class MonsterActionOverlapGate
+{
+    public bool ImpactCommitted { get; private set; }
+    public bool MoveCompleted { get; private set; }
+    public bool PresentationTailCompleted { get; private set; }
+    public bool CanStartFollowupMove => ImpactCommitted;
+    public bool IsComplete => MoveCompleted && PresentationTailCompleted;
+    public void CommitImpact() => ImpactCommitted = true;
+    public void CompleteMove() => MoveCompleted = true;
+    public void CompletePresentationTail() => PresentationTailCompleted = true;
+}
+
 public class MonsterReservedCommand
 {
     public MonsterRuntimeData UserRuntime { get; private set; }
@@ -139,6 +179,9 @@ public class MonsterReservedCommand
     public bool HasForcedDirection { get; private set; }
     public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
     public bool FlipBeforeAction { get; private set; }
+    public bool ShowMovementFacingTransition { get; private set; }
+    public int FinalPlacementGridIndex { get; private set; } = -1;
+    public bool HasFinalPlacementGridIndex => FinalPlacementGridIndex >= 0;
     public bool IsPortalMove { get; private set; }
     public bool HasExplicitRangeResult { get; private set; }
     public MonsterAttackSpatialPolicy AttackSpatialPolicy { get; private set; }
@@ -214,6 +257,16 @@ public class MonsterReservedCommand
     public void SetFlipBeforeAction(bool enabled = true)
     {
         FlipBeforeAction = enabled;
+    }
+
+    public void SetShowMovementFacingTransition(bool enabled = true)
+    {
+        ShowMovementFacingTransition = enabled;
+    }
+
+    public void SetFinalPlacementGridIndex(int gridIndex)
+    {
+        FinalPlacementGridIndex = Mathf.Max(-1, gridIndex);
     }
 
     public void SetPortalMove(bool isPortalMove)

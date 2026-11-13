@@ -360,6 +360,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         // The first reserved command, not the last hit reaction or turn-start
         // presentation, determines what direction each monster shows in planning.
         ApplyAllFirstReservedActionFacings(monsterUnits);
+        timelineController.RefreshMonsterCommandPresentation();
 
         if (logReservationPerformance)
             UnityEngine.Debug.Log($"[MonsterReservationPerf] RegisterAll:{registerTotalMs:F2}ms MaxSingle:{registerMaxMs:F2}ms Count:{registeredCount} Interval:{monsterCommandInterval:F2}s (intentional)", this);
@@ -418,6 +419,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         }
 
         ApplyAllFirstReservedActionFacings(monsterUnits);
+        timelineController.RefreshMonsterCommandPresentation();
 
         if (showActionReserve)
             ShowActionReserveIntroText();
@@ -535,6 +537,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 if (facing != null)
                     facing.FaceRight(direction == BattleDirection.Right);
                 monster.RuntimeData.Direction = direction;
+                // 첫 행동 방향은 예약 공개 시점에 이미 본체에 적용됐으므로
+                // 같은 방향 전환을 타임라인 표시나 실행 단계에서 다시 수행하지 않습니다.
+                command.SetFlipBeforeAction(false);
+                command.SetShowMovementFacingTransition(false);
                 return true;
             }
         }
@@ -1169,6 +1175,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 if (!projectedDirections.TryGetValue(command.RuntimeId, out BattleDirection projectedDirection))
                     projectedDirection = command.UserRuntime.Direction;
 
+                BattleDirection directionBeforeAction = projectedDirection;
+
                 projectedDirection = MonsterFlipBeforeActionPolicy.ResolveProjectedDirection(
                     projectedDirection,
                     IsMoveSkill(command.SkillData),
@@ -1178,6 +1186,11 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                     out bool flipBeforeAction);
 
                 command.SetFlipBeforeAction(flipBeforeAction);
+                command.SetShowMovementFacingTransition(
+                    IsMoveSkill(command.SkillData) &&
+                    MonsterMovementFacingPresentationPolicy.ShouldShowOnMove(
+                        directionBeforeAction,
+                        command.MoveOffset));
                 projectedDirections[command.RuntimeId] = projectedDirection;
             }
         }

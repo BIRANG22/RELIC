@@ -5232,6 +5232,11 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTimeline();
     }
 
+    public void RefreshMonsterCommandPresentation()
+    {
+        RefreshTimeline();
+    }
+
     private int ResolveMonsterSlotIndex(int preferredSlotIndex, MonsterReservedCommand command)
     {
         if (command == null)
@@ -5323,16 +5328,21 @@ public class BattleTimelineController : MonoBehaviour
 
     public void RemoveCommand(int slotIndex, int orderIndex)
     {
+        PlayerReservedCommand command = GetPlayerCommandAt(slotIndex, orderIndex);
+
         if (SteamBattleStateSynchronizer.TryHandleRemoveCommand(
                 this,
                 slotIndex,
                 orderIndex,
-                out _))
+                out bool networkAccepted))
         {
+            if (networkAccepted)
+                RecordDirectPlayerReservationRemoval(slotIndex, orderIndex, command);
             return;
         }
 
-        RemoveCommandFromNetwork(slotIndex, orderIndex);
+        if (RemoveCommandFromNetwork(slotIndex, orderIndex))
+            RecordDirectPlayerReservationRemoval(slotIndex, orderIndex, command);
     }
 
 
@@ -5659,6 +5669,33 @@ public class BattleTimelineController : MonoBehaviour
 
         Debug.Log($"[BattleTimelineController] 예약 취소 / Slot:{slotIndex} / Order:{orderIndex}");
         return true;
+    }
+
+    private PlayerReservedCommand GetPlayerCommandAt(int slotIndex, int orderIndex)
+    {
+        if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return null;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+        if (slot == null || slot.Commands == null || orderIndex < 0 || orderIndex >= slot.Commands.Count)
+            return null;
+
+        return slot.Commands[orderIndex];
+    }
+
+    private void RecordDirectPlayerReservationRemoval(
+        int slotIndex,
+        int orderIndex,
+        PlayerReservedCommand command)
+    {
+        if (command == null || command.IsFacingFlipCommand)
+            return;
+
+        playerReservationRedoHistory.Clear();
+        playerReservationRedoHistory.Add(new PlayerReservationHistoryEntry(
+            slotIndex,
+            command,
+            orderIndex));
     }
 
     private bool IsMoveCommand(PlayerReservedCommand command)
