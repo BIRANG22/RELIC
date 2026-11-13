@@ -14346,7 +14346,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: ui.relicstone.click
+  soundId: ui.party.click
   volume: 1
   playDelay: 0
   playOnEnable: 1
@@ -14968,10 +14968,11 @@ MonoBehaviour:
   hoverRotationTarget: {fileID: 0}
   hoverZRotationAngle: 5
   hoverRotationDuration: 0.2
-  toggleClickState: 1
-  keepClickedStateWhenPointerExit: 1
+  toggleClickState: 0
+  keepClickedStateWhenPointerExit: 0
   usePersistentClickedState: 0
-  clearClickedStateWhenAnotherButtonHovered: 1
+  clearClickedStateWhenAnotherButtonHovered: 0
+  usePressOnlyClickedState: 1
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -15417,7 +15418,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &230020110
@@ -15653,7 +15654,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &230020210
@@ -15889,7 +15890,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &230020320
@@ -16026,7 +16027,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &232901348
@@ -23562,6 +23563,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -26299,6 +26301,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 469190672}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -29337,6 +29340,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 532234611}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -46899,7 +46903,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: ui.book.open
+  soundId: ui.party.click
   volume: 1
   playDelay: 0
   playOnEnable: 1
@@ -47902,7 +47906,7 @@ MonoBehaviour:
     m_HighlightedColor: {r: 0.11764706, g: 0.11764706, b: 0.11764706, a: 1}
     m_PressedColor: {r: 0.37254903, g: 0.37254903, b: 0.37254903, a: 1}
     m_SelectedColor: {r: 0.37254903, g: 0.37254903, b: 0.37254903, a: 1}
-    m_DisabledColor: {r: 0, g: 0, b: 0, a: 1}
+    m_DisabledColor: {r: 0.10188681, g: 0.10188681, b: 0.10188681, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -47984,6 +47988,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -59471,6 +59476,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -60032,6 +60038,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -92027,7 +92034,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1596237527
@@ -117802,6 +117809,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -127615,6 +127623,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -127935,6 +127944,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -128221,6 +128231,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -128561,6 +128572,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -128859,6 +128871,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05

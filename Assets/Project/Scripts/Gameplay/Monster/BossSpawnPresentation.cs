@@ -47,6 +47,12 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         [Min(0f)] public float shakeFrequency = 28f;
         public bool fadeOutShake = true;
 
+        [Header("Step SFX (Sound DB)")]
+        [Tooltip("이 스텝이 시작될 때 재생할 Sound DB SFX ID입니다. 비워두면 재생하지 않습니다.")]
+        public string sfxId;
+        [Tooltip("스텝 SFX 볼륨 배율입니다 (0~1).")]
+        [Range(0f, 1f)] public float sfxVolume = 1f;
+
         [Header("Step VFX")]
         [Tooltip("이 스텝 시작 시 생성할 VFX 프리팹입니다. 비워두면 생성하지 않습니다.")]
         public GameObject vfxPrefab;
@@ -296,6 +302,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
                     yield return WaitForDuration(step.startDelay);
                 ApplyBossIntroStepLighting(step);
                 SpawnStepVfx(step);
+                PlayStepSfx(step);
                 yield return ExecuteCameraStep(step);
             }
         }
@@ -402,6 +409,18 @@ public sealed class BossSpawnPresentation : MonoBehaviour
             bossIntroLight.intensity = bossIntroOriginalIntensity;
         bossIntroLightSaved = false;
         bossIntroLight = null;
+    }
+
+    private void PlayStepSfx(PresentationStep step)
+    {
+        if (step == null || string.IsNullOrWhiteSpace(step.sfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager != null)
+            audioManager.PlaySfx(step.sfxId.Trim(), Mathf.Clamp01(step.sfxVolume));
+        else
+            Debug.LogWarning("[BossSpawnPresentation] AudioManager.Instance가 없어 스텝 SFX를 재생할 수 없습니다.", this);
     }
 
     private void SpawnStepVfx(PresentationStep step)

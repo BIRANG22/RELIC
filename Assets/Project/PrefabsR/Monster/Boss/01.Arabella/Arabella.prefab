@@ -1701,6 +1701,8 @@ MonoBehaviour:
   focusTarget: {fileID: 0}
   steps:
   - enabled: 1
+    sfxId: 
+    sfxVolume: 1
     overrideLightIntensity: 1
     lightIntensity: 0.1
     offset: {x: 0, y: 0.35}
@@ -1737,6 +1739,8 @@ MonoBehaviour:
     shakeFrequency: 20
     holdDuration: 1
   - enabled: 1
+    sfxId: 
+    sfxVolume: 1
     overrideLightIntensity: 0
     lightIntensity: 0.8
     offset: {x: 0, y: 0.35}
@@ -1773,6 +1777,8 @@ MonoBehaviour:
     shakeFrequency: 20
     holdDuration: 1
   - enabled: 1
+    sfxId: 
+    sfxVolume: 1
     overrideLightIntensity: 0
     lightIntensity: 0.8
     offset: {x: 0, y: 0.35}
@@ -1809,6 +1815,8 @@ MonoBehaviour:
     shakeFrequency: 20
     holdDuration: 2
   - enabled: 1
+    sfxId: 
+    sfxVolume: 1
     overrideLightIntensity: 1
     lightIntensity: 0.8
     offset: {x: 0, y: 0.35}
@@ -1997,6 +2005,8 @@ MonoBehaviour:
     shakeStrength: 0
     shakeFrequency: 0
     fadeOutShake: 0
+    sfxId: 
+    sfxVolume: 1
     vfxPrefab: {fileID: 0}
     vfxOrigin: {fileID: 0}
     vfxLocalOffset: {x: 0, y: 0, z: 0}
@@ -2038,6 +2048,8 @@ MonoBehaviour:
     shakeStrength: 0
     shakeFrequency: 0
     fadeOutShake: 0
+    sfxId: 
+    sfxVolume: 1
     vfxPrefab: {fileID: 0}
     vfxOrigin: {fileID: 0}
     vfxLocalOffset: {x: 0, y: 0, z: 0}
@@ -2079,6 +2091,8 @@ MonoBehaviour:
     shakeStrength: 0.1
     shakeFrequency: 10
     fadeOutShake: 0
+    sfxId: 
+    sfxVolume: 1
     vfxPrefab: {fileID: 6877144895907850899, guid: 4ccd41b6d4991b542af33e60bb08345c, type: 3}
     vfxOrigin: {fileID: 0}
     vfxLocalOffset: {x: 0, y: 0, z: 0}
@@ -2120,6 +2134,8 @@ MonoBehaviour:
     shakeStrength: 0
     shakeFrequency: 0
     fadeOutShake: 0
+    sfxId: 
+    sfxVolume: 1
     vfxPrefab: {fileID: 0}
     vfxOrigin: {fileID: 0}
     vfxLocalOffset: {x: 0, y: 0, z: 0}
