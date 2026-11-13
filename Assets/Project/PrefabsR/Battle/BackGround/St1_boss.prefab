@@ -1591,7 +1591,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2197605981041873600}
   - component: {fileID: -8176076624987920850}
-  - component: {fileID: 5306863315795213874}
   m_Layer: 0
   m_Name: St1_boss
   m_TagString: Untagged
@@ -1629,20 +1628,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ambienceId: Cave
   volume: 0.5
---- !u!114 &5306863315795213874
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6709005105554407538}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cbbe420a3370200418a1566ef89bc09d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playOnEnable: 1
-  bgmState: 9
 --- !u!1 &6874735841319904894
 GameObject:
   m_ObjectHideFlags: 0
