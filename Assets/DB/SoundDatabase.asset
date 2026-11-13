@@ -891,6 +891,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: boss.phase
+    aliases: []
+    clip: {fileID: 8300000, guid: 4812ad74eebfb415c89f624086adc518, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   eventSfxList:
   - id: event.01.Skylight
     aliases: []
