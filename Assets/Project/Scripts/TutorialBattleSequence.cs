@@ -94,6 +94,94 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private int originalDialogSortingOrder;
     private readonly List<RaycastResult> raycastResults = new();
 
+    // Only the relic reward dialogue uses this temporary screen-space overlay.
+    private GameObject relicDialogueOverlay;
+    private Transform relicDialogOriginalParent;
+    private int relicDialogOriginalSibling;
+    private Vector2 relicDialogAnchorsMin, relicDialogAnchorsMax, relicDialogPivot;
+    private Vector2 relicDialogSize, relicDialogPosition;
+    private Vector3 relicDialogScale;
+    private Quaternion relicDialogRotation;
+
+    private void PutRelicDialogueInFront()
+    {
+        if (dialogRoot == null || relicDialogueOverlay != null) return;
+        RectTransform dialog = dialogRoot.transform as RectTransform;
+        if (dialog == null) return;
+
+        // Capture its current on-screen rectangle before changing canvas hierarchy.
+        Canvas sourceCanvas = dialog.GetComponentInParent<Canvas>();
+        Camera camera = sourceCanvas != null && sourceCanvas.rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? sourceCanvas.rootCanvas.worldCamera : null;
+        Vector3[] corners = new Vector3[4];
+        dialog.GetWorldCorners(corners);
+        Vector2 bottomLeft = RectTransformUtility.WorldToScreenPoint(camera, corners[0]);
+        Vector2 topRight = RectTransformUtility.WorldToScreenPoint(camera, corners[2]);
+        Vector2 pivotScreen = RectTransformUtility.WorldToScreenPoint(camera, dialog.position);
+
+        Vector2 originalRectSize = dialog.rect.size;
+        relicDialogOriginalParent = dialog.parent;
+        relicDialogOriginalSibling = dialog.GetSiblingIndex();
+        relicDialogAnchorsMin = dialog.anchorMin;
+        relicDialogAnchorsMax = dialog.anchorMax;
+        relicDialogPivot = dialog.pivot;
+        relicDialogSize = dialog.sizeDelta;
+        relicDialogPosition = dialog.anchoredPosition;
+        relicDialogScale = dialog.localScale;
+        relicDialogRotation = dialog.localRotation;
+
+        relicDialogueOverlay = new GameObject("__RelicTutorialDialogueOverlay", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        RectTransform overlayRect = relicDialogueOverlay.GetComponent<RectTransform>();
+        overlayRect.anchorMin = Vector2.zero;
+        overlayRect.anchorMax = Vector2.one;
+        overlayRect.offsetMin = Vector2.zero;
+        overlayRect.offsetMax = Vector2.zero;
+        Canvas overlayCanvas = relicDialogueOverlay.GetComponent<Canvas>();
+        overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        overlayCanvas.overrideSorting = true;
+        overlayCanvas.sortingOrder = 32760;
+
+        dialog.SetParent(overlayRect, false);
+        dialog.anchorMin = dialog.anchorMax = new Vector2(0.5f, 0.5f);
+        dialog.pivot = relicDialogPivot;
+        dialog.localRotation = Quaternion.identity;
+        // Preserve the original RectTransform layout; compensate for the source
+        // canvas scale on this pixel-sized overlay instead of enlarging sizeDelta.
+        float screenWidth = Mathf.Abs(topRight.x - bottomLeft.x);
+        float screenHeight = Mathf.Abs(topRight.y - bottomLeft.y);
+        dialog.sizeDelta = originalRectSize;
+        dialog.localScale = new Vector3(
+            originalRectSize.x > 0.01f ? screenWidth / originalRectSize.x : 1f,
+            originalRectSize.y > 0.01f ? screenHeight / originalRectSize.y : 1f,
+            1f);
+        dialog.anchoredPosition = pivotScreen - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+    }
+
+    private void RestoreRelicDialogueParent()
+    {
+        if (relicDialogueOverlay == null) return;
+        if (dialogRoot != null && relicDialogOriginalParent != null)
+        {
+            RectTransform rect = dialogRoot.transform as RectTransform;
+            if (rect != null)
+            {
+                rect.SetParent(relicDialogOriginalParent, false);
+                rect.anchorMin = relicDialogAnchorsMin;
+                rect.anchorMax = relicDialogAnchorsMax;
+                rect.pivot = relicDialogPivot;
+                rect.sizeDelta = relicDialogSize;
+                rect.anchoredPosition = relicDialogPosition;
+                rect.localScale = relicDialogScale;
+                rect.localRotation = relicDialogRotation;
+                rect.SetSiblingIndex(Mathf.Min(relicDialogOriginalSibling, relicDialogOriginalParent.childCount - 1));
+            }
+        }
+        Destroy(relicDialogueOverlay);
+        relicDialogueOverlay = null;
+        relicDialogOriginalParent = null;
+    }
+
+
     public void NotifyInitialBattleHudReady() => initialHudReady = true;
 
     public void Begin(BattleRoomLoader loader, string mapId)
@@ -209,7 +297,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 
         var victoryLines = new List<TutorialData>();
         foreach (TutorialData item in steps)
-            if (item != null && item.Order > 12 &&
+            if (item != null && item.Order >= 13 && item.Order <= 15 &&
                 string.Equals(item.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
                 victoryLines.Add(item);
         if (victoryLines.Count == 0) yield break;
@@ -247,6 +335,47 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         yield return null;
         while (TutorialGuideController.IsModalOpen)
             yield return null;
+    }
+
+    // Triggered only after the first tutorial relic panel has finished its entrance animation.
+    // Dialogue orders 16+ are intentionally data-driven; an empty range is a no-op.
+    public IEnumerator PlayFirstRelicRewardDialogue()
+    {
+        IReadOnlyList<TutorialData> steps = DataManager.Instance?.TutorialDatabase?.GetForMap("Map_26");
+        if (steps == null) yield break;
+
+        var lines = new List<TutorialData>();
+        foreach (TutorialData step in steps)
+        {
+            if (step != null && step.Order >= 16 && step.Order <= 17 &&
+                string.Equals(step.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
+                lines.Add(step);
+        }
+        if (lines.Count == 0) yield break;
+        lines.Sort((a, b) => a.Order.CompareTo(b.Order));
+
+        dialoguePresentationRunning = true;
+        dialogueInputActive = true;
+        ActiveTutorialMapId = "Map_26";
+        ResolveUi();
+        HideUi();
+        CreateDialogueShield();
+        PutRelicDialogueInFront();
+        if (dialogCanvas != null) dialogCanvas.sortingOrder = 32765;
+        try
+        {
+            foreach (TutorialData line in lines)
+            {
+                ShowDialogue(line);
+                yield return RevealAndAdvance();
+                if (dialogRoot != null) dialogRoot.SetActive(false);
+            }
+        }
+        finally
+        {
+            RestoreRelicDialogueParent();
+            Cleanup();
+        }
     }
 
     private static bool HasVisibleGridCells(GridManager grid)
@@ -293,7 +422,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         rect.offsetMax = Vector2.zero;
         Canvas canvas = dialogueInputShield.GetComponent<Canvas>();
         canvas.overrideSorting = true;
-        canvas.sortingOrder = 30000;
+        canvas.sortingOrder = 32740;
         Image image = dialogueInputShield.GetComponent<Image>();
         image.color = new Color(0f, 0f, 0f, 0f);
         image.raycastTarget = true;
@@ -301,13 +430,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         dialogueShieldGroup.blocksRaycasts = true;
 
         if (dialogRoot != null)
-            dialogCanvas = SetupFrontCanvas(dialogRoot, 30001,
+            dialogCanvas = SetupFrontCanvas(dialogRoot, 32741,
                 out addedDialogCanvas, out dialogRaycaster, out addedDialogRaycaster,
                 out originalDialogOverrideSorting, out originalDialogSortingOrder);
         Transform skip = FindChild(tutorialRoot, "SkipButton");
         if (skip == null) skip = FindChild(tutorialRoot, "TutorialSkipButton");
         if (skip != null)
-            skipCanvas = SetupFrontCanvas(skip.gameObject, 30002,
+            skipCanvas = SetupFrontCanvas(skip.gameObject, 32742,
                 out addedSkipCanvas, out skipRaycaster, out addedSkipRaycaster,
                 out originalSkipOverrideSorting, out originalSkipSortingOrder);
     }
@@ -486,6 +615,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 
     private void Cleanup()
     {
+        RestoreRelicDialogueParent();
         if (dialogueInputShield != null) Destroy(dialogueInputShield);
         dialogueInputShield = null;
         dialogueShieldGroup = null;
