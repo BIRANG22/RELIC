@@ -143,12 +143,18 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private static readonly Color SkipEnabledTextColor = Color.white;
     private bool skipRevealComplete;
 
+    // Tutorial_03 reward dialogue: block selection until all offer-card intro
+    // animations finish and the two dialogue lines have been acknowledged.
+    private bool tutorial03RewardDialoguePending;
+    private Coroutine tutorial03RewardDialogueRoutine;
+
+
     private void SetSkipRevealState(bool ready)
     {
         skipRevealComplete = ready;
         BindSkipButton();
         if (skipButton == null) return;
-        bool interactionEnabled = ready && reward != null && !IsSkipInteractionLocked();
+        bool interactionEnabled = ready && reward != null && !tutorial03RewardDialoguePending && !IsSkipInteractionLocked();
         skipButton.interactable = interactionEnabled;
         skipButton.gameObject.SetActive(true);
         string[] names = { "back (1)", "back (2)", "front", "Text (TMP)" };
@@ -273,6 +279,12 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        if (tutorial03RewardDialogueRoutine != null)
+        {
+            StopCoroutine(tutorial03RewardDialogueRoutine);
+            tutorial03RewardDialogueRoutine = null;
+        }
+        tutorial03RewardDialoguePending = false;
         HideOfferedSkillEffectTooltip();
         HideEquippedSkillTooltipImmediately();
         SetSkipRevealState(false);
@@ -340,6 +352,17 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (!DataManager.Instance.SkillDatabase.TryGet(data.RewardId, out SkillMasterData skill) || skill == null)
             return false;
         reward = data;
+        // Only the fixed Tutorial_03 battle reward in Map_28 triggers these lines.
+        var tutorialMap = DataManager.Instance?.MapRuntimeStore?.Get();
+        tutorial03RewardDialoguePending =
+            string.Equals(tutorialMap?.CurrentMapId, "Map_28", StringComparison.OrdinalIgnoreCase) &&
+            TutorialBattleSequence.HasTutorialRewardSteps("Map_28", "Tutorial_03", 26, 27) &&
+            (data.SourceKey == null || !data.SourceKey.Contains("|RestOffers="));
+        if (tutorial03RewardDialogueRoutine != null)
+        {
+            StopCoroutine(tutorial03RewardDialogueRoutine);
+            tutorial03RewardDialogueRoutine = null;
+        }
         isRestMeditationReward = data.SourceKey != null && data.SourceKey.Contains("|RestOffers=");
         SetSkipRevealState(false);
         completed = onCompleted;
@@ -478,7 +501,49 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             }
         }
         RefreshSkipRevealState();
+        if (tutorial03RewardDialoguePending)
+            tutorial03RewardDialogueRoutine = StartCoroutine(PlayTutorial03RewardDialogueAfterIntro());
         return true;
+    }
+
+    private IEnumerator PlayTutorial03RewardDialogueAfterIntro()
+    {
+        // Wait for all visible offered cards to finish dissolving and revealing.
+        // Waiting on the coroutine fields (rather than a hard-coded duration)
+        // follows the per-card inspector timing and optional animations.
+        while (reward != null && gameObject.activeInHierarchy)
+        {
+            bool finished = true;
+            for (int i = 0; i < offeredSkills.Length; i++)
+            {
+                if (offeredSkills[i] == null) continue;
+                if (!cardInteractionReady[i] || cardDissolveCoroutines[i] != null || pendingSkillReveal[i] != null)
+                {
+                    finished = false;
+                    break;
+                }
+            }
+            if (finished) break;
+            yield return null;
+        }
+        if (reward != null && gameObject.activeInHierarchy)
+        {
+            // The reward panel stays open, but its cards cannot be selected
+            // while the dialogue UI is showing.
+            TutorialBattleSequence tutorial = TutorialBattleSequence.FindOrCreateForReward(this);
+            if (tutorial == null)
+            {
+                Debug.LogWarning("[BattleRewardSkillPanelUI] Tutorial_03 reward dialogue runner missing; unlock skill choices.", this);
+            }
+            else
+            {
+                yield return StartCoroutine(tutorial.PlayThirdTutorialSkillRewardDialogue());
+            }
+        }
+        tutorial03RewardDialoguePending = false;
+        tutorial03RewardDialogueRoutine = null;
+        if (reward != null && gameObject.activeInHierarchy)
+            RefreshSkipRevealState();
     }
 
     // 파티의 현재 장착 기억을 Char_content에 표시합니다. 이 영역은 정보 표시 전용입니다.
@@ -1002,7 +1067,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void Select(int index)
     {
-        if (processing || reward == null || index < 0 || index >= characterIds.Length || !cardInteractionReady[index]) return;
+        if (tutorial03RewardDialoguePending || processing || reward == null || index < 0 || index >= characterIds.Length || !cardInteractionReady[index]) return;
         // Once replacement mode begins, the offered skill is locked until an
         // equipped slot is clicked. Do not allow reselecting or cancelling it.
         if (pendingReplacementCard >= 0) return;
@@ -1624,7 +1689,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     // the reward completion callback so the existing reward flow can continue.
     public void DiscardReward()
     {
-        if (reward == null || processing || !skipRevealComplete || !gameObject.activeInHierarchy) return;
+        if (tutorial03RewardDialoguePending || reward == null || processing || !skipRevealComplete || !gameObject.activeInHierarchy) return;
         PlaySkipClickSfx();
         HideOfferedSkillEffectTooltip();
         processing = true;

@@ -499,17 +499,17 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
         bool isFirstTutorialRelic =
             !firstTutorialRelicDialoguePlayed &&
-            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
-            string.Equals(map?.CurrentMapId, "Map_26", StringComparison.OrdinalIgnoreCase);
+            string.Equals(map?.CurrentMapId, "Map_26", StringComparison.OrdinalIgnoreCase) &&
+            TutorialBattleSequence.HasTutorialRewardSteps("Map_26", "Tutorial_01", 16, 17);
         bool isSecondTutorialRelic =
-            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
-            string.Equals(map?.CurrentMapId, "Map_27", StringComparison.OrdinalIgnoreCase);
+            string.Equals(map?.CurrentMapId, "Map_27", StringComparison.OrdinalIgnoreCase) &&
+            TutorialBattleSequence.HasTutorialRewardSteps("Map_27", "Tutorial_02", 3, 4);
         if (isFirstTutorialRelic || isSecondTutorialRelic)
         {
             if (isFirstTutorialRelic) firstTutorialRelicDialoguePlayed = true;
             firstTutorialRelicGuideActive = true;
             tutorialRequiredCharacterIndex = isSecondTutorialRelic ? 1 : 0;
-            TutorialBattleSequence tutorial = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            TutorialBattleSequence tutorial = TutorialBattleSequence.FindOrCreateForReward(this);
             if (tutorial != null)
             {
                 if (isSecondTutorialRelic)

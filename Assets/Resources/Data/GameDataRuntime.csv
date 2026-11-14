@@ -994,25 +994,25 @@ Tutorial_03,5,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.01,변이체�
 Tutorial_03,6,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.02,보유 능력의 효과를 확인하면 변이체의 행동을 예측하는 데 도움이 됩니다.,ClickAny,MonsterInfoPanel/SkillList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_03,7,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.03,변이체가 보유한 고유 효과와 현재 적용된 상태 효과를 확인할 수 있습니다.,ClickAny,MonsterInfoPanel/StatusEffectList,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_03,8,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.04,정보를 확인했다면 패널을 닫고 전투를 준비하세요.,ClickTarget,MonsterInfoPanel/BackButton,tutorial.prompt.click_button,버튼을 클릭하여 계속,Right
-
-
-
-,,,,,,,,,,,,,
-
-
-,,,,,,,,,,,,,
-
-
-
-
-
-
-
-
-
-
-
-
+Tutorial_03,9,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.05,캐릭터를 직접 클릭하여 선택할 수도 있습니다.,ClickTarget,카야 Collider2D,tutorial.prompt.select_char,캐릭터를 클릭하여 계속,Below
+Tutorial_03,10,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.06,유물의 효과는 별도의 행동 없이 자동으로 적용됩니다. 마우스를 올려 효과를 확인할 수 있습니다.,ClickAny,BattleCharacterPanel/CharHUD/Char02/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_03,11,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.07,변이체의 공격을 피하기 위해 이동을 예약해 보겠습니다.,ClickTarget,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,F 또는 버튼을 클릭하여 계속,Left
+Tutorial_03,12,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.08,변이체의 예상 공격 범위 밖으로 이동을 예약하세요.,ReserveMove,Grid_07,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Below
+Tutorial_03,13,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.09,변이체의 행동 이후에 공격을 예약하기 위해 2번 타임라인 슬롯을 선택하세요.,ClickTarget,BattleSlot/TimelineSlot02,tutorial.prompt.select_slot02,2 또는 슬롯을 클릭하여 계속,Below
+Tutorial_03,14,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.10,방향 전환을 사용하면 캐릭터가 바라보는 방향을 바꿀 수 있습니다.	,ReserveFlip,BattleCharacterPanel/Active/Flip,tutorial.prompt.click_flip,D 또는 버튼을 클릭하여 계속,Left
+Tutorial_03,15,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.11,공격을 예약해 보세요. 방향 전환이 적용된 행동에는 별도의 표시가 추가됩니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
+Tutorial_03,16,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.12,캐릭터 정보창을 클릭해도 캐릭터를 선택할 수도 있습니다.,ClickTarget,BattleCharacterPanel/CharHUD/Char01/Back,tutorial.prompt.select_char01,정보창을 클릭하여 계속,Above
+Tutorial_03,17,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.13,유물에 마우스를 올려 효과를 확인해 보세요. 해당 유물은 5번 타임라인 슬롯에서 사용하는 공격을 강화합니다.,ClickAny,BattleCharacterPanel/CharHUD/Char01/Artifact,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_03,18,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.14,아직 행동이 예약되지 않은 빈 슬롯을 선택하여 행동을 추가할 수 있습니다.,ClickTarget,BattleSlot/TimelineSlot03,tutorial.prompt.select_slot03,3 또는 슬롯을 클릭하여 계속,Below
+Tutorial_03,19,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.15,이동은 거리에 따라 소모하는 마나가 달라집니다.,ClickTarget,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,F 또는 버튼을 클릭하여 계속,Left
+Tutorial_03,20,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.16,"변이체의 예상 공격 범위를 피하면서, 자신의 공격 범위에 들어가도록 이동하세요.",ReserveMove,Grid_17,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Below
+Tutorial_03,21,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.17,유물의 효과를 활용하기 위해 5번 타임라인 슬롯을 선택하세요.,ClickTarget,BattleSlot/TimelineSlot05,tutorial.prompt.select_slot05,5 또는 슬롯을 클릭하여 계속,Below
+Tutorial_03,22,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.18,장착한 유물의 효과로 공격 피해량이 증가합니다. 공격을 예약하세요.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
+Tutorial_03,23,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.19,같은 기억을 한 번 더 예약하여 공격 횟수를 늘려 보세요.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 계속,Left
+Tutorial_03,24,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.20,모든 행동을 예약했다면 턴을 종료하세요.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Left
+Tutorial_03,25,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.21,지금까지 배운 내용을 활용하여 남은 변이체를 처치해 보세요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,0
+Tutorial_03,26,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.reward.dialogue.01,이 느낌은... 잊고 있던 기억이 떠오른 것 같아.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_03,27,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.reward.dialogue.02,"그래, 바로 이거였지!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 
 
 
@@ -1076,6 +1076,6 @@ Index03,2,tutorial.guide.index03.name,탐사 이벤트,tutorial.guide.index02.pa
 Index04,1,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page01.name,정보 확인,tutorial.guide.index04.page01.explanation,변이체를 선택하면 보유 능력과 상태 효과 등 전투에 필요한 정보를 확인할 수 있습니다.
 Index04,2,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page02.name,보유 능력,tutorial.guide.index04.page02.explanation,"변이체가 행동 타임라인에 등록하는 능력의 효과를 확인하고, 다음 행동을 예측할 수 있습니다."
 Index04,3,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page03.name,상태 효과,tutorial.guide.index04.page03.explanation,변이체가 보유한 고유 효과와 현재 적용된 강화 및 약화 효과를 확인할 수 있습니다.
-
+Index5
 
 
