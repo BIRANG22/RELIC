@@ -1043,39 +1043,41 @@ Tutorial_03,27,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.reward.dialogue
 # TutorialGuide
 인덱스 ID,페이지 번호,인덱스 이름 로컬라이징 키,인덱스 이름 한국어,페이지 이름 로컬라이징 키,페이지 이름 한국어,설명 로컬라이징 키,설명 한국어
 IndexId,Page,IndexNameKey,IndexNameKO,PageNameKey,PageNameKO,ExplanationKey,ExplanationKO
-Index01,1,tutorial.guide.index01.name,전투 화면 안내,tutorial.guide.index01.page01.name,전투 인터페이스,tutorial.guide.index01.page01.explanation,"전투 화면 하단은 세 가지 영역으로 구성됩니다.
+Index01,1,tutorial.guide.index01.name,전투 인터페이스 ,tutorial.guide.index01.page01.name,화면 구성,tutorial.guide.index01.page01.explanation,"전투 인터페이스는 세 가지 주요 영역으로 구성됩니다.
 
-1) 행동 타임라인 : 행동을 예약하고 실행 순서를 확인합니다.
-2) 캐릭터 정보 : 캐릭터의 상태와 자원을 확인합니다.
-3) 행동 선택 : 이동과 기억 등 사용할 행동을 선택합니다."
-Index01,2,tutorial.guide.index01.name,전투 화면 안내,tutorial.guide.index01.page02.name,행동 타임라인,tutorial.guide.index01.page02.explanation,"행동 순서 : 5개 슬롯이 순서대로 실행됩니다.
-행동 예약 : 슬롯당 5칸, 행동당 1~3칸을 사용합니다.
-행동 참여 : 슬롯당 아군과 변이체 각각 1명만 행동합니다.
-행동 예측 : 적의 행동을 확인하고 아군의 행동을 예약합니다."
-Index01,3,tutorial.guide.index01.name,전투 화면 안내,tutorial.guide.index01.page03.name,캐릭터 정보,tutorial.guide.index01.page03.explanation,"생명력, 마나, 카르마와 상태 이상을 확인합니다.
+1. 행동 타임라인 : 행동을 예약하고 실행 순서를 확인합니다.
+2. 캐릭터 정보 : 캐릭터의 상태와 보유 자원을 확인합니다.
+3. 행동 선택 : 이동, 방향 전환, 기억 등 사용할 행동을 선택합니다."
+Index01,2,tutorial.guide.index01.name,전투 인터페이스 ,tutorial.guide.index01.page02.name,행동 타임라인,tutorial.guide.index01.page02.explanation,"타임라인에서는 변이체의 행동을 확인하고 아군의 행동을 예약합니다.
 
-유물과 룬 슬롯에서는 장착한 효과를 확인할 수 있습니다."
-Index01,4,tutorial.guide.index01.name,전투 화면 안내,tutorial.guide.index01.page04.name,행동 선택,tutorial.guide.index01.page04.explanation,"이동과 방향 전환, 소모품, 기억을 선택합니다.
+1. 순서 : 1번부터 5번까지 총 5개의 슬롯으로 구성되며, 순서대로 행동이 실행됩니다.
+2. 예약 : 각 슬롯은 5칸으로 구성되며, 행동마다 1~3칸을 차지합니다.
+3. 참여 : 각 슬롯에는 아군과 변이체가 각각 한 명씩 행동을 예약할 수 있습니다."
+Index01,3,tutorial.guide.index01.name,전투 인터페이스 ,tutorial.guide.index01.page03.name,캐릭터 정보,tutorial.guide.index01.page03.explanation,"캐릭터 정보창에서는 장착한 룬과 유물, 보유 자원 및 상태 효과를 확인할 수 있습니다.
 
-소모품 : 사용 횟수를 소모해 즉시 효과를 적용합니다.
-기억 : 공격, 강화, 약화 등 다양한 효과를 가지며 자원을 소모합니다.
+1,2. 룬과 유물 : 장착한 룬과 유물의 효과를 확인할 수 있습니다.
+3. 캐릭터 자원 : 생명력, 마나, 카르마가 표시됩니다.
+4. 상태 효과 : 현재 적용된 강화 및 약화 효과가 표시됩니다."
+Index01,4,tutorial.guide.index01.name,전투 인터페이스 ,tutorial.guide.index01.page04.name,행동 선택,tutorial.guide.index01.page04.explanation,"행동 선택창에서는 행동을 선택하고 예약을 관리할 수 있습니다.
 
-예약한 행동을 되돌리거나 다시 적용하고, 턴 종료 시 행동을 실행합니다."
-Index02,1,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02.page01.name,전투 보상,tutorial.guide.index02.page01.explanation,"전투에서 승리하면 레드 더스티움, 아이템, 유물, 기억 등 다양한 보상을 획득할 수 있습니다.
-
-각 전리품은 서로 다른 용도를 가지고 있으며,
-탐사를 진행하거나 거점에서 새로운 준비를 하는 데 활용됩니다."
-Index02,2,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02.page02.name,레드 더스티움,tutorial.guide.index02.page02.explanation,"획득한 레드 더스티움은 거점으로 복귀하면 자동으로 블루 더스티움으로 변환되며,
-변환된 블루 더스티움은 다양한 기능(해금, 성장 등)에 사용됩니다."
-Index02,3,tutorial.guide.index02.name,전리품의 용도,tutorial.guide.index02.page03.name,아이템,tutorial.guide.index02.page03.explanation,"각 변이체는 고유한 아이템을 가지고 있으며, 처치 시 일정 확률로 획득할 수 있습니다.
-이러한 아이템은 거점에서 소모품을 제작하는 재료로 사용됩니다."
-Index03,1,tutorial.guide.index03.name,탐사 이벤트,tutorial.guide.index02.page01.name,사건 구역,tutorial.guide.index03.page01.explanation,"탐사 중에는 다양한 사건을 경험할 수 있는 구역이 존재합니다.
-해당 구역에 진입하면 여러 상황을 마주하고 선택을 통해 사건을 진행하게 됩니다."
-Index03,2,tutorial.guide.index03.name,탐사 이벤트,tutorial.guide.index02.page02.name,사건의 종류,tutorial.guide.index03.page02.explanation,"사건에는 확률에 따라 보상을 얻거나, 대가를 지불하고 보상을 획득하는 유형이 있습니다.
-또한 기억 발현과 유물 획득, 휴식과 상점 등 다양한 사건도 존재합니다."
-Index04,1,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page01.name,정보 확인,tutorial.guide.index04.page01.explanation,변이체를 선택하면 보유 능력과 상태 효과 등 전투에 필요한 정보를 확인할 수 있습니다.
-Index04,2,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page02.name,보유 능력,tutorial.guide.index04.page02.explanation,"변이체가 행동 타임라인에 등록하는 능력의 효과를 확인하고, 다음 행동을 예측할 수 있습니다."
-Index04,3,tutorial.guide.index04.name,변이체 정보,tutorial.guide.index04.page03.name,상태 효과,tutorial.guide.index04.page03.explanation,변이체가 보유한 고유 효과와 현재 적용된 강화 및 약화 효과를 확인할 수 있습니다.
+1. 기본 행동 : 이동과 방향 전환을 선택하고, 소모품으로 즉시 효과를 적용합니다.
+2. 기억 선택 : 공격, 강화, 약화 등의 기억을 선택하고 자원을 소모해 예약합니다.
+3. 행동 관리 : 예약한 행동을 취소하거나 복구하고, 턴 종료 시 행동을 실행합니다."
+Index02,1,tutorial.guide.index02.name,전투 보상,tutorial.guide.index02.page01.name,전리품 종류,tutorial.guide.index02.page01.explanation,"전투에서 승리하면 레드 더스티움, 아이템, 유물, 기억 등 다양한 전리품을 획득할 수 있습니다.
+획득한 전리품은 각각 다른 용도로 사용되며, 탐사와 거점에서의 성장 및 준비에 활용됩니다."
+Index02,2,tutorial.guide.index02.name,전투 보상,tutorial.guide.index02.page02.name,더스티움,tutorial.guide.index02.page02.explanation,"레드 더스티움은 거점에서 블루 더스티움으로 정제하여 사용합니다.
+블루 더스티움은 새로운 힘을 해금하고, 다음 탐사를 위한 준비에 활용됩니다."
+Index02,3,tutorial.guide.index02.name,전투 보상,tutorial.guide.index02.page03.name,아이템 활용,tutorial.guide.index02.page03.explanation,"변이체를 처치하면 일정 확률로 고유 아이템을 획득할 수 있습니다.
+획득한 아이템은 거점에서 다양한 소모품을 제작하는 재료로 사용됩니다."
+Index03,1,tutorial.guide.index03.name,탐사 안내,tutorial.guide.index02.page01.name,탐사 구역,tutorial.guide.index03.page01.explanation,"탐사 중에는 전투, 상점, 이벤트 등 다양한 구역을 방문할 수 있습니다.
+구역마다 진행 방식과 만날 수 있는 상황이 다릅니다."
+Index03,2,tutorial.guide.index03.name,탐사 안내,tutorial.guide.index02.page02.name,이벤트 유형,tutorial.guide.index03.page02.explanation,이벤트 구역에서는 확률형 사건이나 대가 지불형 사건 등 다양한 사건이 발생합니다.
+Index04,1,tutorial.guide.index04.name,변이체 파악,tutorial.guide.index04.page01.name,정보 확인,tutorial.guide.index04.page01.explanation,"변이체를 선택하면 사용할 수 있는 행동과 공격 범위,
+각 능력의 효과 및 현재 적용된 상태 효과를 자세히 확인할 수 있습니다."
+Index04,2,tutorial.guide.index04.name,변이체 파악,tutorial.guide.index04.page02.name,행동 정보,tutorial.guide.index04.page02.explanation,"변이체의 행동에서 타임라인에 표시되는 아이콘을 확인할 수 있습니다.
+또한 해당 행동의 효과 범위와 상세 설명, 행동 유형을 확인할 수 있습니다."
+Index04,3,tutorial.guide.index04.name,변이체 파악,tutorial.guide.index04.page03.name,상태 효과,tutorial.guide.index04.page03.explanation,"변이체의 고유 효과와 현재 적용된 강화 및 약화 효과를 확인할 수 있습니다.
+각 효과의 상세 설명과 지속 여부, 중첩 수치도 함께 표시됩니다."
 Index5
 
 
