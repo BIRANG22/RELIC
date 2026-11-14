@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
@@ -24,6 +26,8 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
     private bool buttonEffectStatesCached;
     private bool lastMenuPanelOpen;
     private bool menuPanelStateInitialized;
+    private Coroutine clickVisualResetCoroutine;
+    private bool selectionColorsNormalized;
 
     private void Awake()
     {
@@ -61,6 +65,12 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
     {
         if (button == null)
             button = GetComponent<Button>();
+
+        if (button != null && !selectionColorsNormalized)
+        {
+            button.colors = NormalizeSelectionColors(button.colors);
+            selectionColorsNormalized = true;
+        }
 
         if (iconImage == null)
             iconImage = transform.Find("Image")?.GetComponent<Image>();
@@ -109,7 +119,7 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
         for (int i = 0; i < refreshImages.Length; i++)
         {
             Image image = refreshImages[i];
-            if (image == null)
+            if (!ShouldApplyBrightness(image, button != null ? button.targetGraphic : null))
                 continue;
 
             Color original = refreshImageOriginalColors[i];
@@ -120,6 +130,11 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
                             original.a)
                 : original;
         }
+    }
+
+    public static bool ShouldApplyBrightness(Image image, Graphic buttonTargetGraphic)
+    {
+        return image != null && image != buttonTargetGraphic;
     }
 
 
@@ -211,6 +226,75 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
     private void RequestRefresh()
     {
         if (button != null && button.interactable && !UIPanelButton.IsMenuPanelOpen)
+        {
             refreshRequested?.Invoke(slotIndex);
+            if (clickVisualResetCoroutine != null)
+                StopCoroutine(clickVisualResetCoroutine);
+            clickVisualResetCoroutine = StartCoroutine(ResetClickVisualStateAfterClick());
+        }
+    }
+
+    private IEnumerator ResetClickVisualStateAfterClick()
+    {
+        yield return new WaitForEndOfFrame();
+
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem != null && button != null)
+        {
+            if (eventSystem.currentSelectedGameObject == button.gameObject)
+                eventSystem.SetSelectedGameObject(null);
+
+            button.OnDeselect(new BaseEventData(eventSystem));
+            button.OnPointerExit(new PointerEventData(eventSystem));
+        }
+
+        ResetClickVisualState();
+        yield return null;
+
+        if (eventSystem != null && button != null &&
+            eventSystem.currentSelectedGameObject == button.gameObject)
+            eventSystem.SetSelectedGameObject(null);
+
+        ApplyRestingButtonColor();
+        clickVisualResetCoroutine = null;
+    }
+
+    private void ApplyRestingButtonColor()
+    {
+        if (button == null || button.targetGraphic == null)
+            return;
+
+        RectTransform rect = button.transform as RectTransform;
+        Canvas canvas = button.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+        bool pointerInside = rect != null && RectTransformUtility.RectangleContainsScreenPoint(
+            rect, Input.mousePosition, camera);
+        button.targetGraphic.CrossFadeColor(
+            GetRestingColor(button.colors, pointerInside), 0f, true, true);
+    }
+
+    public static Color GetRestingColor(ColorBlock colors, bool pointerInside)
+    {
+        Color color = pointerInside ? colors.highlightedColor : colors.normalColor;
+        return color * colors.colorMultiplier;
+    }
+
+    public static ColorBlock NormalizeSelectionColors(ColorBlock colors)
+    {
+        colors.selectedColor = colors.normalColor;
+        return colors;
+    }
+
+    private void ResetClickVisualState()
+    {
+        EnsureButtonEffects();
+        for (int i = 0; i < buttonEffects.Length; i++)
+        {
+            ButtonAnimationCoroutine effect = buttonEffects[i];
+            if (effect != null)
+                effect.ForceClearState(false);
+        }
     }
 }

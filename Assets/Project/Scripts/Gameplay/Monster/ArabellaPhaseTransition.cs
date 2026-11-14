@@ -111,6 +111,9 @@ public static class ArabellaPhaseTransition
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
         BattleCameraController cameraController = BattleCameraController.Instance;
         NotifyPhaseTwoPresentationStarted();
+        // 1페이즈의 마지막 타격이 유지하던 upper/under Plane 회전을 먼저 해제합니다.
+        // 2페이즈 첫 행동은 저장된 Idle 회전에서 새 방향을 계산해야 합니다.
+        BattleEffectPlaneRotation.Instance?.StopHitEffect();
 
         // 현재 행동이 종료된 다음 아라벨라를 화면 중앙에 포커스합니다.
         // 전환 연출이 끝날 때까지 카메라를 유지하고 기존 전투 위치로 돌아갑니다.

@@ -152,7 +152,7 @@ public static class BattleEquipmentEffectService
     private const string MoveFirstAttackReadyStateId = "State_MoveFirstAttackPowerReady";
     private const string SpiderWebMoveCostPenaltyEffectId = "E_Spider_Web";
     private const int SpiderWebActiveTurnCount = 1;
-    private const int SpiderWebMoveCostMultiplier = 2;
+    public const int SpiderWebCostMultiplier = 2;
 
     private readonly struct EquipmentEffectEntry
     {
@@ -738,7 +738,7 @@ public static class BattleEquipmentEffectService
                 continue;
             }
 
-            return SpiderWebMoveCostMultiplier;
+            return SpiderWebCostMultiplier;
         }
 
         return 1;

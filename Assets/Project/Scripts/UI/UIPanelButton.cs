@@ -80,6 +80,8 @@ public class UIPanelButton : MonoBehaviour
 
     public static GameObject FindMenuPanelInScene()
     {
+        UnityEngine.SceneManagement.Scene activeScene =
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene();
         GameObject[] objects = FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
         for (int i = 0; i < objects.Length; i++)
@@ -89,7 +91,7 @@ public class UIPanelButton : MonoBehaviour
             if (candidate == null)
                 continue;
 
-            if (candidate.name == DefaultMenuPanelObjectName)
+            if (candidate.scene == activeScene && candidate.name == DefaultMenuPanelObjectName)
                 return candidate;
         }
 

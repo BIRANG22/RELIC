@@ -7,6 +7,9 @@ public static class BattleUIBlurRootCollector
     private const string MenuRootName = "MenuRoot";
     private const string MenuPanelName = "MenuPanel";
     private const string SettingButtonName = "SettingButton";
+    private const string TutorialModeName = "TutorialMode";
+    private const string TutorialFocusTooltipForegroundName = "__TutorialFocusTooltipForeground";
+    private const string RelicTutorialDialogueOverlayName = "__RelicTutorialDialogueOverlay";
 
     public static void ConfigureForPanel(GameObject panelRoot)
     {
@@ -43,7 +46,34 @@ public static class BattleUIBlurRootCollector
 
         List<GameObject> roots = Collect(menuPanel.transform);
         AddMenuSettingButton(roots, menuPanel.transform);
+        AddTutorialPresentationRoots(roots, menuPanel.transform);
         blurBackground.SetRuntimeBlurredUiRoots(roots);
+    }
+
+    public static bool IsTutorialPresentationRootName(string objectName)
+    {
+        return string.Equals(objectName, TutorialModeName, StringComparison.Ordinal) ||
+               string.Equals(objectName, TutorialFocusTooltipForegroundName, StringComparison.Ordinal) ||
+               string.Equals(objectName, RelicTutorialDialogueOverlayName, StringComparison.Ordinal);
+    }
+
+    private static void AddTutorialPresentationRoots(List<GameObject> roots, Transform menuPanelTransform)
+    {
+        GameObject[] activeObjects = UnityEngine.Object.FindObjectsByType<GameObject>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < activeObjects.Length; i++)
+        {
+            GameObject candidate = activeObjects[i];
+            if (candidate == null || !IsTutorialPresentationRootName(candidate.name))
+                continue;
+
+            if (menuPanelTransform != null && candidate.scene != menuPanelTransform.gameObject.scene)
+                continue;
+
+            AddUniqueRoot(roots, candidate, menuPanelTransform);
+        }
     }
 
     private static void AddMenuSettingButton(List<GameObject> roots, Transform menuPanelTransform)

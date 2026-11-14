@@ -387,7 +387,8 @@ public class MonsterInfoPanelUI : MonoBehaviour
 
     private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
     {
-        return MonsterSkillDescriptionFormatter.Format(description, skillData);
+        string formatted = MonsterSkillDescriptionFormatter.Format(description, skillData);
+        return MonsterInfoSkillItemUI.FormatDetailForEffectHover(formatted);
     }
 
     private static Sprite GetTimelineActionIcon(MonsterSkillData skillData)

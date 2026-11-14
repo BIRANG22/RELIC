@@ -11,9 +11,9 @@ public enum UnitStatusEffectTooltipSide
 }
 
 /// <summary>
-/// »óÅÂÈ¿°ú ¾ÆÀÌÄÜ¿ë ´ÜÀÏ ÅøÆÁÀÔ´Ï´Ù.
-/// UnitStatusEffectTooltipUI ¿ÀºêÁ§Æ® ÀÚÃ¼´Â °íÁ¤ÇÏ°í,
-/// EffectRoot ¾Æ·¡ÀÇ UnitStatusEffectTooltipItemUI¸¸ ¸¶¿ì½º¸¦ µû¶ó ÀÌµ¿ÇÕ´Ï´Ù.
+/// ìƒíƒœíš¨ê³¼ ì•„ì´ì½˜ìš© ë‹¨ì¼ íˆ´íŒì…ë‹ˆë‹¤.
+/// UnitStatusEffectTooltipUI ì˜¤ë¸Œì íŠ¸ ìì²´ëŠ” ê³ ì •í•˜ê³ ,
+/// EffectRoot ì•„ë˜ì˜ UnitStatusEffectTooltipItemUIë§Œ ë§ˆìš°ìŠ¤ë¥¼ ë”°ë¼ ì´ë™í•©ë‹ˆë‹¤.
 /// </summary>
 public class UnitStatusEffectTooltipUI : MonoBehaviour
 {
@@ -23,13 +23,13 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     [SerializeField] private RectTransform panelRect;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private RectTransform itemRoot;
-    [Tooltip("EffectRoot ¾Æ·¡¿¡ ¹Ì¸® ¹èÄ¡ÇÑ UnitStatusEffectTooltipItemUIÀÔ´Ï´Ù. ºñ¿öµÎ¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("EffectRoot ì•„ë˜ì— ë¯¸ë¦¬ ë°°ì¹˜í•œ UnitStatusEffectTooltipItemUIì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private UnitStatusEffectTooltipItemUI itemView;
 
     [Header("Monster Status Tooltip Prefab")]
-    [Tooltip("¿ùµå ¸ó½ºÅÍ È£¹ö ½Ã EffectRoot ¾Æ·¡¿¡ »ı¼ºÇÒ UnitStatusEffectTooltipItemUI ÇÁ¸®ÆÕÀÔ´Ï´Ù.")]
+    [Tooltip("ì›”ë“œ ëª¬ìŠ¤í„° í˜¸ë²„ ì‹œ EffectRoot ì•„ë˜ì— ìƒì„±í•  UnitStatusEffectTooltipItemUI í”„ë¦¬íŒ¹ì…ë‹ˆë‹¤.")]
     [SerializeField] private UnitStatusEffectTooltipItemUI monsterItemPrefab;
-    [Tooltip("¸ó½ºÅÍ »óÅÂÈ¿°ú ÅøÆÁ Ç×¸ñ »çÀÌÀÇ ¼¼·Î °£°İÀÔ´Ï´Ù.")]
+    [Tooltip("ëª¬ìŠ¤í„° ìƒíƒœíš¨ê³¼ íˆ´íŒ í•­ëª© ì‚¬ì´ì˜ ì„¸ë¡œ ê°„ê²©ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float monsterItemVerticalSpacing = 8f;
 
     [Header("Skill / Passive Effect Prefab List")]
@@ -72,9 +72,9 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     private bool cursorRightPinned;
 
     [Header("Monster Info Cursor Tooltip")]
-    [Tooltip("¸ó½ºÅÍ Á¤º¸ ÆĞ³Î¿¡¼­ ¸¶¿ì½º ÀÌ¹ÌÁö ¿À¸¥ÂÊ¿¡ ¶ç¿ì´Â °£°İ(Canvas UI ´ÜÀ§).")]
+    [Tooltip("ëª¬ìŠ¤í„° ì •ë³´ íŒ¨ë„ì—ì„œ ë§ˆìš°ìŠ¤ ì´ë¯¸ì§€ ì˜¤ë¥¸ìª½ì— ë„ìš°ëŠ” ê°„ê²©(Canvas UI ë‹¨ìœ„).")]
     [SerializeField, Min(0f)] private float monsterInfoCursorRightGap = 48f;
-    [Tooltip("ÅøÆÁ »ó´ÜÀÇ Ä¿¼­ ±âÁØ ³ôÀÌ(Canvas UI ´ÜÀ§).")]
+    [Tooltip("íˆ´íŒ ìƒë‹¨ì˜ ì»¤ì„œ ê¸°ì¤€ ë†’ì´(Canvas UI ë‹¨ìœ„).")]
     [SerializeField] private float monsterInfoCursorTopOffset = 8f;
     private UnitStatusEffectTooltipSide currentSide = UnitStatusEffectTooltipSide.Right;
     private Object monsterPrefabOwner;
@@ -149,8 +149,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         Show(owner, statusEffects, screenPosition, GetSideForScreenPosition(screenPosition));
     }
 
-    // ¸ó½ºÅÍ Á¤º¸ ÆĞ³Î Àü¿ë. ÅøÆÁÀÇ ¿ŞÂÊ À§ ¸ğ¼­¸®¸¦ Ä¿¼­ ÀÌ¹ÌÁö ¿À¸¥ÂÊ¿¡ °íÁ¤ÇÕ´Ï´Ù.
-    // ±âÁ¸ ÀÏ¹İ È¿°ú ¹× ±â¾ï º¸»ó ÅøÆÁ À§Ä¡¿¡´Â ¿µÇâÀ» ÁÖÁö ¾Ê½À´Ï´Ù.
+    // ëª¬ìŠ¤í„° ì •ë³´ íŒ¨ë„ ì „ìš©. íˆ´íŒì˜ ì™¼ìª½ ìœ„ ëª¨ì„œë¦¬ë¥¼ ì»¤ì„œ ì´ë¯¸ì§€ ì˜¤ë¥¸ìª½ì— ê³ ì •í•©ë‹ˆë‹¤.
+    // ê¸°ì¡´ ì¼ë°˜ íš¨ê³¼ ë° ê¸°ì–µ ë³´ìƒ íˆ´íŒ ìœ„ì¹˜ì—ëŠ” ì˜í–¥ì„ ì£¼ì§€ ì•ŠìŠµë‹ˆë‹¤.
     public void ShowCursorRight(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 cursorScreenPosition)
     {
         Show(owner, statusEffects, cursorScreenPosition, UnitStatusEffectTooltipSide.Right);
@@ -174,7 +174,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
                 itemParentRect, topLeftScreenPosition, camera, out Vector3 requestedTopLeft))
             return;
 
-        // Pivot°ª¿¡ ¹«°üÇÏ°Ô ÅøÆÁÀÇ ½ÇÁ¦ ¿ŞÂÊ À§ ¸ğ¼­¸®¸¦ ÀÌµ¿ÇÕ´Ï´Ù.
+        // Pivotê°’ì— ë¬´ê´€í•˜ê²Œ íˆ´íŒì˜ ì‹¤ì œ ì™¼ìª½ ìœ„ ëª¨ì„œë¦¬ë¥¼ ì´ë™í•©ë‹ˆë‹¤.
         itemRect.GetWorldCorners(cursorTooltipCorners);
         itemRect.position += requestedTopLeft - cursorTooltipCorners[1];
         ClampItemInsideCanvas();
@@ -205,9 +205,9 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     {
         if (!pinnedToOwner || currentOwner != owner || !isVisible)
             return;
-        // °íÁ¤ È¿°ú ÅøÆÁÀº ½ÇÁ¦ È­¸é ÁÂÇ¥¸¦ EffectRoot Æò¸éÀ¸·Î º¯È¯ÇÕ´Ï´Ù.
-        // anchoredPosition¿¡ ·ÎÄÃ ÁÂÇ¥¸¦ Á÷Á¢ ³ÖÀ¸¸é ºÎ¸ğ Anchor ±âÁØ¿¡ µû¶ó
-        // ÇØ»óµµº° °£°İÀÌ ´Ş¶óÁú ¼ö ÀÖÀ¸¹Ç·Î ¿ùµå À§Ä¡·Î ÇÇ¹şÀ» ¸ÂÃä´Ï´Ù.
+        // ê³ ì • íš¨ê³¼ íˆ´íŒì€ ì‹¤ì œ í™”ë©´ ì¢Œí‘œë¥¼ EffectRoot í‰ë©´ìœ¼ë¡œ ë³€í™˜í•©ë‹ˆë‹¤.
+        // anchoredPositionì— ë¡œì»¬ ì¢Œí‘œë¥¼ ì§ì ‘ ë„£ìœ¼ë©´ ë¶€ëª¨ Anchor ê¸°ì¤€ì— ë”°ë¼
+        // í•´ìƒë„ë³„ ê°„ê²©ì´ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì›”ë“œ ìœ„ì¹˜ë¡œ í”¼ë²—ì„ ë§ì¶¥ë‹ˆë‹¤.
         InitializeIfNeeded();
         if (itemRect == null || itemParentRect == null)
             return;
@@ -264,15 +264,15 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
 
     /// <summary>
-    /// ¿ùµå ¸ó½ºÅÍ È£¹ö Àü¿ë Ç¥½ÃÀÔ´Ï´Ù.
-    /// ¾À¿¡ ¹Ì¸® ¹èÄ¡µÈ itemView´Â »ç¿ëÇÏÁö ¾Ê°í,
-    /// À¯È¿ÇÑ »óÅÂÈ¿°ú °³¼ö¸¸Å­ monsterItemPrefabÀ» EffectRoot ¾Æ·¡¿¡ »ı¼ºÇÕ´Ï´Ù.
+    /// ì›”ë“œ ëª¬ìŠ¤í„° í˜¸ë²„ ì „ìš© í‘œì‹œì…ë‹ˆë‹¤.
+    /// ì”¬ì— ë¯¸ë¦¬ ë°°ì¹˜ëœ itemViewëŠ” ì‚¬ìš©í•˜ì§€ ì•Šê³ ,
+    /// ìœ íš¨í•œ ìƒíƒœíš¨ê³¼ ê°œìˆ˜ë§Œí¼ monsterItemPrefabì„ EffectRoot ì•„ë˜ì— ìƒì„±í•©ë‹ˆë‹¤.
     /// </summary>
     // Skill and passive tooltips use independent prefab instances, stacked vertically.
     // The existing scene ItemUI stays available for other single-effect tooltips.
     /// <summary>
-    /// ½ºÅ³/ÆĞ½Ãºê TooltipPanel À§¿¡ ¸ğµç È¿°ú¸¦ ¼¼·Î·Î ¹èÄ¡ÇÕ´Ï´Ù.
-    /// ¸¶Áö¸· È¿°ú°¡ ÆĞ³Î ¹Ù·Î À§, Ã¹ ¹øÂ° È¿°ú°¡ °¡Àå À§¿¡ ¿É´Ï´Ù.
+    /// ìŠ¤í‚¬/íŒ¨ì‹œë¸Œ TooltipPanel ìœ„ì— ëª¨ë“  íš¨ê³¼ë¥¼ ì„¸ë¡œë¡œ ë°°ì¹˜í•©ë‹ˆë‹¤.
+    /// ë§ˆì§€ë§‰ íš¨ê³¼ê°€ íŒ¨ë„ ë°”ë¡œ ìœ„, ì²« ë²ˆì§¸ íš¨ê³¼ê°€ ê°€ì¥ ìœ„ì— ì˜µë‹ˆë‹¤.
     /// </summary>
     public void ShowSkillEffectList(Object owner, IReadOnlyList<StatusEffectRuntimeData> effects,
         RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f,
@@ -325,8 +325,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
         InitializeIfNeeded();
         Canvas.ForceUpdateCanvases();
-        // InspectorÀÇ º°µµ Anchor°¡ ¾øÀ¸¸é ½ºÅ³ TooltipPanel ¿ŞÂÊ »ó´ÜÀ» »ç¿ëÇÕ´Ï´Ù.
-        // ¿ÀÇÁ¼ÂÀº ±âÁØ RectTransformÀÇ ·ÎÄÃ UI ´ÜÀ§·Î Àû¿ëÇÏ¿© ÇØ»óµµ¿¡ µû¶ó ÇÔ²² ÀÌµ¿ÇÕ´Ï´Ù.
+        // Inspectorì˜ ë³„ë„ Anchorê°€ ì—†ìœ¼ë©´ ìŠ¤í‚¬ TooltipPanel ì™¼ìª½ ìƒë‹¨ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
+        // ì˜¤í”„ì…‹ì€ ê¸°ì¤€ RectTransformì˜ ë¡œì»¬ UI ë‹¨ìœ„ë¡œ ì ìš©í•˜ì—¬ í•´ìƒë„ì— ë”°ë¼ í•¨ê»˜ ì´ë™í•©ë‹ˆë‹¤.
         RectTransform anchor = customAnchor != null ? customAnchor : tooltipPanel;
         Canvas anchorCanvas = anchor.GetComponentInParent<Canvas>();
         Camera anchorCamera = anchorCanvas != null && anchorCanvas.renderMode != RenderMode.ScreenSpaceOverlay
@@ -345,7 +345,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         float bottomY = topLeftLocal.y + spacing;
         float leftX = topLeftLocal.x;
         Vector3[] itemCorners = new Vector3[4];
-        // ¿ª¼ø ¹èÄ¡: ¸¶Áö¸· È¿°ú(3¹ø)°¡ TooltipPanel°ú °¡Àå °¡±õ°í, 1¹øÀÌ ¸Ç À§ÀÔ´Ï´Ù.
+        // ì—­ìˆœ ë°°ì¹˜: ë§ˆì§€ë§‰ íš¨ê³¼(3ë²ˆ)ê°€ TooltipPanelê³¼ ê°€ì¥ ê°€ê¹ê³ , 1ë²ˆì´ ë§¨ ìœ„ì…ë‹ˆë‹¤.
         for (int i = skillEffectRects.Count - 1; i >= 0; i--)
         {
             RectTransform rect = skillEffectRects[i];
@@ -478,7 +478,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
         monsterPrefabOwner = owner;
 
-        // »óÅÂÈ¿°ú ¼ö³ª ³»¿ëÀÌ ´Ş¶óÁ³À» ¼ö ÀÖÀ¸¹Ç·Î ¸ó½ºÅÍ È£¹ö ½ÃÀÛ ½Ã ¸ñ·ÏÀ» ´Ù½Ã ±¸¼ºÇÕ´Ï´Ù.
+        // ìƒíƒœíš¨ê³¼ ìˆ˜ë‚˜ ë‚´ìš©ì´ ë‹¬ë¼ì¡Œì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ëª¬ìŠ¤í„° í˜¸ë²„ ì‹œì‘ ì‹œ ëª©ë¡ì„ ë‹¤ì‹œ êµ¬ì„±í•©ë‹ˆë‹¤.
         RebuildMonsterPrefabItems(validEffects);
 
         BringToFront();
@@ -516,8 +516,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     }
 
     /// <summary>
-    /// »ı¼ºµÈ ¸ó½ºÅÍ ÅøÆÁ ÇÁ¸®ÆÕ ¸ñ·Ï¸¸ ÀÌµ¿ÇÕ´Ï´Ù.
-    /// UnitStatusEffectTooltipUI¿Í EffectRootÀÇ ÁÂÇ¥´Â º¯°æÇÏÁö ¾Ê½À´Ï´Ù.
+    /// ìƒì„±ëœ ëª¬ìŠ¤í„° íˆ´íŒ í”„ë¦¬íŒ¹ ëª©ë¡ë§Œ ì´ë™í•©ë‹ˆë‹¤.
+    /// UnitStatusEffectTooltipUIì™€ EffectRootì˜ ì¢Œí‘œëŠ” ë³€ê²½í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public void UpdateMonsterPrefabPosition(
         Object owner,
@@ -532,19 +532,19 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         if (monsterPrefabOwner != null && owner != null && monsterPrefabOwner != owner)
             return;
 
-        // ±âº»ÀûÀ¸·Î Collider2DÀÇ ¿À¸¥ÂÊÀ» ±âÁØÀ¸·Î ¹èÄ¡ÇÕ´Ï´Ù.
+        // ê¸°ë³¸ì ìœ¼ë¡œ Collider2Dì˜ ì˜¤ë¥¸ìª½ì„ ê¸°ì¤€ìœ¼ë¡œ ë°°ì¹˜í•©ë‹ˆë‹¤.
         LayoutMonsterPrefabList(rightScreenPosition, UnitStatusEffectTooltipSide.Right);
         Canvas.ForceUpdateCanvases();
 
-        // ¿À¸¥ÂÊ ¹èÄ¡ ½Ã ¸ñ·ÏÀÌ È­¸é ¿À¸¥ÂÊ °æ°è¸¦ ³ÑÀ¸·Á ÇÏ¸é
-        // Clamp·Î ¹Ğ¾î ³ÖÁö ¾Ê°í Collider2DÀÇ ¿ŞÂÊ ±âÁØÀ¸·Î ¹èÄ¡¸¦ ÀüÈ¯ÇÕ´Ï´Ù.
+        // ì˜¤ë¥¸ìª½ ë°°ì¹˜ ì‹œ ëª©ë¡ì´ í™”ë©´ ì˜¤ë¥¸ìª½ ê²½ê³„ë¥¼ ë„˜ìœ¼ë ¤ í•˜ë©´
+        // Clampë¡œ ë°€ì–´ ë„£ì§€ ì•Šê³  Collider2Dì˜ ì™¼ìª½ ê¸°ì¤€ìœ¼ë¡œ ë°°ì¹˜ë¥¼ ì „í™˜í•©ë‹ˆë‹¤.
         if (IsMonsterPrefabListOverflowingRight())
         {
             LayoutMonsterPrefabList(leftScreenPosition, UnitStatusEffectTooltipSide.Left);
             Canvas.ForceUpdateCanvases();
         }
 
-        // ¼¼·Î ¹æÇâ°ú, ¾ÆÁÖ Á¼Àº ÇØ»óµµ¿¡¼­ ¿ŞÂÊ¸¶Àú ¹ş¾î³ª´Â ¿¹¿Ü¸¸ ÃÖÁ¾ º¸Á¤ÇÕ´Ï´Ù.
+        // ì„¸ë¡œ ë°©í–¥ê³¼, ì•„ì£¼ ì¢ì€ í•´ìƒë„ì—ì„œ ì™¼ìª½ë§ˆì € ë²—ì–´ë‚˜ëŠ” ì˜ˆì™¸ë§Œ ìµœì¢… ë³´ì •í•©ë‹ˆë‹¤.
         ClampMonsterPrefabListInsideCanvas();
     }
 
@@ -645,8 +645,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ¸ó½ºÅÍ »óÅÂÈ¿°ú ¸ñ·Ï ÀüÃ¼ÀÇ ½ÇÁ¦ ¿Ü°ûÀ» Root Canvas ±âÁØÀ¸·Î °Ë»çÇÏ¿©
-    /// È­¸é ¹ÛÀ¸·Î ³ª°£ °æ¿ì ¸ğµç Ç×¸ñÀ» °°Àº °Å¸®¸¸Å­ ¾ÈÂÊÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
+    /// ëª¬ìŠ¤í„° ìƒíƒœíš¨ê³¼ ëª©ë¡ ì „ì²´ì˜ ì‹¤ì œ ì™¸ê³½ì„ Root Canvas ê¸°ì¤€ìœ¼ë¡œ ê²€ì‚¬í•˜ì—¬
+    /// í™”ë©´ ë°–ìœ¼ë¡œ ë‚˜ê°„ ê²½ìš° ëª¨ë“  í•­ëª©ì„ ê°™ì€ ê±°ë¦¬ë§Œí¼ ì•ˆìª½ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
     /// </summary>
     private void ClampMonsterPrefabListInsideCanvas()
     {
@@ -755,7 +755,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         if (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
             uiCamera = rootCanvas.worldCamera != null ? rootCanvas.worldCamera : Camera.main;
 
-        // ¸¶¿ì½º È­¸é ÁÂÇ¥¸¦ ItemUIÀÇ ½ÇÁ¦ ºÎ¸ğ(EffectRoot) ·ÎÄÃ ÁÂÇ¥·Î º¯È¯ÇÕ´Ï´Ù.
+        // ë§ˆìš°ìŠ¤ í™”ë©´ ì¢Œí‘œë¥¼ ItemUIì˜ ì‹¤ì œ ë¶€ëª¨(EffectRoot) ë¡œì»¬ ì¢Œí‘œë¡œ ë³€í™˜í•©ë‹ˆë‹¤.
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 itemParentRect,
                 screenPosition,
@@ -772,18 +772,18 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             : horizontalOffset;
         target.y += statusTooltipCursorOffsetY;
 
-        // Áß¿ä: UnitStatusEffectTooltipUI(panelRect)´Â ¿òÁ÷ÀÌÁö ¾Ê½À´Ï´Ù.
-        // ½ÇÁ¦·Î ¸¶¿ì½º¸¦ µû¶ó°¡´Â °ÍÀº UnitStatusEffectTooltipItemUI»ÓÀÔ´Ï´Ù.
+        // ì¤‘ìš”: UnitStatusEffectTooltipUI(panelRect)ëŠ” ì›€ì§ì´ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // ì‹¤ì œë¡œ ë§ˆìš°ìŠ¤ë¥¼ ë”°ë¼ê°€ëŠ” ê²ƒì€ UnitStatusEffectTooltipItemUIë¿ì…ë‹ˆë‹¤.
         itemRect.anchoredPosition = target;
 
-        // ·¹ÀÌ¾Æ¿ô º¯°æÀÌ °°Àº ÇÁ·¹ÀÓ¿¡ ÀÖ¾ú´Ù¸é ½ÇÁ¦ ¿Ü°û ÁÂÇ¥¸¦ °»½ÅÇÕ´Ï´Ù.
+        // ë ˆì´ì•„ì›ƒ ë³€ê²½ì´ ê°™ì€ í”„ë ˆì„ì— ìˆì—ˆë‹¤ë©´ ì‹¤ì œ ì™¸ê³½ ì¢Œí‘œë¥¼ ê°±ì‹ í•©ë‹ˆë‹¤.
         Canvas.ForceUpdateCanvases();
         ClampItemInsideCanvas();
     }
 
     /// <summary>
-    /// ItemUIÀÇ ½ÇÁ¦ ³× ¸ğ¼­¸®¸¦ Root Canvas ±âÁØÀ¸·Î °Ë»çÇÏ¿©
-    /// È­¸é ¹ÛÀ¸·Î ³ª°£ ¸¸Å­ ItemUI¸¸ ¾ÈÂÊÀ¸·Î ÀÌµ¿½ÃÅµ´Ï´Ù.
+    /// ItemUIì˜ ì‹¤ì œ ë„¤ ëª¨ì„œë¦¬ë¥¼ Root Canvas ê¸°ì¤€ìœ¼ë¡œ ê²€ì‚¬í•˜ì—¬
+    /// í™”ë©´ ë°–ìœ¼ë¡œ ë‚˜ê°„ ë§Œí¼ ItemUIë§Œ ì•ˆìª½ìœ¼ë¡œ ì´ë™ì‹œí‚µë‹ˆë‹¤.
     /// </summary>
     private void ClampItemInsideCanvas()
     {
@@ -944,11 +944,11 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         }
 
         tooltipCanvas.overrideSorting = true;
+        bool layerChanged = tooltipCanvas.sortingLayerID != highestLayer;
         tooltipCanvas.sortingLayerID = highestLayer;
         // Avoid a sorting-order feedback loop by updating only when needed.
         int targetOrder = Mathf.Min(32767, highestOrder + Mathf.Max(1, sortingOrderOffset));
-        if (tooltipCanvas.sortingOrder < targetOrder ||
-            tooltipCanvas.sortingLayerID != highestLayer)
+        if (layerChanged || tooltipCanvas.sortingOrder != targetOrder)
             tooltipCanvas.sortingOrder = targetOrder;
     }
 
@@ -1035,8 +1035,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             itemView.gameObject.SetActive(false);
     }
 
-    // ±âº» ÇÇÇØ(E_Strike)´Â È¿°ú ¼³¸í Ç×¸ñ¸¸ »ı·«ÇÕ´Ï´Ù.
-    // ½ºÅ³ ÇÇÇØ ¼öÄ¡¿Í ½ÇÁ¦ ÀüÅõ È¿°ú¿¡´Â ¿µÇâÀ» ÁÖÁö ¾Ê½À´Ï´Ù.
+    // ê¸°ë³¸ í”¼í•´(E_Strike)ëŠ” íš¨ê³¼ ì„¤ëª… í•­ëª©ë§Œ ìƒëµí•©ë‹ˆë‹¤.
+    // ìŠ¤í‚¬ í”¼í•´ ìˆ˜ì¹˜ì™€ ì‹¤ì œ ì „íˆ¬ íš¨ê³¼ì—ëŠ” ì˜í–¥ì„ ì£¼ì§€ ì•ŠìŠµë‹ˆë‹¤.
     private static bool IsBasicStrikeTooltipEffect(StatusEffectRuntimeData data)
     {
         return data != null &&

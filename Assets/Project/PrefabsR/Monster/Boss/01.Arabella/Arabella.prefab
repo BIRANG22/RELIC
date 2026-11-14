@@ -1971,8 +1971,8 @@ MonoBehaviour:
     sfxVolume: 1
   objectRevealStartDelay: 8
   sequenceSteps:
-  - label: move
-    action: 0
+  - label: hold
+    action: 10
     overrideLightIntensity: 1
     lightIntensity: 0.2
     lightCurve:
@@ -2058,7 +2058,7 @@ MonoBehaviour:
     vfxLifetime: 0
     destroyVfxOnPresentationEnd: 1
   - label: light on
-    action: 1
+    action: 10
     overrideLightIntensity: 1
     lightIntensity: 0.8
     lightCurve:

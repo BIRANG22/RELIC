@@ -1,14 +1,30 @@
 ﻿#if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BattleMenuEscapeInputController : MonoBehaviour
 {
+    public const int DefaultTutorialMenuRootSortingOrder = 32700;
+    public const int DefaultTutorialMenuPanelSortingOrder = 32701;
+    private const int MaximumModalSortingOrder = 32760;
+
+    public readonly struct ModalSortingState
+    {
+        public int SortingLayerId { get; }
+        public int SortingOrder { get; }
+
+        public ModalSortingState(int sortingLayerId, int sortingOrder)
+        {
+            SortingLayerId = sortingLayerId;
+            SortingOrder = sortingOrder;
+        }
+    }
+
     private static int lastHandledEscapeFrame = -1;
     private static int lastHandledRightClickFrame = -1;
 
@@ -26,13 +42,11 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private bool autoFindMenuPanel = true;
     [SerializeField] private int menuPanelSortingOrder = 10000;
     [Header("Tutorial Menu Access")]
-    [SerializeField] private int tutorialMenuRootSortingOrder = 30002;
-    [SerializeField] private int tutorialMenuPanelSortingOrder = 30003;
-    [SerializeField] private bool blockOtherButtonsWhenMenuPanelOpen = true;
-
+    [SerializeField] private int tutorialMenuRootSortingOrder = DefaultTutorialMenuRootSortingOrder;
+    [SerializeField] private int tutorialMenuPanelSortingOrder = DefaultTutorialMenuPanelSortingOrder;
     [Header("Menu Root Input Blocker")]
     [SerializeField] private string menuRootObjectName = "MenuRoot";
-    [SerializeField] private string menuRootBlockerObjectName = "Image";
+    [SerializeField] private string menuRootBlockerObjectName = "FullscreenBackground";
     [SerializeField] private Graphic menuRootBlockerGraphic;
 
     [Header("Menu Root Sorting")]
@@ -56,15 +70,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private float fallbackResumeTimeScale = 1f;
 
     private bool isPauseApplied;
-    private bool isOtherButtonBlockApplied;
     private float timeScaleBeforePause = 1f;
-    private readonly List<SelectableState> blockedSelectableStates = new();
-
-    private struct SelectableState
-    {
-        public Selectable Selectable;
-        public bool WasInteractable;
-    }
 
     private void Awake()
     {
@@ -79,6 +85,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         FindMenuButtonIfNeeded();
         FindMenuPanelIfNeeded();
         FindMenuRootBlockerIfNeeded();
+        SetMenuRootBlockerRaycast(false);
         BringMenuRootToFront();
         RefreshPauseState();
     }
@@ -86,14 +93,12 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     private void OnDisable()
     {
         SetMenuRootBlockerRaycast(false);
-        ReleaseOtherButtonBlockIfNeeded();
         ReleasePauseIfNeeded();
         RestoreTutorialMenuButtonCanvas();
     }
 
     private void OnDestroy()
     {
-        ReleaseOtherButtonBlockIfNeeded();
         ReleasePauseIfNeeded();
         RestoreTutorialMenuButtonCanvas();
     }
@@ -104,6 +109,15 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         // Do not allow the same Escape key press to open or toggle Battle Menu.
         if (TutorialGuideController.IsModalOpen)
         {
+            // 메뉴 버튼은 튜토리얼 중에도 접근할 수 있습니다. 마우스로 메뉴가 열린 경우
+            // 튜토리얼 패널의 SetAsLastSibling보다 메뉴 Canvas를 먼저 확정합니다.
+            if (IsMenuPanelOpen())
+            {
+                BringMenuRootToFront();
+                BringMenuPanelToFront();
+                RefreshPauseState();
+            }
+
             if (enableEscapeInput && lastHandledEscapeFrame != Time.frameCount &&
                 WasEscapePressedThisFrame() && !IsTypingInputFieldSelected())
             {
@@ -218,14 +232,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         SetMenuRootBlockerRaycast(menuPanelOpen);
 
         if (menuPanelOpen)
-        {
             BringMenuPanelToFront();
-            ApplyOtherButtonBlockIfNeeded();
-        }
-        else
-        {
-            ReleaseOtherButtonBlockIfNeeded();
-        }
 
         if (shouldPause)
         {
@@ -261,7 +268,14 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (!canvas.overrideSorting)
             canvas.overrideSorting = true;
-        int effectivePanelOrder = TutorialBattleSequence.IsPresentationRunning
+        Canvas rootCanvas = menuRootCanvas != null
+            ? menuRootCanvas
+            : menuPanel.transform.parent != null
+                ? menuPanel.transform.parent.GetComponentInParent<Canvas>()
+                : null;
+        if (rootCanvas != null)
+            canvas.sortingLayerID = rootCanvas.sortingLayerID;
+        int effectivePanelOrder = IsAnyTutorialPresentationRunning()
             ? Mathf.Max(menuPanelSortingOrder, tutorialMenuPanelSortingOrder)
             : menuPanelSortingOrder;
         if (canvas.sortingOrder != effectivePanelOrder)
@@ -269,82 +283,6 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (menuPanel.GetComponent<GraphicRaycaster>() == null)
             menuPanel.AddComponent<GraphicRaycaster>();
-    }
-
-    private void ApplyOtherButtonBlockIfNeeded()
-    {
-        if (!blockOtherButtonsWhenMenuPanelOpen)
-            return;
-
-        if (isOtherButtonBlockApplied)
-            return;
-
-        blockedSelectableStates.Clear();
-
-        Selectable[] selectables = FindObjectsByType<Selectable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-
-        for (int i = 0; i < selectables.Length; i++)
-        {
-            Selectable selectable = selectables[i];
-
-            if (selectable == null)
-                continue;
-
-            if (ShouldAllowSelectableWhileMenuPanelOpen(selectable))
-                continue;
-
-            blockedSelectableStates.Add(new SelectableState
-            {
-                Selectable = selectable,
-                WasInteractable = selectable.interactable
-            });
-
-            selectable.interactable = false;
-        }
-
-        isOtherButtonBlockApplied = true;
-    }
-
-    private void ReleaseOtherButtonBlockIfNeeded()
-    {
-        if (!isOtherButtonBlockApplied)
-            return;
-
-        for (int i = 0; i < blockedSelectableStates.Count; i++)
-        {
-            SelectableState state = blockedSelectableStates[i];
-
-            if (state.Selectable == null)
-                continue;
-
-            state.Selectable.interactable = state.WasInteractable;
-        }
-
-        blockedSelectableStates.Clear();
-        isOtherButtonBlockApplied = false;
-    }
-
-    private bool ShouldAllowSelectableWhileMenuPanelOpen(Selectable selectable)
-    {
-        if (selectable == null)
-            return false;
-
-        if (menuButton != null && selectable.gameObject == menuButton.gameObject)
-            return true;
-
-        if (selectable.gameObject.name == menuButtonObjectName)
-            return true;
-
-        FindMenuPanelIfNeeded();
-
-        if (menuPanel != null)
-        {
-            Transform selectableTransform = selectable.transform;
-            if (selectableTransform == menuPanel.transform || selectableTransform.IsChildOf(menuPanel.transform))
-                return true;
-        }
-
-        return false;
     }
 
     private void ApplyPauseIfNeeded()
@@ -446,6 +384,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (!autoFindMenuPanel || menuPanel != null)
             return;
 
+        Scene ownerScene = gameObject.scene;
         GameObject[] objects = FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
         for (int i = 0; i < objects.Length; i++)
@@ -455,7 +394,10 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             if (candidate == null)
                 continue;
 
-            if (candidate.name != menuPanelObjectName)
+            if (candidate.name != menuPanelObjectName || candidate.scene != ownerScene)
+                continue;
+
+            if (!HasAncestorNamed(candidate.transform, menuRootObjectName))
                 continue;
 
             menuPanel = candidate;
@@ -483,9 +425,14 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (!menuRootCanvas.overrideSorting)
             menuRootCanvas.overrideSorting = true;
+        Canvas parentCanvas = menuRootTransform.parent != null
+            ? menuRootTransform.parent.GetComponentInParent<Canvas>()
+            : null;
+        if (parentCanvas != null)
+            menuRootCanvas.sortingLayerID = parentCanvas.sortingLayerID;
         // Only raise the entire menu when it is OPEN. The root may have
         // full-screen images which would otherwise hide tutorial images.
-        bool tutorialRunning = TutorialBattleSequence.IsPresentationRunning;
+        bool tutorialRunning = IsAnyTutorialPresentationRunning();
         bool menuOpen = IsMenuPanelOpen();
         int effectiveRootOrder = tutorialRunning && menuOpen
             ? Mathf.Max(menuRootSortingOrder, tutorialMenuRootSortingOrder)
@@ -496,6 +443,13 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (menuRootTransform.GetComponent<GraphicRaycaster>() == null)
             menuRootTransform.gameObject.AddComponent<GraphicRaycaster>();
+    }
+
+    private static bool IsAnyTutorialPresentationRunning()
+    {
+        return TutorialBattleSequence.IsPresentationRunning ||
+               TutorialGuideController.IsModalOpen ||
+               TutorialFocusGuideRunner.IsRunning;
     }
 
     private void RefreshTutorialMenuButtonCanvas(bool required)
@@ -605,7 +559,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         {
             GameObject candidate = objects[i];
 
-            if (candidate == null || candidate.name != menuRootObjectName)
+            if (candidate == null || candidate.name != menuRootObjectName || candidate.scene != gameObject.scene)
                 continue;
 
             menuRootTransform = candidate.transform;
@@ -651,7 +605,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             {
                 GameObject candidate = objects[i];
 
-                if (candidate != null && candidate.name == menuRootObjectName)
+                if (candidate != null && candidate.name == menuRootObjectName && candidate.scene == gameObject.scene)
                 {
                     menuRoot = candidate.transform;
                     menuRootTransform = menuRoot;
@@ -664,13 +618,16 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (menuRoot == null)
             return;
 
-        Transform blocker = menuRoot.Find(menuRootBlockerObjectName);
+        Transform blocker = menuPanel != null
+            ? menuPanel.transform.Find(menuRootBlockerObjectName)
+            : null;
 
         if (blocker == null)
         {
-            for (int i = 0; i < menuRoot.childCount; i++)
+            Transform searchRoot = menuPanel != null ? menuPanel.transform : menuRoot;
+            for (int i = 0; i < searchRoot.childCount; i++)
             {
-                Transform child = menuRoot.GetChild(i);
+                Transform child = searchRoot.GetChild(i);
 
                 if (child != null && child.name == menuRootBlockerObjectName)
                 {
@@ -692,6 +649,71 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             return;
 
         menuRootBlockerGraphic.raycastTarget = enabled;
+    }
+
+    public static ModalSortingState ResolveModalSortingState(
+        int menuSortingLayerId,
+        int menuSortingOrder,
+        int fallbackSortingLayerId,
+        int fallbackSortingOrder,
+        int offset)
+    {
+        if (menuSortingOrder < 0)
+            return new ModalSortingState(fallbackSortingLayerId, fallbackSortingOrder);
+
+        int sortingOrder = Mathf.Min(
+            menuSortingOrder + Mathf.Max(1, offset),
+            MaximumModalSortingOrder);
+        return new ModalSortingState(menuSortingLayerId, sortingOrder);
+    }
+
+    public static void ApplyModalSorting(
+        Canvas modalCanvas,
+        int fallbackSortingLayerId,
+        int fallbackSortingOrder,
+        int offset)
+    {
+        if (modalCanvas == null)
+            return;
+
+        modalCanvas.overrideSorting = true;
+        Canvas menuCanvas = FindOpenMenuCanvas();
+        if (menuCanvas == null)
+        {
+            modalCanvas.sortingLayerID = fallbackSortingLayerId;
+            modalCanvas.sortingOrder = fallbackSortingOrder;
+            return;
+        }
+
+        ModalSortingState state = ResolveModalSortingState(
+            menuCanvas.sortingLayerID,
+            menuCanvas.sortingOrder,
+            fallbackSortingLayerId,
+            fallbackSortingOrder,
+            offset);
+        modalCanvas.sortingLayerID = state.SortingLayerId;
+        modalCanvas.sortingOrder = state.SortingOrder;
+    }
+
+    public static Canvas FindOpenMenuCanvas()
+    {
+        GameObject activeMenuPanel = UIPanelButton.FindMenuPanelInScene();
+        if (activeMenuPanel == null || !activeMenuPanel.activeInHierarchy)
+            return null;
+
+        return activeMenuPanel.GetComponent<Canvas>();
+    }
+
+    private static bool HasAncestorNamed(Transform target, string ancestorName)
+    {
+        Transform current = target != null ? target.parent : null;
+        while (current != null)
+        {
+            if (current.name == ancestorName)
+                return true;
+            current = current.parent;
+        }
+        return false;
     }
 
     private bool WasRightMousePressedThisFrame()

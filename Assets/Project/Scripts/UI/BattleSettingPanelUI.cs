@@ -11,7 +11,7 @@ using UnityEngine.UI;
 public sealed class BattleSettingPanelUI : MonoBehaviour
 {
     private const int PartySlotCount = 3;
-    private const int MenuMaximumSortingOrder = 30003;
+    private const int MenuMaximumSortingOrder = 32701;
     private static readonly Color32 KarmaOnColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
     private static readonly Color32 KarmaOffColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     private static int lastClosedByEscapeFrame = -1;
@@ -1120,8 +1120,14 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         Canvas canvas = panelRoot.GetComponent<Canvas>();
         if (canvas == null)
             canvas = panelRoot.AddComponent<Canvas>();
-        canvas.overrideSorting = true;
-        canvas.sortingOrder = GetModalSortingOrder(MenuMaximumSortingOrder);
+        Canvas parentCanvas = panelRoot.transform.parent != null
+            ? panelRoot.transform.parent.GetComponentInParent<Canvas>()
+            : null;
+        BattleMenuEscapeInputController.ApplyModalSorting(
+            canvas,
+            parentCanvas != null ? parentCanvas.sortingLayerID : SortingLayer.NameToID("Default"),
+            GetModalSortingOrder(MenuMaximumSortingOrder),
+            1);
         if (panelRoot.GetComponent<GraphicRaycaster>() == null)
             panelRoot.AddComponent<GraphicRaycaster>();
     }

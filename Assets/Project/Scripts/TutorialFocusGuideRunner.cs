@@ -14,8 +14,25 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class TutorialFocusGuideRunner : MonoBehaviour
 {
+    public const int DefaultOverlaySortingOrder = 29800;
+    private const int ForegroundTooltipSortingOffset = 130;
+
     public static TutorialFocusGuideRunner Active { get; private set; }
     public static bool IsRunning => Active != null && Active.running && !Active.tutorial03TurnExecutionPending;
+    public static int ForegroundTooltipSortingOrder => GetForegroundTooltipSortingOrder(
+        Active != null ? Active.overlaySortingOrder : DefaultOverlaySortingOrder);
+    public static int ForegroundSortingLayerId
+    {
+        get
+        {
+            Canvas focusCanvas = Active != null && Active.dimRoot != null
+                ? Active.dimRoot.GetComponentInParent<Canvas>()
+                : null;
+            return focusCanvas != null
+                ? focusCanvas.sortingLayerID
+                : SortingLayer.NameToID("Default");
+        }
+    }
 
     private const float TooltipGap = 10f;
     [SerializeField] private Vector2 highlightPadding = new Vector2(14f, 14f);
@@ -70,7 +87,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     private int initialMatchingCount;
     // Reuse TutorialMode/FocusOverlay (Top, Bottom, Left, Right).
     // Each element receives its own explicit canvas order so the battle HUD cannot cover it.
-    [SerializeField] private int overlaySortingOrder = 30000;
+    [SerializeField] private int overlaySortingOrder = DefaultOverlaySortingOrder;
     [Header("Focus overlay entrance")]
     [SerializeField, Min(0f)] private float focusOverlayEnterDuration = 0.35f;
     private float focusOverlayEnterStart;
@@ -93,7 +110,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     private readonly Image[] dimParts = new Image[4];
     private readonly List<CanvasState> canvasStates = new();
     private readonly HashSet<GameObject> raisedTooltipRoots = new();
-    private float nextTooltipLayerCheck;
+    private readonly Dictionary<Canvas, int> foregroundTooltipCanvases = new();
     private readonly List<GraphicRaycaster> addedRaycasters = new();
 
     private sealed class CanvasState
@@ -103,6 +120,12 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         public bool OriginalOverride;
         public int OriginalOrder;
         public int OriginalLayer;
+    }
+
+    private void OnEnable()
+    {
+        Canvas.preWillRenderCanvases -= EnforceForegroundTooltipLayers;
+        Canvas.preWillRenderCanvases += EnforceForegroundTooltipLayers;
     }
 
     private void Awake()
@@ -314,7 +337,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
                 {
                     BattleCharacter kaya = FindTutorial03Kaya();
                     // Resolve the world target before the first presentation pass.
-                    // "Ä«¾ß Collider2D" is a semantic target, not a UI hierarchy path.
+                    // "ì¹´ì•¼ Collider2D" is a semantic target, not a UI hierarchy path.
                     DisplayStep(item, null, kaya != null ? kaya.transform : null);
                 }
                 else DisplayStep(item);
@@ -571,12 +594,6 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         if (!running || relicEquipFocusClosed) return;
         UpdatePresentation();
-        // TooltipPanel and TooltipUI may be instantiated after this guide begins.
-        if (Time.unscaledTime >= nextTooltipLayerCheck)
-        {
-            nextTooltipLayerCheck = Time.unscaledTime + 0.25f;
-            RaiseTooltipLayers();
-        }
     }
 
     public static void NotifyMoveSelected()
@@ -1072,19 +1089,107 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         if (skipButton != null) skipButton.SetAsLastSibling();
         // Keep the tutorial explanation above dimming and skip overlays.
         if (tooltip != null) tooltip.SetAsLastSibling();
-        RaiseTooltipLayers();
+        RefreshForegroundTooltipRegistry();
     }
 
-    private void RaiseTooltipLayers()
+    public static int GetForegroundTooltipSortingOrder(int overlayOrder) =>
+        overlayOrder + ForegroundTooltipSortingOffset;
+
+    public void RefreshForegroundTooltipRegistry()
     {
         foreach (var rect in FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            if (!rect.gameObject.scene.IsValid()) continue;
-            if (rect.name != "TooltipPanel" && rect.name != "TooltipUI") continue;
-            if (tooltip != null && rect.IsChildOf(tooltip)) continue;
-            if (!raisedTooltipRoots.Add(rect.gameObject)) continue;
-            SetFrontCanvas(rect.gameObject, overlaySortingOrder + 130);
+            RegisterForegroundTooltip(rect);
         }
+    }
+
+    public void RegisterForegroundTooltip(Transform candidate)
+    {
+        if (candidate == null || !candidate.gameObject.scene.IsValid()) return;
+        if (!IsForegroundTooltip(candidate)) return;
+        if (tooltip != null && candidate.IsChildOf(tooltip)) return;
+
+        int rootOrder = GetForegroundTooltipSortingOrder(overlaySortingOrder);
+        raisedTooltipRoots.Add(candidate.gameObject);
+        Canvas rootCanvas = candidate.GetComponent<Canvas>();
+        if (!IsCanvasStateSaved(rootCanvas))
+            SetFrontCanvas(candidate.gameObject, rootOrder);
+        else
+            ApplyForegroundCanvas(candidate.gameObject, rootOrder);
+        rootCanvas = candidate.GetComponent<Canvas>();
+        if (rootCanvas != null)
+            foregroundTooltipCanvases[rootCanvas] = rootOrder;
+
+        foreach (Canvas nested in candidate.GetComponentsInChildren<Canvas>(true))
+        {
+            if (nested == null || nested.gameObject == candidate.gameObject)
+                continue;
+
+            if (!IsCanvasStateSaved(nested))
+                SetFrontCanvas(nested.gameObject, rootOrder + 1);
+            else
+                ApplyForegroundCanvas(nested.gameObject, rootOrder + 1);
+            foregroundTooltipCanvases[nested] = rootOrder + 1;
+        }
+    }
+
+    private bool IsCanvasStateSaved(Canvas canvas)
+    {
+        if (canvas == null)
+            return false;
+
+        for (int i = 0; i < canvasStates.Count; i++)
+            if (canvasStates[i].Canvas == canvas)
+                return true;
+
+        return false;
+    }
+
+    private void EnforceForegroundTooltipLayers()
+    {
+        if (running)
+            EnforceRegisteredForegroundTooltipLayers();
+    }
+
+    public void EnforceRegisteredForegroundTooltipLayers()
+    {
+        foreach (KeyValuePair<Canvas, int> entry in foregroundTooltipCanvases)
+        {
+            Canvas canvas = entry.Key;
+            if (canvas == null)
+                continue;
+
+            canvas.overrideSorting = true;
+            canvas.sortingLayerID = ForegroundSortingLayerId;
+            canvas.sortingOrder = entry.Value;
+        }
+    }
+
+    private static void ApplyForegroundCanvas(GameObject target, int order)
+    {
+        if (target == null)
+            return;
+
+        Canvas canvas = target.GetComponent<Canvas>();
+        if (canvas == null)
+            return;
+
+        canvas.overrideSorting = true;
+        canvas.sortingLayerID = ForegroundSortingLayerId;
+        canvas.sortingOrder = order;
+    }
+
+    public static bool IsForegroundTooltip(Transform candidate)
+    {
+        if (candidate == null)
+            return false;
+
+        if (candidate.name == "TooltipPanel" || candidate.name == "TooltipUI")
+            return true;
+
+        return candidate.GetComponent<UnitStatusEffectTooltipUI>() != null ||
+               candidate.GetComponent<GridEffectTooltipUI>() != null ||
+               candidate.GetComponent<TimelineSkillHoverPopupUI>() != null;
     }
 
     private void RestoreFocusLayerOrder()
@@ -1106,6 +1211,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         }
         canvasStates.Clear();
         raisedTooltipRoots.Clear();
+        foregroundTooltipCanvases.Clear();
     }
 
     private void DisplayStep(TutorialData current, RectTransform overrideTarget = null,
@@ -1633,6 +1739,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
 
     private void OnDisable()
     {
+        Canvas.preWillRenderCanvases -= EnforceForegroundTooltipLayers;
         UnsubscribeTutorial03TurnReturned();
         tutorial03TurnExecutionPending = false;
         HidePresentation();
