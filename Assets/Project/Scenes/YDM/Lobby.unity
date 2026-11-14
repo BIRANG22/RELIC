@@ -2172,6 +2172,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &48986021
 GameObject:
   m_ObjectHideFlags: 0
@@ -3846,6 +3847,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &92390854
 GameObject:
   m_ObjectHideFlags: 0
@@ -4270,6 +4272,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &110533119
 GameObject:
   m_ObjectHideFlags: 0
@@ -4769,6 +4772,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!43 &119830918
 Mesh:
   m_ObjectHideFlags: 0
@@ -11773,6 +11777,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &176978857
 GameObject:
   m_ObjectHideFlags: 0
@@ -14162,6 +14167,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &228958800
 GameObject:
   m_ObjectHideFlags: 0
@@ -14359,6 +14365,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &230010010
 GameObject:
   m_ObjectHideFlags: 0
@@ -14640,6 +14647,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!114 &230010030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15053,6 +15061,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &230010200
 GameObject:
   m_ObjectHideFlags: 0
@@ -15099,6 +15108,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &230010300
 GameObject:
   m_ObjectHideFlags: 0
@@ -15145,6 +15155,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!223 &230019990
 Canvas:
   m_ObjectHideFlags: 0
@@ -22578,6 +22589,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!223 &397856617
 Canvas:
   m_ObjectHideFlags: 0
@@ -23687,6 +23699,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &416389481
 GameObject:
   m_ObjectHideFlags: 0
@@ -24521,6 +24534,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &427861707
 GameObject:
   m_ObjectHideFlags: 0
@@ -29491,6 +29505,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &532705088
 GameObject:
   m_ObjectHideFlags: 0
@@ -32720,6 +32735,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &607353063
 GameObject:
   m_ObjectHideFlags: 0
@@ -38634,6 +38650,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &743031315
 GameObject:
   m_ObjectHideFlags: 0
@@ -39703,6 +39720,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &765114983
 GameObject:
   m_ObjectHideFlags: 0
@@ -39768,6 +39786,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &769871406
 GameObject:
   m_ObjectHideFlags: 0
@@ -46916,6 +46935,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!223 &821549312
 Canvas:
   m_ObjectHideFlags: 0
@@ -48069,6 +48089,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &840023464
 GameObject:
   m_ObjectHideFlags: 0
@@ -49234,6 +49255,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &866559622
 GameObject:
   m_ObjectHideFlags: 0
@@ -58195,6 +58217,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &967748541
 GameObject:
   m_ObjectHideFlags: 0
@@ -60567,6 +60590,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1008704799
 GameObject:
   m_ObjectHideFlags: 0
@@ -62011,6 +62035,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1049270235
 GameObject:
   m_ObjectHideFlags: 0
@@ -62449,6 +62474,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1061132647
 GameObject:
   m_ObjectHideFlags: 0
@@ -64017,6 +64043,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!199 &1114245349
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -74769,6 +74796,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!43 &1302116304
 Mesh:
   m_ObjectHideFlags: 0
@@ -76223,6 +76251,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1353154813
 GameObject:
   m_ObjectHideFlags: 0
@@ -78195,6 +78224,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1385001660
 GameObject:
   m_ObjectHideFlags: 0
@@ -80859,6 +80889,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1437903359
 GameObject:
   m_ObjectHideFlags: 0
@@ -82455,6 +82486,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1487820327
 GameObject:
   m_ObjectHideFlags: 0
@@ -83764,6 +83796,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1515559800
 GameObject:
   m_ObjectHideFlags: 0
@@ -94049,6 +94082,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1652417707
 GameObject:
   m_ObjectHideFlags: 0
@@ -99569,6 +99603,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!43 &1676651804
 Mesh:
   m_ObjectHideFlags: 0
@@ -103439,6 +103474,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1765896101
 GameObject:
   m_ObjectHideFlags: 0
@@ -109715,6 +109751,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1800649426
 GameObject:
   m_ObjectHideFlags: 0
@@ -109780,6 +109817,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1804452481
 GameObject:
   m_ObjectHideFlags: 0
@@ -111821,6 +111859,7 @@ MonoBehaviour:
   playOnDisable: 1
   disableSoundId: ui.back.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1835505987
 GameObject:
   m_ObjectHideFlags: 0
@@ -113093,6 +113132,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1863494938
 GameObject:
   m_ObjectHideFlags: 0
@@ -113900,6 +113940,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &1885292121
 GameObject:
   m_ObjectHideFlags: 0
@@ -123274,6 +123315,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &2111906869
 GameObject:
   m_ObjectHideFlags: 0
@@ -125798,8 +125840,9 @@ MonoBehaviour:
   clickSoundId: ui.normal.click
   clickVolume: 1
   playOnDisable: 1
-  disableSoundId: ui.bag.close
+  disableSoundId: ui.chest.close
   disableVolume: 1
+  disableSoundTiming: 1
 --- !u!114 &2300000148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128183,6 +128226,7 @@ MonoBehaviour:
   playOnDisable: 1
   disableSoundId: ui.back.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &7849999999796188312
 GameObject:
   m_ObjectHideFlags: 0
@@ -128386,6 +128430,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &7850000000155901960
 GameObject:
   m_ObjectHideFlags: 0
@@ -128727,6 +128772,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!224 &7850000000506814688
 RectTransform:
   m_ObjectHideFlags: 0
@@ -129686,6 +129732,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &9012282188322815281
 GameObject:
   m_ObjectHideFlags: 0

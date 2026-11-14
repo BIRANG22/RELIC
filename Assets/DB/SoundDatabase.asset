@@ -28,7 +28,7 @@ MonoBehaviour:
     ambienceClips: []
   - state: 0
     mainClip:
-      clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+      clip: {fileID: 8300000, guid: 8e3c587523e52154d9b6bdbfe6215b4e, type: 3}
       volume: 0.6
       pitch: 1
       loop: 1
@@ -41,7 +41,7 @@ MonoBehaviour:
     ambienceClips: []
   - state: 2
     mainClip:
-      clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+      clip: {fileID: 8300000, guid: f9d572864c8485646834f48af206084d, type: 3}
       volume: 0.6
       pitch: 1
       loop: 1
@@ -55,20 +55,7 @@ MonoBehaviour:
   - state: 6
     mainClip:
       clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 7
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
+      volume: 0.6
       pitch: 1
       loop: 1
       useLoopRegion: 0
@@ -81,9 +68,22 @@ MonoBehaviour:
   - state: 9
     mainClip:
       clip: {fileID: 8300000, guid: a780cc8449a1da94d81effa165ba3e9d, type: 3}
-      volume: 1
+      volume: 0.6
       pitch: 1
       loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 18
+    mainClip:
+      clip: {fileID: 8300000, guid: 050a36fed46d0694cb888a363cfca879, type: 3}
+      volume: 0.6
+      pitch: 1
+      loop: 0
       useLoopRegion: 0
       loopStartSeconds: 0
       loopEndSeconds: 0
@@ -131,7 +131,7 @@ MonoBehaviour:
   sfxList:
   - id: ui.normal.hover
     aliases: []
-    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -140,7 +140,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.normal.click
     aliases: []
-    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
+    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -149,7 +149,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.hover
     aliases: []
-    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -167,7 +167,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.move.hover
     aliases: []
-    clip: {fileID: 8300000, guid: 78be9394759c044ddaea5fc710863e8c, type: 3}
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -176,7 +176,7 @@ MonoBehaviour:
     randomPitchMax: 1.2
   - id: ui.move.click
     aliases: []
-    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
+    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -185,7 +185,7 @@ MonoBehaviour:
     randomPitchMax: 1.2
   - id: ui.confirm
     aliases: []
-    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    clip: {fileID: 8300000, guid: cf05ddb3e0f3a40299f6d29a004761b5, type: 3}
     volume: 0.3
     pitch: 1
     loop: 0
@@ -194,7 +194,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.back.click
     aliases: []
-    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
+    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -471,6 +471,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: ui.chest.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 904c224aeaea6437ea61d1665cab4448, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   - id: ui.record.open
     aliases: []
     clip: {fileID: 8300000, guid: 5dd444ef4e8264876aaf05afb792355d, type: 3}
@@ -689,9 +698,9 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: skill.root
     aliases: []
-    clip: {fileID: 8300000, guid: ca3b3e4f7c120454ca82321e3b517b60, type: 3}
+    clip: {fileID: 8300000, guid: 3eefd4351369d4c07a2a8c15f01c5b0a, type: 3}
     volume: 0.7
-    pitch: 1
+    pitch: 0.7
     loop: 0
     useRandomPitch: 1
     randomPitchMin: 1
@@ -905,7 +914,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: option.open
     aliases: []
-    clip: {fileID: 8300000, guid: 6f5ea4a51440e4b7595865cdf64f8556, type: 3}
+    clip: {fileID: 8300000, guid: e897726d042a54219bc01a26357a9e52, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0

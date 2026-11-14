@@ -2357,9 +2357,16 @@ MonoBehaviour:
   bgmSource: {fileID: 675309689}
   sfxSource: {fileID: 77115731}
   soundDatabase: {fileID: 11400000, guid: 49ea6f6f6558423bb957a5c42b85bc7a, type: 2}
-  bgmFadeOutDuration: 0.5
-  bgmFadeInDuration: 0.5
-  bgmClipRegions: []
+  bgmFadeOutDuration: 1
+  bgmFadeInDuration: 1
+  bgmClipRegions:
+  - clip: {fileID: 8300000, guid: 67b50ea4bd4877448920d116cccd3b82, type: 3}
+    enabled: 1
+    playbackStart: 67.54
+    playbackEnd: 115
+    loop: 1
+    loopStart: 73.1
+    loopEnd: 115
 --- !u!82 &1960083566
 AudioSource:
   m_ObjectHideFlags: 0
