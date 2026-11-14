@@ -3,6 +3,28 @@ using NUnit.Framework;
 
 public class ContextualBgmTests
 {
+    [TestCase(0f, 2f, 4f, 1f, 0f)]
+    [TestCase(1f, 2f, 4f, 0.5f, 0.25f)]
+    [TestCase(2f, 2f, 4f, 0f, 0.5f)]
+    [TestCase(4f, 2f, 4f, 0f, 1f)]
+    public void CrossfadeVolumes_FadeOutgoingAndIncomingAtTheSameTime(
+        float elapsed,
+        float fadeOutDuration,
+        float fadeInDuration,
+        float expectedOutgoing,
+        float expectedIncoming)
+    {
+        BgmCrossfadePolicy.Evaluate(
+            elapsed,
+            fadeOutDuration,
+            fadeInDuration,
+            out float outgoing,
+            out float incoming);
+
+        Assert.That(outgoing, Is.EqualTo(expectedOutgoing).Within(0.0001f));
+        Assert.That(incoming, Is.EqualTo(expectedIncoming).Within(0.0001f));
+    }
+
     [Test]
     public void ResolveFirstConfigured_SkipsMissingHigherPriorityState()
     {
@@ -21,6 +43,42 @@ public class ContextualBgmTests
             _ => false);
 
         Assert.IsNull(resolved);
+    }
+
+    [Test]
+    public void ResolveBattleState_ArabellaPhaseTwoOverridesLowHealthAndBossRoom()
+    {
+        BgmState? resolved = BattleBgmPolicy.ResolveBattleState(
+            defeatPlaying: false,
+            bossIntroPlaying: false,
+            arabellaPhaseTwoPlaying: true,
+            partyLowHealth: true,
+            defeatState: BgmState.Stage1Defeat,
+            bossIntroState: BgmState.Stage1BossIntro,
+            arabellaPhaseTwoState: BgmState.ArabellaPhase2,
+            lowHealthState: BgmState.Stage1LowHealth,
+            roomState: BgmState.Stage1Boss,
+            isConfigured: _ => true);
+
+        Assert.That(resolved, Is.EqualTo(BgmState.ArabellaPhase2));
+    }
+
+    [Test]
+    public void ResolveBattleState_MissingArabellaPhaseTwoFallsBackToBossRoom()
+    {
+        BgmState? resolved = BattleBgmPolicy.ResolveBattleState(
+            defeatPlaying: false,
+            bossIntroPlaying: false,
+            arabellaPhaseTwoPlaying: true,
+            partyLowHealth: false,
+            defeatState: BgmState.Stage1Defeat,
+            bossIntroState: BgmState.Stage1BossIntro,
+            arabellaPhaseTwoState: BgmState.ArabellaPhase2,
+            lowHealthState: BgmState.Stage1LowHealth,
+            roomState: BgmState.Stage1Boss,
+            isConfigured: state => state == BgmState.Stage1Boss);
+
+        Assert.That(resolved, Is.EqualTo(BgmState.Stage1Boss));
     }
 
     [TestCase(30, 100, true)]

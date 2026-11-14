@@ -8,6 +8,24 @@ using UnityAssetDatabase = UnityEditor.AssetDatabase;
 
 public class ArabellaPhaseTransitionTests
 {
+    [Test]
+    public void NotifyPhaseTwoApplied_RaisesPresentationEvent()
+    {
+        int raised = 0;
+        System.Action handler = () => raised++;
+        ArabellaPhaseTransition.PhaseTwoApplied += handler;
+        try
+        {
+            ArabellaPhaseTransition.NotifyPhaseTwoApplied();
+        }
+        finally
+        {
+            ArabellaPhaseTransition.PhaseTwoApplied -= handler;
+        }
+
+        Assert.That(raised, Is.EqualTo(1));
+    }
+
     [TestCase("Mon_12_1", true)]
     [TestCase("Mon_12_2", true)]
     [TestCase("Mon_12", false)]

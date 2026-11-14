@@ -3,6 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Audio;
 
+public static class BgmCrossfadePolicy
+{
+    public static void Evaluate(float elapsed, float fadeOutDuration, float fadeInDuration,
+        out float outgoingMultiplier, out float incomingMultiplier)
+    {
+        outgoingMultiplier = fadeOutDuration <= 0f
+            ? 0f
+            : 1f - Mathf.Clamp01(elapsed / fadeOutDuration);
+        incomingMultiplier = fadeInDuration <= 0f
+            ? 1f
+            : Mathf.Clamp01(elapsed / fadeInDuration);
+    }
+}
+
 public class AudioManager : Singleton<AudioManager>
 {
     [Header("Audio Sources")]
@@ -56,13 +70,17 @@ public class AudioManager : Singleton<AudioManager>
     }
 
     private Dictionary<string, SoundData> sfxIdDict;
-    private readonly List<AudioSource> bgmLayerSources = new();
+    private List<AudioSource> bgmLayerSources = new();
+    private AudioSource standbyBgmSource;
+    private List<AudioSource> standbyBgmLayerSources = new();
     private readonly List<RoutedSfxSource> routedSfxSources = new();
     private readonly List<RoutedSfxSource> routedAmbienceSources = new();
     private IReadOnlyList<BgmClipData> activeBgmLayers;
+    private IReadOnlyList<BgmClipData> standbyBgmLayers;
     private BgmState? activeBgmState;
     private Coroutine bgmTransitionRoutine;
     private float bgmFadeMultiplier = 1f;
+    private float standbyBgmFadeMultiplier;
 
     protected override void Awake()
     {
@@ -179,7 +197,9 @@ public class AudioManager : Singleton<AudioManager>
         MaintainLoopRegion(bgmSource, 0);
         for (int i = 0; i < bgmLayerSources.Count; i++)
             MaintainLoopRegion(bgmLayerSources[i], i + 1);
-
+        MaintainLoopRegion(standbyBgmSource, 0, standbyBgmLayers);
+        for (int i = 0; i < standbyBgmLayerSources.Count; i++)
+            MaintainLoopRegion(standbyBgmLayerSources[i], i + 1, standbyBgmLayers);
     }
 
     private void MaintainLoopRegion(AudioSource source, int layerIndex)
@@ -223,51 +243,30 @@ public class AudioManager : Singleton<AudioManager>
 
     private IEnumerator BgmTransitionRoutine(BgmState state, IReadOnlyList<BgmClipData> layers)
     {
-        if (HasPlayingBgm())
-            yield return FadeBgmMultiplier(0f, bgmFadeOutDuration);
-        else
-        {
-            bgmFadeMultiplier = 0f;
-            ApplyVolumes();
-        }
-
-        PlayBgmImmediate(state, layers);
-
-        if (bgmFadeInDuration > 0f)
-            yield return FadeBgmMultiplier(1f, bgmFadeInDuration);
-        else
-        {
-            bgmFadeMultiplier = 1f;
-            ApplyVolumes();
-        }
-
-        bgmTransitionRoutine = null;
-    }
-
-    private IEnumerator FadeBgmMultiplier(float target, float duration)
-    {
-        target = Mathf.Clamp01(target);
-        float start = bgmFadeMultiplier;
-
-        if (duration <= 0f)
-        {
-            bgmFadeMultiplier = target;
-            ApplyVolumes();
-            yield break;
-        }
+        PrepareStandbyBgmBank(layers);
+        float outgoingStart = HasPlayingBgm(bgmSource, bgmLayerSources) ? bgmFadeMultiplier : 0f;
+        standbyBgmFadeMultiplier = bgmFadeInDuration <= 0f ? 1f : 0f;
+        ApplyVolumes();
 
         float elapsed = 0f;
+        float duration = Mathf.Max(bgmFadeOutDuration, bgmFadeInDuration);
         while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            bgmFadeMultiplier = Mathf.Lerp(start, target, t);
+            BgmCrossfadePolicy.Evaluate(elapsed, bgmFadeOutDuration, bgmFadeInDuration,
+                out float outgoing, out float incoming);
+            bgmFadeMultiplier = outgoingStart * outgoing;
+            standbyBgmFadeMultiplier = incoming;
             ApplyVolumes();
             yield return null;
         }
 
-        bgmFadeMultiplier = target;
+        bgmFadeMultiplier = 0f;
+        standbyBgmFadeMultiplier = 1f;
+        PromoteStandbyBgmBank(state);
         ApplyVolumes();
+
+        bgmTransitionRoutine = null;
     }
 
     private void PlayBgmImmediate(BgmState state, IReadOnlyList<BgmClipData> layers)
@@ -294,15 +293,17 @@ public class AudioManager : Singleton<AudioManager>
 
     private bool HasPlayingBgm()
     {
-        if (bgmSource != null && bgmSource.isPlaying)
+        return HasPlayingBgm(bgmSource, bgmLayerSources) ||
+            HasPlayingBgm(standbyBgmSource, standbyBgmLayerSources);
+    }
+
+    private static bool HasPlayingBgm(AudioSource mainSource, List<AudioSource> layerSources)
+    {
+        if (mainSource != null && mainSource.isPlaying)
             return true;
-
-        for (int i = 0; i < bgmLayerSources.Count; i++)
-        {
-            if (bgmLayerSources[i] != null && bgmLayerSources[i].isPlaying)
+        for (int i = 0; i < layerSources.Count; i++)
+            if (layerSources[i] != null && layerSources[i].isPlaying)
                 return true;
-        }
-
         return false;
     }
 
@@ -313,6 +314,15 @@ public class AudioManager : Singleton<AudioManager>
 
         StopCoroutine(bgmTransitionRoutine);
         bgmTransitionRoutine = null;
+
+        if (standbyBgmFadeMultiplier > bgmFadeMultiplier)
+            PromoteStandbyBgmBank(activeBgmState);
+        else
+            StopBgmBank(standbyBgmSource, standbyBgmLayerSources);
+
+        standbyBgmLayers = null;
+        standbyBgmFadeMultiplier = 0f;
+        ApplyVolumes();
     }
 
     private static List<BgmClipData> GetBgmLayers(BgmData data)
@@ -342,6 +352,9 @@ public class AudioManager : Singleton<AudioManager>
         bgmFadeMultiplier = 1f;
         activeBgmState = null;
         StopBgmPlaybackSources();
+        StopBgmBank(standbyBgmSource, standbyBgmLayerSources);
+        standbyBgmLayers = null;
+        standbyBgmFadeMultiplier = 0f;
         ApplyVolumes();
     }
 
@@ -355,6 +368,54 @@ public class AudioManager : Singleton<AudioManager>
 
         activeBgmLayers = null;
         StopUnusedBgmLayerSources(0);
+    }
+
+    private void PrepareStandbyBgmBank(IReadOnlyList<BgmClipData> layers)
+    {
+        EnsureStandbyBgmSource();
+        StopBgmBank(standbyBgmSource, standbyBgmLayerSources);
+        standbyBgmLayers = layers;
+        PlayBgmClip(standbyBgmSource, layers[0]);
+        EnsureBgmLayerSourceCount(standbyBgmLayerSources, standbyBgmSource,
+            layers.Count - 1, "BGM Standby Layer");
+        for (int i = 1; i < layers.Count; i++)
+            PlayBgmClip(standbyBgmLayerSources[i - 1], layers[i]);
+        StopUnusedBgmLayerSources(standbyBgmLayerSources, layers.Count - 1);
+    }
+
+    private void EnsureStandbyBgmSource()
+    {
+        if (standbyBgmSource != null)
+            return;
+
+        GameObject sourceObject = new("BGM Standby");
+        sourceObject.transform.SetParent(transform, false);
+        standbyBgmSource = sourceObject.AddComponent<AudioSource>();
+        CopyBgmSourceSettings(bgmSource, standbyBgmSource);
+    }
+
+    private void PromoteStandbyBgmBank(BgmState? state)
+    {
+        StopBgmBank(bgmSource, bgmLayerSources);
+        (bgmSource, standbyBgmSource) = (standbyBgmSource, bgmSource);
+        (bgmLayerSources, standbyBgmLayerSources) =
+            (standbyBgmLayerSources, bgmLayerSources);
+        activeBgmLayers = standbyBgmLayers;
+        standbyBgmLayers = null;
+        activeBgmState = state;
+        bgmFadeMultiplier = standbyBgmFadeMultiplier;
+        standbyBgmFadeMultiplier = 0f;
+    }
+
+    private static void StopBgmBank(AudioSource mainSource, List<AudioSource> layerSources)
+    {
+        if (mainSource != null)
+        {
+            mainSource.Stop();
+            mainSource.clip = null;
+        }
+
+        StopUnusedBgmLayerSources(layerSources, 0);
     }
 
     public void PlaySfx(string id)
@@ -647,12 +708,10 @@ public class AudioManager : Singleton<AudioManager>
         float bgm = GetBgmVolumeOrDefault();
         float sfx = GetSfxVolumeOrDefault();
 
-        float fadedBgmVolume = master * bgm * bgmFadeMultiplier;
-
-        if (bgmSource != null)
-            bgmSource.volume = fadedBgmVolume * GetBgmLayerVolume(0);
-
-        ApplyBgmLayerVolumes(fadedBgmVolume);
+        ApplyBgmBankVolumes(bgmSource, bgmLayerSources, activeBgmLayers,
+            master * bgm * bgmFadeMultiplier);
+        ApplyBgmBankVolumes(standbyBgmSource, standbyBgmLayerSources, standbyBgmLayers,
+            master * bgm * standbyBgmFadeMultiplier);
 
         if (sfxSource != null)
             sfxSource.volume = master * sfx;
@@ -722,28 +781,39 @@ public class AudioManager : Singleton<AudioManager>
 
     private void EnsureBgmLayerSourceCount(int count)
     {
-        for (int i = bgmLayerSources.Count - 1; i >= 0; i--)
+        EnsureBgmLayerSourceCount(bgmLayerSources, bgmSource, count, "BGM Layer");
+    }
+
+    private void EnsureBgmLayerSourceCount(List<AudioSource> sources, AudioSource template,
+        int count, string objectName)
+    {
+        for (int i = sources.Count - 1; i >= 0; i--)
         {
-            if (bgmLayerSources[i] == null)
-                bgmLayerSources.RemoveAt(i);
+            if (sources[i] == null)
+                sources.RemoveAt(i);
         }
 
-        while (bgmLayerSources.Count < count)
+        while (sources.Count < count)
         {
-            GameObject layerObject = new($"BGM Layer {bgmLayerSources.Count + 1}");
+            GameObject layerObject = new($"{objectName} {sources.Count + 1}");
             layerObject.transform.SetParent(transform, false);
 
             AudioSource layerSource = layerObject.AddComponent<AudioSource>();
-            CopyBgmSourceSettings(bgmSource, layerSource);
-            bgmLayerSources.Add(layerSource);
+            CopyBgmSourceSettings(template, layerSource);
+            sources.Add(layerSource);
         }
     }
 
     private void StopUnusedBgmLayerSources(int activeCount)
     {
-        for (int i = 0; i < bgmLayerSources.Count; i++)
+        StopUnusedBgmLayerSources(bgmLayerSources, activeCount);
+    }
+
+    private static void StopUnusedBgmLayerSources(List<AudioSource> sources, int activeCount)
+    {
+        for (int i = 0; i < sources.Count; i++)
         {
-            AudioSource layerSource = bgmLayerSources[i];
+            AudioSource layerSource = sources[i];
 
             if (layerSource == null || i < activeCount)
                 continue;
@@ -753,28 +823,32 @@ public class AudioManager : Singleton<AudioManager>
         }
     }
 
-    private void ApplyBgmLayerVolumes(float volume)
+    private static void ApplyBgmBankVolumes(AudioSource mainSource, List<AudioSource> layerSources,
+        IReadOnlyList<BgmClipData> layers, float volume)
     {
-        for (int i = bgmLayerSources.Count - 1; i >= 0; i--)
+        if (mainSource != null)
+            mainSource.volume = volume * GetBgmLayerVolume(layers, 0);
+
+        for (int i = layerSources.Count - 1; i >= 0; i--)
         {
-            AudioSource layerSource = bgmLayerSources[i];
+            AudioSource layerSource = layerSources[i];
 
             if (layerSource == null)
             {
-                bgmLayerSources.RemoveAt(i);
+                layerSources.RemoveAt(i);
                 continue;
             }
 
-            layerSource.volume = volume * GetBgmLayerVolume(i + 1);
+            layerSource.volume = volume * GetBgmLayerVolume(layers, i + 1);
         }
     }
 
-    private float GetBgmLayerVolume(int layerIndex)
+    private static float GetBgmLayerVolume(IReadOnlyList<BgmClipData> layers, int layerIndex)
     {
-        if (activeBgmLayers == null || layerIndex < 0 || layerIndex >= activeBgmLayers.Count)
+        if (layers == null || layerIndex < 0 || layerIndex >= layers.Count)
             return 1f;
 
-        BgmClipData data = activeBgmLayers[layerIndex];
+        BgmClipData data = layers[layerIndex];
         return data != null ? Mathf.Clamp01(data.volume) : 1f;
     }
 

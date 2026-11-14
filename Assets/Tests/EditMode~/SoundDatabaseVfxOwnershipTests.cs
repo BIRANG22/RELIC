@@ -8,16 +8,16 @@ public sealed class SoundDatabaseVfxOwnershipTests
 {
     private const string DatabasePath = "Assets/DB/SoundDatabase.asset";
 
-    [TestCase(0.5f, 2f, 1f)]
-    [TestCase(1f, 4f, 3f)]
-    [TestCase(2f, 1.5f, 3f)]
-    public void VfxCuePlaybackPitch_CombinesCuePitchAndPresentationSpeed(
+    [TestCase(0.5f, 2f, 0.5f)]
+    [TestCase(1f, 4f, 1f)]
+    [TestCase(2f, 1.5f, 2f)]
+    public void VfxCuePlaybackPitch_IgnoresPresentationSpeed(
         float cuePitch,
         float presentationSpeed,
         float expected)
     {
         Assert.That(
-            BattleVfxAudioUtility.CalculatePlaybackPitch(cuePitch, presentationSpeed),
+            BattleVfxAudioUtility.ResolveVfxPlaybackPitch(cuePitch, presentationSpeed),
             Is.EqualTo(expected).Within(0.0001f));
     }
 

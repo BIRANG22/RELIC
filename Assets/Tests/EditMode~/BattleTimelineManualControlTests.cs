@@ -196,6 +196,73 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
+    public void ReservationHistoryAvailability_FollowsSuccessfulUndoAndRedo()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("HistoryAvailability", BattleDirection.Right);
+        PlayerReservedCommand command = Attack(runtime);
+
+        Assert.That(controller.CanUndoPlayerReservation, Is.False);
+        Assert.That(controller.CanRedoPlayerReservation, Is.False);
+
+        Assert.That(controller.ConfirmPlayerCommand(0, command), Is.True);
+        Assert.That(controller.CanUndoPlayerReservation, Is.True);
+        Assert.That(controller.CanRedoPlayerReservation, Is.False);
+
+        controller.UndoLastPlayerReservation();
+        Assert.That(controller.CanUndoPlayerReservation, Is.False);
+        Assert.That(controller.CanRedoPlayerReservation, Is.True);
+
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(controller.CanUndoPlayerReservation, Is.True);
+        Assert.That(controller.CanRedoPlayerReservation, Is.False);
+    }
+
+    [Test]
+    public void ReservationHistoryPerformed_ReportsOnlySuccessfulActions()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("HistoryFeedback", BattleDirection.Right);
+        System.Collections.Generic.List<PlayerReservationHistoryAction> performed = new();
+        controller.PlayerReservationHistoryPerformed += performed.Add;
+
+        controller.UndoLastPlayerReservation();
+        Assert.That(performed, Is.Empty);
+
+        Assert.That(controller.ConfirmPlayerCommand(0, Attack(runtime)), Is.True);
+        controller.UndoLastPlayerReservation();
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+
+        Assert.That(performed, Is.EqualTo(new[]
+        {
+            PlayerReservationHistoryAction.Undo,
+            PlayerReservationHistoryAction.Redo
+        }));
+    }
+
+    [Test]
+    public void ReservationHistoryButtons_DisableAndDimWhenHistoryIsUnavailable()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        characterPanelObject = new GameObject("BattleCharacterPanel", typeof(RectTransform));
+        characterPanelObject.SetActive(false);
+        Button cancelButton = CreateButton(characterPanelObject.transform, "CancelButton");
+        Button restoreButton = CreateButton(characterPanelObject.transform, "RestoreButton");
+        Image cancelIcon = CreateButtonIcon(cancelButton.transform);
+        Image restoreIcon = CreateButtonIcon(restoreButton.transform);
+        BattleCharacterPanelUI panel = characterPanelObject.AddComponent<BattleCharacterPanelUI>();
+        SetPrivate(panel, "battleTimelineController", controller);
+        InvokePrivate(panel, "Awake");
+
+        Assert.That(cancelButton.interactable, Is.False);
+        Assert.That(restoreButton.interactable, Is.False);
+        Assert.That(cancelButton.image.color, Is.EqualTo(Color.white));
+        Assert.That(restoreButton.image.color, Is.EqualTo(Color.white));
+        Assert.That(cancelIcon.color.r, Is.LessThan(0.5f));
+        Assert.That(restoreIcon.color.r, Is.LessThan(0.5f));
+    }
+
+    [Test]
     public void RedoLastReservation_AfterMultipleUndos_RestoresInForwardOrder()
     {
         BattleTimelineController controller = CreateControllerWithSlots(1, 0);
@@ -615,6 +682,53 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
+    public void SelectingAnotherSlot_RemovesTrailingUnmergedFacingFlip()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(2, 0);
+        CharacterRuntimeData runtime = Runtime("FlipSlotChange", BattleDirection.Right);
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 3, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+
+        Assert.That(controller.SelectTimelineSlotFromNetwork(1, false, false), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.Empty);
+    }
+
+    [Test]
+    public void MovingReservedAction_RemovesTrailingUnmergedFacingFlip()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(2, 0);
+        CharacterRuntimeData runtime = Runtime("FlipMoveEdit", BattleDirection.Right);
+        PlayerReservedCommand attack = Attack(runtime);
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 3, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, attack), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+
+        Assert.That(controller.TryMovePlayerReservationFromNetwork(attack, 1, 0), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.Empty);
+        Assert.That(Slot(1).Commands, Is.EqualTo(new[] { attack }));
+    }
+
+    [Test]
+    public void RemovingReservedAction_RemovesTrailingUnmergedFacingFlip()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("FlipRemoveEdit", BattleDirection.Right);
+        PlayerReservedCommand attack = Attack(runtime);
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 3, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, attack), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+
+        Assert.That(controller.RemoveCommandFromNetwork(0, 0), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.Empty);
+    }
+
+    [Test]
     public void CancelPendingSelection_ClearsPendingDragInsertion()
     {
         BattleTimelineController controller = CreateControllerWithSlots(1, 0);
@@ -705,6 +819,13 @@ public class BattleTimelineManualControlTests
         GameObject buttonObject = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
         buttonObject.transform.SetParent(parent, false);
         return buttonObject.GetComponent<Button>();
+    }
+
+    private static Image CreateButtonIcon(Transform parent)
+    {
+        GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        iconObject.transform.SetParent(parent, false);
+        return iconObject.GetComponent<Image>();
     }
 
     private static void InvokePrivate(object target, string methodName)

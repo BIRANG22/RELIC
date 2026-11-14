@@ -7,6 +7,7 @@ using Relic.Gameplay.Monster;
 
 public static class ArabellaPhaseTransition
 {
+    public static event Action PhaseTwoApplied;
     public const string PhaseOneMonsterId = "Mon_12_1";
     public const string PhaseTwoMonsterId = "Mon_12_2";
     public const string PhaseOneDefeatedAnimationState = "PhaseOneDefeated";
@@ -115,6 +116,7 @@ public static class ArabellaPhaseTransition
 
         // 포커스 전에 HUD가 새 HP(105)를 먼저 표시하지 않도록 순서를 고정합니다.
         monster.Initialize(phaseTwo);
+        NotifyPhaseTwoApplied();
         monster.BeginPhaseTransitionHUDPresentation();
 
         MonsterPhaseCameraSequence phaseCameraSequence =
@@ -206,6 +208,11 @@ public static class ArabellaPhaseTransition
     public static void NotifyPhaseTwoStarted()
     {
         unchecked { TurnInterruptVersion++; }
+    }
+
+    public static void NotifyPhaseTwoApplied()
+    {
+        PhaseTwoApplied?.Invoke();
     }
 
     public static bool IsArabellaMonsterId(string monsterId)

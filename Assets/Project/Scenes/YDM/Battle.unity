@@ -163516,6 +163516,7 @@ MonoBehaviour:
   lowHealthState: 14
   bossIntroState: 15
   defeatState: 16
+  arabellaPhaseTwoState: 18
   roomBgmBindings:
   - stage: Stage1
     roomType: Common

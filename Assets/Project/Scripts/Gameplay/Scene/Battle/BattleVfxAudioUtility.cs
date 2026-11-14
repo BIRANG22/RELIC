@@ -5,8 +5,13 @@ public static class BattleVfxAudioUtility
 {
     public static float CalculatePlaybackPitch(float cuePitch, float presentationSpeed)
     {
-        return SoundData.ClampPlaybackPitch(
-            SoundData.ClampPlaybackPitch(cuePitch) * Mathf.Max(0.01f, presentationSpeed));
+        return ResolveVfxPlaybackPitch(cuePitch, presentationSpeed);
+    }
+
+    public static float ResolveVfxPlaybackPitch(float cuePitch, float presentationSpeed)
+    {
+        // 전투 표시 배속은 재생 시점만 앞당기며 음원의 고유 피치는 변경하지 않는다.
+        return SoundData.ClampPlaybackPitch(cuePitch);
     }
 
     public static void PlayAndStripEmbeddedAudioSources(
