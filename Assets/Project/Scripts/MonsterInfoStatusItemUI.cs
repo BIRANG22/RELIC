@@ -86,20 +86,53 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
             statusData.EffectId);
 
         if (nameText != null)
-        {
-            nameText.text = statusData.IsPassive
-                ? $"{effectName} ∞"
-                : statusData.Stack > 0
-                ? $"{effectName} {statusData.Stack}"
-                : effectName;
-        }
+            nameText.text = FormatDisplayName(
+                effectName,
+                statusData.EffectId,
+                statusData.Stack,
+                statusData.IsPassive);
 
         if (detailText != null)
         {
-            detailText.text = effectData != null
-                ? GameDataLocalization.EffectTooltip(effectData)
-                : string.Empty;
+            detailText.richText = true;
+            DataManager dataManager = DataManager.Instance;
+            detailText.text = FormatDetailText(
+                statusData,
+                effectData,
+                dataManager != null ? dataManager.EffectDatabase : null,
+                dataManager != null ? dataManager.GridEffectDatabase : null);
         }
+    }
+
+    public static string FormatDetailText(
+        StatusEffectRuntimeData statusData,
+        EffectMasterData effectData,
+        EffectDatabase effectDatabase,
+        GridEffectDatabase gridEffectDatabase)
+    {
+        if (effectData == null)
+            return string.Empty;
+
+        string tooltip = GameDataLocalization.EffectTooltip(effectData);
+        if (statusData == null)
+            return tooltip;
+
+        return MonsterInnateEffectDescriptionFormatter.Format(
+            tooltip,
+            statusData.EffectId,
+            effectDatabase,
+            gridEffectDatabase);
+    }
+
+    public static string FormatDisplayName(
+        string effectName,
+        string effectId,
+        int stack,
+        bool isPassive)
+    {
+        return isPassive
+            ? $"{effectName} ∞"
+            : stack > 0 ? $"{effectName} {stack}" : effectName;
     }
 
     private void Clear()

@@ -44,6 +44,7 @@ namespace Relic.Gameplay.Battle
         private const string SpiderWebGridEffectId = "GR_spider_web";
         private const string SpiderWebEffectId = "E_Spider_Web";
         private const int SpiderWebPendingTurnCount = 2;
+        public const int SpiderWebStatusStack = 1;
         private const int DefaultMinSpawnCount = 2;
         private const int DefaultMaxSpawnCount = 3;
 
@@ -384,8 +385,6 @@ namespace Relic.Gameplay.Battle
                 if (statusEffects == null)
                     return false;
 
-                int multiplier = Mathf.Max(1, value);
-
                 for (int i = 0; i < statusEffects.Count; i++)
                 {
                     StatusEffectRuntimeData existing = statusEffects[i];
@@ -396,14 +395,14 @@ namespace Relic.Gameplay.Battle
                         continue;
                     }
 
-                    existing.Stack = Mathf.Max(existing.Stack, multiplier);
+                    existing.Stack = SpiderWebStatusStack;
                     existing.TurnCount = SpiderWebPendingTurnCount;
                     return true;
                 }
 
                 statusEffects.Add(new StatusEffectRuntimeData(
                     SpiderWebEffectId,
-                    multiplier,
+                    SpiderWebStatusStack,
                     SpiderWebPendingTurnCount));
                 return true;
             }

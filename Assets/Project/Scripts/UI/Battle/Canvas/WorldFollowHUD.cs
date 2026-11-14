@@ -11,6 +11,7 @@ public class WorldFollowHUD : MonoBehaviour
     private Camera worldCamera;
     private RectTransform canvasRect;
     private Camera uiCamera;
+    private System.Func<bool> runtimeAlive;
 
     public void Bind(
         Transform target,
@@ -44,6 +45,14 @@ public class WorldFollowHUD : MonoBehaviour
         UpdatePosition();
     }
 
+    public void SetRuntimeAliveProvider(System.Func<bool> provider)
+    {
+        runtimeAlive = provider;
+    }
+
+    public static bool ShouldDisplay(bool targetActive, bool runtimeAlive) =>
+        targetActive && runtimeAlive;
+
     private void LateUpdate()
     {
         UpdatePosition();
@@ -62,7 +71,16 @@ public class WorldFollowHUD : MonoBehaviour
 
     private void UpdatePosition()
     {
-        if (target == null || worldCamera == null || canvasRect == null || rectTransform == null)
+        bool targetActive = target != null && target.gameObject.activeInHierarchy;
+        bool alive = runtimeAlive == null || runtimeAlive();
+        if (!ShouldDisplay(targetActive, alive))
+        {
+            if (rectTransform != null)
+                rectTransform.gameObject.SetActive(false);
+            return;
+        }
+
+        if (worldCamera == null || canvasRect == null || rectTransform == null)
             return;
 
         Vector3 screenPos = worldCamera.WorldToScreenPoint(GetFollowWorldPosition());

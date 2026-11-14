@@ -412,14 +412,12 @@ public class UIManager : Singleton<UIManager>
         if (optionCanvas == null)
             optionCanvas = optionPanelInstance.AddComponent<Canvas>();
 
-        optionCanvas.overrideSorting = true;
         int desiredOrder = GetHighestCanvasSortingOrder(optionCanvas) + Mathf.Max(1, optionPanelSortingOrderOffset);
-        // In the tutorial, MenuPanel is raised above the input-blocking overlay.
-        // OptionPanel opened from that menu must render above MenuPanel as well.
-        bool tutorialMenuOpen = IsTutorialBattleRun() || BattleFirstTutorialController.IsInputRestricted;
-        optionCanvas.sortingOrder = tutorialMenuOpen
-            ? 30010
-            : Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
+        BattleMenuEscapeInputController.ApplyModalSorting(
+            optionCanvas,
+            mainCanvas != null ? mainCanvas.sortingLayerID : SortingLayer.NameToID("Default"),
+            Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling),
+            optionPanelSortingOrderOffset);
 
         if (optionPanelInstance.GetComponent<GraphicRaycaster>() == null)
             optionPanelInstance.AddComponent<GraphicRaycaster>();
@@ -439,13 +437,12 @@ public class UIManager : Singleton<UIManager>
         if (recordCanvas == null)
             recordCanvas = recordPanelInstance.AddComponent<Canvas>();
 
-        recordCanvas.overrideSorting = true;
         int desiredOrder = GetHighestCanvasSortingOrder(recordCanvas) + Mathf.Max(1, recordPanelSortingOrderOffset);
-        // RecordPanel must stay above the tutorial MenuPanel (order 30003).
-        bool tutorialMenuOpen = IsTutorialBattleRun() || BattleFirstTutorialController.IsInputRestricted;
-        recordCanvas.sortingOrder = tutorialMenuOpen
-            ? 30011
-            : Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
+        BattleMenuEscapeInputController.ApplyModalSorting(
+            recordCanvas,
+            mainCanvas != null ? mainCanvas.sortingLayerID : SortingLayer.NameToID("Default"),
+            Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling),
+            recordPanelSortingOrderOffset);
 
         if (recordPanelInstance.GetComponent<GraphicRaycaster>() == null)
             recordPanelInstance.AddComponent<GraphicRaycaster>();
@@ -468,7 +465,6 @@ public class UIManager : Singleton<UIManager>
         if (confirmCanvas == null)
             confirmCanvas = confirmDialogInstance.AddComponent<Canvas>();
 
-        confirmCanvas.overrideSorting = true;
         int desiredOrder = GetHighestCanvasSortingOrder(confirmCanvas) + Mathf.Max(1, confirmDialogSortingOrderOffset);
 
         // 튜토리얼 전투 중에는 FocusOverlay가 사라진 단계에서도 확인창이 클릭 가능해야 합니다.
@@ -479,12 +475,19 @@ public class UIManager : Singleton<UIManager>
             // 별도 Screen Space Overlay Canvas를 사용하여 TutorialMode보다 항상 위에 표시합니다.
             // 기존 MainCanvas의 정렬이나 다른 확인창의 표시 방식은 변경하지 않습니다.
             confirmCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            confirmCanvas.sortingLayerID = SortingLayer.NameToID("Default");
-            confirmCanvas.sortingOrder = 32760;
+            BattleMenuEscapeInputController.ApplyModalSorting(
+                confirmCanvas,
+                mainCanvas != null ? mainCanvas.sortingLayerID : SortingLayer.NameToID("Default"),
+                32760,
+                confirmDialogSortingOrderOffset);
         }
         else
         {
-            confirmCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
+            BattleMenuEscapeInputController.ApplyModalSorting(
+                confirmCanvas,
+                mainCanvas != null ? mainCanvas.sortingLayerID : SortingLayer.NameToID("Default"),
+                Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling),
+                confirmDialogSortingOrderOffset);
         }
 
         GraphicRaycaster confirmRaycaster = confirmDialogInstance.GetComponent<GraphicRaycaster>();

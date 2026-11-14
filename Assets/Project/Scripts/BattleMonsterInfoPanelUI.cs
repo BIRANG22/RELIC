@@ -446,9 +446,10 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         RefreshMonsterSkillEffects(skillData);
     }
 
-    private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
+    public static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
     {
-        return MonsterSkillDescriptionFormatter.Format(description, skillData, true);
+        string formatted = MonsterSkillDescriptionFormatter.Format(description, skillData, true);
+        return MonsterInfoSkillItemUI.FormatDetailForEffectHover(formatted);
     }
 
     private void RefreshMonsterSkillEffects(MonsterSkillData skillData)

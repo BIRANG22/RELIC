@@ -83,7 +83,7 @@ MonoBehaviour:
       clip: {fileID: 8300000, guid: 050a36fed46d0694cb888a363cfca879, type: 3}
       volume: 0.6
       pitch: 1
-      loop: 0
+      loop: 1
       useLoopRegion: 0
       loopStartSeconds: 0
       loopEndSeconds: 0
@@ -96,7 +96,7 @@ MonoBehaviour:
       clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
       volume: 0.6
       pitch: 1
-      loop: 0
+      loop: 1
       useLoopRegion: 0
       loopStartSeconds: 0
       loopEndSeconds: 0

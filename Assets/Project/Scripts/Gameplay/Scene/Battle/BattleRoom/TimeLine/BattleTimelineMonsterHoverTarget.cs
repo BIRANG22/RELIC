@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class BattleTimelineMonsterHoverTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     private string monsterRuntimeId;
+    private MonsterUnit hoveredMonster;
 
     public void SetMonsterRuntimeId(string runtimeId)
     {
@@ -16,15 +17,34 @@ public class BattleTimelineMonsterHoverTarget : MonoBehaviour, IPointerEnterHand
         MonsterUnit monster = FindMonster();
 
         if (monster != null)
+        {
+            hoveredMonster = monster;
             monster.SetTimelineHoverHighlight(true);
+            monster.ShowTemporaryHUD(0f);
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        MonsterUnit monster = FindMonster();
+        MonsterUnit monster = hoveredMonster != null ? hoveredMonster : FindMonster();
 
         if (monster != null)
+        {
             monster.SetTimelineHoverHighlight(false);
+            monster.HideTemporaryHUD();
+        }
+
+        hoveredMonster = null;
+    }
+
+    private void OnDisable()
+    {
+        if (hoveredMonster == null)
+            return;
+
+        hoveredMonster.SetTimelineHoverHighlight(false);
+        hoveredMonster.HideTemporaryHUD();
+        hoveredMonster = null;
     }
 
     private MonsterUnit FindMonster()

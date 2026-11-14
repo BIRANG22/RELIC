@@ -189,15 +189,9 @@ public class BattleStatusEffectService
                 continue;
             }
 
-            int targetIndex = UnityEngine.Random.Range(0, candidates.Count);
-            BattleCharacter targetCharacter = candidates[targetIndex];
+            int targetIndex = BattleRandom.Range(0, candidates.Count);
             List<int> targetCells = availableCells[targetIndex];
-            int chosen = targetCells[UnityEngine.Random.Range(0, targetCells.Count)];
-            BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
-            if (facing == null)
-                facing = monster.GetComponentInChildren<BattleUnitFacing>();
-            if (facing != null)
-                facing.FaceByWorldTarget(targetCharacter.transform.position);
+            int chosen = targetCells[BattleRandom.Range(0, targetCells.Count)];
 
             BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
             if (animator != null)

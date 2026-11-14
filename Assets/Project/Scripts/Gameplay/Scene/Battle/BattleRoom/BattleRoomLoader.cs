@@ -1062,6 +1062,7 @@ public class BattleRoomLoader : MonoBehaviour
                     battleCanvasRect,
                     uiCamera,
                     collider2D);
+                follow.SetRuntimeAliveProvider(() => runtime != null && !runtime.IsDead);
             }
 
             character.BindWorldHUD(hud);
