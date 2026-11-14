@@ -116,6 +116,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -366,6 +367,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &445910594345376023
 GameObject:
   m_ObjectHideFlags: 0
@@ -655,6 +657,7 @@ MonoBehaviour:
   playOnDisable: 1
   disableSoundId: ui.back.click
   disableVolume: 1
+  disableSoundTiming: 1
 --- !u!1 &669638972174297389
 GameObject:
   m_ObjectHideFlags: 0
@@ -1024,6 +1027,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -1856,6 +1860,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &2046250676289593671
 GameObject:
   m_ObjectHideFlags: 0
@@ -2951,6 +2956,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &3945987327368292131
 GameObject:
   m_ObjectHideFlags: 0
@@ -3560,6 +3566,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &5136886515215044446
 GameObject:
   m_ObjectHideFlags: 0
@@ -3732,6 +3739,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &5238181137247414607
 GameObject:
   m_ObjectHideFlags: 0
@@ -4212,6 +4220,7 @@ MonoBehaviour:
   playOnDisable: 0
   disableSoundId: ui.normal.click
   disableVolume: 1
+  disableSoundTiming: 0
 --- !u!1 &6213575960527738726
 GameObject:
   m_ObjectHideFlags: 0
