@@ -16,6 +16,45 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField, Min(0f)] private float bgmFadeOutDuration = 0.5f;
     [SerializeField, Min(0f)] private float bgmFadeInDuration = 0.5f;
 
+    [System.Serializable]
+    public sealed class ClipRegion
+    {
+        public AudioClip clip;
+        public bool enabled = true;
+        [Min(0f)] public float playbackStart;
+        [Min(0f)] public float playbackEnd; // 0 = original clip end
+        public bool loop = true;
+        [Min(0f)] public float loopStart;
+        [Min(0f)] public float loopEnd; // 0 = playback end
+    }
+
+    [Header("Waveform BGM Regions (edit using Open Waveform Editor)")]
+    [SerializeField] private List<ClipRegion> bgmClipRegions = new();
+
+    private ClipRegion FindBgmRegion(AudioClip clip)
+    {
+        if (clip == null) return null;
+        for (int i = 0; i < bgmClipRegions.Count; ++i)
+        {
+            ClipRegion region = bgmClipRegions[i];
+            if (region != null && region.enabled && region.clip == clip) return region;
+        }
+        return null;
+    }
+
+    private static void GetRegionSamples(ClipRegion region, AudioClip clip,
+        out int playbackStart, out int playbackEnd, out int loopStart, out int loopEnd)
+    {
+        int max = Mathf.Max(1, clip.samples);
+        int hz = clip.frequency;
+        playbackStart = Mathf.Clamp(Mathf.RoundToInt(region.playbackStart * hz), 0, max - 1);
+        playbackEnd = region.playbackEnd <= 0f ? max :
+            Mathf.Clamp(Mathf.RoundToInt(region.playbackEnd * hz), playbackStart + 1, max);
+        loopStart = Mathf.Clamp(Mathf.RoundToInt(region.loopStart * hz), playbackStart, playbackEnd - 1);
+        loopEnd = region.loopEnd <= 0f ? playbackEnd :
+            Mathf.Clamp(Mathf.RoundToInt(region.loopEnd * hz), loopStart + 1, playbackEnd);
+    }
+
     private Dictionary<string, SoundData> sfxIdDict;
     private readonly List<AudioSource> bgmLayerSources = new();
     private readonly List<RoutedSfxSource> routedSfxSources = new();
@@ -140,18 +179,38 @@ public class AudioManager : Singleton<AudioManager>
         MaintainLoopRegion(bgmSource, 0);
         for (int i = 0; i < bgmLayerSources.Count; i++)
             MaintainLoopRegion(bgmLayerSources[i], i + 1);
+
     }
 
     private void MaintainLoopRegion(AudioSource source, int layerIndex)
     {
-        if (source == null || !source.isPlaying || activeBgmLayers == null ||
-            layerIndex < 0 || layerIndex >= activeBgmLayers.Count)
+        MaintainLoopRegion(source, layerIndex, activeBgmLayers);
+    }
+
+    private void MaintainLoopRegion(AudioSource source, int layerIndex, IReadOnlyList<BgmClipData> layers)
+    {
+        if (source == null || !source.isPlaying || layers == null ||
+            layerIndex < 0 || layerIndex >= layers.Count)
             return;
 
-        BgmClipData data = activeBgmLayers[layerIndex];
-        if (data == null || !data.TryGetLoopSamples(out int start, out int end))
+        BgmClipData data = layers[layerIndex];
+        if (data == null || data.clip == null) return;
+        ClipRegion region = FindBgmRegion(data.clip);
+        if (region != null)
+        {
+            GetRegionSamples(region, data.clip, out int playbackStart, out int playbackEnd,
+                out int loopStart, out int loopEnd);
+            int boundary = region.loop ? loopEnd : playbackEnd;
+            if (source.timeSamples >= boundary)
+            {
+                if (region.loop)
+                    source.timeSamples = loopStart;
+                else
+                    source.Stop();
+            }
             return;
-
+        }
+        if (!data.TryGetLoopSamples(out int start, out int end)) return;
         int current = source.timeSamples;
         if (current >= end)
             source.timeSamples = BgmClipData.WrapLoopSample(current, start, end);
@@ -607,7 +666,8 @@ public class AudioManager : Singleton<AudioManager>
         if (layers == null || layers.Count == 0)
             return false;
 
-        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip, UsesAudioSourceLoop(layers[0])))
+        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip,
+            FindBgmRegion(layers[0].clip) == null && UsesAudioSourceLoop(layers[0])))
             return false;
 
         for (int i = 1; i < layers.Count; i++)
@@ -617,7 +677,8 @@ public class AudioManager : Singleton<AudioManager>
             if (layerIndex >= bgmLayerSources.Count)
                 return false;
 
-            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip, UsesAudioSourceLoop(layers[i])))
+            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip,
+                FindBgmRegion(layers[i].clip) == null && UsesAudioSourceLoop(layers[i])))
                 return false;
         }
 
@@ -632,7 +693,7 @@ public class AudioManager : Singleton<AudioManager>
             source.isPlaying;
     }
 
-    private static void PlayBgmClip(AudioSource source, BgmClipData data)
+    private void PlayBgmClip(AudioSource source, BgmClipData data)
     {
         if (source == null || data == null || data.clip == null)
             return;
@@ -643,9 +704,15 @@ public class AudioManager : Singleton<AudioManager>
             source.clip = data.clip;
         }
 
-        source.loop = UsesAudioSourceLoop(data);
+        ClipRegion region = FindBgmRegion(data.clip);
+        source.loop = region != null ? false : UsesAudioSourceLoop(data);
         source.pitch = data.GetPlaybackPitch();
         source.Play();
+        if (region != null)
+        {
+            GetRegionSamples(region, data.clip, out int start, out _, out _, out _);
+            source.timeSamples = start;
+        }
     }
 
     private static bool UsesAudioSourceLoop(BgmClipData data)

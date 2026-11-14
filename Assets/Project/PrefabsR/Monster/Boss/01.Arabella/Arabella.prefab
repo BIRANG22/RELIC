@@ -2129,7 +2129,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     startDelay: 0
-    duration: 4
+    duration: 3.6
     targetOffset: {x: 1.2, y: 1.2, z: -13}
     shakeStrength: 0
     shakeFrequency: 0
