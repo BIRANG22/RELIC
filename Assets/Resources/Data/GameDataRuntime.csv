@@ -980,9 +980,12 @@ Tutorial_01,15,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.victory.dialogu
 Tutorial_01,16,Map_26,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.relic.dialogue.01,"오, 이 유물 나한테 잘 어울릴 것 같은데? 내가 챙겨도 되지?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 Tutorial_01,17,Map_26,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.relic.dialogue.02,좋습니다. 그렇게 하시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 Tutorial_01,18,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.01,유물의 다양한 효과를 조합하여 자신만의 전략적인 빌드를 구성할 수 있습니다.,ClickAny,item,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
-Tutorial_01,19,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.02,유물의 고유한 효과는 장착한 캐릭터에게만 적용됩니다.,EquipRelic,content/Char1,tutorial.prompt.equip_relic,힐트에게 유물을 장착하여 계속,Below
+Tutorial_01,19,Map_26,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.02,유물의 고유한 효과는 장착한 캐릭터에게만 적용됩니다.,EquipRelic,content/Char1,tutorial.prompt.equip_relic,유물을 장착하여 계속,Below
 Tutorial_02,1,Map_27,,,,Dialogue,Char_01,Dialogbox,tutorial.t02.encounter.dialogue.01,어? 저기 상자가 하나 있는데?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_02,2,Map_27,,,,Dialogue,Char_02,Dialogbox,tutorial.t02.encounter.dialogue.02,누군가 두고 간 것 같군요. 쓸 만한 물건이 있을지도 모르겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,3,Map_27,,,,Dialogue,Char_01,Dialogbox,tutorial.t02.encounter.dialogue.03,"난 아까 하나 챙겼으니까, 이번엔 네가 가져!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,4,Map_27,,,,Dialogue,Char_02,Dialogbox,tutorial.t02.encounter.dialogue.04,그럼 사양하지 않겠습니다. 유용하게 쓸 수 있겠군요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,5,Map_27,,,,Guide,,TutorialTooltip,tutorial.t02.relic.guide.01,같은 유물이라도 어떤 캐릭터에게 장착하느냐에 따라 활용 방법이 달라집니다.,EquipRelic,content/Char2,tutorial.prompt.equip_relic,유물을 장착하여 계속,Below
 Tutorial_03,1,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.encounter.dialogue.01	,이번 녀석은 아까보다 훨씬 강해 보이는데?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_03,2,Map_28,,,,Dialogue,Char_02,Dialogbox,tutorial.t03.encounter.dialogue.02	,이전과는 확실히 다르군요. 섣불리 움직여선 안 되겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_03,3,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.encounter.dialogue.03	,그렇다고 가만히 있을 순 없지! 정면으로 밀어붙이자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
@@ -1000,9 +1003,6 @@ Tutorial_03,8,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.04,정보를 �
 ,,,,,,,,,,,,,
 
 
-
-
-,,,,,,,,,,,,,
 
 
 

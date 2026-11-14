@@ -936,8 +936,20 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             MonsterAIPlan plan = null;
             try
             {
-                plan = monsterUnit.CreateAIPlan(context, gridManager);
-                PreserveLegacyPlanningFacingIntent(plan, runtime.Direction);
+                // Tutorial_03, turn one only: Lancer uses Grudge without its usual
+                // conditional attack/escape actions. Other turns retain normal AI.
+                if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_03"))
+                {
+                    plan = new MonsterAIPlan();
+                    plan.Add(new MonsterAIAction(
+                        "S_Monster_07", Vector2Int.zero,
+                        MonsterAISlotPreference.Last, -1, 0));
+                }
+                else
+                {
+                    plan = monsterUnit.CreateAIPlan(context, gridManager);
+                    PreserveLegacyPlanningFacingIntent(plan, runtime.Direction);
+                }
             }
             finally
             {
@@ -1494,10 +1506,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 
-        // 마지막 튜토리얼 전투(Map_27)의 1턴 드라우그 행동만 3번 슬롯에 배치합니다.
-        // 슬롯은 0부터 시작하므로 3번 슬롯의 인덱스는 2입니다.
-        if (IsFirstTurnFinalTutorialDraugr(runtime) && slotCount > 2)
-            return 2;
+        // Tutorial_03 (Map_28) turn 1 only: Draugr's movement and sweep
+        // both execute at slot 2; Lancer's Grudge executes at slot 5.
+        // The timeline uses zero-based slot indices.
+        if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_07") && slotCount > 1)
+            return 1;
+        if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_03") && slotCount > 4)
+            return 4;
 
         // 튜토리얼 1 전투(Map_26)는 몬스터의 AI 패턴과 행동 선택은
         // 그대로 사용하되, 예약되는 타임라인 위치만 항상 3번 슬롯으로 고정합니다.
@@ -1547,16 +1562,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         }
     }
 
-    private bool IsFirstTurnFinalTutorialDraugr(MonsterRuntimeData runtime)
+    private bool IsTutorialThreeFirstTurnMonster(MonsterRuntimeData runtime, string monsterId)
     {
         if (runtime == null || plannedBattleTurn != 1 ||
-            !string.Equals(runtime.MonsterId, "Mon_07", System.StringComparison.OrdinalIgnoreCase))
+            !string.Equals(runtime.MonsterId, monsterId, System.StringComparison.OrdinalIgnoreCase))
             return false;
 
         DataManager data = DataManager.Instance;
         return data?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
                string.Equals(data.MapRuntimeStore?.Get()?.CurrentMapId?.Trim(),
-                   "Map_27", System.StringComparison.OrdinalIgnoreCase);
+                   TutorialBattleEntrySetup.SecondTutorialMapId,
+                   System.StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsTutorialBattle1Map()

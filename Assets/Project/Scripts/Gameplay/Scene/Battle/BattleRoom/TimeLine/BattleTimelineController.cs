@@ -1266,10 +1266,34 @@ public class BattleTimelineController : MonoBehaviour
         if (selectedCharacter != null && !selectedCharacter.IsDead)
             return true;
 
-        if (lastSelectedCharacter == null || lastSelectedCharacter.IsDead)
+        // A tutorial may open monster info before any character has been selected.
+        // In that case there is no saved selection to restore; select the first
+        // available party member instead of leaving the character HUD empty.
+        CharacterRuntimeData target = lastSelectedCharacter;
+        if (target == null || target.IsDead)
+        {
+            target = null;
+            BattleCharacter[] party = FindObjectsByType<BattleCharacter>(
+                FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+            // Prefer the first party member (Char_01), independently of scene order.
+            foreach (BattleCharacter member in party)
+            {
+                if (member == null || member.RuntimeData == null || member.RuntimeData.IsDead)
+                    continue;
+                if (!TutorialBattleSequence.CanSelectTutorialCharacter(member.CharacterId))
+                    continue;
+                if (target == null ||
+                    System.String.Equals(member.CharacterId, "Char_01", System.StringComparison.OrdinalIgnoreCase))
+                    target = member.RuntimeData;
+            }
+        }
+
+        if (target == null || target.IsDead ||
+            !TutorialBattleSequence.CanSelectTutorialCharacter(target.CharacterId))
             return false;
 
-        SelectCharacter(lastSelectedCharacter);
+        SelectCharacter(target);
         return selectedCharacter != null && !selectedCharacter.IsDead;
     }
 
