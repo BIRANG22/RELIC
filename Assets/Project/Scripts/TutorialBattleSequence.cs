@@ -28,10 +28,10 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     // Compatibility entrypoints for callers that have not yet migrated to the
     // new tutorial step API. No legacy tutorial state machine is retained.
     public static bool CanClickTutorialMonster() => !IsPresentationRunning || TutorialFocusGuideRunner.IsMonsterInspectClickStep;
-    public static bool CanClickTutorialPlayer() => !IsPresentationRunning;
+    public static bool CanClickTutorialPlayer() => !IsPresentationRunning || TutorialFocusGuideRunner.AllowsTutorial03WorldCharacter("Char_02");
     public static bool CanClickFinalTutorialWorldMonster(MonsterUnit monster) => TutorialFocusGuideRunner.AllowsMonsterInfoWorldClick(monster);
-    public static bool CanClickFinalTutorialWorldCharacter(string characterId) => false;
-    public static void NotifyFinalTutorialWorldCharacterClicked(string characterId) { }
+    public static bool CanClickFinalTutorialWorldCharacter(string characterId) => TutorialFocusGuideRunner.AllowsTutorial03WorldCharacter(characterId);
+    public static void NotifyFinalTutorialWorldCharacterClicked(string characterId) => TutorialFocusGuideRunner.NotifyTutorial03WorldCharacterClicked(characterId);
     public static void NotifyFinalTutorialCompoundUsed() { }
     public static bool CanUseBattleSkill(string skillId, string moveId, string firstSkillId) =>
         TutorialFocusGuideRunner.IsRunning ? TutorialFocusGuideRunner.AllowsSkill(skillId, moveId, firstSkillId) : !IsPresentationRunning;
@@ -181,6 +181,49 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         relicDialogOriginalParent = null;
     }
 
+
+    // Reward panels can be opened after loading a continued run without the battle
+    // entry callback that normally attaches TutorialBattleSequence. Find the
+    // instance in THIS scene, or reattach it to the active battle controller.
+    // Saved battles do not always restore IsTutorialBattle. The Tutorial
+    // worksheet and dedicated tutorial map jointly identify these rewards.
+    public static bool HasTutorialRewardSteps(string mapId, string tutorialId, int firstOrder, int lastOrder)
+    {
+        var steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        if (steps == null) return false;
+        foreach (TutorialData step in steps)
+            if (step != null && string.Equals(step.TutorialId, tutorialId, StringComparison.OrdinalIgnoreCase) &&
+                step.Order >= firstOrder && step.Order <= lastOrder &&
+                string.Equals(step.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
+    }
+
+    public static TutorialBattleSequence FindOrCreateForReward(Component requester)
+    {
+        if (requester == null || !requester.gameObject.scene.IsValid()) return null;
+        var scene = requester.gameObject.scene;
+        TutorialBattleSequence[] sequences = Resources.FindObjectsOfTypeAll<TutorialBattleSequence>();
+        foreach (TutorialBattleSequence candidate in sequences)
+        {
+            if (candidate == null || candidate.gameObject.scene != scene) continue;
+            if (!candidate.enabled) candidate.enabled = true;
+            return candidate;
+        }
+
+        // Prefer the scene controller, like BattleRoomLoader does on room entry.
+        BattleSceneController[] controllers = Resources.FindObjectsOfTypeAll<BattleSceneController>();
+        foreach (BattleSceneController controller in controllers)
+        {
+            if (controller == null || controller.gameObject.scene != scene) continue;
+            TutorialBattleSequence result = controller.GetComponent<TutorialBattleSequence>();
+            if (result == null) result = controller.gameObject.AddComponent<TutorialBattleSequence>();
+            if (!result.enabled) result.enabled = true;
+            return result;
+        }
+        Debug.LogError("[TutorialBattleSequence] Reward dialogue cannot start: BattleSceneController is missing in reward scene.", requester);
+        return null;
+    }
 
     public void NotifyInitialBattleHudReady() => initialHudReady = true;
 
@@ -417,6 +460,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (lines.Count == 0) yield break;
         lines.Sort((a, b) => a.Order.CompareTo(b.Order));
 
+        // A continued reward can bypass Begin(), so resolve the dialogue UI here.
+        ResolveUi();
+        if (dialogRoot == null || dialogText == null)
+        {
+            Debug.LogError("[TutorialBattleSequence] Reward dialogue UI unavailable: TutorialMode/Dialogbox.", this);
+            yield break;
+        }
         dialoguePresentationRunning = true;
         dialogueInputActive = true;
         ActiveTutorialMapId = "Map_26";
@@ -441,7 +491,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // Tutorial_02: chest reward dialogue, after Index03 and the reward panel intro.
+    // Tutorial_02 reward continuation; retained alongside Tutorial_03 guides.
     public IEnumerator PlaySecondTutorialRelicRewardDialogue()
     {
         const string mapId = "Map_27";
@@ -455,6 +505,61 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 lines.Add(item);
         if (lines.Count == 0) yield break;
         lines.Sort((a, b) => a.Order.CompareTo(b.Order));
+        // A continued reward can bypass Begin(), so resolve the dialogue UI here.
+        ResolveUi();
+        if (dialogRoot == null || dialogText == null)
+        {
+            Debug.LogError("[TutorialBattleSequence] Reward dialogue UI unavailable: TutorialMode/Dialogbox.", this);
+            yield break;
+        }
+        dialoguePresentationRunning = true;
+        dialogueInputActive = true;
+        ActiveTutorialMapId = mapId;
+        ResolveUi();
+        HideUi();
+        CreateDialogueShield();
+        PutRelicDialogueInFront();
+        if (dialogCanvas != null) dialogCanvas.sortingOrder = 32765;
+        try
+        {
+            foreach (TutorialData line in lines)
+            {
+                ShowDialogue(line);
+                yield return RevealAndAdvance();
+                if (dialogRoot != null) dialogRoot.SetActive(false);
+            }
+        }
+        finally
+        {
+            RestoreRelicDialogueParent();
+            Cleanup();
+        }
+    }
+
+    // Runs after Map_28 Skill_panel's entry animations, before memory selection.
+    // Only dialogue orders 26-27 are played here. The next selection guide is
+    // deliberately not started until its Tutorial sheet row is authored.
+    public IEnumerator PlayThirdTutorialSkillRewardDialogue()
+    {
+        const string mapId = "Map_28";
+        var steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        if (steps == null) yield break;
+        var lines = new List<TutorialData>();
+        foreach (TutorialData item in steps)
+            if (item != null && string.Equals(item.TutorialId, "Tutorial_03", StringComparison.OrdinalIgnoreCase) &&
+                item.Order >= 26 && item.Order <= 27 &&
+                string.Equals(item.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
+                lines.Add(item);
+        if (lines.Count == 0) yield break;
+        lines.Sort((a, b) => a.Order.CompareTo(b.Order));
+
+        // A continued reward can bypass Begin(), so resolve the dialogue UI here.
+        ResolveUi();
+        if (dialogRoot == null || dialogText == null)
+        {
+            Debug.LogError("[TutorialBattleSequence] Reward dialogue UI unavailable: TutorialMode/Dialogbox.", this);
+            yield break;
+        }
         dialoguePresentationRunning = true;
         dialogueInputActive = true;
         ActiveTutorialMapId = mapId;

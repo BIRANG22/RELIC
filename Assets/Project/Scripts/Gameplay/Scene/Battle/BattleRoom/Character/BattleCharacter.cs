@@ -389,6 +389,15 @@ public class BattleCharacter : MonoBehaviour
     private void OnMouseDown()
     {
         if (TutorialGuideController.IsModalOpen) return;
+        // In Tutorial_03 order 9 only a direct world click on Kaya is allowed.
+        if (TutorialFocusGuideRunner.IsTutorial03WorldSelectStep &&
+            (RuntimeData == null || !TutorialBattleSequence.CanClickFinalTutorialWorldCharacter(RuntimeData.CharacterId)))
+            return;
+        if (RuntimeData != null && TutorialBattleSequence.CanClickFinalTutorialWorldCharacter(RuntimeData.CharacterId))
+        {
+            TryHandleFinalTutorialWorldClick();
+            return;
+        }
         // 튜토리얼 안내 및 전투방 진입 연출 중에는 캐릭터 선택만 차단합니다.
         if ((TutorialBattleSequence.IsPresentationRunning &&
              !TutorialBattleSequence.CanClickTutorialPlayer()) ||
