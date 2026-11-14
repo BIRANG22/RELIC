@@ -7,6 +7,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+public enum PlayerReservationHistoryAction
+{
+    Undo,
+    Redo
+}
+
 public class BattleTimelineController : MonoBehaviour
 {
     [Header("Selection Cancel Sound")]
@@ -204,12 +210,24 @@ public class BattleTimelineController : MonoBehaviour
     private readonly List<PlayerReservationHistoryEntry> playerReservationRedoHistory = new();
     private readonly HashSet<int> networkViewedSlotIndices = new();
 
+    public event System.Action PlayerReservationHistoryChanged;
+    public event System.Action<PlayerReservationHistoryAction> PlayerReservationHistoryPerformed;
+
     public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
     public int ActiveSlotIndex => activeSlotIndex;
     public int ReservationVersion => reservationVersion;
     public CharacterRuntimeData SelectedCharacter => selectedCharacter;
     public int PlayerLockedSlotIndex => playerLockedSlotIndex;
     public bool HasPlayerLockedSlot => playerLockedSlotIndex >= 0;
+    public bool CanUndoPlayerReservation
+    {
+        get
+        {
+            PruneInvalidPlayerReservationHistory();
+            return playerReservationHistory.Count > 0;
+        }
+    }
+    public bool CanRedoPlayerReservation => playerReservationRedoHistory.Count > 0;
 
 
     private void OnValidate()
@@ -618,23 +636,23 @@ public class BattleTimelineController : MonoBehaviour
             RedoLastPlayerReservation();
     }
 
-    public void UndoLastPlayerReservation()
+    public bool UndoLastPlayerReservation()
     {
         if (isSlotSelectionLocked)
-            return;
+            return false;
 
         if (turnExecutor == null)
             turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
 
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
-            return;
+            return false;
 
         PruneInvalidPlayerReservationHistory();
 
         if (playerReservationHistory.Count <= 0)
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.NoReservationToUndo));
-            return;
+            return false;
         }
 
         PlayerReservationHistoryEntry entry = playerReservationHistory[playerReservationHistory.Count - 1];
@@ -645,9 +663,11 @@ public class BattleTimelineController : MonoBehaviour
             {
                 playerReservationHistory.RemoveAt(playerReservationHistory.Count - 1);
                 playerReservationRedoHistory.Add(entry);
+                NotifyPlayerReservationHistoryChanged(PlayerReservationHistoryAction.Undo);
+                return true;
             }
 
-            return;
+            return false;
         }
 
         if (RemovePlayerReservationEntry(entry, true, out int removedOrderIndex))
@@ -656,7 +676,11 @@ public class BattleTimelineController : MonoBehaviour
                 entry.SlotIndex,
                 entry.Command,
                 removedOrderIndex));
+            NotifyPlayerReservationHistoryChanged(PlayerReservationHistoryAction.Undo);
+            return true;
         }
+
+        return false;
     }
 
     public bool RedoLastPlayerReservation()
@@ -683,6 +707,7 @@ public class BattleTimelineController : MonoBehaviour
 
             playerReservationRedoHistory.RemoveAt(playerReservationRedoHistory.Count - 1);
             playerReservationHistory.Add(entry);
+            NotifyPlayerReservationHistoryChanged(PlayerReservationHistoryAction.Redo);
             return true;
         }
 
@@ -736,6 +761,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshMoveGhostPreview();
 
         Debug.Log($"[BattleTimelineController] 마지막 예약 다시 실행 / Slot:{entry.SlotIndex} / Order:{entry.OrderIndex}");
+        NotifyPlayerReservationHistoryChanged(PlayerReservationHistoryAction.Redo);
         return true;
     }
 
@@ -1348,7 +1374,10 @@ public class BattleTimelineController : MonoBehaviour
         // 슬롯을 실제로 변경할 때만 현재 진행 중인 타겟 선택을 취소합니다.
         // 이미 등록된 행동에는 영향을 주지 않습니다.
         if (previousSlotIndex != slotIndex)
+        {
             CancelPendingActionSelection(false);
+            CancelUnmergedFacingFlips();
+        }
 
         activeSlotIndex = slotIndex;
 
@@ -4027,6 +4056,7 @@ public class BattleTimelineController : MonoBehaviour
             slotIndex,
             command,
             orderIndex));
+        PlayerReservationHistoryChanged?.Invoke();
     }
 
     private static void MergePrecedingFacingFlipIntoCommand(
@@ -4071,7 +4101,10 @@ public class BattleTimelineController : MonoBehaviour
                     continue;
 
                 if (slot.RemoveCommandAt(commandIndex, out _))
+                {
+                    RemovePlayerReservationHistoryEntries(command);
                     removedCount++;
+                }
             }
         }
 
@@ -4082,9 +4115,16 @@ public class BattleTimelineController : MonoBehaviour
             RefreshTimeline();
             RefreshPlayerHUDs();
             RefreshMoveGhostPreview();
+            PlayerReservationHistoryChanged?.Invoke();
         }
 
         return removedCount;
+    }
+
+    private void NotifyPlayerReservationHistoryChanged(PlayerReservationHistoryAction performedAction)
+    {
+        PlayerReservationHistoryChanged?.Invoke();
+        PlayerReservationHistoryPerformed?.Invoke(performedAction);
     }
 
     private int GetSlotIndexOf(ReserveTurnSlotUI slot)
@@ -5552,6 +5592,8 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTimeline();
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
+        CancelUnmergedFacingFlips();
+        PlayerReservationHistoryChanged?.Invoke();
         return true;
     }
 
@@ -5692,6 +5734,8 @@ public class BattleTimelineController : MonoBehaviour
         RefreshMoveGhostPreview();
 
         Debug.Log($"[BattleTimelineController] 예약 취소 / Slot:{slotIndex} / Order:{orderIndex}");
+        CancelUnmergedFacingFlips();
+        PlayerReservationHistoryChanged?.Invoke();
         return true;
     }
 
@@ -5720,6 +5764,7 @@ public class BattleTimelineController : MonoBehaviour
             slotIndex,
             command,
             orderIndex));
+        PlayerReservationHistoryChanged?.Invoke();
     }
 
     private bool IsMoveCommand(PlayerReservedCommand command)
@@ -5768,6 +5813,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTimeline();
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
+        PlayerReservationHistoryChanged?.Invoke();
     }
 
     public void ClearAllReservations()
@@ -5802,6 +5848,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshReservationSimulation();
         RefreshTimeline();
         RefreshPlayerHUDs();
+        PlayerReservationHistoryChanged?.Invoke();
     }
 
     public int ApplyBlockedMoveCostRefunds()

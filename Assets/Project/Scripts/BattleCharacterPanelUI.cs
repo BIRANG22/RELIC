@@ -37,6 +37,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private const int PartySlotCount = 3;
     private static readonly Color32 PartyKarmaOnColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
     private static readonly Color32 PartyKarmaOffColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private static readonly Color32 HistoryButtonDisabledColor = new Color32(0x55, 0x55, 0x55, 0xFF);
+    private readonly Dictionary<Graphic, Color> historyButtonOriginalColors = new();
+    private BattleTimelineController subscribedHistoryController;
 
     private sealed class PartySlotView
     {
@@ -578,6 +581,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         ResolveEquipmentTooltipReferences();
         HideSkillTooltip();
         HideEquipmentTooltipImmediate();
+        BindReservationHistoryButtons();
     }
 
     private void OnEnable()
@@ -609,16 +613,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RefreshPartyFromRuntimeStore();
         RefreshPartySelectPortraits(battleTimelineController != null ? battleTimelineController.SelectedCharacter : null);
         ApplyCurrentBattlePhasePositionImmediate();
+        BindReservationHistoryButtons();
     }
 
     private void OnDestroy()
     {
         UnregisterSkillButtonListeners();
         UnregisterMoveAndItemButtonListeners();
+        UnbindReservationHistoryButtons();
     }
 
     private void OnDisable()
     {
+        UnbindReservationHistoryButtons();
         if (skillReservationTooltipCoroutine != null)
             StopCoroutine(skillReservationTooltipCoroutine);
         skillReservationTooltipCoroutine = null;
@@ -4234,9 +4241,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        cancelButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
         battleTimelineController.UndoLastPlayerReservation();
-        AudioManager.Instance?.PlaySfx(resetCancelSfxId);
     }
 
     private void OnRestoreButtonClicked()
@@ -4259,9 +4264,69 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        restoreButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
         battleTimelineController.RedoLastPlayerReservation();
+    }
+
+    private void BindReservationHistoryButtons()
+    {
+        EnsureBattleTimelineController();
+        if (subscribedHistoryController == battleTimelineController)
+        {
+            RefreshReservationHistoryButtons();
+            return;
+        }
+
+        UnbindReservationHistoryButtons();
+        subscribedHistoryController = battleTimelineController;
+        if (subscribedHistoryController != null)
+        {
+            subscribedHistoryController.PlayerReservationHistoryChanged += RefreshReservationHistoryButtons;
+            subscribedHistoryController.PlayerReservationHistoryPerformed += HandleReservationHistoryPerformed;
+        }
+        RefreshReservationHistoryButtons();
+    }
+
+    private void UnbindReservationHistoryButtons()
+    {
+        if (subscribedHistoryController == null)
+            return;
+        subscribedHistoryController.PlayerReservationHistoryChanged -= RefreshReservationHistoryButtons;
+        subscribedHistoryController.PlayerReservationHistoryPerformed -= HandleReservationHistoryPerformed;
+        subscribedHistoryController = null;
+    }
+
+    private void HandleReservationHistoryPerformed(PlayerReservationHistoryAction action)
+    {
+        Button button = action == PlayerReservationHistoryAction.Undo ? cancelButton : restoreButton;
+        button?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
         AudioManager.Instance?.PlaySfx(resetCancelSfxId);
+    }
+
+    private void RefreshReservationHistoryButtons()
+    {
+        bool canUndo = battleTimelineController != null && battleTimelineController.CanUndoPlayerReservation;
+        bool canRedo = battleTimelineController != null && battleTimelineController.CanRedoPlayerReservation;
+        ApplyReservationHistoryButtonState(cancelButton, canUndo);
+        ApplyReservationHistoryButtonState(restoreButton, canRedo);
+    }
+
+    private void ApplyReservationHistoryButtonState(Button button, bool available)
+    {
+        if (button == null)
+            return;
+
+        button.interactable = available;
+        Image iconImage = FindChildImage(button.transform, "Icon");
+        if (iconImage == null)
+            return;
+
+        if (!historyButtonOriginalColors.ContainsKey(iconImage))
+            historyButtonOriginalColors.Add(iconImage, iconImage.color);
+
+        Color original = historyButtonOriginalColors[iconImage];
+        Color disabled = HistoryButtonDisabledColor;
+        disabled.a = original.a;
+        iconImage.color = available ? original : disabled;
     }
 
     public static bool CanUseReservationHistoryButtons(

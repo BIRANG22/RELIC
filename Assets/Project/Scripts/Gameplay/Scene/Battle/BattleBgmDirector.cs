@@ -36,6 +36,27 @@ public static class BattleBgmPolicy
             (variant == BattleBgmRoomVariant.Battle && hasBattleMap) ||
             (variant == BattleBgmRoomVariant.Event && !hasBattleMap);
     }
+
+    public static BgmState? ResolveBattleState(
+        bool defeatPlaying,
+        bool bossIntroPlaying,
+        bool arabellaPhaseTwoPlaying,
+        bool partyLowHealth,
+        BgmState defeatState,
+        BgmState bossIntroState,
+        BgmState arabellaPhaseTwoState,
+        BgmState lowHealthState,
+        BgmState? roomState,
+        Func<BgmState, bool> isConfigured)
+    {
+        List<BgmState> candidates = new();
+        if (defeatPlaying) candidates.Add(defeatState);
+        if (bossIntroPlaying) candidates.Add(bossIntroState);
+        if (arabellaPhaseTwoPlaying) candidates.Add(arabellaPhaseTwoState);
+        if (partyLowHealth) candidates.Add(lowHealthState);
+        if (roomState.HasValue) candidates.Add(roomState.Value);
+        return ResolveFirstConfigured(candidates, isConfigured);
+    }
 }
 
 public enum BattleBgmRoomVariant
@@ -60,6 +81,7 @@ public class BattleBgmDirector : MonoBehaviour
     [SerializeField] private BgmState lowHealthState = BgmState.Stage1LowHealth;
     [SerializeField] private BgmState bossIntroState = BgmState.Stage1BossIntro;
     [SerializeField] private BgmState defeatState = BgmState.Stage1Defeat;
+    [SerializeField] private BgmState arabellaPhaseTwoState = BgmState.ArabellaPhase2;
     [SerializeField] private List<RoomBgmBinding> roomBgmBindings = new();
 
     private string currentStage;
@@ -67,6 +89,7 @@ public class BattleBgmDirector : MonoBehaviour
     private bool currentHasBattleMap;
     private bool bossIntroPlaying;
     private bool defeatPlaying;
+    private bool arabellaPhaseTwoPlaying;
 
     private void OnEnable()
     {
@@ -76,6 +99,7 @@ public class BattleBgmDirector : MonoBehaviour
         BattleResultChecker.DefeatStarted += OnDefeatStarted;
         BattleEffectUtility.OnPlayerDamaged += OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned += Refresh;
+        ArabellaPhaseTransition.PhaseTwoApplied += OnArabellaPhaseTwoApplied;
     }
 
     private void OnDisable()
@@ -86,6 +110,7 @@ public class BattleBgmDirector : MonoBehaviour
         BattleResultChecker.DefeatStarted -= OnDefeatStarted;
         BattleEffectUtility.OnPlayerDamaged -= OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned -= Refresh;
+        ArabellaPhaseTransition.PhaseTwoApplied -= OnArabellaPhaseTwoApplied;
     }
 
     public void SetRoomType(string stage, string roomType, bool hasBattleMap)
@@ -95,6 +120,7 @@ public class BattleBgmDirector : MonoBehaviour
         currentHasBattleMap = hasBattleMap;
         bossIntroPlaying = false;
         defeatPlaying = false;
+        arabellaPhaseTwoPlaying = false;
         Refresh();
     }
 
@@ -102,6 +128,7 @@ public class BattleBgmDirector : MonoBehaviour
     private void OnRoomIntroCompleted() { if (bossIntroPlaying) { bossIntroPlaying = false; Refresh(); } }
     private void OnDefeatStarted() { defeatPlaying = true; Refresh(); }
     private void OnPlayerDamaged(BattleCharacter _) => Refresh();
+    private void OnArabellaPhaseTwoApplied() { arabellaPhaseTwoPlaying = true; Refresh(); }
 
     private void Refresh()
     {
@@ -109,13 +136,21 @@ public class BattleBgmDirector : MonoBehaviour
         if (audio == null)
             return;
 
-        List<BgmState> candidates = new();
-        if (defeatPlaying) candidates.Add(defeatState);
-        if (bossIntroPlaying) candidates.Add(bossIntroState);
-        if (IsPartyLowHealth()) candidates.Add(lowHealthState);
-        if (TryGetRoomState(currentStage, currentRoomType, currentHasBattleMap, out BgmState roomState)) candidates.Add(roomState);
-
-        BgmState? resolved = BattleBgmPolicy.ResolveFirstConfigured(candidates, audio.IsBgmConfigured);
+        BgmState? roomState = TryGetRoomState(
+            currentStage, currentRoomType, currentHasBattleMap, out BgmState configuredRoomState)
+            ? configuredRoomState
+            : null;
+        BgmState? resolved = BattleBgmPolicy.ResolveBattleState(
+            defeatPlaying,
+            bossIntroPlaying,
+            arabellaPhaseTwoPlaying,
+            IsPartyLowHealth(),
+            defeatState,
+            bossIntroState,
+            arabellaPhaseTwoState,
+            lowHealthState,
+            roomState,
+            audio.IsBgmConfigured);
         if (resolved.HasValue)
             audio.PlayBgm(resolved.Value);
     }
