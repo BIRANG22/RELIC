@@ -9,6 +9,31 @@ using UnityAssetDatabase = UnityEditor.AssetDatabase;
 public class ArabellaPhaseTransitionTests
 {
     [Test]
+    public void PresentationEvents_AreRaisedAtSeparateBoundaries()
+    {
+        int started = 0;
+        int completed = 0;
+        System.Action startedHandler = () => started++;
+        System.Action completedHandler = () => completed++;
+        ArabellaPhaseTransition.PhaseTwoPresentationStarted += startedHandler;
+        ArabellaPhaseTransition.PhaseTwoPresentationCompleted += completedHandler;
+        try
+        {
+            ArabellaPhaseTransition.NotifyPhaseTwoPresentationStarted();
+            Assert.That(started, Is.EqualTo(1));
+            Assert.That(completed, Is.Zero);
+
+            ArabellaPhaseTransition.NotifyPhaseTwoPresentationCompleted();
+            Assert.That(completed, Is.EqualTo(1));
+        }
+        finally
+        {
+            ArabellaPhaseTransition.PhaseTwoPresentationStarted -= startedHandler;
+            ArabellaPhaseTransition.PhaseTwoPresentationCompleted -= completedHandler;
+        }
+    }
+
+    [Test]
     public void NotifyPhaseTwoApplied_RaisesPresentationEvent()
     {
         int raised = 0;

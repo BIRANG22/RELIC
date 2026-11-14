@@ -757,6 +757,22 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
+    public void UndoingReservedAction_RemovesTrailingUnmergedFacingFlip()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("FlipUndo", BattleDirection.Right);
+        PlayerReservedCommand attack = Attack(runtime);
+        PlayerReservedCommand flip = Move(runtime, BattleDirection.Left, 3, Vector2Int.zero);
+        flip.SetFacingFlipCommand();
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, attack), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, flip), Is.True);
+
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.Empty);
+    }
+
+    [Test]
     public void CancelPendingSelection_ClearsPendingDragInsertion()
     {
         BattleTimelineController controller = CreateControllerWithSlots(1, 0);

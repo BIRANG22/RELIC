@@ -3,6 +3,31 @@ using NUnit.Framework;
 
 public class ContextualBgmTests
 {
+    [TestCase(false, true)]
+    [TestCase(true, false)]
+    public void DefaultBattleBgm_IsSkippedWhenResumingUnclearedRoom(
+        bool hasUnclearedCurrentNode,
+        bool expected)
+    {
+        Assert.That(
+            BattleState.ShouldPlayDefaultBattleBgm(hasUnclearedCurrentNode),
+            Is.EqualTo(expected));
+    }
+
+    [TestCase(0f, 2f, 1f)]
+    [TestCase(1f, 2f, 0.5f)]
+    [TestCase(2f, 2f, 0f)]
+    [TestCase(3f, 2f, 0f)]
+    public void FadeOutMultiplier_ReachesSilenceAtConfiguredDuration(
+        float elapsed,
+        float duration,
+        float expected)
+    {
+        Assert.That(
+            BgmFadePolicy.EvaluateFadeOut(elapsed, duration),
+            Is.EqualTo(expected).Within(0.0001f));
+    }
+
     [TestCase(0f, 2f, 4f, 1f, 0f)]
     [TestCase(1f, 2f, 4f, 0.5f, 0.25f)]
     [TestCase(2f, 2f, 4f, 0f, 0.5f)]

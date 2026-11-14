@@ -8,6 +8,8 @@ using Relic.Gameplay.Monster;
 public static class ArabellaPhaseTransition
 {
     public static event Action PhaseTwoApplied;
+    public static event Action PhaseTwoPresentationStarted;
+    public static event Action PhaseTwoPresentationCompleted;
     public const string PhaseOneMonsterId = "Mon_12_1";
     public const string PhaseTwoMonsterId = "Mon_12_2";
     public const string PhaseOneDefeatedAnimationState = "PhaseOneDefeated";
@@ -108,6 +110,7 @@ public static class ArabellaPhaseTransition
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
         BattleCameraController cameraController = BattleCameraController.Instance;
+        NotifyPhaseTwoPresentationStarted();
 
         // 현재 행동이 종료된 다음 아라벨라를 화면 중앙에 포커스합니다.
         // 전환 연출이 끝날 때까지 카메라를 유지하고 기존 전투 위치로 돌아갑니다.
@@ -154,6 +157,8 @@ public static class ArabellaPhaseTransition
 
         if (cameraController != null)
             yield return cameraController.ReturnFromArabellaPhaseTransitionCamera();
+
+        NotifyPhaseTwoPresentationCompleted();
     }
 
     // MonsterPhaseCameraSequence가 없는 경우에도 클립 완료를 확인하기 위한 대체 경로.
@@ -213,6 +218,16 @@ public static class ArabellaPhaseTransition
     public static void NotifyPhaseTwoApplied()
     {
         PhaseTwoApplied?.Invoke();
+    }
+
+    public static void NotifyPhaseTwoPresentationStarted()
+    {
+        PhaseTwoPresentationStarted?.Invoke();
+    }
+
+    public static void NotifyPhaseTwoPresentationCompleted()
+    {
+        PhaseTwoPresentationCompleted?.Invoke();
     }
 
     public static bool IsArabellaMonsterId(string monsterId)

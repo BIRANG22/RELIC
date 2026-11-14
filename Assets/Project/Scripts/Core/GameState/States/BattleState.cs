@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 public class BattleState : BaseGameState
@@ -33,8 +34,15 @@ public class BattleState : BaseGameState
 
         await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
 
-        AudioManager.Instance.PlayBgm(BgmState.Stage1Common);
+        mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
+        bool hasUnclearedCurrentNode =
+            MapRuntimeProgressUtility.HasUnclearedCurrentNode(mapRuntime);
+        if (ShouldPlayDefaultBattleBgm(hasUnclearedCurrentNode))
+            AudioManager.Instance.PlayBgm(BgmState.Stage1Common);
     }
+
+    public static bool ShouldPlayDefaultBattleBgm(bool hasUnclearedCurrentNode) =>
+        !hasUnclearedCurrentNode;
 
     public override Task Exit()
     {

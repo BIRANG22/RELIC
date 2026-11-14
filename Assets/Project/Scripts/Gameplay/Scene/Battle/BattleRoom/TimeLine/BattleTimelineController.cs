@@ -663,6 +663,7 @@ public class BattleTimelineController : MonoBehaviour
             {
                 playerReservationHistory.RemoveAt(playerReservationHistory.Count - 1);
                 playerReservationRedoHistory.Add(entry);
+                CancelUnmergedFacingFlips();
                 NotifyPlayerReservationHistoryChanged(PlayerReservationHistoryAction.Undo);
                 return true;
             }
@@ -676,6 +677,7 @@ public class BattleTimelineController : MonoBehaviour
                 entry.SlotIndex,
                 entry.Command,
                 removedOrderIndex));
+            CancelUnmergedFacingFlips();
             NotifyPlayerReservationHistoryChanged(PlayerReservationHistoryAction.Undo);
             return true;
         }
