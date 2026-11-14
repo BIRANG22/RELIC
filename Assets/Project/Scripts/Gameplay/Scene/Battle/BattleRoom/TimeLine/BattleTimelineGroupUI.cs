@@ -31,7 +31,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     [SerializeField] private Color playerReservedColor = new Color32(0x0A, 0x46, 0x9E, 0xFF);
     [SerializeField] private Color enemyReservedColor = new Color32(0xDF, 0x4D, 0x56, 0xFF);
     [SerializeField] private Color deadReservationColor = new Color32(0x77, 0x77, 0x77, 0xFF);
-    [SerializeField] private Color flipMergedHighlightColor = new Color32(0xFF, 0xD2, 0x58, 0xFF);
 
     [Header("Empty Use Skill Slots")]
     [SerializeField] private Color emptyUseSkillColor = new Color32(0xFF, 0xFF, 0xFF, 0x05);
@@ -2081,6 +2080,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
             if (root == null) continue;
             RestoreSizeRootAppearance(root);
             SetSkillLineColor(root.gameObject, Color.white, false);
+            SetMergedFlipLine(root, false, Color.clear);
             ClearSkillHoverComponents(root.gameObject);
             TMP_Text value = FindUseSkillText(root);
             if (value != null) { value.text = ""; value.gameObject.SetActive(false); }
@@ -2340,16 +2340,36 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
         Color rootColor = ownerDead
             ? deadReservationColor
-            : entry.HasMergedFacingFlip
-                ? flipMergedHighlightColor
-                : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
+            : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
         Color contentColor = ownerDead ? deadReservationColor : Color.white;
 
         GameObject root = GetSkillHoverObject(skillImage);
         if (root != null)
+        {
             SetSkillLineColor(root, rootColor, true);
+            ResolveMergedFlipLinePresentation(
+                entry.HasMergedFacingFlip,
+                entry.IsMonster,
+                playerReservedColor,
+                enemyReservedColor,
+                out bool showFlipLine,
+                out Color flipLineColor);
+            SetMergedFlipLine(root.transform, showFlipLine, flipLineColor);
+        }
 
         skillImage.color = contentColor;
+    }
+
+    public static void ResolveMergedFlipLinePresentation(
+        bool hasMergedFlip,
+        bool isMonster,
+        Color playerColor,
+        Color monsterColor,
+        out bool visible,
+        out Color color)
+    {
+        visible = hasMergedFlip;
+        color = hasMergedFlip ? (isMonster ? monsterColor : playerColor) : Color.clear;
     }
 
     private void ApplyOwnerReservationColor(
@@ -2644,6 +2664,22 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
             lineImage.enabled = visible;
         }
         line.gameObject.SetActive(visible);
+    }
+
+    private void SetMergedFlipLine(Transform root, bool visible, Color color)
+    {
+        if (root == null)
+            return;
+
+        Transform flipLine = FindChildRecursive(root, "FipLine");
+        if (flipLine == null)
+            return;
+
+        Image flipLineImage = flipLine.GetComponent<Image>();
+        if (flipLineImage != null)
+            flipLineImage.color = color;
+
+        flipLine.gameObject.SetActive(visible);
     }
 
     private void SetRootImageColor(GameObject root, Color color)

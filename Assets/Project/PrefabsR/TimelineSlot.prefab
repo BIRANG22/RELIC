@@ -6169,7 +6169,6 @@ MonoBehaviour:
   playerReservedColor: {r: 0.039215688, g: 0.27450982, b: 0.61960787, a: 1}
   enemyReservedColor: {r: 0.8745098, g: 0.3019608, b: 0.3372549, a: 1}
   deadReservationColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
-  flipMergedHighlightColor: {r: 1, g: 0.8235294, b: 0.34509805, a: 1}
   emptyUseSkillColor: {r: 1, g: 1, b: 1, a: 0.011764706}
   reservationDragHighlight1: {fileID: 21300000, guid: cbc177a0d0ae33f4e90e6f4e18e39b6c, type: 3}
   reservationDragHighlight2: {fileID: 21300000, guid: 26617a734794af9488315615c15ee576, type: 3}
@@ -6597,7 +6596,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &5211426792231049579
 RectTransform:
   m_ObjectHideFlags: 0
