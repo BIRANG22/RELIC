@@ -6,7 +6,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class DebugShortcutHelpPanel : MonoBehaviour
 {
-    [SerializeField] private KeyCode toggleKey = KeyCode.BackQuote;
+    [SerializeField] private KeyCode toggleKey = KeyCode.Backslash;
     [SerializeField] private KeyCode resetQuestKey = KeyCode.Backspace;
     [SerializeField] private Canvas canvas;
     [SerializeField] private GameObject panelRoot;

@@ -10,6 +10,34 @@ public class BattleTimelineManualControlTests
     private GameObject[] slotObjects;
     private GameObject characterPanelObject;
 
+    [TestCase(false, false, false, 0f, 0f, 0f)]
+    [TestCase(true, false, true, 0.1f, 0.2f, 0.9f)]
+    [TestCase(true, true, true, 0.9f, 0.2f, 0.1f)]
+    public void MergedFlipLine_UsesOwnerColorOnlyWhenFlipIsMerged(
+        bool hasMergedFlip,
+        bool isMonster,
+        bool expectedVisible,
+        float expectedRed,
+        float expectedGreen,
+        float expectedBlue)
+    {
+        Color playerColor = new(0.1f, 0.2f, 0.9f, 1f);
+        Color monsterColor = new(0.9f, 0.2f, 0.1f, 1f);
+
+        BattleTimelineGroupUI.ResolveMergedFlipLinePresentation(
+            hasMergedFlip,
+            isMonster,
+            playerColor,
+            monsterColor,
+            out bool visible,
+            out Color color);
+
+        Assert.That(visible, Is.EqualTo(expectedVisible));
+        Assert.That(color.r, Is.EqualTo(expectedRed).Within(0.0001f));
+        Assert.That(color.g, Is.EqualTo(expectedGreen).Within(0.0001f));
+        Assert.That(color.b, Is.EqualTo(expectedBlue).Within(0.0001f));
+    }
+
     [Test]
     public void RedoModifier_UsesEitherAltKey()
     {
