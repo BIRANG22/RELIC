@@ -13,12 +13,28 @@ MonoBehaviour:
   m_Name: SoundDatabase
   m_EditorClassIdentifier: 
   bgmList:
+  - state: 16
+    mainClip:
+      clip: {fileID: 8300000, guid: 144b91aef7426462d8cf13e13c54eaef, type: 3}
+      volume: 1
+      pitch: 1
+      loop: 0
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
   - state: 0
     mainClip:
       clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
       volume: 0.6
       pitch: 1
       loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
@@ -29,6 +45,9 @@ MonoBehaviour:
       volume: 0.6
       pitch: 1
       loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
@@ -36,19 +55,12 @@ MonoBehaviour:
   - state: 6
     mainClip:
       clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
-      volume: 0.8
-      pitch: 1
-      loop: 1
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 9
-    mainClip:
-      clip: {fileID: 8300000, guid: 1cbf15fc1d6947f49944a76ca7bab0fd, type: 3}
       volume: 1
       pitch: 1
       loop: 1
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
@@ -66,113 +78,9 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     ambienceClips: []
-  - state: 8
+  - state: 9
     mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 10
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 11
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 12
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 13
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 14
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 15
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 16
-    mainClip:
-      clip: {fileID: 0}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useLoopRegion: 0
-      loopStartSeconds: 0
-      loopEndSeconds: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
-    ambienceClips: []
-  - state: 17
-    mainClip:
-      clip: {fileID: 0}
+      clip: {fileID: 8300000, guid: a780cc8449a1da94d81effa165ba3e9d, type: 3}
       volume: 1
       pitch: 1
       loop: 1
@@ -3374,20 +3282,6 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   monsterSkillVfxSfxList:
-  - displayName: Arabella.attack.02.prepare
-    vfxPrefab: {fileID: 6287963228254279517, guid: 148ec99a4ab2ab64cae37540118ff5ca, type: 3}
-    cues:
-    - clip: {fileID: 8300000, guid: 6e22c23e3d58fda4db1a40d49a979a56, type: 3}
-      delay: 0
-      volume: 1
-      pitch: 1
-      loop: 0
-      playOncePerAction: 1
-      useRandomPitch: 0
-      overrideSpatialBlend: 1
-      spatialBlend: 1
-      randomPitchMin: 1
-      randomPitchMax: 1
   - displayName: move.muck,blob
     vfxPrefab: {fileID: 4145361429921181282, guid: 14446538ebfd3ff4890ea1f5dd834341, type: 3}
     cues:

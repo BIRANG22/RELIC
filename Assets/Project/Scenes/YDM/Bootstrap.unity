@@ -2359,6 +2359,7 @@ MonoBehaviour:
   soundDatabase: {fileID: 11400000, guid: 49ea6f6f6558423bb957a5c42b85bc7a, type: 2}
   bgmFadeOutDuration: 0.5
   bgmFadeInDuration: 0.5
+  bgmClipRegions: []
 --- !u!82 &1960083566
 AudioSource:
   m_ObjectHideFlags: 0
