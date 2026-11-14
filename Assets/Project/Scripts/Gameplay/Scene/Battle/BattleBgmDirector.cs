@@ -82,6 +82,8 @@ public class BattleBgmDirector : MonoBehaviour
     [SerializeField] private BgmState bossIntroState = BgmState.Stage1BossIntro;
     [SerializeField] private BgmState defeatState = BgmState.Stage1Defeat;
     [SerializeField] private BgmState arabellaPhaseTwoState = BgmState.ArabellaPhase2;
+    [SerializeField, Min(0f)] private float arabellaPhaseTwoFadeOutDuration = 0.5f;
+    [SerializeField, Min(0f)] private float arabellaPhaseTwoFadeInDuration = 0.5f;
     [SerializeField] private List<RoomBgmBinding> roomBgmBindings = new();
 
     private string currentStage;
@@ -99,7 +101,8 @@ public class BattleBgmDirector : MonoBehaviour
         BattleResultChecker.DefeatStarted += OnDefeatStarted;
         BattleEffectUtility.OnPlayerDamaged += OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned += Refresh;
-        ArabellaPhaseTransition.PhaseTwoApplied += OnArabellaPhaseTwoApplied;
+        ArabellaPhaseTransition.PhaseTwoPresentationStarted += OnArabellaPhaseTwoPresentationStarted;
+        ArabellaPhaseTransition.PhaseTwoPresentationCompleted += OnArabellaPhaseTwoPresentationCompleted;
     }
 
     private void OnDisable()
@@ -110,7 +113,8 @@ public class BattleBgmDirector : MonoBehaviour
         BattleResultChecker.DefeatStarted -= OnDefeatStarted;
         BattleEffectUtility.OnPlayerDamaged -= OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned -= Refresh;
-        ArabellaPhaseTransition.PhaseTwoApplied -= OnArabellaPhaseTwoApplied;
+        ArabellaPhaseTransition.PhaseTwoPresentationStarted -= OnArabellaPhaseTwoPresentationStarted;
+        ArabellaPhaseTransition.PhaseTwoPresentationCompleted -= OnArabellaPhaseTwoPresentationCompleted;
     }
 
     public void SetRoomType(string stage, string roomType, bool hasBattleMap)
@@ -128,9 +132,23 @@ public class BattleBgmDirector : MonoBehaviour
     private void OnRoomIntroCompleted() { if (bossIntroPlaying) { bossIntroPlaying = false; Refresh(); } }
     private void OnDefeatStarted() { defeatPlaying = true; Refresh(); }
     private void OnPlayerDamaged(BattleCharacter _) => Refresh();
-    private void OnArabellaPhaseTwoApplied() { arabellaPhaseTwoPlaying = true; Refresh(); }
+    private void OnArabellaPhaseTwoPresentationStarted()
+    {
+        AudioManager.Instance?.FadeOutBgm(arabellaPhaseTwoFadeOutDuration);
+    }
+
+    private void OnArabellaPhaseTwoPresentationCompleted()
+    {
+        arabellaPhaseTwoPlaying = true;
+        Refresh(0f, arabellaPhaseTwoFadeInDuration);
+    }
 
     private void Refresh()
+    {
+        Refresh(null, null);
+    }
+
+    private void Refresh(float? fadeOutDuration, float? fadeInDuration)
     {
         AudioManager audio = AudioManager.Instance;
         if (audio == null)
@@ -151,7 +169,12 @@ public class BattleBgmDirector : MonoBehaviour
             lowHealthState,
             roomState,
             audio.IsBgmConfigured);
-        if (resolved.HasValue)
+        if (!resolved.HasValue)
+            return;
+
+        if (fadeOutDuration.HasValue && fadeInDuration.HasValue)
+            audio.PlayBgm(resolved.Value, fadeOutDuration.Value, fadeInDuration.Value);
+        else
             audio.PlayBgm(resolved.Value);
     }
 

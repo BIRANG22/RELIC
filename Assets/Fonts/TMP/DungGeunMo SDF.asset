@@ -9458,10 +9458,6 @@ MonoBehaviour:
     m_GlyphIndex: 15133
     m_Scale: 1
   - m_ElementType: 1
-    m_Unicode: 63
-    m_GlyphIndex: 15138
-    m_Scale: 1
-  - m_ElementType: 1
     m_Unicode: 65
     m_GlyphIndex: 2
     m_Scale: 1
@@ -15782,7 +15778,8 @@ MonoBehaviour:
     m_MarkToBaseAdjustmentRecords: []
     m_MarkToMarkAdjustmentRecords: []
   m_ShouldReimportFontFeatures: 0
-  m_FallbackFontAssetTable: []
+  m_FallbackFontAssetTable:
+  - {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_FontWeightTable:
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}
