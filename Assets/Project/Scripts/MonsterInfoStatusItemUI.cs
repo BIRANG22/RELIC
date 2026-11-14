@@ -70,7 +70,16 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
         EffectMasterData effectData = ResolveEffectData(statusData.EffectId);
 
         if (statusIconImage != null)
+        {
+            DataManager dataManager = DataManager.Instance;
+            Color iconColor = ResolveIconColor(
+                statusData.EffectId,
+                statusData.IsMonsterInnateTrait,
+                dataManager != null ? dataManager.StatusEffectIconDatabase : null,
+                dataManager != null ? dataManager.EffectDatabase : null);
+            statusIconImage.color = ComposeIconColor(iconColor, statusIconImage.color);
             SetImage(statusIconImage, ResolveStatusIcon(statusData.EffectId));
+        }
 
         string effectName = MonsterInfoDataNameResolver.ResolveEffectName(
             effectData,
@@ -96,7 +105,10 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
     private void Clear()
     {
         if (statusIconImage != null)
+        {
+            statusIconImage.color = ComposeIconColor(Color.white, statusIconImage.color);
             SetImage(statusIconImage, null);
+        }
         if (nameText != null)
             nameText.text = string.Empty;
         if (detailText != null)
@@ -122,6 +134,26 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
         return dataManager.StatusEffectIconDatabase.TryGetIcon(effectId.Trim(), out Sprite icon)
             ? icon
             : null;
+    }
+
+    public static Color ResolveIconColor(
+        string effectId,
+        bool isMonsterInnateTrait,
+        StatusEffectIconDatabase iconDatabase,
+        EffectDatabase effectDatabase)
+    {
+        if (iconDatabase == null)
+            return Color.white;
+
+        string normalizedEffectId = string.IsNullOrWhiteSpace(effectId)
+            ? string.Empty
+            : effectId.Trim();
+        return iconDatabase.GetIconColor(normalizedEffectId, effectDatabase, isMonsterInnateTrait);
+    }
+
+    public static Color ComposeIconColor(Color effectColor, Color currentImageColor)
+    {
+        return new Color(effectColor.r, effectColor.g, effectColor.b, currentImageColor.a);
     }
 
     private static void SetImage(Image image, Sprite sprite)
