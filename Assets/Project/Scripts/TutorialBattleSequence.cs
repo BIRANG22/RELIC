@@ -441,6 +441,44 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
+    // Tutorial_02: chest reward dialogue, after Index03 and the reward panel intro.
+    public IEnumerator PlaySecondTutorialRelicRewardDialogue()
+    {
+        const string mapId = "Map_27";
+        var steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        if (steps == null) yield break;
+        var lines = new List<TutorialData>();
+        foreach (TutorialData item in steps)
+            if (item != null && item.TutorialId == "Tutorial_02" &&
+                item.Order >= 3 && item.Order <= 4 &&
+                string.Equals(item.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
+                lines.Add(item);
+        if (lines.Count == 0) yield break;
+        lines.Sort((a, b) => a.Order.CompareTo(b.Order));
+        dialoguePresentationRunning = true;
+        dialogueInputActive = true;
+        ActiveTutorialMapId = mapId;
+        ResolveUi();
+        HideUi();
+        CreateDialogueShield();
+        PutRelicDialogueInFront();
+        if (dialogCanvas != null) dialogCanvas.sortingOrder = 32765;
+        try
+        {
+            foreach (TutorialData line in lines)
+            {
+                ShowDialogue(line);
+                yield return RevealAndAdvance();
+                if (dialogRoot != null) dialogRoot.SetActive(false);
+            }
+        }
+        finally
+        {
+            RestoreRelicDialogueParent();
+            Cleanup();
+        }
+    }
+
     private static bool HasVisibleGridCells(GridManager grid)
     {
         GridCell[] cells = grid.GetComponentsInChildren<GridCell>(false);

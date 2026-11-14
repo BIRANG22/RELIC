@@ -283,7 +283,8 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
 
     public void CloseFirstRelicEquipFocus()
     {
-        if (!running || step == null || step.Order != 19 || relicEquipFocusClosed) return;
+        if (!running || step == null ||
+            !string.Equals(step.Advance, "EquipRelic", StringComparison.OrdinalIgnoreCase) || relicEquipFocusClosed) return;
         relicEquipFocusClosed = true;
         HidePresentation();
     }
@@ -338,6 +339,49 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
                         yield return null;
                     }
                 }
+            }
+        }
+        finally
+        {
+            rewardPanel.SetFirstTutorialRelicEquipStep(false);
+            HidePresentation();
+            overlaySortingOrder = normalOverlayOrder;
+            running = false;
+            if (Active == this) Active = null;
+            step = null;
+        }
+    }
+
+    // Second tutorial chest: focus only Kaya's equipment target and require her actual equip commit.
+    public IEnumerator PlaySecondTutorialRelicRewardGuide(BattleRewardRelicPanelUI rewardPanel)
+    {
+        if (rewardPanel == null) yield break;
+        var all = DataManager.Instance?.TutorialDatabase?.GetForMap("Map_27");
+        TutorialData equipStep = null;
+        if (all != null)
+            foreach (TutorialData item in all)
+                if (item != null && item.TutorialId == "Tutorial_02" && item.Order == 5 &&
+                    string.Equals(item.TextOutput, "TutorialTooltip", StringComparison.OrdinalIgnoreCase))
+                    equipStep = item;
+        if (equipStep == null) yield break;
+        Active = this;
+        running = true;
+        relicEquipFocusClosed = false;
+        int normalOverlayOrder = overlaySortingOrder;
+        overlaySortingOrder = 32500;
+        ResolvePresentation();
+        try
+        {
+            step = equipStep;
+            // Use the actual reward panel character container, not a similarly named HUD object.
+            RectTransform kayaTarget = rewardPanel.transform.Find("content/Char2") as RectTransform;
+            DisplayStep(equipStep, kayaTarget);
+            if (skipButton != null) skipButton.gameObject.SetActive(false);
+            rewardPanel.SetFirstTutorialRelicEquipStep(true);
+            while (!rewardPanel.SecondTutorialKayaEquipCommitted)
+            {
+                if (!relicEquipFocusClosed) UpdatePresentation();
+                yield return null;
             }
         }
         finally

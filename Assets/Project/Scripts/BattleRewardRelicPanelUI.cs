@@ -98,6 +98,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private bool firstTutorialRelicGuideActive;
     private bool firstTutorialRelicEquipStep;
     public bool FirstTutorialHiltEquipCommitted { get; private set; }
+    public bool SecondTutorialKayaEquipCommitted { get; private set; }
+    private int tutorialRequiredCharacterIndex = -1;
 
     public void SetFirstTutorialRelicEquipStep(bool canEquipHilt)
     {
@@ -362,6 +364,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         firstTutorialRelicGuideActive = false;
         firstTutorialRelicEquipStep = false;
         FirstTutorialHiltEquipCommitted = false;
+        SecondTutorialKayaEquipCommitted = false;
+        tutorialRequiredCharacterIndex = -1;
         if (equipCloseCoroutine != null)
         {
             StopCoroutine(equipCloseCoroutine);
@@ -497,13 +501,22 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             !firstTutorialRelicDialoguePlayed &&
             DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
             string.Equals(map?.CurrentMapId, "Map_26", StringComparison.OrdinalIgnoreCase);
-        if (isFirstTutorialRelic)
+        bool isSecondTutorialRelic =
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(map?.CurrentMapId, "Map_27", StringComparison.OrdinalIgnoreCase);
+        if (isFirstTutorialRelic || isSecondTutorialRelic)
         {
-            firstTutorialRelicDialoguePlayed = true;
+            if (isFirstTutorialRelic) firstTutorialRelicDialoguePlayed = true;
             firstTutorialRelicGuideActive = true;
+            tutorialRequiredCharacterIndex = isSecondTutorialRelic ? 1 : 0;
             TutorialBattleSequence tutorial = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
             if (tutorial != null)
-                yield return tutorial.PlayFirstRelicRewardDialogue();
+            {
+                if (isSecondTutorialRelic)
+                    yield return tutorial.PlaySecondTutorialRelicRewardDialogue();
+                else
+                    yield return tutorial.PlayFirstRelicRewardDialogue();
+            }
             TutorialFocusGuideRunner rewardGuide = FindFirstObjectByType<TutorialFocusGuideRunner>(FindObjectsInactive.Include);
             if (rewardGuide == null)
             {
@@ -514,10 +527,16 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
                     rewardGuide = sceneController.gameObject.AddComponent<TutorialFocusGuideRunner>();
             }
             if (rewardGuide != null)
-                yield return rewardGuide.PlayFirstRelicRewardGuide(this);
+            {
+                if (isSecondTutorialRelic)
+                    yield return rewardGuide.PlaySecondTutorialRelicRewardGuide(this);
+                else
+                    yield return rewardGuide.PlayFirstRelicRewardGuide(this);
+            }
             else
                 Debug.LogWarning("[BattleRewardRelicPanelUI] BattleSceneController unavailable: reward tutorial skipped.", this);
             firstTutorialRelicGuideActive = false;
+            tutorialRequiredCharacterIndex = -1;
         }
 
         panelCanvasGroup.interactable = true;
@@ -1091,7 +1110,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
                 int highlighted = -1;
                 // The preview is a hover effect, including during the tutorial.
                 // Tutorial step 19 only limits the eligible character to Hilt.
-                if ((!firstTutorialRelicGuideActive || (firstTutorialRelicEquipStep && i == 0)) &&
+                if ((!firstTutorialRelicGuideActive || (firstTutorialRelicEquipStep && i == tutorialRequiredCharacterIndex)) &&
                     (entry.characterHovered || entry.hoveredSlot >= 0))
                 {
                     bool hoveringOccupiedSlot = entry.hoveredSlot >= 0 &&
@@ -1385,10 +1404,10 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void EquipTo(int index)
     {
         if (resolving || current == null || index < 0 || index >= entries.Length) return;
-        if (firstTutorialRelicGuideActive && (!firstTutorialRelicEquipStep || index != 0)) return;
+        if (firstTutorialRelicGuideActive && (!firstTutorialRelicEquipStep || index != tutorialRequiredCharacterIndex)) return;
         CharacterEntry e = entries[index];
         if (e == null || string.IsNullOrWhiteSpace(e.id) || DataManager.Instance == null) return;
-        if (firstTutorialRelicGuideActive && !string.Equals(e.id, "Char_01", StringComparison.OrdinalIgnoreCase)) return;
+        if (firstTutorialRelicGuideActive && index != tutorialRequiredCharacterIndex) return;
         if (!DataManager.Instance.CharacterRuntimeStore.TryGet(e.id, out CharacterRuntimeData runtime) || runtime == null) return;
         if (!DataManager.Instance.RelicDatabase.TryGet(current.RewardId, out RelicData relic) || relic == null) return;
         ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
@@ -1436,13 +1455,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
         // Update the actual equipped slot before playing its VFX.
         runtime.EquippedRelicIds[destination] = current.RewardId.Trim();
-        if (firstTutorialRelicGuideActive && characterIndex == 0)
+        if (firstTutorialRelicGuideActive && characterIndex == tutorialRequiredCharacterIndex)
         {
             // Restore normal canvas ordering before the original equipped-slot
             // effect is spawned at content/Char1/Relic/Relic01~06.
             TutorialFocusGuideRunner focus = FindFirstObjectByType<TutorialFocusGuideRunner>(FindObjectsInactive.Include);
             if (focus != null) focus.CloseFirstRelicEquipFocus();
-            FirstTutorialHiltEquipCommitted = true;
+            if (characterIndex == 0) FirstTutorialHiltEquipCommitted = true;
+            if (characterIndex == 1) SecondTutorialKayaEquipCommitted = true;
         }
         if (active) ActiveRelicRuntimeUtility.ResetUses(runtime, relic);
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtime);
