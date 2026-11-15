@@ -38,6 +38,39 @@ public static class LocalizationSyncCommand
         return entries;
     }
 
+    // TutorialGuide uses explicit runtime localization keys instead of generated
+    // game-data keys. Preserve these keys so the guide UI resolves each translation.
+    public static IReadOnlyList<LocalizationWorkbookEntry> CollectTutorialGuideEntries()
+    {
+        const string guideSheetName = "TutorialGuide";
+        IReadOnlyList<IReadOnlyList<string>> rows = LocalizationXlsxReader.ReadSheet(WorkbookPath, guideSheetName);
+        if (rows.Count < 2)
+            throw new InvalidOperationException("GameData TutorialGuide 시트의 헤더 또는 스키마 행이 없습니다.");
+
+        IReadOnlyList<string> schema = rows[1];
+        string[] keys = { "IndexNameKey", "PageNameKey", "ExplanationKey" };
+        string[] texts = { "IndexNameKO", "PageNameKO", "ExplanationKO" };
+        int[] keyColumns = new int[keys.Length];
+        int[] textColumns = new int[texts.Length];
+        for (int i = 0; i < keys.Length; i++)
+        {
+            keyColumns[i] = FindColumn(schema, keys[i]);
+            textColumns[i] = FindColumn(schema, texts[i]);
+            if (keyColumns[i] < 0 || textColumns[i] < 0)
+                throw new InvalidOperationException($"TutorialGuide 시트에서 {keys[i]}/{texts[i]} 열을 찾을 수 없습니다.");
+        }
+
+        var entries = new List<LocalizationWorkbookEntry>();
+        var known = new Dictionary<string, string>(StringComparer.Ordinal);
+        for (int rowIndex = 2; rowIndex < rows.Count; rowIndex++)
+        {
+            IReadOnlyList<string> row = rows[rowIndex];
+            for (int i = 0; i < keys.Length; i++)
+                AddEntry(row, keyColumns[i], textColumns[i], known, entries, rowIndex + 1);
+        }
+        return entries;
+    }
+
     private static int FindColumn(IReadOnlyList<string> schema, string name)
     {
         for (int index = 0; index < schema.Count; index++)
@@ -92,6 +125,7 @@ public static class LocalizationSyncCommand
     public static LocalizationSyncResult SyncTutorialLocalization()
     {
         LocalizationSyncResult result = Sync("Tutorial Localization", CollectTutorialEntries()
+            .Concat(CollectTutorialGuideEntries())
             .Concat(TutorialEntries())
             .GroupBy(entry => entry.Key, StringComparer.Ordinal)
             .Select(group => group.First())

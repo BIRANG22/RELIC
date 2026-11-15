@@ -287,14 +287,15 @@ public sealed class LocalizationManagerWindow : EditorWindow
 
     private void ScanTutorialData(IReadOnlyDictionary<string, string> knownKoreanByKey)
     {
-        foreach (LocalizationWorkbookEntry entry in LocalizationSyncCommand.CollectTutorialEntries())
+        foreach (LocalizationWorkbookEntry entry in LocalizationSyncCommand.CollectTutorialEntries()
+            .Concat(LocalizationSyncCommand.CollectTutorialGuideEntries()))
         {
             bool exists = knownKoreanByKey.TryGetValue(entry.Key, out string currentKorean);
             bool sourceChanged = exists && !string.Equals(
                 LocalizationBindingResolver.Normalize(currentKorean),
                 LocalizationBindingResolver.Normalize(entry.Korean), StringComparison.Ordinal);
             candidates.Add(new LocalizationCandidate(
-                "Assets/ExcelSource/GameData.xlsx/Tutorial:" + entry.Key,
+                "Assets/ExcelSource/GameData.xlsx/TutorialOrGuide:" + entry.Key,
                 entry.Korean,
                 entry.Key,
                 false,
@@ -762,7 +763,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
             }
         }
 
-        foreach (LocalizationWorkbookEntry entry in LocalizationSyncCommand.CollectTutorialEntries())
+        foreach (LocalizationWorkbookEntry entry in LocalizationSyncCommand.CollectTutorialEntries()
+            .Concat(LocalizationSyncCommand.CollectTutorialGuideEntries()))
             keys.Add(entry.Key);
 
         return keys;

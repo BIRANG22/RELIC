@@ -5663,6 +5663,10 @@ MonoBehaviour:
     m_Key: ui.setting_panel.name.f03bcae8
     m_Metadata:
       m_Items: []
+  - m_Id: 34955470141890560
+    m_Key: ui.storagepanel.compoundtext.27d0889a
+    m_Metadata:
+      m_Items: []
   - m_Id: 10175616531308544
     m_Key: title.explore_continue
     m_Metadata:
@@ -6101,6 +6105,138 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 34940494127800347
     m_Key: tutorial.t05.guide.07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383042973696
+    m_Key: tutorial.guide.index01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693952
+    m_Key: tutorial.guide.index01.page01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693953
+    m_Key: tutorial.guide.index01.page01.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693954
+    m_Key: tutorial.guide.index01.page02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693955
+    m_Key: tutorial.guide.index01.page02.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693956
+    m_Key: tutorial.guide.index01.page03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693957
+    m_Key: tutorial.guide.index01.page03.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693958
+    m_Key: tutorial.guide.index01.page04.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693959
+    m_Key: tutorial.guide.index01.page04.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693960
+    m_Key: tutorial.guide.index02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693961
+    m_Key: tutorial.guide.index02.page01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693962
+    m_Key: tutorial.guide.index02.page01.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693963
+    m_Key: tutorial.guide.index02.page02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693964
+    m_Key: tutorial.guide.index02.page02.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693965
+    m_Key: tutorial.guide.index02.page03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693966
+    m_Key: tutorial.guide.index02.page03.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693967
+    m_Key: tutorial.guide.index03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693968
+    m_Key: tutorial.guide.index03.page01.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34956166220193792
+    m_Key: tutorial.guide.index03.page01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693969
+    m_Key: tutorial.guide.index03.page02.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34956166249553920
+    m_Key: tutorial.guide.index03.page02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693970
+    m_Key: tutorial.guide.index04.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693971
+    m_Key: tutorial.guide.index04.page01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693972
+    m_Key: tutorial.guide.index04.page01.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693973
+    m_Key: tutorial.guide.index04.page02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693974
+    m_Key: tutorial.guide.index04.page02.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693975
+    m_Key: tutorial.guide.index04.page03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693976
+    m_Key: tutorial.guide.index04.page03.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693977
+    m_Key: tutorial.guide.index05.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693978
+    m_Key: tutorial.guide.index05.page01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693979
+    m_Key: tutorial.guide.index05.page01.explanation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693980
+    m_Key: tutorial.guide.index05.page02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693981
+    m_Key: tutorial.guide.index05.page02.explanation
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373538
