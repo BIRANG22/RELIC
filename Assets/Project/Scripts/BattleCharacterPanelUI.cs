@@ -198,10 +198,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [Tooltip("현재 선택 캐릭터의 방향을 반전해 현재 타임라인 슬롯에 예약합니다. 비어 있으면 Active/Flip을 자동 탐색합니다.")]
     [SerializeField] private Button flipButton;
 
-    [Tooltip("마지막 플레이어 예약 행동을 취소합니다. 비어 있으면 BattleCharacterPanel/CancelButton을 자동 탐색합니다.")]
+    [Tooltip("마지막 플레이어 예약 행동을 취소합니다. 비어 있으면 BattleCharacterPanel/UndoButton을 우선 탐색합니다.")]
     [SerializeField] private Button cancelButton;
 
-    [Tooltip("마지막으로 취소한 플레이어 예약 행동을 복원합니다. 비어 있으면 BattleCharacterPanel/RestoreButton을 자동 탐색합니다.")]
+    [Tooltip("마지막으로 취소한 플레이어 예약 행동을 복원합니다. 비어 있으면 BattleCharacterPanel/RedoButton을 우선 탐색합니다.")]
     [SerializeField] private Button restoreButton;
 
     [Header("Item Button")]
@@ -1001,8 +1001,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void ResolveNewActiveReferences()
     {
-        if (cancelButton == null) cancelButton = EnsureButton(FindDirectChild(transform, "CancelButton"));
-        if (restoreButton == null) restoreButton = EnsureButton(FindDirectChild(transform, "RestoreButton"));
+        // These buttons are direct children of BattleCharacterPanel (NOT children of Active).
+        // Prefer the current hierarchy over a stale serialized reference; keep legacy names as fallback.
+        Transform undoRoot = FindDirectChild(transform, "UndoButton") ?? FindDirectChild(transform, "CancelButton");
+        Transform redoRoot = FindDirectChild(transform, "RedoButton") ?? FindDirectChild(transform, "RestoreButton");
+        if (undoRoot != null) cancelButton = EnsureButton(undoRoot);
+        if (redoRoot != null) restoreButton = EnsureButton(redoRoot);
 
         Transform active = FindDirectChild(transform, "Active");
         if (active == null)
@@ -2810,7 +2814,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 OnFlipButtonClicked();
                 return;
             }
-            if (TutorialBattleSequence.IsFinalTutorialRunning)
+            if (TutorialFocusGuideRunner.IsRunning)
             {
                 if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Compound) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Compound))
                 {
@@ -4227,7 +4231,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (!CanUseReservationHistoryButtons(
                 UIPanelButton.IsMenuPanelOpen,
-                TutorialBattleSequence.IsPresentationRunning))
+                TutorialBattleSequence.IsPresentationRunning &&
+                !TutorialFocusGuideRunner.AllowsTutorial05HistoryButton(PlayerReservationHistoryAction.Undo)))
         {
             return;
         }
@@ -4250,7 +4255,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (!CanUseReservationHistoryButtons(
                 UIPanelButton.IsMenuPanelOpen,
-                TutorialBattleSequence.IsPresentationRunning))
+                TutorialBattleSequence.IsPresentationRunning &&
+                !TutorialFocusGuideRunner.AllowsTutorial05HistoryButton(PlayerReservationHistoryAction.Redo)))
         {
             return;
         }

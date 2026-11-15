@@ -33,7 +33,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static bool CanClickFinalTutorialWorldMonster(MonsterUnit monster) => TutorialFocusGuideRunner.AllowsMonsterInfoWorldClick(monster);
     public static bool CanClickFinalTutorialWorldCharacter(string characterId) => TutorialFocusGuideRunner.AllowsTutorial03WorldCharacter(characterId);
     public static void NotifyFinalTutorialWorldCharacterClicked(string characterId) => TutorialFocusGuideRunner.NotifyTutorial03WorldCharacterClicked(characterId);
-    public static void NotifyFinalTutorialCompoundUsed() { }
+    public static void NotifyFinalTutorialCompoundUsed() => TutorialFocusGuideRunner.NotifyTutorial05CompoundUsed();
     public static bool CanUseBattleSkill(string skillId, string moveId, string firstSkillId) =>
         TutorialFocusGuideRunner.IsRunning ? TutorialFocusGuideRunner.AllowsSkill(skillId, moveId, firstSkillId) : !IsPresentationRunning;
     public static bool IsShortcutAllowed(KeyCode key) => TutorialFocusGuideRunner.IsRunning
@@ -321,13 +321,22 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             yield return RevealAndAdvance();
             if (dialogRoot != null) dialogRoot.SetActive(false);
         }
-        // Preserve the current map before Cleanup resets ActiveTutorialMapId.
-        string guideIndex = string.Equals(ActiveTutorialMapId, "Map_28", StringComparison.OrdinalIgnoreCase)
+        // Preserve Map_30 before Cleanup resets ActiveTutorialMapId.
+        string currentMap = ActiveTutorialMapId;
+        string guideIndex = string.Equals(currentMap, "Map_28", StringComparison.OrdinalIgnoreCase)
             ? "Index04" : "Index01";
         Cleanup();
         // Release the dialogue raycast shield before displaying the guide.
         // Spawn next frame so Destroy(shield) completes first.
         yield return null;
+        if (string.Equals(currentMap, "Map_30", StringComparison.OrdinalIgnoreCase))
+        {
+            TutorialFocusGuideRunner focus = GetComponent<TutorialFocusGuideRunner>();
+            if (focus == null) focus = gameObject.AddComponent<TutorialFocusGuideRunner>();
+            focus.BeginTutorial05(currentMap);
+            enabled = false;
+            yield break;
+        }
         TutorialGuideController.UnlockIndex(guideIndex);
         BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
         if (scene != null) scene.SpawnTutorialGuideAfterDialogue(guideIndex);

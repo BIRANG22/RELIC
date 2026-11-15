@@ -1506,16 +1506,12 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 
-        // Tutorial_03 (Map_28): Draugr uses the same slot for its move
-        // and sweep: slot 3 on turn 1, slot 2 on turn 2.
-        // Slot indices are zero-based. Other turns use normal AI slots.
-        if (IsTutorialThreeMonster(runtime, "Mon_07"))
-        {
-            if (plannedBattleTurn == 1 && slotCount > 2)
-                return 2;
-            if (plannedBattleTurn == 2 && slotCount > 1)
-                return 1;
-        }
+        // Tutorial_03 (Map_28): Draugr reserves movement and attack
+        // in slot 2 (zero-based index 1) on both turns 1 and 2.
+        // Other turns use normal AI slots.
+        if (IsTutorialThreeMonster(runtime, "Mon_07") &&
+            (plannedBattleTurn == 1 || plannedBattleTurn == 2) && slotCount > 1)
+            return 1;
         // Lancer's first-turn Grudge remains in slot 5.
         if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_03") && slotCount > 4)
             return 4;

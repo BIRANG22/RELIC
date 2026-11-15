@@ -43,6 +43,13 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     private bool running;
     private bool moveWasSelected;
     private bool tutorial03Continuation;
+    private bool tutorial05Running;
+    private bool tutorial05CompoundUsed;
+    private bool tutorial05HistoryPerformed;
+    private string tutorial05Skill01Id;
+    private string tutorial05UltimateId;
+    private int tutorial05SkillCount;
+    private BattleTimelineController tutorial05HistoryTimeline;
     private bool tutorial03WorldCharacterClicked;
     // Pause only the tutorial input lock while the reserved turn executes.
     // Do not alter canvas/sorting or the normal battle HUD.
@@ -135,6 +142,130 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         Transform tutorialMode = FindTutorialMode();
         Transform frame = tutorialMode != null ? FindDescendant(tutorialMode, highlightObjectName) : null;
         if (frame != null) frame.gameObject.SetActive(false);
+    }
+
+    // Map_30: the four opening dialogue rows are followed directly by focus steps 5-11.
+    public void BeginTutorial05(string mapId)
+    {
+        if (routine != null) StopCoroutine(routine);
+        running = false;
+        routine = StartCoroutine(RunTutorial05(mapId));
+    }
+
+    public static bool AllowsTutorial05HistoryButton(PlayerReservationHistoryAction action) =>
+        IsRunning && Active.tutorial05Running && Active.step != null &&
+        ((Active.step.Order == 9 && action == PlayerReservationHistoryAction.Undo) ||
+         (Active.step.Order == 10 && action == PlayerReservationHistoryAction.Redo));
+
+    public static void NotifyTutorial05CompoundUsed()
+    {
+        if (IsRunning && Active.tutorial05Running && Active.step != null && Active.step.Order == 6)
+            Active.tutorial05CompoundUsed = true;
+    }
+
+    private void OnTutorial05ReservationHistory(PlayerReservationHistoryAction action)
+    {
+        if (!tutorial05Running || step == null) return;
+        if ((step.Order == 9 && action == PlayerReservationHistoryAction.Undo) ||
+            (step.Order == 10 && action == PlayerReservationHistoryAction.Redo))
+            tutorial05HistoryPerformed = true;
+    }
+
+    private int CountTutorial05Skill(string skillId)
+    {
+        if (timeline == null || string.IsNullOrEmpty(skillId)) return 0;
+        int count = 0;
+        for (int slot = 0; slot < 5; slot++)
+        {
+            var commands = timeline.GetPlayerCommands(slot);
+            if (commands == null) continue;
+            foreach (var command in commands)
+                if (command != null && command.CharacterId == "Char_03" &&
+                    !command.IsFacingFlipCommand &&
+                    string.Equals(command.SkillId, skillId, StringComparison.OrdinalIgnoreCase)) count++;
+        }
+        return count;
+    }
+
+    private IEnumerator RunTutorial05(string mapId)
+    {
+        yield return null;
+        while (TutorialGuideController.IsModalOpen) yield return null;
+        var all = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        if (all == null) yield break;
+        var guideSteps = new List<TutorialData>();
+        foreach (var item in all)
+            if (item != null && item.TutorialId == "Tutorial_05" &&
+                item.Order >= 5 && item.Order <= 11 &&
+                string.Equals(item.TextOutput, "TutorialTooltip", StringComparison.OrdinalIgnoreCase))
+                guideSteps.Add(item);
+        guideSteps.Sort((a, b) => a.Order.CompareTo(b.Order));
+        if (guideSteps.Count != 7)
+        {
+            Debug.LogWarning("[TutorialFocusGuideRunner] Tutorial_05 requires orders 5-11.", this);
+            yield break;
+        }
+        tutorial05Running = true;
+        Active = this;
+        running = true;
+        timeline = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Exclude);
+        tutorial05HistoryTimeline = timeline;
+        if (tutorial05HistoryTimeline != null)
+            tutorial05HistoryTimeline.PlayerReservationHistoryPerformed += OnTutorial05ReservationHistory;
+        ResolvePresentation();
+        try
+        {
+            foreach (var item in guideSteps)
+            {
+                if (!running) break;
+                step = item;
+                tutorial05HistoryPerformed = false;
+                tutorial05CompoundUsed = false;
+                CharacterRuntimeData haze = DataManager.Instance?.CharacterRuntimeStore?.Get("Char_03");
+                tutorial05Skill01Id = haze?.AbilitySkillId;
+                tutorial05UltimateId = haze?.UniqueSkillId;
+                if (item.Order == 7) tutorial05SkillCount = CountTutorial05Skill(tutorial05Skill01Id);
+                if (item.Order == 8) tutorial05SkillCount = CountTutorial05Skill(tutorial05UltimateId);
+                DisplayStep(item);
+                if (skipButton != null) skipButton.gameObject.SetActive(false);
+                yield return null;
+                while (Input.GetMouseButton(0)) yield return null;
+                while (running && !IsTutorial05StepComplete(item))
+                {
+                    UpdatePresentation();
+                    yield return null;
+                }
+                yield return null;
+            }
+        }
+        finally
+        {
+            if (tutorial05HistoryTimeline != null)
+                tutorial05HistoryTimeline.PlayerReservationHistoryPerformed -= OnTutorial05ReservationHistory;
+            tutorial05HistoryTimeline = null;
+            HidePresentation();
+            tutorial05Running = false;
+            running = false;
+            if (Active == this) Active = null;
+            step = null;
+            routine = null;
+        }
+    }
+
+    private bool IsTutorial05StepComplete(TutorialData item)
+    {
+        if (timeline == null) return false;
+        switch (item.Order)
+        {
+            case 5: return string.Equals(timeline.SelectedCharacter?.CharacterId, "Char_03", StringComparison.OrdinalIgnoreCase);
+            case 6: return tutorial05CompoundUsed;
+            case 7: return CountTutorial05Skill(tutorial05Skill01Id) > tutorial05SkillCount;
+            case 8: return CountTutorial05Skill(tutorial05UltimateId) > tutorial05SkillCount;
+            case 9:
+            case 10: return tutorial05HistoryPerformed;
+            case 11: return Input.GetMouseButtonDown(0);
+            default: return false;
+        }
     }
 
     public void BeginAfterPanel(string mapId)
@@ -727,6 +858,12 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     public static bool AllowsSkill(string skillId, string moveId, string firstSkillId)
     {
         if (!IsRunning) return true;
+        if (Active.tutorial05Running)
+        {
+            int stage = Active.step?.Order ?? -1;
+            return stage == 7 ? string.Equals(skillId, Active.tutorial05Skill01Id, StringComparison.OrdinalIgnoreCase) :
+                   stage == 8 && string.Equals(skillId, Active.tutorial05UltimateId, StringComparison.OrdinalIgnoreCase);
+        }
         int order = Active.step?.Order ?? -1;
         bool isMove = !string.IsNullOrEmpty(moveId) && string.Equals(skillId, moveId, StringComparison.OrdinalIgnoreCase);
         bool first = !string.IsNullOrEmpty(firstSkillId) && string.Equals(skillId, firstSkillId, StringComparison.OrdinalIgnoreCase);
@@ -739,6 +876,15 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         if (!IsRunning) return true;
         if (key == KeyCode.Escape) return true;
+        if (Active.tutorial05Running)
+        {
+            int order05 = Active.step?.Order ?? -1;
+            return (order05 == 6 && key == BattleKeyboardShortcutBindings.Compound) ||
+                   (order05 == 7 && key == BattleKeyboardShortcutBindings.Skill01) ||
+                   (order05 == 8 && key == BattleKeyboardShortcutBindings.Skill04) ||
+                   (order05 == 9 && key == BattleKeyboardShortcutBindings.Undo) ||
+                   (order05 == 10 && key == BattleKeyboardShortcutBindings.Redo);
+        }
         if (Active.tutorial03Continuation)
         {
             int order = Active.step?.Order ?? -1;
@@ -769,6 +915,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         if (!IsRunning) return true;
         int order = Active.step?.Order ?? -1;
+        if (Active.tutorial05Running) return true;
         if (Active.tutorial03Continuation) return slot == Tutorial03SlotForOrder(order);
         return order == 8 ? slot == 1 : (order <= 7 ? slot == 0 : slot == 1);
     }
@@ -777,6 +924,8 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         if (!IsRunning) return true;
         int order = Active.step?.Order ?? -1;
+        if (Active.tutorial05Running)
+            return string.Equals(id, "Char_03", StringComparison.OrdinalIgnoreCase);
         if (Active.tutorial03Continuation)
             return string.Equals(id, order >= 16 ? "Char_01" : "Char_02", StringComparison.OrdinalIgnoreCase);
         return string.Equals(id, order >= 9 ? "Char_02" : "Char_01", StringComparison.OrdinalIgnoreCase);
@@ -786,6 +935,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         if (!IsRunning) return true;
         int order = Active.step?.Order ?? -1;
+        if (Active.tutorial05Running) return order == 7 || order == 8;
         if (Active.tutorial03Continuation) return (order == 12 && index == 7) || (order == 20 && index == 17);
         return order == 6 ? index == 16 : order == 7 || order == 10 || order == 11;
     }
@@ -795,6 +945,10 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         if (!IsRunning) return true;
         if (command == null || controller == null) return false;
         int order = Active.step?.Order ?? -1;
+        if (Active.tutorial05Running)
+            return command.CharacterId == "Char_03" &&
+                ((order == 7 && string.Equals(command.SkillId, Active.tutorial05Skill01Id, StringComparison.OrdinalIgnoreCase)) ||
+                 (order == 8 && string.Equals(command.SkillId, Active.tutorial05UltimateId, StringComparison.OrdinalIgnoreCase)));
         if (Active.tutorial03Continuation)
         {
             if (command.CharacterId != (order >= 16 ? "Char_01" : "Char_02")) return false;
@@ -1279,7 +1433,12 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         tooltipPositionLocked = false;
         if (tooltip != null) tooltip.gameObject.SetActive(true);
-        if (highlight != null) highlight.gameObject.SetActive(true);
+        // Position 0 with no target is a full-screen guidance step:
+        // keep the whole-screen dimming overlay and centered tooltip, without a highlight frame.
+        bool fullScreenGuide = current.TooltipPosition?.Trim() == "0" &&
+            string.IsNullOrWhiteSpace(current.HighlightTarget) &&
+            overrideTarget == null && overrideWorldTarget == null;
+        if (highlight != null) highlight.gameObject.SetActive(!fullScreenGuide);
         if (dimRoot != null) dimRoot.gameObject.SetActive(true);
         focusOverlayEnterStart = Time.unscaledTime;
         focusOverlayEntering = focusOverlayEnterDuration > 0f;
@@ -1290,6 +1449,25 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             (overrideTarget != null ? overrideTarget : FindTimelineSlotTarget(current.HighlightTarget));
         if (uiTarget == null && overrideWorldTarget == null)
             uiTarget = FindUi(current.HighlightTarget);
+        // Tutorial_05 9/10: resolve the actual direct children of BattleCharacterPanel.
+        // This also handles older data paths that incorrectly include /Active/.
+        if (uiTarget == null && overrideWorldTarget == null &&
+            current.TutorialId == "Tutorial_05" && (current.Order == 9 || current.Order == 10))
+        {
+            string buttonName = current.Order == 9 ? "UndoButton" : "RedoButton";
+            foreach (BattleCharacterPanelUI panel in FindObjectsByType<BattleCharacterPanelUI>(
+                         FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (panel == null || panel.gameObject.scene != gameObject.scene ||
+                    !panel.gameObject.activeInHierarchy) continue;
+                Transform button = panel.transform.Find(buttonName);
+                if (button != null && button.gameObject.activeInHierarchy)
+                {
+                    uiTarget = button as RectTransform;
+                    break;
+                }
+            }
+        }
         worldTarget = overrideWorldTarget != null ? overrideWorldTarget :
             (uiTarget == null ? FindGrid(current.HighlightTarget) : null);
         if (worldTarget == null && IsMonsterInspectClickStep)
@@ -1419,6 +1597,11 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         if (highlight == null || (uiTarget == null && worldTarget == null))
         {
+            // A targetless centered guide dims the ENTIRE screen. The previous
+            // step's four-part cutout must not remain visible.
+            if (step != null && step.TooltipPosition?.Trim() == "0" &&
+                string.IsNullOrWhiteSpace(step.HighlightTarget))
+                SetFullScreenDimmingMask();
             if (tooltip != null && !tooltipPositionLocked && step?.TooltipPosition?.Trim() == "0")
             {
                 SetScreenCenter(tooltip, new Vector3(Screen.width * 0.5f, Screen.height * 0.5f));
@@ -1770,6 +1953,17 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         SetDimPart(3, movingRight, right, y0, y1);
     }
 
+    private void SetFullScreenDimmingMask()
+    {
+        if (dimRoot == null) return;
+        Rect bounds = dimRoot.rect;
+        // Fill the whole viewport with one existing mask. Do not create a
+        // cutout, and leave HighlightFrame inactive for this guide step.
+        SetDimPart(0, bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax);
+        for (int i = 1; i < dimParts.Length; i++)
+            SetDimPart(i, bounds.xMin, bounds.xMin, bounds.yMin, bounds.yMin);
+    }
+
     private void SetDimPart(int i, float left, float right, float bottom, float top)
     {
         if (dimParts[i] == null) return;
@@ -1801,6 +1995,10 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
     {
         Canvas.preWillRenderCanvases -= EnforceForegroundTooltipLayers;
         UnsubscribeTutorial03TurnReturned();
+        if (tutorial05HistoryTimeline != null)
+            tutorial05HistoryTimeline.PlayerReservationHistoryPerformed -= OnTutorial05ReservationHistory;
+        tutorial05HistoryTimeline = null;
+        tutorial05Running = false;
         tutorial03TurnExecutionPending = false;
         HidePresentation();
         running = false;
