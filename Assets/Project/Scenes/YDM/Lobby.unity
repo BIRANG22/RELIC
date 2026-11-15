@@ -69333,7 +69333,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1127006642}
-  localizationKey: ui.record.alchemy_agent
+  localizationKey: ui.record.text.efa882c6
   koreanSource: "\uC5F0\uC131\uC81C"
   automaticallyRegistered: 1
 --- !u!1 &1128527671

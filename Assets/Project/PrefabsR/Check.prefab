@@ -580,6 +580,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 5517863004426608807}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
@@ -1402,6 +1403,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 4367993496856145650}
   hoverExitPadding: 4
   hoverExitDelay: 0.05

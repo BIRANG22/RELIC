@@ -1012,7 +1012,7 @@ Tutorial_03,23,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.19,공격 횟
 Tutorial_03,24,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.20,모든 행동을 예약했다면 턴을 종료하세요.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Left
 Tutorial_03,25,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.21,배운 내용을 활용해 변이체를 처치하세요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,0
 Tutorial_03,26,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.reward.dialogue.01,이 느낌은... 잊고 있던 기억이 떠오른 것 같아.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_03,27,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.22,"기억마다 범위와 효과가 다르며, 마나 외에 생명력이나 카르마를 소모하는 기억도 있습니다.",ClickTarget,Skill_panel/Skill_content/SkillPanel2,tutorial.prompt.click_memory,기억을 클릭하여 계속,Below
+Tutorial_03,27,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.22,"기억마다 범위와 효과가 다르며, 마나 외에 생명력이나 카르마를 소모하는 기억도 있습니다.",ClickTarget,Skill_panel/Skill_content/SkillPanel2,tutorial.prompt.click_skill,기억을 클릭하여 계속,Below
 Tutorial_04,1,Map_29,,,,Dialogue,Char_03,Dialogbox,tutorial.t04.encounter.dialogue.01,"저, 저기… 혹시 두 분도 거점으로 가시는 길인가요?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 Tutorial_04,2,Map_29,,,,Dialogue,Char_01,Dialogbox,tutorial.t04.encounter.dialogue.02,"응, 맞아! 너도 거점으로 가는 길이야?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 Tutorial_04,3,Map_29,,,,Dialogue,Char_02,Dialogbox,tutorial.t04.encounter.dialogue.03,그렇다면 함께 가는 것도 좋겠군요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,

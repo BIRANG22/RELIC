@@ -88,7 +88,8 @@ public sealed class BossSpawnPresentation : MonoBehaviour
 
     [Header("Animator State Sequence")]
     [Tooltip("Size를 변경해 원하는 개수만큼 애니메이션을 순차 실행합니다. 각 요소의 State Name을 Animator Controller의 State 이름으로 지정하세요.")]
-    [SerializeField] private List<AnimationStep> animationSteps = new List<AnimationStep>
+    [SerializeField]
+    private List<AnimationStep> animationSteps = new List<AnimationStep>
     {
         new AnimationStep { stateName = "Appear01" },
         new AnimationStep { stateName = "Appear02" }
@@ -181,7 +182,8 @@ public sealed class BossSpawnPresentation : MonoBehaviour
     [SerializeField] private RectTransform dialogueRect;
     [SerializeField] private Vector3 dialogueLocalPosition = new Vector3(0f, 16f, 0f);
     [Tooltip("첫 대사는 시작 딜레이 후 표시합니다. 이후 대사는 앞 대사의 Display Duration이 끝나면 말풍선을 숨긴 후 Dialogue Between Delay만큼 기다렸다가 표시합니다.")]
-    [SerializeField] private List<TimedDialogue> timedDialogues = new()
+    [SerializeField]
+    private List<TimedDialogue> timedDialogues = new()
     {
         new TimedDialogue { displayDuration = 2.5f, localizationKey = "battle.boss.arabella.appear.01", fallbackText = "들리시나요? 이토록 아름다운 기도가..." },
         new TimedDialogue { displayDuration = 0f, localizationKey = "battle.boss.arabella.appear.02", fallbackText = "고통은 잠시뿐입니다. 구원은 영원하니까요" }
@@ -562,9 +564,21 @@ public sealed class BossSpawnPresentation : MonoBehaviour
             if (entry == null)
                 continue;
 
-            dialogueText.text = string.IsNullOrWhiteSpace(entry.localizationKey)
+            // Existing prefab instances may have been serialized before default
+            // localization keys were added. Resolve the two built-in lines by their
+            // original Korean text without modifying custom dialogue entries.
+            string dialogueKey = entry.localizationKey;
+            if (string.IsNullOrWhiteSpace(dialogueKey))
+            {
+                if (string.Equals(entry.fallbackText, "들리시나요? 이토록 아름다운 기도가...", StringComparison.Ordinal))
+                    dialogueKey = "battle.boss.arabella.appear.01";
+                else if (string.Equals(entry.fallbackText, "고통은 잠시뿐입니다. 구원은 영원하니까요", StringComparison.Ordinal))
+                    dialogueKey = "battle.boss.arabella.appear.02";
+            }
+            dialogueText.text = string.IsNullOrWhiteSpace(dialogueKey)
                 ? entry.fallbackText
-                : GameLocalization.Get(entry.localizationKey, entry.fallbackText);
+                : GameLocalization.Get(dialogueKey, entry.fallbackText);
+            LocaleTMPFontGuard.Prepare(dialogueText);
             dialogueRoot.SetActive(true);
             PlayDialogueSfx(entry);
 
