@@ -92,6 +92,7 @@ public class BattleBgmDirector : MonoBehaviour
     private bool bossIntroPlaying;
     private bool defeatPlaying;
     private bool arabellaPhaseTwoPlaying;
+    private bool victoryFinished;
 
     private void OnEnable()
     {
@@ -99,6 +100,7 @@ public class BattleBgmDirector : MonoBehaviour
         BattleSceneController.BattleRoomIntroStarted += OnRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted += OnRoomIntroCompleted;
         BattleResultChecker.DefeatStarted += OnDefeatStarted;
+        BattleResultChecker.BattleFinished += OnBattleFinished;
         BattleEffectUtility.OnPlayerDamaged += OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned += Refresh;
         ArabellaPhaseTransition.PhaseTwoPresentationStarted += OnArabellaPhaseTwoPresentationStarted;
@@ -111,6 +113,7 @@ public class BattleBgmDirector : MonoBehaviour
         BattleSceneController.BattleRoomIntroStarted -= OnRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= OnRoomIntroCompleted;
         BattleResultChecker.DefeatStarted -= OnDefeatStarted;
+        BattleResultChecker.BattleFinished -= OnBattleFinished;
         BattleEffectUtility.OnPlayerDamaged -= OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned -= Refresh;
         ArabellaPhaseTransition.PhaseTwoPresentationStarted -= OnArabellaPhaseTwoPresentationStarted;
@@ -124,6 +127,7 @@ public class BattleBgmDirector : MonoBehaviour
         currentHasBattleMap = hasBattleMap;
         bossIntroPlaying = false;
         defeatPlaying = false;
+        victoryFinished = false;
         arabellaPhaseTwoPlaying = false;
         Refresh();
     }
@@ -131,6 +135,13 @@ public class BattleBgmDirector : MonoBehaviour
     private void OnRoomIntroStarted() { if (currentRoomType == "Boss") { bossIntroPlaying = true; Refresh(); } }
     private void OnRoomIntroCompleted() { if (bossIntroPlaying) { bossIntroPlaying = false; Refresh(); } }
     private void OnDefeatStarted() { defeatPlaying = true; Refresh(); }
+    private void OnBattleFinished()
+    {
+        // DefeatStarted is raised before BattleFinished on a defeat.
+        // Keep defeat music changes, but freeze the current BGM after victory.
+        if (!defeatPlaying)
+            victoryFinished = true;
+    }
     private void OnPlayerDamaged(BattleCharacter _) => Refresh();
     private void OnArabellaPhaseTwoPresentationStarted()
     {
@@ -150,6 +161,9 @@ public class BattleBgmDirector : MonoBehaviour
 
     private void Refresh(float? fadeOutDuration, float? fadeInDuration)
     {
+        if (victoryFinished)
+            return;
+
         AudioManager audio = AudioManager.Instance;
         if (audio == null)
             return;
@@ -171,7 +185,6 @@ public class BattleBgmDirector : MonoBehaviour
             audio.IsBgmConfigured);
         if (!resolved.HasValue)
             return;
-
         if (fadeOutDuration.HasValue && fadeInDuration.HasValue)
             audio.PlayBgm(resolved.Value, fadeOutDuration.Value, fadeInDuration.Value);
         else

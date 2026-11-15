@@ -153,6 +153,7 @@ public class AudioManager : Singleton<AudioManager>
             Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
     }
 
+
     public void PlayBgm(BgmState state)
     {
         PlayBgm(state, bgmFadeOutDuration, bgmFadeInDuration);
@@ -179,13 +180,18 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        if (activeBgmState == state && IsBgmAlreadyPlaying(layers, true))
+        // Keep the playhead when two BGM states resolve to the same playback.
+        // In tutorials the room state may be selected after the generic battle
+        // state, even though both use the very same audio clip.
+        if (IsBgmAlreadyPlaying(layers, true) &&
+            (activeBgmState == state ||
+             (bgmTransitionRoutine == null && HasMatchingBgmPlaybackSettings(layers))))
         {
+            activeBgmState = state;
             activeBgmLayers = layers;
             ApplyVolumes();
             return;
         }
-
         fadeOutDuration = Mathf.Max(0f, fadeOutDuration);
         fadeInDuration = Mathf.Max(0f, fadeInDuration);
 
@@ -777,6 +783,30 @@ public class AudioManager : Singleton<AudioManager>
 
         ApplyRoutedSfxVolumes();
         ApplyRoutedAmbienceVolumes();
+    }
+
+    private bool HasMatchingBgmPlaybackSettings(IReadOnlyList<BgmClipData> requested)
+    {
+        if (activeBgmLayers == null || requested == null ||
+            activeBgmLayers.Count != requested.Count)
+            return false;
+
+        for (int i = 0; i < requested.Count; i++)
+        {
+            BgmClipData previous = activeBgmLayers[i];
+            BgmClipData next = requested[i];
+            if (previous == null || next == null || previous.clip != next.clip ||
+                previous.loop != next.loop ||
+                previous.useLoopRegion != next.useLoopRegion ||
+                !Mathf.Approximately(previous.loopStartSeconds, next.loopStartSeconds) ||
+                !Mathf.Approximately(previous.loopEndSeconds, next.loopEndSeconds) ||
+                previous.useRandomPitch != next.useRandomPitch ||
+                !Mathf.Approximately(previous.pitch, next.pitch) ||
+                !Mathf.Approximately(previous.randomPitchMin, next.randomPitchMin) ||
+                !Mathf.Approximately(previous.randomPitchMax, next.randomPitchMax))
+                return false;
+        }
+        return true;
     }
 
     private bool IsBgmAlreadyPlaying(IReadOnlyList<BgmClipData> layers, bool loop)

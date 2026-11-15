@@ -7,7 +7,7 @@ public static class BattleErosionRuntimeService
 {
     public const int MinValue = 0;
     public const int MaxValue = 100;
-    public const int RoomEntryAmount = 3;
+    public const int RoomEntryAmount = 1;
 
     public static event Action<int, int> ValueChanged;
 
@@ -80,6 +80,10 @@ public static class BattleErosionRuntimeService
 
         runtime.LastErosionRoomKey = roomKey;
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
+
+        // Rest rooms do not accumulate erosion on entry.
+        if (string.Equals(nodeData.Type, "Rest", StringComparison.OrdinalIgnoreCase))
+            return;
 
         Add(RoomEntryAmount, $"RoomEntry:{roomKey}");
     }

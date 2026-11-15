@@ -2,6 +2,21 @@ using Relic.Gameplay.Data;
 
 public static class BattleRelicExtractionService
 {
+    // Used by the reward UI and the actual extraction so the displayed amount is identical.
+    public static int GetExtractionAmount(RelicData relic, int commonAmount, int rareAmount, int epicAmount, int uniqueAmount)
+    {
+        if (relic == null) return 0;
+        RelicRarityUtility.TryParseChestRarity(relic.Rarity, out RelicRarity rarity);
+        int amount = rarity switch
+        {
+            RelicRarity.Unique => uniqueAmount,
+            RelicRarity.Epic => epicAmount,
+            RelicRarity.Rare => rareAmount,
+            _ => commonAmount
+        };
+        return System.Math.Max(0, amount);
+    }
+
     public static bool TryExtract(
         BattleRuntimeStore runtimeStore,
         RelicDatabase relicDatabase,
@@ -19,15 +34,7 @@ public static class BattleRelicExtractionService
             return false;
         }
 
-        RelicRarityUtility.TryParseChestRarity(relic.Rarity, out RelicRarity rarity);
-        extractedAmount = rarity switch
-        {
-            RelicRarity.Unique => uniqueAmount,
-            RelicRarity.Epic => epicAmount,
-            RelicRarity.Rare => rareAmount,
-            _ => commonAmount
-        };
-        extractedAmount = System.Math.Max(0, extractedAmount);
+        extractedAmount = GetExtractionAmount(relic, commonAmount, rareAmount, epicAmount, uniqueAmount);
 
         BattleRuntimeData runtime = runtimeStore.GetOrCreate();
         runtime.Remnant += extractedAmount;

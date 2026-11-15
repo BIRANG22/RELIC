@@ -1506,11 +1506,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 
-        // Tutorial_03 (Map_28) turn 1 only: Draugr's movement and sweep
-        // both execute at slot 2; Lancer's Grudge executes at slot 5.
-        // The timeline uses zero-based slot indices.
-        if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_07") && slotCount > 1)
-            return 1;
+        // Tutorial_03 (Map_28): Draugr uses the same slot for its move
+        // and sweep: slot 3 on turn 1, slot 2 on turn 2.
+        // Slot indices are zero-based. Other turns use normal AI slots.
+        if (IsTutorialThreeMonster(runtime, "Mon_07"))
+        {
+            if (plannedBattleTurn == 1 && slotCount > 2)
+                return 2;
+            if (plannedBattleTurn == 2 && slotCount > 1)
+                return 1;
+        }
+        // Lancer's first-turn Grudge remains in slot 5.
         if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_03") && slotCount > 4)
             return 4;
 
@@ -1564,7 +1570,12 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private bool IsTutorialThreeFirstTurnMonster(MonsterRuntimeData runtime, string monsterId)
     {
-        if (runtime == null || plannedBattleTurn != 1 ||
+        return plannedBattleTurn == 1 && IsTutorialThreeMonster(runtime, monsterId);
+    }
+
+    private static bool IsTutorialThreeMonster(MonsterRuntimeData runtime, string monsterId)
+    {
+        if (runtime == null ||
             !string.Equals(runtime.MonsterId, monsterId, System.StringComparison.OrdinalIgnoreCase))
             return false;
 

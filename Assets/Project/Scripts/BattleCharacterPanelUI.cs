@@ -2803,13 +2803,15 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 StartKeyboardSkillWithRangePreview(0, skill01Button);
                 return;
             }
+            // Sheet-driven tutorial steps decide whether the Flip shortcut is allowed.
+            // IsFinalTutorialRunning is a retired compatibility flag and is always false.
+            if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Flip) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Flip))
+            {
+                OnFlipButtonClicked();
+                return;
+            }
             if (TutorialBattleSequence.IsFinalTutorialRunning)
             {
-                if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Flip) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Flip))
-                {
-                    OnFlipButtonClicked();
-                    return;
-                }
                 if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Compound) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Compound))
                 {
                     OnItemButtonClicked();
