@@ -79,6 +79,7 @@ public class HUDSlot : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         canvasGroup.ignoreParentGroups = true;
+        ApplyCanvasVisibility(false);
         ProtectDynamicNameText();
     }
 
@@ -98,12 +99,16 @@ public class HUDSlot : MonoBehaviour
         hideAfterPhaseTransitionHPFill = false;
         hideAfterValueAnimations = false;
         hasDisplayedValues = false;
+        ApplyCanvasVisibility(false);
     }
 
     private void LateUpdate()
     {
         if (useFollowPosition)
-            UpdateFollowPosition();
+        {
+            bool positionReady = TryUpdateFollowPosition();
+            ApplyCanvasVisibility(isVisible && positionReady);
+        }
 
         MonitorCharacterRuntime();
     }
@@ -125,38 +130,33 @@ public class HUDSlot : MonoBehaviour
         followCollider2D = collider2D;
 
         if (targetChanged)
-        {
             hasStableColliderWorldOffset = false;
-            if (followTarget != null && followCollider2D != null &&
-                followCollider2D.enabled && followCollider2D.gameObject.activeInHierarchy)
-            {
-                Bounds bounds = followCollider2D.bounds;
-                stableColliderWorldOffset = new Vector3(
-                    bounds.center.x - followTarget.position.x,
-                    bounds.max.y - followTarget.position.y,
-                    0f);
-                hasStableColliderWorldOffset = true;
-            }
-        }
+
+        TryCaptureStableColliderWorldOffset();
 
         if (useFollowPosition)
-            UpdateFollowPosition();
+        {
+            bool positionReady = TryUpdateFollowPosition();
+            ApplyCanvasVisibility(isVisible && positionReady);
+        }
     }
 
-    private void UpdateFollowPosition()
+    private bool TryUpdateFollowPosition()
     {
         if (!useFollowPosition || followTarget == null || rectTransform == null ||
             !followTarget.gameObject.activeInHierarchy)
-            return;
+            return false;
+
+        TryCaptureStableColliderWorldOffset();
 
         Camera cam = GetMainCamera();
         if (cam == null)
-            return;
+            return false;
 
         Vector3 followWorldPosition = GetFollowWorldPosition();
         Vector3 screenPos = cam.WorldToScreenPoint(followWorldPosition);
         if (screenPos.z <= 0f)
-            return;
+            return false;
 
         if (hasStableColliderWorldOffset)
         {
@@ -165,6 +165,27 @@ public class HUDSlot : MonoBehaviour
         }
 
         rectTransform.position = screenPos;
+        return true;
+    }
+
+    private void TryCaptureStableColliderWorldOffset()
+    {
+        if (hasStableColliderWorldOffset || followTarget == null)
+            return;
+
+        if (followCollider2D == null)
+            followCollider2D = followTarget.GetComponentInChildren<Collider2D>(true);
+
+        if (followCollider2D == null || !followCollider2D.enabled ||
+            !followCollider2D.gameObject.activeInHierarchy)
+            return;
+
+        Bounds bounds = followCollider2D.bounds;
+        stableColliderWorldOffset = new Vector3(
+            bounds.center.x - followTarget.position.x,
+            bounds.max.y - followTarget.position.y,
+            0f);
+        hasStableColliderWorldOffset = true;
     }
 
     private Vector3 GetFollowWorldPosition()
@@ -280,14 +301,10 @@ public class HUDSlot : MonoBehaviour
 
     public void Show()
     {
-        if (useFollowPosition)
-            UpdateFollowPosition();
-
         isVisible = true;
         hideAfterValueAnimations = false;
-        canvasGroup.alpha = 1f;
-        canvasGroup.interactable = true;
-        canvasGroup.blocksRaycasts = true;
+        bool positionReady = !useFollowPosition || TryUpdateFollowPosition();
+        ApplyCanvasVisibility(positionReady);
 
         Refresh();
         StartPendingValueAnimations();
@@ -311,9 +328,22 @@ public class HUDSlot : MonoBehaviour
         hideAfterPhaseTransitionHPFill = false;
         isVisible = false;
         StopValueAnimations();
-        canvasGroup.alpha = 0f;
-        canvasGroup.interactable = false;
-        canvasGroup.blocksRaycasts = false;
+        ApplyCanvasVisibility(false);
+    }
+
+    public void ForceHideImmediately()
+    {
+        HideImmediately();
+    }
+
+    private void ApplyCanvasVisibility(bool visible)
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = visible ? 1f : 0f;
+        canvasGroup.interactable = visible;
+        canvasGroup.blocksRaycasts = visible;
     }
 
     private void HideWhenValueAnimationsComplete()
@@ -336,13 +366,10 @@ public class HUDSlot : MonoBehaviour
 
     private void ShowForValueChange()
     {
-        if (useFollowPosition)
-            UpdateFollowPosition();
         isVisible = true;
         hideAfterValueAnimations = false;
-        canvasGroup.alpha = 1f;
-        canvasGroup.interactable = true;
-        canvasGroup.blocksRaycasts = true;
+        bool positionReady = !useFollowPosition || TryUpdateFollowPosition();
+        ApplyCanvasVisibility(positionReady);
     }
 
     public void Refresh()

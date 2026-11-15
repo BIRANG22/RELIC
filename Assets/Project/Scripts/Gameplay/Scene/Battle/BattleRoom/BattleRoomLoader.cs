@@ -1093,7 +1093,10 @@ public class BattleRoomLoader : MonoBehaviour
             Transform child = hudRoot.GetChild(i);
             HUDSlot hud = child != null ? child.GetComponent<HUDSlot>() : null;
             if (hud != null && hud.BoundCharacterRuntime != null)
+            {
+                hud.ForceHideImmediately();
                 Destroy(child.gameObject);
+            }
         }
     }
 
@@ -2156,7 +2159,10 @@ public class BattleRoomLoader : MonoBehaviour
             Transform child = hudRoot.GetChild(i);
             HUDSlot hud = child != null ? child.GetComponent<HUDSlot>() : null;
             if (hud != null && hud.BoundMonsterRuntime != null)
+            {
+                hud.ForceHideImmediately();
                 Destroy(child.gameObject);
+            }
         }
     }
 
@@ -2199,6 +2205,7 @@ public class BattleRoomLoader : MonoBehaviour
         if (monsterUnit == null)
             return;
 
+        monsterUnit.DestroyHUD();
         spawnedMonsterUnits.Remove(monsterUnit);
         RefreshMonsterDisplayNames();
     }

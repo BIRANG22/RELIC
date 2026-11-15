@@ -35,7 +35,9 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
     [SerializeField, Min(0.01f)] private float scaleDownDuration = 0.12f;
     [SerializeField, Min(0.01f)] private float fadeOutDuration = 0.2f;
     [FormerlySerializedAs("moveLeftDistance")]
-    [SerializeField, Min(0f)] private float moveUpDistance = 70f;
+    [FormerlySerializedAs("moveUpDistance")]
+    [SerializeField, Min(0f)] private float grindMoveDistance = 70f;
+    [SerializeField, Range(0f, 1f)] private float grindEndWidthScale = 0.1f;
     [SerializeField] private bool useUnscaledTime = true;
     [SerializeField] private bool playOnlyActiveImages = true;
 
@@ -65,8 +67,10 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         if (useSkillImages == null || useSkillImages.Length != TotalUseSkillCount)
             System.Array.Resize(ref useSkillImages, TotalUseSkillCount);
 
-        if (moveUpDistance < 0f)
-            moveUpDistance = 0f;
+        if (grindMoveDistance < 0f)
+            grindMoveDistance = 0f;
+
+        grindEndWidthScale = Mathf.Clamp01(grindEndWidthScale);
 
     }
 #endif
@@ -389,12 +393,27 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         {
             elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, fadeOutDuration));
-            rect.anchoredPosition = basePosition + Vector2.up * (moveUpDistance * t);
+            rect.anchoredPosition = CalculateGrindPosition(basePosition, grindMoveDistance, t);
+            rect.localScale = CalculateGrindScale(baseScale, grindEndWidthScale, t);
             group.alpha = 1f - t;
             yield return null;
         }
-        rect.anchoredPosition = basePosition + Vector2.up * moveUpDistance;
+        rect.anchoredPosition = CalculateGrindPosition(basePosition, grindMoveDistance, 1f);
+        rect.localScale = CalculateGrindScale(baseScale, grindEndWidthScale, 1f);
         group.alpha = 0f;
+    }
+
+    private static Vector2 CalculateGrindPosition(Vector2 basePosition, float moveDistance, float progress)
+    {
+        float t = Mathf.Clamp01(progress);
+        return basePosition + Vector2.left * (Mathf.Max(0f, moveDistance) * t);
+    }
+
+    private static Vector3 CalculateGrindScale(Vector3 baseScale, float endWidthScale, float progress)
+    {
+        float t = Mathf.Clamp01(progress);
+        float widthScale = Mathf.Lerp(1f, Mathf.Clamp01(endWidthScale), t);
+        return new Vector3(baseScale.x * widthScale, baseScale.y, baseScale.z);
     }
 
     private IEnumerator AnimateScale(RectTransform rect, Vector3 from, Vector3 to, float duration)
