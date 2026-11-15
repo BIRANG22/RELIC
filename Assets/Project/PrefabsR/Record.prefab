@@ -2512,7 +2512,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 6039391930876565870}
-  localizationKey: ui.record.text.efa882c6
+  localizationKey: ui.storagepanel.compoundtext.27d0889a
   koreanSource: "\uC5F0\uC131\uC81C"
   automaticallyRegistered: 1
 --- !u!1 &3619755650986867603

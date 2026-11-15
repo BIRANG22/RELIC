@@ -6808,6 +6808,167 @@ MonoBehaviour:
     m_Localized: Consumables
     m_Metadata:
       m_Items: []
+  - m_Id: 34955383042973696
+    m_Localized: Combat Interface
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693953
+    m_Localized: 'The combat interface consists of three main areas.<br><br>1. Action
+      Timeline: Reserve actions and check their execution order.<br>2. Character
+      Info: Check each character''s status and resources.<br>3. Action Selection:
+      Choose actions such as movement, facing changes, and Memories.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693952
+    m_Localized: Screen Layout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693955
+    m_Localized: "The timeline shows mutant actions and lets you reserve allied actions.<br><br>1.
+      Order: Five slots, numbered 1 to 5, execute actions in sequence.<br>2. Reservation:
+      Each slot has 5 cells, and each action occupies 1\u20133 cells.<br>3. Participation:
+      One ally and one mutant can each reserve an action in a slot."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693954
+    m_Localized: Action Timeline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693957
+    m_Localized: 'The character panel shows equipped Runes and Artifacts, resources,
+      and status effects.<br><br>1,2. Runes and Artifacts: Check the effects of equipped
+      Runes and Artifacts.<br>3. Character Resources: Displays HP, Mana, and Karma.<br>4.
+      Status Effects: Displays active buffs and debuffs.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693956
+    m_Localized: Character Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693959
+    m_Localized: 'Select actions and manage reservations in the action panel.<br><br>1.
+      Basic Actions: Move, change facing, or use Consumables for immediate effects.<br>2.
+      Memory Selection: Spend resources to reserve attack, buff, or debuff Memories.<br>3.
+      Action Management: Undo or redo reservations, then execute them by ending your
+      turn.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693958
+    m_Localized: Action Selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693960
+    m_Localized: Battle Rewards
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693962
+    m_Localized: Winning a battle grants various rewards, including Red Dustium,
+      items, Artifacts, and Memories.<br>Each reward serves a different purpose in
+      exploration and preparation at the base.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693961
+    m_Localized: Types of Loot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693964
+    m_Localized: Red Dustium can be refined into Blue Dustium at the base.<br>Blue
+      Dustium is used to unlock new powers and prepare for the next exploration.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693963
+    m_Localized: Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693966
+    m_Localized: Defeated mutants have a chance to drop unique items.<br>These items
+      can be used as materials to craft various Consumables at the base.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693965
+    m_Localized: Using Items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693967
+    m_Localized: Exploration Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693968
+    m_Localized: During exploration, you can visit various areas, including battles,
+      shops, and events.<br>Each area offers different encounters and ways to proceed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34956166220193792
+    m_Localized: Exploration Areas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693969
+    m_Localized: Event areas feature different encounters, including chance-based
+      events and events that require a cost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34956166249553920
+    m_Localized: Event Types
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693970
+    m_Localized: Understanding Mutants
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693972
+    m_Localized: Select a mutant to view its available actions and attack range,<br>along
+      with detailed ability effects and active status effects.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693971
+    m_Localized: Inspecting Information
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693974
+    m_Localized: Check the icons shown on the timeline for a mutant's actions.<br>You
+      can also view each action's effect area, description, and type.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693973
+    m_Localized: Action Information
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693976
+    m_Localized: Check a mutant's unique effects and active buffs and debuffs.<br>Each
+      effect also displays its description, duration status, and stack count.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693975
+    m_Localized: Status Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693977
+    m_Localized: Erosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693979
+    m_Localized: 'Erosion gradually accumulates during exploration.<br><br>1. Entering
+      a new room: +1<br>2. Ending a turn or taking damage: +1<br>3. An ally becoming
+      incapacitated: +10'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693978
+    m_Localized: Erosion Buildup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693981
+    m_Localized: When Erosion reaches 100, you take 10 fixed damage at the start
+      of each turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693980
+    m_Localized: Dangers of Erosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955470141890560
+    m_Localized: Consumables
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -6885,6 +6885,177 @@ MonoBehaviour:
     m_Localized: Consumibles
     m_Metadata:
       m_Items: []
+  - m_Id: 34955383042973696
+    m_Localized: Interfaz de combate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693953
+    m_Localized: "La interfaz de combate se divide en tres \xE1reas principales.<br><br>1.
+      L\xEDnea temporal: Reserva acciones y consulta su orden de ejecuci\xF3n.<br>2.
+      Informaci\xF3n del personaje: Consulta su estado y recursos disponibles.<br>3.
+      Selecci\xF3n de acciones: Elige acciones como moverte, cambiar de direcci\xF3n
+      o usar memorias."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693952
+    m_Localized: "Distribuci\xF3n de la pantalla"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693955
+    m_Localized: "La l\xEDnea temporal permite ver las acciones de los mutantes y
+      reservar las de tus aliados.<br><br>1. Orden: Hay 5 ranuras, numeradas del
+      1 al 5, y las acciones se ejecutan en orden.<br>2. Reserva: Cada ranura tiene
+      5 espacios y cada acci\xF3n ocupa de 1 a 3.<br>3. Participaci\xF3n: Un aliado
+      y un mutante pueden reservar una acci\xF3n cada uno en la misma ranura."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693954
+    m_Localized: "L\xEDnea temporal"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693957
+    m_Localized: "El panel muestra las runas y artefactos equipados, los recursos
+      y los efectos de estado.<br><br>1,2. Runas y artefactos: Consulta los efectos
+      de las runas y artefactos equipados.<br>3. Recursos: Muestra los PV, el man\xE1
+      y el karma.<br>4. Efectos de estado: Muestra los efectos beneficiosos y perjudiciales
+      activos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693956
+    m_Localized: "Informaci\xF3n del personaje"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693959
+    m_Localized: "En el panel de acciones puedes seleccionar acciones y gestionar
+      las reservas.<br><br>1. Acciones b\xE1sicas: Mu\xE9vete, cambia de direcci\xF3n
+      o usa consumibles para obtener efectos inmediatos.<br>2. Selecci\xF3n de memorias:
+      Gasta recursos para reservar memorias de ataque, mejora o debilitamiento.<br>3.
+      Gesti\xF3n de acciones: Deshaz o rehace reservas y ejecuta las acciones al
+      terminar el turno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693958
+    m_Localized: "Selecci\xF3n de acciones"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693960
+    m_Localized: Recompensas de combate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693962
+    m_Localized: "Al ganar un combate, puedes obtener Dustium rojo, objetos, artefactos
+      y memorias, entre otras recompensas.<br>Cada recompensa tiene un uso diferente
+      para la exploraci\xF3n y la preparaci\xF3n en la base."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693961
+    m_Localized: "Tipos de bot\xEDn"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693964
+    m_Localized: "El Dustium rojo se refina en Dustium azul en la base.<br>El Dustium
+      azul sirve para desbloquear nuevos poderes y prepararte para la siguiente exploraci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693963
+    m_Localized: Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693966
+    m_Localized: Al derrotar mutantes, tienes cierta probabilidad de obtener sus
+      objetos exclusivos.<br>Estos objetos sirven como materiales para fabricar distintos
+      consumibles en la base.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693965
+    m_Localized: Uso de objetos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693967
+    m_Localized: "Gu\xEDa de exploraci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693968
+    m_Localized: "Durante la exploraci\xF3n puedes visitar distintas zonas, como
+      combates, tiendas y eventos.<br>Cada zona tiene sus propias mec\xE1nicas y
+      situaciones."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34956166220193792
+    m_Localized: "Zonas de exploraci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693969
+    m_Localized: En las zonas de eventos pueden ocurrir distintos sucesos, incluidos
+      eventos aleatorios y otros que requieren pagar un coste.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34956166249553920
+    m_Localized: Tipos de eventos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693970
+    m_Localized: Conocer a los mutantes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693972
+    m_Localized: "Selecciona un mutante para consultar sus acciones disponibles y
+      alcance de ataque,<br>as\xED como los efectos de sus habilidades y los estados
+      activos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693971
+    m_Localized: "Consultar informaci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693974
+    m_Localized: "Puedes consultar los iconos que aparecen en la l\xEDnea temporal
+      para las acciones del mutante.<br>Tambi\xE9n puedes ver el \xE1rea de efecto,
+      la descripci\xF3n y el tipo de cada acci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693973
+    m_Localized: "Informaci\xF3n de acciones"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693976
+    m_Localized: "Consulta los efectos \xFAnicos del mutante y sus mejoras y debilitamientos
+      activos.<br>Tambi\xE9n se muestran la descripci\xF3n de cada efecto, su duraci\xF3n
+      y sus acumulaciones."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693975
+    m_Localized: Efectos de estado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693977
+    m_Localized: "Contaminaci\xF3n por erosi\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693979
+    m_Localized: "La contaminaci\xF3n por erosi\xF3n aumenta gradualmente durante
+      la exploraci\xF3n.<br><br>1. Al entrar en una sala nueva: +1<br>2. Al terminar
+      un turno o recibir da\xF1o: +1<br>3. Cada vez que un aliado queda incapacitado:
+      +10"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693978
+    m_Localized: "Acumulaci\xF3n de erosi\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693981
+    m_Localized: "Cuando la erosi\xF3n alcanza 100, recibes 10 de da\xF1o fijo al
+      comienzo de cada turno."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955383101693980
+    m_Localized: "Peligros de la erosi\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34955470141890560
+    m_Localized: Consumibles
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
