@@ -616,7 +616,9 @@ public class BattleTimelineController : MonoBehaviour
     private void HandleKeyboardUndoRedoReservationInput()
     {
         if (TutorialGuideController.IsModalOpen) return;
-        if (TutorialBattleSequence.IsPresentationRunning) return;
+        if (TutorialBattleSequence.IsPresentationRunning &&
+            !TutorialFocusGuideRunner.AllowsTutorial05HistoryButton(PlayerReservationHistoryAction.Undo) &&
+            !TutorialFocusGuideRunner.AllowsTutorial05HistoryButton(PlayerReservationHistoryAction.Redo)) return;
         if (!isActiveAndEnabled)
             return;
 
@@ -626,13 +628,15 @@ public class BattleTimelineController : MonoBehaviour
         if (IsTypingInputFieldSelected())
             return;
 
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Undo))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Undo) &&
+            TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Undo))
         {
             UndoLastPlayerReservation();
             return;
         }
 
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Redo))
+        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Redo) &&
+            TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Redo))
             RedoLastPlayerReservation();
     }
 

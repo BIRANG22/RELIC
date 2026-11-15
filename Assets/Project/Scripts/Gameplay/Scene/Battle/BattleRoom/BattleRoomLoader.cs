@@ -676,7 +676,21 @@ public class BattleRoomLoader : MonoBehaviour
                 }
             }
         }
-        if (!IsTutorialBattleRun() && !isThirdTutorial) return;
+        // Map_30 (Tutorial_05) must start even when a resumed run lost its tutorial flag.
+        bool isTutorial05 = string.Equals(loadedMapId, "Map_30", System.StringComparison.OrdinalIgnoreCase);
+        if (isTutorial05)
+        {
+            isTutorial05 = false;
+            foreach (var step in steps)
+            {
+                if (step != null && string.Equals(step.TutorialId, "Tutorial_05", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    isTutorial05 = true;
+                    break;
+                }
+            }
+        }
+        if (!IsTutorialBattleRun() && !isThirdTutorial && !isTutorial05) return;
         var runner = GetComponent<TutorialBattleSequence>();
         if (runner == null) runner = gameObject.AddComponent<TutorialBattleSequence>();
         // Reactivate the shared runner when continuing after a previous tutorial.
