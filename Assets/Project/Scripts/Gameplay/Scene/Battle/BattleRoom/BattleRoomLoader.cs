@@ -1904,7 +1904,9 @@ public class BattleRoomLoader : MonoBehaviour
                     GridIndex = placement.GridIndex,
                     GridEffectId = placement.GridEffectId,
                     RemainingDuration = duration,
-                    HitPoints = hitPoints
+                    HitPoints = hitPoints,
+                    OwnerRuntimeId = placement.OwnerRuntimeId,
+                    OwnerMonsterId = placement.OwnerMonsterId
                 });
             }
         }

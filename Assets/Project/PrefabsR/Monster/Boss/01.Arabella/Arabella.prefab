@@ -2143,7 +2143,7 @@ MonoBehaviour:
     parentVfxToOrigin: 0
     vfxLifetime: 0
     destroyVfxOnPresentationEnd: 1
-  restoreCameraOnPresentationEnd: 0
+  restoreCameraOnPresentationEnd: 1
   useBattleEffectSlide: 1
   battleEffectSlideController: {fileID: 0}
 --- !u!1 &2469629087936589391

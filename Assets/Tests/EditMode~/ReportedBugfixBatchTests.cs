@@ -6,6 +6,50 @@ using UnityEngine;
 
 public sealed class ReportedBugfixBatchTests
 {
+    [Test]
+    public void CharacterHud_ShowWithoutFollowPosition_RemainsHidden()
+    {
+        GameObject hudObject = new GameObject(
+            "CharacterHUDSlot-Test",
+            typeof(RectTransform),
+            typeof(CanvasGroup));
+
+        try
+        {
+            CharacterHUDSlot hud = hudObject.AddComponent<CharacterHUDSlot>();
+
+            hud.Show();
+
+            Assert.That(hudObject.GetComponent<CanvasGroup>().alpha, Is.Zero);
+        }
+        finally
+        {
+            Object.DestroyImmediate(hudObject);
+        }
+    }
+
+    [Test]
+    public void DamageResolution_DoesNotChangeDefenderFacing()
+    {
+        string playerDamageSource = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Actionrunner/BattleActionRunner.cs");
+        string monsterDamageSource = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Actionrunner/MonsterSkillEffectService.cs");
+
+        StringAssert.DoesNotContain("FaceMonsterAgainstAttackDirection", playerDamageSource);
+        StringAssert.DoesNotContain("FacePlayerToAttacker", monsterDamageSource);
+        StringAssert.Contains("FaceMonsterToAttacker", playerDamageSource);
+    }
+
+    [Test]
+    public void BossIntroSceneStartPosition_UsesPanelDownBattleHeight()
+    {
+        Vector3 result = BattleCameraPositionPolicy.ResolveSceneStartBattlePosition(
+            new Vector3(0f, 0f, -20f), 1f);
+
+        Assert.That(result, Is.EqualTo(new Vector3(0f, 1f, -20f)));
+    }
+
     [TestCase(false)]
     [TestCase(true)]
     public void BattleEntry_AlwaysClaimsBgmOwnership(bool hasUnclearedCurrentNode)
@@ -79,7 +123,7 @@ public sealed class ReportedBugfixBatchTests
 
         StringAssert.Contains("  - label: move\n    action: 0\n", block);
         StringAssert.DoesNotContain("    action: 1\n", block);
-        StringAssert.Contains("  restoreCameraOnPresentationEnd: 0\n", prefab);
+        StringAssert.Contains("  restoreCameraOnPresentationEnd: 1\n", prefab);
 
         string source = System.IO.File.ReadAllText(
             "Assets/Project/Scripts/Gameplay/Monster/BossSpawnPresentation.cs");

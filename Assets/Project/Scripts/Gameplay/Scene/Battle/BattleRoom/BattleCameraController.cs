@@ -4,6 +4,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
+public static class BattleCameraPositionPolicy
+{
+    public static Vector3 ResolveSceneStartBattlePosition(
+        Vector3 mapPosition,
+        float panelDownPositionY)
+    {
+        mapPosition.y = panelDownPositionY;
+        return mapPosition;
+    }
+}
+
 public class BattleCameraController : MonoBehaviour
 {
     public static BattleCameraController Instance { get; private set; }
@@ -1944,15 +1955,15 @@ public class BattleCameraController : MonoBehaviour
                timelineController.SelectedCharacter != null;
     }
 
-    // Boss intro camera framing is temporary. Resume camera focus calculations
-    // from the map's baseline Y rather than the temporary panel-down Y.
+    // Boss intro camera framing is temporary. Resume from the same panel-down
+    // battle baseline used by normal rooms so the next selection focus continues smoothly.
     public void ForceReturnSceneStartPositionImmediate()
     {
         ForceReturnDefaultImmediate();
 
-        // A resumed scene may initialize the camera controller while the camera
-        // is already at the panel-down height. Do not cache that as the baseline.
-        defaultPosition.y = mapPosition.y;
+        defaultPosition = BattleCameraPositionPolicy.ResolveSceneStartBattlePosition(
+            mapPosition,
+            PanelDownPositionY);
         if (targetCamera != null)
             targetCamera.transform.position = defaultPosition;
     }

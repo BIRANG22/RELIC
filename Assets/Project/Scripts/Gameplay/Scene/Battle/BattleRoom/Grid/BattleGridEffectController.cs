@@ -103,12 +103,15 @@ public class BattleGridEffectController : MonoBehaviour
                     saved.GridIndex,
                     saved.GridEffectId,
                     Mathf.Max(0, saved.RemainingDuration),
-                    Mathf.Max(0, saved.HitPoints)))
+                    Mathf.Max(0, saved.HitPoints),
+                    saved.OwnerRuntimeId,
+                    saved.OwnerMonsterId))
             {
                 continue;
             }
 
-            SpawnView(new BattleGridEffectPlacement(saved.GridIndex, saved.GridEffectId));
+            SpawnView(new BattleGridEffectPlacement(
+                saved.GridIndex, saved.GridEffectId, saved.OwnerRuntimeId, saved.OwnerMonsterId));
         }
     }
 
@@ -132,6 +135,15 @@ public class BattleGridEffectController : MonoBehaviour
     }
 
     public bool TryPlaceEffect(int gridIndex, string gridEffectId)
+    {
+        return TryPlaceEffect(gridIndex, gridEffectId, string.Empty, string.Empty);
+    }
+
+    public bool TryPlaceEffect(
+        int gridIndex,
+        string gridEffectId,
+        string ownerRuntimeId,
+        string ownerMonsterId)
     {
         if (!EnsureDependencies())
             return false;
@@ -159,11 +171,24 @@ public class BattleGridEffectController : MonoBehaviour
             return state.RefreshDuration(gridIndex, data.Duration);
         }
 
-        if (!state.Place(gridIndex, gridEffectId, data.Duration, GetInitialHitPoints(data)))
+        if (!state.Place(
+                gridIndex,
+                gridEffectId,
+                data.Duration,
+                GetInitialHitPoints(data),
+                ownerRuntimeId,
+                ownerMonsterId))
             return false;
 
-        SpawnView(new BattleGridEffectPlacement(gridIndex, gridEffectId));
+        SpawnView(new BattleGridEffectPlacement(
+            gridIndex, gridEffectId, ownerRuntimeId, ownerMonsterId));
         return true;
+    }
+
+    public bool CanMonsterDamageEffect(int gridIndex, string attackerRuntimeId)
+    {
+        state.TryGetOwner(gridIndex, out string ownerRuntimeId, out _);
+        return BattleGridEffectDamagePolicy.CanMonsterDamage(ownerRuntimeId, attackerRuntimeId);
     }
 
 

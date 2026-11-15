@@ -25,7 +25,11 @@ public class SpawnSpiderEggEffect : BattleEffectBase
                 : FindAvailableEggGrid(context, controller, requestedGridIndex);
         context.MonsterCommand?.SetFinalPlacementGridIndex(placementIndex);
         if (placementIndex >= 0)
-            controller.TryPlaceEffect(placementIndex, SpiderEggGridEffectId);
+            controller.TryPlaceEffect(
+                placementIndex,
+                SpiderEggGridEffectId,
+                context.MonsterCaster?.RuntimeData?.RuntimeId,
+                context.MonsterCaster?.RuntimeData?.MonsterId);
     }
 
     public static int ResolveFinalPlacementGrid(BattleEffectContext context)
