@@ -320,6 +320,10 @@ public class BattleResultChecker : MonoBehaviour
 
     private static void PrepareBattleFinishedPresentation()
     {
+        BattleDamageTextPopupUI.ClearBattlePresentation();
+        BattleCharacterHUDController.HideAllForBattleEnd();
+        MonsterUnit.HideAllTemporaryHUDs();
+
         // 마지막 행동 애니메이션이 남아 있지 않도록 생존 유닛을 즉시 Idle로 복귀시킵니다.
         BattleHUDService hudService = new BattleHUDService();
         hudService.PlayAllAliveIdle();

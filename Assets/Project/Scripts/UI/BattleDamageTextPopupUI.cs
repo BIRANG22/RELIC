@@ -105,6 +105,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
     private static BattleDamageTextPopupUI instance;
     private readonly List<RecoveryPopupRequest> recoveryPopupQueue = new();
+    private readonly HashSet<GameObject> activePopupObjects = new();
     private Coroutine recoveryPopupRoutine;
     private bool recoverySequenceHeld;
     private int recoverySequenceCounter;
@@ -122,6 +123,27 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     {
         if (instance == this)
             instance = null;
+    }
+
+    public static void ClearBattlePresentation()
+    {
+        if (instance == null)
+            return;
+
+        instance.StopAllCoroutines();
+        instance.recoveryPopupQueue.Clear();
+        instance.pendingArmorPopups.Clear();
+        instance.recoveryPopupRoutine = null;
+        instance.recoverySequenceHeld = false;
+
+        foreach (GameObject popupObject in instance.activePopupObjects)
+        {
+            if (popupObject != null)
+                Destroy(popupObject);
+        }
+
+        instance.activePopupObjects.Clear();
+        instance.UseBattleCanvas();
     }
 
     public static void Show(Transform target, int damage)
@@ -727,6 +749,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         string value = damage.ToString();
 
         GameObject rootObject = new GameObject("DamageDigit_" + value);
+        activePopupObjects.Add(rootObject);
         rootObject.transform.SetParent(canvasRect, false);
 
         RectTransform rect = rootObject.AddComponent<RectTransform>();
@@ -942,6 +965,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     private void ShowTextFallbackPopup(Transform target, Vector2 screenOffset, Vector2 anchoredPosition, int damage, PopupType popupType)
     {
         GameObject textObject = new GameObject("DamageText_" + damage);
+        activePopupObjects.Add(textObject);
         textObject.transform.SetParent(canvasRect, false);
 
         RectTransform rect = textObject.AddComponent<RectTransform>();
@@ -974,6 +998,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     private void ShowCustomTextPopup(Transform target, Vector2 screenOffset, Vector2 anchoredPosition, string message, PopupType popupType, float fontSize = -1f)
     {
         GameObject textObject = new GameObject("BattlePopupText_" + message);
+        activePopupObjects.Add(textObject);
         textObject.transform.SetParent(canvasRect, false);
 
         RectTransform rect = textObject.AddComponent<RectTransform>();
@@ -1051,6 +1076,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             yield return null;
         }
 
+        activePopupObjects.Remove(rect.gameObject);
         Destroy(rect.gameObject);
     }
 
@@ -1250,6 +1276,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             yield return null;
         }
 
+        activePopupObjects.Remove(rect.gameObject);
         Destroy(rect.gameObject);
     }
 
@@ -1295,6 +1322,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             yield return null;
         }
 
+        activePopupObjects.Remove(rect.gameObject);
         Destroy(rect.gameObject);
     }
 

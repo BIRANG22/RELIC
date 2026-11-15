@@ -458,6 +458,13 @@ public class BattleCameraController : MonoBehaviour
     public bool IsCombatZoomActive => hasActiveCombatZoom;
     public bool IsMonsterInfoFocusActive => hasActiveMonsterInfoFocus;
 
+    public IEnumerator WaitForCurrentMotionComplete()
+    {
+        Coroutine currentMotion = routine;
+        if (currentMotion != null)
+            yield return currentMotion;
+    }
+
     private void Awake()
     {
         Instance = this;

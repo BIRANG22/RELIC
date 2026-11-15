@@ -853,6 +853,16 @@ public class BattleTimelineController : MonoBehaviour
             selectedCharacter != runtimeData ||
             (selectedCharacter != null && runtimeData != null &&
              selectedCharacter.CharacterId != runtimeData.CharacterId);
+        bool characterIdChanged =
+            !string.IsNullOrWhiteSpace(previousCharacterId) &&
+            runtimeData != null &&
+            !string.Equals(
+                previousCharacterId,
+                runtimeData.CharacterId,
+                System.StringComparison.OrdinalIgnoreCase);
+
+        if (characterIdChanged)
+            CancelUnmergedFacingFlips();
 
         if (runtimeData != null)
 
@@ -902,7 +912,10 @@ public class BattleTimelineController : MonoBehaviour
         CharacterRuntimeData previousCharacter = selectedCharacter;
 
         if (previousCharacter != null)
+        {
             CancelSkillReservationPreviewFromSkillList(previousCharacter);
+            CancelUnmergedFacingFlips();
+        }
 
         selectedCharacter = null;
         selectedSkill = null;
