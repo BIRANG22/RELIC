@@ -209,6 +209,7 @@ public class EventRoomController : MonoBehaviour
     private Coroutine terminalChoiceFadeRoutine;
     private bool waitForEventEntranceReveal;
     private bool pendingTutorialEventGuide;
+    private string pendingTutorialEventGuideIndex;
 
     /// <summary>
     /// 현재 마우스 위치에서 실제 이벤트 UI가 월드 캐릭터를 가리고 있는지 확인합니다.
@@ -358,6 +359,7 @@ public class EventRoomController : MonoBehaviour
         SetNextButtonVisible(false);
         waitForEventEntranceReveal = true;
         pendingTutorialEventGuide = false;
+        pendingTutorialEventGuideIndex = null;
         ResetEventChoiceScrollViewPosition();
         ResetTerminalChoiceVisuals();
 
@@ -683,6 +685,7 @@ public class EventRoomController : MonoBehaviour
         StopEventEntranceTitleRoutine();
         waitForEventEntranceReveal = true;
         pendingTutorialEventGuide = false;
+        pendingTutorialEventGuideIndex = null;
         ResetEventChoiceScrollViewPosition();
         ResetEventChoiceScrollViewVisualState();
         ResetTerminalChoiceVisuals();
@@ -6682,7 +6685,11 @@ public class EventRoomController : MonoBehaviour
             string.Equals(currentMapId, TutorialBattleEntrySetup.FirstTutorialEventMapId,
                 StringComparison.OrdinalIgnoreCase) ||
             string.Equals(currentEventId, "Event_T_01", StringComparison.OrdinalIgnoreCase);
-        if (isFirstTutorialEvent && isActiveAndEnabled && isDataEventActive && !isEventResolved)
+        bool isSecondTutorialEvent =
+            string.Equals(currentMapId, TutorialBattleEntrySetup.SecondTutorialEventMapId,
+                StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(currentEventId, "Event_T_02", StringComparison.OrdinalIgnoreCase);
+        if ((isFirstTutorialEvent || isSecondTutorialEvent) && isActiveAndEnabled && isDataEventActive && !isEventResolved)
         {
             TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
             if (sequence == null)
@@ -6693,18 +6700,23 @@ public class EventRoomController : MonoBehaviour
             }
             if (sequence != null)
             {
-                Debug.Log($"[EventRoomController] Starting Tutorial_02 dialogue; map={currentMapId}, event={currentEventId}.", this);
-                yield return sequence.PlayFirstEventEntranceDialogue();
-                // Show the event guide only after the choices finish entering.
+                Debug.Log($"[EventRoomController] Starting {(isSecondTutorialEvent && !isFirstTutorialEvent ? "Tutorial_04" : "Tutorial_02")} dialogue; map={currentMapId}, event={currentEventId}.", this);
+                if (isSecondTutorialEvent && !isFirstTutorialEvent)
+                    yield return sequence.PlaySecondEventEntranceDialogue();
+                else
+                    yield return sequence.PlayFirstEventEntranceDialogue();
+                // Both event tutorials reveal choices before presenting their guide.
                 pendingTutorialEventGuide = isActiveAndEnabled && isDataEventActive && !isEventResolved;
+                pendingTutorialEventGuideIndex = isSecondTutorialEvent && !isFirstTutorialEvent ? "Index05" : "Index03";
             }
             else
-                Debug.LogError($"[EventRoomController] Tutorial_02 dialogue cannot start: TutorialBattleSequence/BattleSceneController missing; map={currentMapId}, event={currentEventId}.", this);
+                Debug.LogError($"[EventRoomController] Tutorial event dialogue cannot start: TutorialBattleSequence/BattleSceneController missing; map={currentMapId}, event={currentEventId}.", this);
         }
         else if (string.Equals(currentEventId, "Event_T_01", StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(currentMapId, TutorialBattleEntrySetup.FirstTutorialEventMapId, StringComparison.OrdinalIgnoreCase))
+                 string.Equals(currentMapId, TutorialBattleEntrySetup.FirstTutorialEventMapId, StringComparison.OrdinalIgnoreCase) ||
+                 isSecondTutorialEvent)
         {
-            Debug.LogWarning($"[EventRoomController] Tutorial_02 dialogue skipped: active={isActiveAndEnabled}, dataEvent={isDataEventActive}, resolved={isEventResolved}, map={currentMapId}, event={currentEventId}.", this);
+            Debug.LogWarning($"[EventRoomController] Tutorial event dialogue skipped: active={isActiveAndEnabled}, dataEvent={isDataEventActive}, resolved={isEventResolved}, map={currentMapId}, event={currentEventId}.", this);
         }
 
         eventEntranceTitleRoutine = null;
@@ -6825,21 +6837,24 @@ public class EventRoomController : MonoBehaviour
         if (eventChoiceGradationCanvasGroup != null)
             eventChoiceGradationCanvasGroup.alpha = 1f;
 
-        // The first event's choices are now fully visible. Keep their input
-        // disabled until the newly unlocked Index03 guide has been closed.
+        // Show the tutorial guide only after the choices have finished sliding up.
+        // Keep the choices non-interactable until the modal guide closes.
         if (pendingTutorialEventGuide)
         {
             pendingTutorialEventGuide = false;
+            string guideIndex = pendingTutorialEventGuideIndex;
+            pendingTutorialEventGuideIndex = null;
             BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
-            if (scene != null)
+            if (scene != null && !string.IsNullOrEmpty(guideIndex))
             {
-                scene.SpawnTutorialGuideAfterDialogue("Index03");
+                if (guideIndex == "Index05") TutorialGuideController.UnlockIndex(guideIndex);
+                scene.SpawnTutorialGuideAfterDialogue(guideIndex);
                 yield return null;
                 while (TutorialGuideController.IsModalOpen && isActiveAndEnabled && !isEventResolved)
                     yield return null;
             }
             else
-                Debug.LogError("[EventRoomController] BattleSceneController missing; Index03 guide cannot open.", this);
+                Debug.LogError($"[EventRoomController] BattleSceneController missing or tutorial guide not selected: {guideIndex}.", this);
         }
 
         if (isActiveAndEnabled && isDataEventActive && !isEventResolved)

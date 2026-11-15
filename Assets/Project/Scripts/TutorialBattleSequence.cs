@@ -383,33 +383,38 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             yield return null;
     }
 
-    // Event tutorial: play the two opening lines after the title and room intro,
+    // Event tutorial: play sheet-defined dialogue after the title and room intro,
     // before the event choices enter the screen.
-    public IEnumerator PlayFirstEventEntranceDialogue()
+    public IEnumerator PlayFirstEventEntranceDialogue() =>
+        PlayEventEntranceDialogue(TutorialBattleEntrySetup.FirstTutorialEventMapId, "Tutorial_02", 2);
+
+    public IEnumerator PlaySecondEventEntranceDialogue() =>
+        PlayEventEntranceDialogue(TutorialBattleEntrySetup.SecondTutorialEventMapId, "Tutorial_04", 4);
+
+    private IEnumerator PlayEventEntranceDialogue(string mapId, string tutorialId, int lastOrder)
     {
-        const string mapId = TutorialBattleEntrySetup.FirstTutorialEventMapId;
         IReadOnlyList<TutorialData> steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
         if (steps == null || steps.Count == 0)
         {
-            Debug.LogError("[TutorialBattleSequence] Tutorial_02 Map_27 rows are not loaded in TutorialDatabase. Reimport the Tutorial sheet from GameData.xlsx into Unity game data.", this);
+            Debug.LogError($"[TutorialBattleSequence] {tutorialId} {mapId} rows are not loaded in TutorialDatabase. Reimport the Tutorial sheet from GameData.xlsx into Unity game data.", this);
             yield break;
         }
 
         var lines = new List<TutorialData>();
         foreach (TutorialData step in steps)
         {
-            if (step != null && step.TutorialId == "Tutorial_02" &&
-                step.Order >= 1 && step.Order <= 2 &&
+            if (step != null && string.Equals(step.TutorialId, tutorialId, StringComparison.OrdinalIgnoreCase) &&
+                step.Order >= 1 && step.Order <= lastOrder &&
                 string.Equals(step.TextOutput, "Dialogbox", StringComparison.OrdinalIgnoreCase))
                 lines.Add(step);
         }
         if (lines.Count == 0)
         {
-            Debug.LogWarning("[TutorialBattleSequence] Tutorial_02 dialogue Order 1-2 not found for Map_27. Check the loaded GameData Tutorial sheet and TextOutput=Dialogbox.", this);
+            Debug.LogWarning($"[TutorialBattleSequence] {tutorialId} dialogue Order 1-{lastOrder} not found for {mapId}. Check the loaded GameData Tutorial sheet and TextOutput=Dialogbox.", this);
             yield break;
         }
         lines.Sort((a, b) => a.Order.CompareTo(b.Order));
-        Debug.Log($"[TutorialBattleSequence] Tutorial_02 event dialogue ready: {lines.Count} line(s).", this);
+        Debug.Log($"[TutorialBattleSequence] {tutorialId} event dialogue ready: {lines.Count} line(s).", this);
 
         dialoguePresentationRunning = true;
         dialogueInputActive = true;
@@ -441,6 +446,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         {
             Cleanup();
         }
+
+
     }
 
     // Triggered only after the first tutorial relic panel has finished its entrance animation.
