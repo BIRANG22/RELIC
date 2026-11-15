@@ -204,6 +204,11 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         {
             extractButton.onClick.RemoveListener(ExtractReward);
             extractButton.onClick.AddListener(ExtractReward);
+
+            // ExtractButton hover: reveal the two gold icons and the value label.
+            ExtractButtonHoverReveal hover = extractButton.GetComponent<ExtractButtonHoverReveal>();
+            if (hover == null) hover = extractButton.gameObject.AddComponent<ExtractButtonHoverReveal>();
+            hover.Configure();
         }
         if (skipButton != null)
         {
@@ -1817,5 +1822,138 @@ public sealed class BattleRelicSlotTooltipHover : MonoBehaviour, IPointerEnterHa
     {
         isHovered = false;
         panel?.HideEquippedRelicTooltip();
+    }
+}
+
+
+// The extraction amount hint is independent of the button's click/selection behavior.
+// The three children may be disabled in the prefab: they are enabled for the fade-in
+// and disabled again after the fade-out. All positions are local UI anchored positions.
+public sealed class ExtractButtonHoverReveal : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    [Header("Extract Button Hover Hint")]
+    [SerializeField] private RectTransform goldIconImage1;
+    [SerializeField] private RectTransform goldIconImage2;
+    [SerializeField] private RectTransform value;
+    [SerializeField, Min(0f)] private float hoverMoveY = 15f;
+    [SerializeField, Min(0f)] private float fadeInDuration = 0.2f;
+    [SerializeField, Min(0f)] private float fadeOutDuration = 0.2f;
+
+    private readonly RectTransform[] targets = new RectTransform[3];
+    private readonly Vector2[] idlePositions = new Vector2[3];
+    private readonly CanvasGroup[] canvasGroups = new CanvasGroup[3];
+    private Coroutine hoverAnimationCoroutine;
+    private float progress;
+    private bool initialized;
+
+    public void Configure()
+    {
+        if (initialized) return;
+        if (goldIconImage1 == null) goldIconImage1 = transform.Find("GoldIconImage (1)") as RectTransform;
+        if (goldIconImage2 == null) goldIconImage2 = transform.Find("GoldIconImage (2)") as RectTransform;
+        if (value == null) value = transform.Find("Value") as RectTransform;
+
+        targets[0] = goldIconImage1;
+        targets[1] = goldIconImage2;
+        targets[2] = value;
+        for (int i = 0; i < targets.Length; i++)
+        {
+            RectTransform rect = targets[i];
+            if (rect == null) continue;
+            idlePositions[i] = rect.anchoredPosition;
+            CanvasGroup group = rect.GetComponent<CanvasGroup>();
+            if (group == null) group = rect.gameObject.AddComponent<CanvasGroup>();
+            canvasGroups[i] = group;
+            group.alpha = 0f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            // The revealed graphics should never steal the button's pointer events.
+            foreach (Graphic graphic in rect.GetComponentsInChildren<Graphic>(true))
+                graphic.raycastTarget = false;
+            rect.gameObject.SetActive(false);
+        }
+        initialized = true;
+        progress = 0f;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!isActiveAndEnabled) return;
+        Configure();
+        BeginAnimation(1f, fadeInDuration);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!initialized) return;
+        BeginAnimation(0f, fadeOutDuration);
+    }
+
+    private void BeginAnimation(float destination, float duration)
+    {
+        if (hoverAnimationCoroutine != null)
+        {
+            StopCoroutine(hoverAnimationCoroutine);
+            hoverAnimationCoroutine = null;
+        }
+        if (destination > 0f)
+            for (int i = 0; i < targets.Length; i++)
+                if (targets[i] != null) targets[i].gameObject.SetActive(true);
+
+        if (duration <= 0f)
+        {
+            Apply(destination);
+            if (destination <= 0f) HideTargets();
+        }
+        else
+        {
+            hoverAnimationCoroutine = StartCoroutine(Animate(destination, duration));
+        }
+    }
+
+    private IEnumerator Animate(float destination, float duration)
+    {
+        float start = progress;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            Apply(Mathf.Lerp(start, destination, t));
+            yield return null;
+        }
+        Apply(destination);
+        if (destination <= 0f) HideTargets();
+        hoverAnimationCoroutine = null;
+    }
+
+    private void Apply(float value01)
+    {
+        progress = Mathf.Clamp01(value01);
+        for (int i = 0; i < targets.Length; i++)
+        {
+            if (targets[i] == null) continue;
+            targets[i].anchoredPosition = idlePositions[i] + Vector2.up * (hoverMoveY * progress);
+            if (canvasGroups[i] != null) canvasGroups[i].alpha = progress;
+        }
+    }
+
+    private void HideTargets()
+    {
+        for (int i = 0; i < targets.Length; i++)
+            if (targets[i] != null) targets[i].gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        if (hoverAnimationCoroutine != null)
+        {
+            StopCoroutine(hoverAnimationCoroutine);
+            hoverAnimationCoroutine = null;
+        }
+        if (!initialized) return;
+        Apply(0f);
+        HideTargets();
     }
 }
