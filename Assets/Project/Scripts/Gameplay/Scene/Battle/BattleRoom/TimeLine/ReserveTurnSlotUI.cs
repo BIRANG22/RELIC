@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
+public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public const int MaxCommandCount = 5;
 
@@ -16,6 +16,11 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
     [Tooltip("TurnMark/Key/KeyText에 표시할 슬롯 번호 텍스트입니다. 비어 있으면 KeyText를 자동 탐색합니다.")]
     [SerializeField] private TMP_Text keyText;
     [SerializeField] private bool autoFindKeyText = true;
+
+    [Header("TurnMark Hover")]
+    [SerializeField] private Transform turnMarkTransform;
+    [SerializeField] private Vector2 turnMarkNormalScale = new Vector2(1.5f, 1f);
+    [SerializeField] private Vector2 turnMarkHoverScale = new Vector2(1.6f, 1.1f);
 
     private readonly List<PlayerReservedCommand> commands = new();
 
@@ -76,6 +81,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         this.slotIndex = slotIndex;
 
         ResolveKeyText();
+        ResolveTurnMark();
         RefreshKeyText();
         BindButtons();
     }
@@ -83,9 +89,14 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         ResolveKeyText();
+        ResolveTurnMark();
         BindButtons();
     }
 
+    private void OnDisable()
+    {
+        SetTurnMarkHovered(false);
+    }
 
     private void ResolveKeyText()
     {
@@ -259,6 +270,43 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
     private void ShowBattleWarning(string message)
     {
         BattleWarningUI.ShowMessage(message);
+    }
+
+    private void ResolveTurnMark()
+    {
+        if (turnMarkTransform != null)
+            return;
+
+        Transform[] children = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            if (children[i] != null && children[i].name == "TurnMark")
+            {
+                turnMarkTransform = children[i];
+                return;
+            }
+        }
+    }
+
+    private void SetTurnMarkHovered(bool hovered)
+    {
+        ResolveTurnMark();
+        if (turnMarkTransform == null)
+            return;
+
+        Vector2 scale = hovered ? turnMarkHoverScale : turnMarkNormalScale;
+        Vector3 current = turnMarkTransform.localScale;
+        turnMarkTransform.localScale = new Vector3(scale.x, scale.y, current.z);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        SetTurnMarkHovered(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        SetTurnMarkHovered(false);
     }
 
     public void OnPointerClick(PointerEventData eventData)
