@@ -104,7 +104,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466051
-    m_Localized: Hayes
+    m_Localized: Haze
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466052
@@ -960,8 +960,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603457
-    m_Localized: When an enemy is defeated by remembering the attack type in the
-      5th slot, the Mana used for the skill is returned.
+    m_Localized: Defeating an enemy with an attack Memory in slot 5 refunds the Mana
+      spent on it.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603458
@@ -1307,7 +1307,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797794
-    m_Localized: 
+    m_Localized: Cocoon
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797795
@@ -1315,7 +1315,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797796
-    m_Localized: 
+    m_Localized: Hunting Chamber
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797
@@ -2041,7 +2041,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10999245267542018
-    m_Localized: I've put together a few fragments to help you out.
+    m_Localized: I've prepared a few runes to help you.
     m_Metadata:
       m_Items: []
   - m_Id: 10999245267542019
@@ -2065,7 +2065,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100868
-    m_Localized: Crafting
+    m_Localized: Combine
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100869
@@ -2446,7 +2446,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101075
-    m_Localized: Grant all allies {ValueRate1} Swift.
+    m_Localized: Grant all allies {ValueRate1} {E_Swift}.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101078
@@ -2925,11 +2925,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10185974323093537
-    m_Localized: Compound Restriction
+    m_Localized: Consumable Restriction
     m_Metadata:
       m_Items: []
   - m_Id: 10185974323093538
-    m_Localized: Compounds cannot be used.
+    m_Localized: Consumables cannot be used.
     m_Metadata:
       m_Items: []
   - m_Id: 10185974323093539
@@ -3080,7 +3080,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11697455342559232
-    m_Localized: Compound
+    m_Localized: Consumables
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838435
@@ -4499,11 +4499,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 27586697539477505
-    m_Localized: 
+    m_Localized: Unclaimed Chest
     m_Metadata:
       m_Items: []
   - m_Id: 27586697539477506
-    m_Localized: 
+    m_Localized: Open the chest.
     m_Metadata:
       m_Items: []
   - m_Id: 4547655072889828093
@@ -4688,7 +4688,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 6579587282193344706
-    m_Localized: 
+    m_Localized: Artifact Acquired
     m_Metadata:
       m_Items: []
   - m_Id: 29397909976096769
@@ -5134,11 +5134,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150537
-    m_Localized: 
+    m_Localized: On the way to the base, a lone chest sits unattended.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150538
-    m_Localized: 
+    m_Localized: You found some useful items inside the chest.
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373547
@@ -5158,15 +5158,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31275475406135313
-    m_Localized: Common Compound
+    m_Localized: Common Consumables
     m_Metadata:
       m_Items: []
   - m_Id: 31275475406135315
-    m_Localized: Epic Compound
+    m_Localized: Epic Consumables
     m_Metadata:
       m_Items: []
   - m_Id: 31275475406135314
-    m_Localized: Rare Compound
+    m_Localized: Rare Consumables
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179200
@@ -5980,7 +5980,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31941125527019554
-    m_Localized: Invalid synthesis combination.
+    m_Localized: Invalid combination.
     m_Metadata:
       m_Items: []
   - m_Id: 31941125522825240
@@ -6340,10 +6340,6 @@ MonoBehaviour:
     m_Localized: Character Information
     m_Metadata:
       m_Items: []
-  - m_Id: 32765776591298560
-    m_Localized: Times Incapacitated
-    m_Metadata:
-      m_Items: []
   - m_Id: 32786741371052032
     m_Localized: Times Incapacitated
     m_Metadata:
@@ -6374,19 +6370,442 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582403
-    m_Localized: 
+    m_Localized: Hey, there's something up ahead!
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582404
-    m_Localized: 
+    m_Localized: A mutant. It seems we can't simply pass by.
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582405
-    m_Localized: 
+    m_Localized: It's just one! Let's take it down quickly!
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582406
-    m_Localized: 
+    m_Localized: Don't let your guard down. Let's assess the situation first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411751
+    m_Localized: Click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800339
+    m_Localized: Press C or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411759
+    m_Localized: Press D or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411718
+    m_Localized: Click a destination to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411720
+    m_Localized: Press Q or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411747
+    m_Localized: Click the mutant to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411716
+    m_Localized: Press F or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800346
+    m_Localized: Press X or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34941980970819584
+    m_Localized: Click a memory to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800342
+    m_Localized: Press R or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800344
+    m_Localized: Press Z or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411728
+    m_Localized: Press Space or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411736
+    m_Localized: Equip the artifact to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411753
+    m_Localized: Click the character to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411762
+    m_Localized: Click the info panel to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411724
+    m_Localized: Press Tab or click the button to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411722
+    m_Localized: Press 2 or click the slot to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411765
+    m_Localized: Press 3 or click the slot to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800322
+    m_Localized: Press 5 or click the slot to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411715
+    m_Localized: Let's start by moving a character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411717
+    m_Localized: Select a destination to reserve a move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411719
+    m_Localized: A memory's range depends on the direction the character is facing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411721
+    m_Localized: Select timeline slot 2 before reserving an action for the second
+      character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411723
+    m_Localized: Let's switch characters to reserve another action.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411725
+    m_Localized: Memories can be reserved multiple times as long as you have enough
+      resources.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411726
+    m_Localized: Reserve the memory once more to add another attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411727
+    m_Localized: When you end your turn, reserved actions execute in timeline order.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411732
+    m_Localized: Oh, this artifact looks pretty good! Mind if I take it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411733
+    m_Localized: Of course. Go ahead.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411734
+    m_Localized: Combine the various effects of artifacts to create your own strategic
+      build.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411735
+    m_Localized: An artifact's unique effects apply only to the character equipping
+      it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411729
+    m_Localized: If they're all like this, I can take on a whole bunch!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411730
+    m_Localized: That went more smoothly than expected. Let's make sure we collect
+      all the loot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411731
+    m_Localized: Alright! Let's see what we got!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411737
+    m_Localized: Huh? There's a chest over there!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411738
+    m_Localized: It looks like someone left it behind. There may be something useful
+      inside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411739
+    m_Localized: I already got one earlier, so this one's yours!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411740
+    m_Localized: Then I'll gladly accept it. This should come in handy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411741
+    m_Localized: Even the same artifact can be used differently depending on which
+      character equips it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411742
+    m_Localized: This one looks a lot tougher than the last!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411743
+    m_Localized: It's certainly different from the previous one. We shouldn't act
+      rashly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411744
+    m_Localized: We can't just stand around! Let's charge straight in!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411745
+    m_Localized: Rather than rushing in blindly, we should look for an opening.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411746
+    m_Localized: Let's select a mutant to inspect its details.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411748
+    m_Localized: Checking a mutant's abilities and effects can help you predict its
+      actions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411749
+    m_Localized: You can check the mutant's unique abilities and current status effects.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411750
+    m_Localized: Once you've finished checking, close the panel and prepare for battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411752
+    m_Localized: You can also select a character by clicking them directly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411754
+    m_Localized: Artifact effects activate automatically without requiring an action.
+      Hover over an artifact to view its effects.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411755
+    m_Localized: Let's reserve a move to avoid the mutant's attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411756
+    m_Localized: Reserve a move outside the mutant's predicted attack range.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411757
+    m_Localized: Select timeline slot 2 to attack after the mutant acts.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411758
+    m_Localized: Changing direction lets you adjust which way your character faces.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411760
+    m_Localized: Reserve an attack. Actions with a facing change have a special indicator.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411761
+    m_Localized: You can also select a character by clicking their information panel.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411763
+    m_Localized: Hover over the artifact to view its effects. This artifact strengthens
+      attacks used in timeline slot 5.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411764
+    m_Localized: You can select an empty slot to reserve additional actions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411766
+    m_Localized: The mana cost of movement depends on the distance traveled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800320
+    m_Localized: Move out of the mutant's predicted attack range while positioning
+      yourself to attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800321
+    m_Localized: Select timeline slot 5 to take advantage of your artifact's effect.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800323
+    m_Localized: Your equipped artifact increases attack damage. Reserve an attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800324
+    m_Localized: Increase the number of attacks to deal more damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800325
+    m_Localized: Once you've reserved all your actions, end your turn.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800326
+    m_Localized: Use what you've learned to defeat the mutants.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800328
+    m_Localized: Each memory has different ranges and effects. Some memories consume
+      HP or Karma instead of Mana.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800327
+    m_Localized: This feeling... I think I've remembered something I'd forgotten.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800329
+    m_Localized: E-excuse me... Are you two heading to the base as well?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800330
+    m_Localized: Yeah, we are! Are you heading there too?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800331
+    m_Localized: Then perhaps we should travel together.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800332
+    m_Localized: Th-thank you. I was getting worried about my Erosion level...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800333
+    m_Localized: A mutant has appeared. Prepare for battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800334
+    m_Localized: I-I think I can help too.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800335
+    m_Localized: Great! So we can just attack right away, right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800336
+    m_Localized: W-wait! I can strengthen everyone first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800337
+    m_Localized: Select the new character to strengthen your allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800338
+    m_Localized: Consumables apply their effects immediately without reserving an
+      action.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800340
+    m_Localized: Amplify increases the damage of attack memories by its value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800341
+    m_Localized: Fighting Spirit is a buff that increases damage dealt by 30%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800343
+    m_Localized: You can undo a reserved action to restore the previous state.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800345
+    m_Localized: You can redo an undone action to restore its reservation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800347
+    m_Localized: Use the abilities of all three characters to defeat the mutants.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193793
+    m_Localized: Examine it carefully.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193794
+    m_Localized: Artifact Acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193795
+    m_Localized: A Chance Encounter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193796
+    m_Localized: You encounter a lone explorer taking a break.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193797
+    m_Localized: Rest together.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193798
+    m_Localized: 'Restore 15 HP to all party members
+
+      Haze joins the party'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193799
+    m_Localized: Recover and move on.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582400
+    m_Localized: 'Reduce Erosion by 15
+
+      Haze joins the party'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582401
+    m_Localized: After a short rest, the party regains its strength and continues
+      onward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582402
+    m_Localized: After a brief conversation, the group continues on without delay.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193792
+    m_Localized: Tutorial (Murk, Blight)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946122195902465
+    m_Localized: Times Incapacitated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946122195902464
+    m_Localized: Consumables
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946042025975808
+    m_Localized: Exploration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946042021781504
+    m_Localized: Record Book
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494052302848
+    m_Localized: Character Info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411714
+    m_Localized: Canceled a facing change reservation with no following action.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952599136608256
+    m_Localized: Can you hear it? Such a beautiful prayer...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952599186939904
+    m_Localized: Pain is fleeting. Salvation is eternal.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952682506788864
+    m_Localized: Consumables
     m_Metadata:
       m_Items: []
   references:

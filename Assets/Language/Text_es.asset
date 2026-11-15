@@ -104,7 +104,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466051
-    m_Localized: Hayes
+    m_Localized: Haze
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466052
@@ -120,7 +120,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466057
-    m_Localized: Merck
+    m_Localized: Murk
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466060
@@ -1335,7 +1335,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797794
-    m_Localized: 
+    m_Localized: Capullo
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797795
@@ -1343,7 +1343,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797796
-    m_Localized: 
+    m_Localized: "C\xE1mara de caza"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797
@@ -2104,7 +2104,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100868
-    m_Localized: Alquimia
+    m_Localized: Combinar
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100869
@@ -3328,11 +3328,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10185974323093537
-    m_Localized: "Restricci\xF3n de compuestos"
+    m_Localized: "Restricci\xF3n de consumibles"
     m_Metadata:
       m_Items: []
   - m_Id: 10185974323093538
-    m_Localized: No se pueden usar compuestos.
+    m_Localized: No se pueden usar consumibles.
     m_Metadata:
       m_Items: []
   - m_Id: 10185974323093539
@@ -3486,7 +3486,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11697455342559232
-    m_Localized: Compuesto
+    m_Localized: Consumibles
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838435
@@ -4730,11 +4730,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 27586697539477505
-    m_Localized: 
+    m_Localized: "Cofre sin due\xF1o"
     m_Metadata:
       m_Items: []
   - m_Id: 27586697539477506
-    m_Localized: 
+    m_Localized: Abrir el cofre.
     m_Metadata:
       m_Items: []
   - m_Id: 4547655072889828093
@@ -4903,7 +4903,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 6579587282193344706
-    m_Localized: 
+    m_Localized: Artefacto obtenido
     m_Metadata:
       m_Items: []
   - m_Id: 29397909976096769
@@ -5189,11 +5189,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150537
-    m_Localized: 
+    m_Localized: De camino a la base, hay un cofre abandonado.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150538
-    m_Localized: 
+    m_Localized: "Encontraste objetos \xFAtiles dentro del cofre."
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373547
@@ -5213,15 +5213,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31275475406135313
-    m_Localized: "Compuesto com\xFAn"
+    m_Localized: Consumibles comunes
     m_Metadata:
       m_Items: []
   - m_Id: 31275475406135315
-    m_Localized: "Compuesto \xE9pico"
+    m_Localized: "Consumibles \xE9picos"
     m_Metadata:
       m_Items: []
   - m_Id: 31275475406135314
-    m_Localized: Compuesto raro
+    m_Localized: Consumibles raros
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179200
@@ -6040,7 +6040,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31941125527019554
-    m_Localized: "La combinaci\xF3n de s\xEDntesis no es v\xE1lida."
+    m_Localized: "La combinaci\xF3n no es v\xE1lida."
     m_Metadata:
       m_Items: []
   - m_Id: 31941125522825240
@@ -6389,10 +6389,6 @@ MonoBehaviour:
     m_Localized: "Al\xE9jate 1 o 2 casillas del personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
-  - m_Id: 32765776591298560
-    m_Localized: Veces incapacitado
-    m_Metadata:
-      m_Items: []
   - m_Id: 32753678519869441
     m_Localized: "Informaci\xF3n del personaje"
     m_Metadata:
@@ -6435,19 +6431,458 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582403
-    m_Localized: 
+    m_Localized: "\xA1Eh! \xA1Hay algo ah\xED delante!"
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582404
-    m_Localized: 
+    m_Localized: "Es un mutante. Parece que no podremos pasar sin enfrentarnos a
+      \xE9l."
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582405
-    m_Localized: 
+    m_Localized: "\xA1Es solo uno! \xA1Acabemos con \xE9l r\xE1pido!"
     m_Metadata:
       m_Items: []
   - m_Id: 33785562196582406
-    m_Localized: 
+    m_Localized: "No bajes la guardia. Primero, evaluemos la situaci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411751
+    m_Localized: "Haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800339
+    m_Localized: "Pulsa C o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411759
+    m_Localized: "Pulsa D o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411718
+    m_Localized: Haz clic en un destino para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411720
+    m_Localized: "Pulsa Q o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411747
+    m_Localized: Haz clic en el mutante para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411716
+    m_Localized: "Pulsa F o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800346
+    m_Localized: "Pulsa X o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34941980970819584
+    m_Localized: Haz clic en una memoria para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800342
+    m_Localized: "Pulsa R o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800344
+    m_Localized: "Pulsa Z o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411728
+    m_Localized: "Pulsa Espacio o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411736
+    m_Localized: Equipa el artefacto para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411753
+    m_Localized: Haz clic en el personaje para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411762
+    m_Localized: "Haz clic en el panel de informaci\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411724
+    m_Localized: "Pulsa Tab o haz clic en el bot\xF3n para continuar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411722
+    m_Localized: Pulsa 2 o haz clic en la ranura para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411765
+    m_Localized: Pulsa 3 o haz clic en la ranura para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800322
+    m_Localized: Pulsa 5 o haz clic en la ranura para continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411715
+    m_Localized: Empecemos moviendo a un personaje.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411717
+    m_Localized: Selecciona un destino para reservar un movimiento.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411719
+    m_Localized: "El alcance de una memoria depende de la direcci\xF3n en la que
+      mira el personaje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411721
+    m_Localized: "Selecciona la ranura 2 de la l\xEDnea temporal antes de reservar
+      una acci\xF3n para el segundo personaje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411723
+    m_Localized: "Cambia de personaje para reservar otra acci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411725
+    m_Localized: Puedes reservar una misma memoria varias veces si tienes suficientes
+      recursos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411726
+    m_Localized: "Reserva la memoria una vez m\xE1s para a\xF1adir otro ataque."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411727
+    m_Localized: "Al terminar el turno, las acciones reservadas se ejecutan en el
+      orden de la l\xEDnea temporal."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411732
+    m_Localized: "\xA1Oh, este artefacto tiene buena pinta! \xBFPuedo qued\xE1rmelo?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411733
+    m_Localized: Por supuesto. Adelante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411734
+    m_Localized: Combina los efectos de distintos artefactos para crear tu propia
+      estrategia.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411735
+    m_Localized: "Los efectos \xFAnicos de un artefacto solo se aplican al personaje
+      que lo lleva equipado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411729
+    m_Localized: "\xA1Si todos son as\xED, puedo con unos cuantos m\xE1s!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411730
+    m_Localized: "Ha sido m\xE1s f\xE1cil de lo esperado. No olvidemos recoger todo
+      el bot\xEDn."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411731
+    m_Localized: "\xA1Bien! \xA1Veamos qu\xE9 hemos conseguido!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411737
+    m_Localized: "\xBFEh? \xA1Hay un cofre all\xED!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411738
+    m_Localized: "Parece que alguien lo ha dejado ah\xED. Puede que haya algo \xFAtil
+      dentro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411739
+    m_Localized: "\xA1Yo ya consegu\xED uno antes, as\xED que este es para ti!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411740
+    m_Localized: "Entonces lo aceptar\xE9 con gusto. Seguro que nos ser\xE1 \xFAtil."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411741
+    m_Localized: "Incluso un mismo artefacto puede utilizarse de distintas formas
+      seg\xFAn el personaje que lo equipe."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411742
+    m_Localized: "Este parece mucho m\xE1s fuerte que el anterior, \xBFno?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411743
+    m_Localized: "Sin duda es distinto al anterior. No deber\xEDamos actuar precipitadamente."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411744
+    m_Localized: "\xA1Pero tampoco podemos quedarnos quietos! \xA1Ataquemos de frente!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411745
+    m_Localized: "En lugar de lanzarnos sin pensar, ser\xE1 mejor buscar un punto
+      d\xE9bil."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411746
+    m_Localized: "Selecciona un mutante para consultar su informaci\xF3n detallada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411748
+    m_Localized: Consultar los efectos de sus habilidades ayuda a predecir las acciones
+      de un mutante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411749
+    m_Localized: "Puedes consultar sus habilidades \xFAnicas y los efectos de estado
+      activos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411750
+    m_Localized: "Cuando termines de consultar la informaci\xF3n, cierra el panel
+      y prep\xE1rate para combatir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411752
+    m_Localized: "Tambi\xE9n puedes seleccionar un personaje haciendo clic directamente
+      sobre \xE9l."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411754
+    m_Localized: "Los efectos de los artefactos se aplican autom\xE1ticamente sin
+      consumir acciones. Pasa el cursor sobre un artefacto para consultar sus efectos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411755
+    m_Localized: Vamos a reservar un movimiento para esquivar el ataque del mutante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411756
+    m_Localized: Reserva un movimiento fuera del alcance previsto del ataque del
+      mutante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411757
+    m_Localized: "Selecciona la ranura 2 de la l\xEDnea temporal para atacar despu\xE9s
+      de que act\xFAe el mutante."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411758
+    m_Localized: "El cambio de direcci\xF3n permite modificar hacia d\xF3nde mira
+      el personaje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411760
+    m_Localized: "Reserva un ataque. Las acciones con cambio de direcci\xF3n muestran
+      un indicador especial."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411761
+    m_Localized: "Tambi\xE9n puedes seleccionar un personaje haciendo clic en su
+      panel de informaci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411763
+    m_Localized: "Pasa el cursor sobre el artefacto para consultar sus efectos. Este
+      artefacto potencia los ataques usados en la ranura 5 de la l\xEDnea temporal."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411764
+    m_Localized: "Puedes seleccionar una ranura vac\xEDa para reservar acciones adicionales."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411766
+    m_Localized: "El man\xE1 consumido al moverse depende de la distancia recorrida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800320
+    m_Localized: "Evita el alcance previsto del ataque del mutante y mu\xE9vete hasta
+      una posici\xF3n desde la que puedas atacar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800321
+    m_Localized: "Selecciona la ranura 5 de la l\xEDnea temporal para aprovechar
+      el efecto de tu artefacto."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800323
+    m_Localized: "Tu artefacto equipado aumenta el da\xF1o de ataque. Reserva un
+      ataque."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800324
+    m_Localized: "Aumenta el n\xFAmero de ataques para infligir m\xE1s da\xF1o."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800325
+    m_Localized: Cuando hayas reservado todas las acciones, termina el turno.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800326
+    m_Localized: Usa lo aprendido para derrotar a los mutantes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800328
+    m_Localized: "Cada memoria tiene un alcance y efectos diferentes. Algunas consumen
+      PV o karma en lugar de man\xE1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800327
+    m_Localized: "Esta sensaci\xF3n... Creo que he recordado algo que hab\xEDa olvidado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800329
+    m_Localized: "P-perdonen... \xBFUstedes dos tambi\xE9n se dirigen a la base?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800330
+    m_Localized: "\xA1S\xED! \xBFT\xFA tambi\xE9n vas a la base?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800331
+    m_Localized: "En ese caso, ser\xEDa buena idea viajar juntos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800332
+    m_Localized: "Ah, \xA1gracias! Me preocupaba que mi nivel de erosi\xF3n estuviera
+      aumentando..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800333
+    m_Localized: "Ha aparecido un mutante. Prepar\xE9monos para el combate."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800334
+    m_Localized: "C-creo que yo tambi\xE9n puedo ayudar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800335
+    m_Localized: "\xA1Bien! Entonces, \xBFatacamos directamente?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800336
+    m_Localized: "\xA1E-esperen! \xA1Primero puedo fortalecer al grupo!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800337
+    m_Localized: Selecciona al nuevo personaje para fortalecer a tus aliados.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800338
+    m_Localized: "Los consumibles aplican sus efectos inmediatamente sin reservar
+      una acci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800340
+    m_Localized: "Amplificaci\xF3n aumenta el da\xF1o de las memorias de ataque seg\xFAn
+      su valor."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800341
+    m_Localized: "Esp\xEDritu de lucha es un efecto beneficioso que aumenta un 30%
+      el da\xF1o infligido."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800343
+    m_Localized: "Puedes deshacer una acci\xF3n reservada para volver al estado anterior."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800345
+    m_Localized: "Puedes rehacer una acci\xF3n deshecha para restaurar su reserva."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800347
+    m_Localized: Usa las habilidades de los tres personajes para derrotar a los mutantes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193793
+    m_Localized: Examinar con cuidado.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193794
+    m_Localized: Artefacto obtenido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193795
+    m_Localized: Un encuentro fortuito
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193796
+    m_Localized: Encuentras a un explorador desconocido descansando a solas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193797
+    m_Localized: Descansar juntos.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193798
+    m_Localized: 'Todos los miembros del grupo recuperan 15 de PV
+
+      Haze se
+      une al grupo'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193799
+    m_Localized: Recuperarse y seguir adelante.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582400
+    m_Localized: "La erosi\xF3n disminuye en 15\nHaze se une al grupo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582401
+    m_Localized: Tras un breve descanso, el grupo recupera fuerzas y reanuda la marcha.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582402
+    m_Localized: "Despu\xE9s de una breve conversaci\xF3n, el grupo contin\xFAa sin
+      demora."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193792
+    m_Localized: Tutorial (Murk, Blight)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946122195902465
+    m_Localized: Veces incapacitado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946122195902464
+    m_Localized: Consumibles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946042025975808
+    m_Localized: "Exploraci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946042021781504
+    m_Localized: Libro de registros
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494052302848
+    m_Localized: "Informaci\xF3n del personaje"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411714
+    m_Localized: "Se ha cancelado una acci\xF3n de cambio de direcci\xF3n sin acciones
+      posteriores."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952599136608256
+    m_Localized: "\xBFLo oyen? Qu\xE9 hermosa plegaria..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952599186939904
+    m_Localized: "El dolor es pasajero. La salvaci\xF3n es eterna."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952682506788864
+    m_Localized: Consumibles
     m_Metadata:
       m_Items: []
   references:

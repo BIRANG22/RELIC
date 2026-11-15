@@ -335,6 +335,14 @@ MonoBehaviour:
     m_Key: battle.resource.shortage
     m_Metadata:
       m_Items: []
+  - m_Id: 34952599136608256
+    m_Key: battle.boss.arabella.appear.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952599186939904
+    m_Key: battle.boss.arabella.appear.02
+    m_Metadata:
+      m_Items: []
   - m_Id: 41385915657494528
     m_Key: data.character.char_01.name
     m_Metadata:
@@ -1619,8 +1627,16 @@ MonoBehaviour:
     m_Key: data.effect.e_spawn_spider_egg.tooltip
     m_Metadata:
       m_Items: []
+  - m_Id: 41385915728797794
+    m_Key: data.effect.e_spawn_spider_egg.name
+    m_Metadata:
+      m_Items: []
   - m_Id: 41385915728797797
     m_Key: data.effect.e_spawn_spider_web.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915728797796
+    m_Key: data.effect.e_spawn_spider_web.name
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797798
@@ -3127,6 +3143,66 @@ MonoBehaviour:
     m_Key: data.event.event_10_d.detail
     m_Metadata:
       m_Items: []
+  - m_Id: 31210397648150538
+    m_Key: data.event.event_t_01_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477505
+    m_Key: data.event.event_t_01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477506
+    m_Key: data.event.event_t_01.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6579587282193344706
+    m_Key: data.event.event_t_01.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150537
+    m_Key: data.event.event_t_01.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193793
+    m_Key: data.event.event_t_01.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193794
+    m_Key: data.event.event_t_01.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193795
+    m_Key: data.event.event_t_02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193796
+    m_Key: data.event.event_t_02.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193797
+    m_Key: data.event.event_t_02.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193798
+    m_Key: data.event.event_t_02.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193799
+    m_Key: data.event.event_t_02.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582400
+    m_Key: data.event.event_t_02.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582401
+    m_Key: data.event.event_t_02_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582402
+    m_Key: data.event.event_t_02_b.detail
+    m_Metadata:
+      m_Items: []
   - m_Id: 10185974318899314
     m_Key: data.compound.compound_04.name
     m_Metadata:
@@ -3825,6 +3901,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 27586697539477504
     m_Key: data.battle_map.battlemap_t_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562188193792
+    m_Key: data.battle_map.battlemap_t_03.description
     m_Metadata:
       m_Items: []
   - m_Id: 25428606029373440
@@ -4607,14 +4687,6 @@ MonoBehaviour:
     m_Key: data.erosion.erosion_02_07.description
     m_Metadata:
       m_Items: []
-  - m_Id: 10185974323093537
-    m_Key: data.erosion.erosion_02_08.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974323093538
-    m_Key: data.erosion.erosion_02_08.description
-    m_Metadata:
-      m_Items: []
   - m_Id: 10185974323093539
     m_Key: data.erosion.erosion_03_01.name
     m_Metadata:
@@ -4677,6 +4749,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10185974323093554
     m_Key: data.erosion.erosion_03_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093537
+    m_Key: data.erosion.erosion_02_08.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093538
+    m_Key: data.erosion.erosion_02_08.description
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449362
@@ -4755,7 +4835,7 @@ MonoBehaviour:
     m_Key: ui.battle.text.d50f2f0f
     m_Metadata:
       m_Items: []
-  - m_Id: 32765776591298560
+  - m_Id: 34946122195902465
     m_Key: ui.battle.text.a182bab0
     m_Metadata:
       m_Items: []
@@ -4773,10 +4853,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29434412307554317
     m_Key: ui.battle.dialog.4548eb4a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11697455342559232
-    m_Key: ui.record.alchemy_agent
     m_Metadata:
       m_Items: []
   - m_Id: 31275309794041856
@@ -4801,6 +4877,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275309840179226
     m_Key: ui.record.text_tmp.91b291c3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946122195902464
+    m_Key: ui.record.text_tmp.925df354
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179227
@@ -4923,18 +5003,6 @@ MonoBehaviour:
     m_Key: ui.record.item_rarity.epic
     m_Metadata:
       m_Items: []
-  - m_Id: 31275475406135313
-    m_Key: ui.record.compound_rarity.common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275475406135314
-    m_Key: ui.record.compound_rarity.rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275475406135315
-    m_Key: ui.record.compound_rarity.epic
-    m_Metadata:
-      m_Items: []
   - m_Id: 31275475406135316
     m_Key: ui.record.relic_rarity.common
     m_Metadata:
@@ -4949,6 +5017,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275475406135319
     m_Key: ui.record.relic_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11697455342559232
+    m_Key: ui.record.alchemy_agent
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135313
+    m_Key: ui.record.compound_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135314
+    m_Key: ui.record.compound_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135315
+    m_Key: ui.record.compound_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34952682506788864
+    m_Key: ui.record.text.efa882c6
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838477
@@ -5051,10 +5139,6 @@ MonoBehaviour:
     m_Key: ui.lobby.culture.material
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100868
-    m_Key: ui.lobby.panel.crafting
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100869
     m_Key: ui.lobby.panel.erosion
     m_Metadata:
@@ -5067,8 +5151,16 @@ MonoBehaviour:
     m_Key: ui.lobby.panel.resonance
     m_Metadata:
       m_Items: []
+  - m_Id: 41387432259100868
+    m_Key: ui.lobby.panel.crafting
+    m_Metadata:
+      m_Items: []
   - m_Id: 31304009331744770
     m_Key: ui.lobby.play.ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946042025975808
+    m_Key: ui.lobby.text_tmp.36ad8928
     m_Metadata:
       m_Items: []
   - m_Id: 17041964720988228
@@ -5205,6 +5297,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275309840179242
     m_Key: ui.canvas.text.0f87cf8b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34946042021781504
+    m_Key: ui.canvas.text.120fcfce
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554337
@@ -5563,6 +5659,10 @@ MonoBehaviour:
     m_Key: ui.menu.battle.save_and_quit
     m_Metadata:
       m_Items: []
+  - m_Id: 34940494052302848
+    m_Key: ui.setting_panel.name.f03bcae8
+    m_Metadata:
+      m_Items: []
   - m_Id: 10175616531308544
     m_Key: title.explore_continue
     m_Metadata:
@@ -5623,6 +5723,82 @@ MonoBehaviour:
     m_Key: tutorial.prompt.click_any
     m_Metadata:
       m_Items: []
+  - m_Id: 34940494119411716
+    m_Key: tutorial.prompt.click_move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411718
+    m_Key: tutorial.prompt.click_grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411720
+    m_Key: tutorial.prompt.click_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411722
+    m_Key: tutorial.prompt.select_slot02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411724
+    m_Key: tutorial.prompt.select_char02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411728
+    m_Key: tutorial.prompt.end_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411736
+    m_Key: tutorial.prompt.equip_relic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411747
+    m_Key: tutorial.prompt.click_monster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411751
+    m_Key: tutorial.prompt.click_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411753
+    m_Key: tutorial.prompt.select_char
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411759
+    m_Key: tutorial.prompt.click_flip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411762
+    m_Key: tutorial.prompt.select_char01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411765
+    m_Key: tutorial.prompt.select_slot03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800322
+    m_Key: tutorial.prompt.select_slot05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800339
+    m_Key: tutorial.prompt.click_compound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800342
+    m_Key: tutorial.prompt.click_ultimate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800344
+    m_Key: tutorial.prompt.click_undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800346
+    m_Key: tutorial.prompt.click_redo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34941980970819584
+    m_Key: tutorial.prompt.click_skill
+    m_Metadata:
+      m_Items: []
   - m_Id: 31275309844373537
     m_Key: tutorial.skip.confirm
     m_Metadata:
@@ -5661,6 +5837,270 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275309844373573
     m_Key: tutorial.battle1.turn2.end_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582403
+    m_Key: tutorial.t01.encounter.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582404
+    m_Key: tutorial.t01.encounter.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582405
+    m_Key: tutorial.t01.encounter.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33785562196582406
+    m_Key: tutorial.t01.encounter.dialogue.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411715
+    m_Key: tutorial.t01.action.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411717
+    m_Key: tutorial.t01.action.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411719
+    m_Key: tutorial.t01.action.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411721
+    m_Key: tutorial.t01.action.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411723
+    m_Key: tutorial.t01.action.05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411725
+    m_Key: tutorial.t01.action.06
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411726
+    m_Key: tutorial.t01.action.07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411727
+    m_Key: tutorial.t01.action.08
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411729
+    m_Key: tutorial.t01.victory.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411730
+    m_Key: tutorial.t01.victory.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411731
+    m_Key: tutorial.t01.victory.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411732
+    m_Key: tutorial.t01.relic.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411733
+    m_Key: tutorial.t01.relic.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411734
+    m_Key: tutorial.t01.relic.guide.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411735
+    m_Key: tutorial.t01.relic.guide.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411737
+    m_Key: tutorial.t02.encounter.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411738
+    m_Key: tutorial.t02.encounter.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411739
+    m_Key: tutorial.t02.encounter.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411740
+    m_Key: tutorial.t02.encounter.dialogue.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411741
+    m_Key: tutorial.t02.relic.guide.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411742
+    m_Key: tutorial.t03.encounter.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411743
+    m_Key: tutorial.t03.encounter.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411744
+    m_Key: tutorial.t03.encounter.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411745
+    m_Key: tutorial.t03.encounter.dialogue.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411746
+    m_Key: tutorial.t03.guide.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411748
+    m_Key: tutorial.t03.guide.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411749
+    m_Key: tutorial.t03.guide.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411750
+    m_Key: tutorial.t03.guide.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411752
+    m_Key: tutorial.t03.guide.05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411754
+    m_Key: tutorial.t03.guide.06
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411755
+    m_Key: tutorial.t03.guide.07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411756
+    m_Key: tutorial.t03.guide.08
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411757
+    m_Key: tutorial.t03.guide.09
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411758
+    m_Key: tutorial.t03.guide.10
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411760
+    m_Key: tutorial.t03.guide.11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411761
+    m_Key: tutorial.t03.guide.12
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411763
+    m_Key: tutorial.t03.guide.13
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411764
+    m_Key: tutorial.t03.guide.14
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494119411766
+    m_Key: tutorial.t03.guide.15
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800320
+    m_Key: tutorial.t03.guide.16
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800321
+    m_Key: tutorial.t03.guide.17
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800323
+    m_Key: tutorial.t03.guide.18
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800324
+    m_Key: tutorial.t03.guide.19
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800325
+    m_Key: tutorial.t03.guide.20
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800326
+    m_Key: tutorial.t03.guide.21
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800328
+    m_Key: tutorial.t03.guide.22
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800327
+    m_Key: tutorial.t03.reward.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800329
+    m_Key: tutorial.t04.encounter.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800330
+    m_Key: tutorial.t04.encounter.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800331
+    m_Key: tutorial.t04.encounter.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800332
+    m_Key: tutorial.t04.encounter.dialogue.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800333
+    m_Key: tutorial.t05.encounter.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800334
+    m_Key: tutorial.t05.encounter.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800335
+    m_Key: tutorial.t05.encounter.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800336
+    m_Key: tutorial.t05.encounter.dialogue.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800337
+    m_Key: tutorial.t05.guide.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800338
+    m_Key: tutorial.t05.guide.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800340
+    m_Key: tutorial.t05.guide.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800341
+    m_Key: tutorial.t05.guide.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800343
+    m_Key: tutorial.t05.guide.05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800345
+    m_Key: tutorial.t05.guide.06
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34940494127800347
+    m_Key: tutorial.t05.guide.07
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373538
@@ -6023,16 +6463,16 @@ MonoBehaviour:
     m_Key: warning.battle.karma_insufficient
     m_Metadata:
       m_Items: []
+  - m_Id: 34940494119411714
+    m_Key: warning.battle.flip_requires_followup
+    m_Metadata:
+      m_Items: []
   - m_Id: 31941125527019552
     m_Key: warning.equip.panel_unavailable
     m_Metadata:
       m_Items: []
   - m_Id: 31941125527019553
     m_Key: warning.feature.unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31941125527019554
-    m_Key: warning.compound.invalid_recipe
     m_Metadata:
       m_Items: []
   - m_Id: 31945341465239552
@@ -6063,40 +6503,16 @@ MonoBehaviour:
     m_Key: warning.memory.upgrade_failed
     m_Metadata:
       m_Items: []
+  - m_Id: 31941125527019554
+    m_Key: warning.compound.invalid_recipe
+    m_Metadata:
+      m_Items: []
   - m_Id: 31947563796242435
     m_Key: system.expedition.abandoned
     m_Metadata:
       m_Items: []
   - m_Id: 31947563796242436
     m_Key: system.expedition.missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797794
-    m_Key: data.effect.e_spawn_spider_egg.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797796
-    m_Key: data.effect.e_spawn_spider_web.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31210397648150538
-    m_Key: data.event.event_t_01_a.detail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 27586697539477505
-    m_Key: data.event.event_t_01.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 27586697539477506
-    m_Key: data.event.event_t_01.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6579587282193344706
-    m_Key: data.event.event_t_01.choice_1_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31210397648150537
-    m_Key: data.event.event_t_01.detail
     m_Metadata:
       m_Items: []
   - m_Id: 31275482117021699
@@ -6117,70 +6533,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275482117021703
     m_Key: tutorial.battle_guide.05
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562137862144
-    m_Key: ui.battle.name.57dc6c5a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193792
-    m_Key: data.battle_map.battlemap_t_03.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193793
-    m_Key: data.event.event_t_01.choice_2_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193794
-    m_Key: data.event.event_t_01.choice_2_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193795
-    m_Key: data.event.event_t_02.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193796
-    m_Key: data.event.event_t_02.detail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193797
-    m_Key: data.event.event_t_02.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193798
-    m_Key: data.event.event_t_02.choice_1_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562188193799
-    m_Key: data.event.event_t_02.choice_2_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562196582400
-    m_Key: data.event.event_t_02.choice_2_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562196582401
-    m_Key: data.event.event_t_02_a.detail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562196582402
-    m_Key: data.event.event_t_02_b.detail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562196582403
-    m_Key: tutorial.t01.encounter.dialogue.01
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562196582404
-    m_Key: tutorial.t01.encounter.dialogue.02
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562196582405
-    m_Key: tutorial.t01.encounter.dialogue.03
-    m_Metadata:
-      m_Items: []
-  - m_Id: 33785562196582406
-    m_Key: tutorial.t01.encounter.dialogue.04
     m_Metadata:
       m_Items: []
   m_Metadata:

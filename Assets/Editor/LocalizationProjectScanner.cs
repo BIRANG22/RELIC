@@ -488,6 +488,10 @@ public static class LocalizationRuntimeSourceCatalog
     // Adding entries here makes Full Scan & Apply register them before synchronization.
     public static IReadOnlyList<LocalizationWorkbookEntry> RuntimeUiEntries { get; } = new[]
     {
+        // BossSpawnPresentation dialogue entries store the localization key and Korean
+        // fallback in separate serialized fields, so script-literal scanning misses them.
+        Entry("battle.boss.arabella.appear.01", "들리시나요? 이토록 아름다운 기도가..."),
+        Entry("battle.boss.arabella.appear.02", "고통은 잠시뿐입니다. 구원은 영원하니까요"),
         // Battle warnings are runtime strings, not static prefab TMP labels.
         Entry("warning.timeline.slot_action_limit", "슬롯 행동 제한을 초과했습니다."),
         Entry("warning.timeline.combined_action_limit", "해당 슬롯에 남은 칸이 부족합니다."),
