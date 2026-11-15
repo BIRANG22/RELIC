@@ -45,3 +45,9 @@ MonoBehaviour:
       sprite: {fileID: 21300000, guid: 2db4147dfeb5c3b4e9ef921d61d92414, type: 3}
     - page: 3
       sprite: {fileID: 21300000, guid: 6142aac2f74f54b4e9e2163b9c35511b, type: 3}
+  - indexId: Index05
+    pages:
+    - page: 1
+      sprite: {fileID: 21300000, guid: eda3959f97f8cb34e80c9bfd9d550d11, type: 3}
+    - page: 2
+      sprite: {fileID: 21300000, guid: 6bb7d07740eddf64faa4ba22480aac6c, type: 3}

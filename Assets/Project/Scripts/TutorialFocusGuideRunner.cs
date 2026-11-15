@@ -193,6 +193,66 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         routine = null;
     }
 
+    // Tutorial_03 Order 27: guide the player to choose the center memory reward.
+    public static bool IsTutorial03RewardSelectionStep => IsRunning && Active.step != null &&
+        Active.step.Order == 27 && string.Equals(Active.step.TutorialId, "Tutorial_03", StringComparison.OrdinalIgnoreCase);
+
+    private bool tutorial03RewardSelected;
+
+    public static void NotifyTutorial03RewardSelected(int cardIndex)
+    {
+        if (cardIndex == 1 && IsTutorial03RewardSelectionStep)
+            Active.tutorial03RewardSelected = true;
+    }
+
+    public void BeginTutorial03RewardGuide(string mapId)
+    {
+        if (routine != null) StopCoroutine(routine);
+        running = false;
+        routine = StartCoroutine(RunTutorial03RewardGuide(mapId));
+    }
+
+    private IEnumerator RunTutorial03RewardGuide(string mapId)
+    {
+        var all = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        TutorialData rewardStep = null;
+        if (all != null)
+            foreach (TutorialData item in all)
+                if (item != null && item.Order == 27 && item.TutorialId == "Tutorial_03" &&
+                    string.Equals(item.TextOutput, "TutorialTooltip", StringComparison.OrdinalIgnoreCase))
+                { rewardStep = item; break; }
+        if (rewardStep == null)
+        {
+            Debug.LogWarning("[TutorialFocusGuideRunner] Missing Tutorial_03 reward focus tooltip at Order 27.", this);
+            routine = null;
+            yield break;
+        }
+
+        Active = this;
+        running = true;
+        step = rewardStep;
+        tutorial03RewardSelected = false;
+        ResolvePresentation();
+        DisplayStep(rewardStep);
+        if (skipButton != null) skipButton.gameObject.SetActive(false);
+        if (uiTarget != null)
+            SetFrontCanvas(uiTarget.gameObject, overlaySortingOrder + 20, true);
+
+        // A previous dialogue acknowledgement must not select the memory.
+        yield return null;
+        while (Input.GetMouseButton(0)) yield return null;
+        while (running && !tutorial03RewardSelected)
+        {
+            UpdatePresentation();
+            yield return null;
+        }
+        HidePresentation();
+        running = false;
+        step = null;
+        if (Active == this) Active = null;
+        routine = null;
+    }
+
     // Tutorial_03: inspect the world monster, then the dynamically populated info panel.
     public void BeginMonsterInfoAfterPanel(string mapId)
     {

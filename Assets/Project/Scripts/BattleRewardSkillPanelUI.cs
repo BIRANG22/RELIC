@@ -543,7 +543,17 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         tutorial03RewardDialoguePending = false;
         tutorial03RewardDialogueRoutine = null;
         if (reward != null && gameObject.activeInHierarchy)
+        {
             RefreshSkipRevealState();
+            BattleSceneController scene = FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Exclude);
+            if (scene != null)
+            {
+                TutorialFocusGuideRunner guide = scene.GetComponent<TutorialFocusGuideRunner>();
+                if (guide == null) guide = scene.gameObject.AddComponent<TutorialFocusGuideRunner>();
+                guide.BeginTutorial03RewardGuide("Map_28");
+            }
+            else Debug.LogWarning("[BattleRewardSkillPanelUI] Cannot start Tutorial_03 Order 27: BattleSceneController missing.", this);
+        }
     }
 
     // 파티의 현재 장착 기억을 Char_content에 표시합니다. 이 영역은 정보 표시 전용입니다.
@@ -1068,6 +1078,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void Select(int index)
     {
         if (tutorial03RewardDialoguePending || processing || reward == null || index < 0 || index >= characterIds.Length || !cardInteractionReady[index]) return;
+        if (TutorialFocusGuideRunner.IsTutorial03RewardSelectionStep && index != 1) return;
         // Once replacement mode begins, the offered skill is locked until an
         // equipped slot is clicked. Do not allow reselecting or cancelling it.
         if (pendingReplacementCard >= 0) return;
@@ -1079,6 +1090,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         var dm = DataManager.Instance;
         if (dm == null || !BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(skill, id)) return;
         if (!dm.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData character) || character == null) return;
+        TutorialFocusGuideRunner.NotifyTutorial03RewardSelected(index);
         SkillInventoryEquipService.EnsureEquippedSkillArray(character);
         // 임의의 장착 기억 교체를 피하기 위해 비어 있는 슬롯에만 장착합니다.
         int target = -1;

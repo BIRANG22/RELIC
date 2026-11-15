@@ -703,7 +703,7 @@ Event_T_01,,,2,조심스럽게 살펴본다.,유물 획득,,Immediate,,,,,,Gain,
 Event_T_01_A,,"""상자 안에서 쓸 만한 물건들을 발견했다.""",,,,,,,,,,,,,,,,,,,,,event_tutorial01,,event_tutorial01,
 Event_T_02,우연한 만남,"""혼자 휴식을 취하고 있는 낯선 탐사자를 발견했다.""",1,함께 휴식한다.,"전체 생명력 15 회복
 헤이즈 합류",,Immediate,,,,,,Heal,PartyAll,,15,,Event_T_02_A,,,,,event_tutorial02,event_choice_01_success,event_tutorial02,event_choice_01_failure
-Event_T_02,,,2,휴식하지 않고 이동한다.,"침식도 15 감소
+Event_T_02,,,2,몸을 추스르고 이동한다.,"침식도 15 감소
 헤이즈 합류",,Immediate,,,,,,ReduceErosion,Party,,15,,Event_T_02_B,,,,,event_tutorial02,event_choice_02_success,event_tutorial02,event_choice_02_failure
 Event_T_02_A,,"""짧은 휴식으로 지친 몸을 추스르고, 다시 발걸음을 옮긴다.""",,,,,,,,,,,,,,,,,,,,,event_tutorial02,,event_tutorial02,
 Event_T_02_B,,"""짧은 대화를 마친 일행은 지체 없이 이동을 이어갔다.""",,,,,,,,,,,,,,,,,,,,,event_tutorial02,,event_tutorial02,
@@ -1012,11 +1012,11 @@ Tutorial_03,23,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.19,같은 기
 Tutorial_03,24,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.20,모든 행동을 예약했다면 턴을 종료하세요.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Left
 Tutorial_03,25,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.21,지금까지 배운 내용을 활용하여 남은 변이체를 처치해 보세요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,0
 Tutorial_03,26,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.reward.dialogue.01,이 느낌은... 잊고 있던 기억이 떠오른 것 같아.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_03,27,Map_28,,,,Dialogue,Char_01,Dialogbox,tutorial.t03.reward.dialogue.02,"그래, 바로 이거였지!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-
-
-
-
+Tutorial_03,27,Map_28,,,,Guide,,TutorialTooltip,tutorial.t03.guide.22,"기억마다 범위와 효과가 다르며, 마나 외에 생명력이나 카르마를 소모하는 기억도 있습니다.",ClickTarget,Skill_panel/Skill_content/SkillPanel2,tutorial.prompt.click_memory,기억을 클릭하여 계속,Below
+Tutorial_04,1,Map_29,,,,Dialogue,Char_03,Dialogbox,tutorial.t04.encounter.dialogue.01,"저, 저기… 혹시 두 분도 거점으로 가시는 길인가요?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_04,2,Map_29,,,,Dialogue,Char_01,Dialogbox,tutorial.t04.encounter.dialogue.02,"응, 맞아! 너도 거점으로 가는 길이야?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_04,3,Map_29,,,,Dialogue,Char_02,Dialogbox,tutorial.t04.encounter.dialogue.03,그렇다면 함께 가는 것도 좋겠군요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
+Tutorial_04,4,Map_29,,,,Dialogue,Char_03,Dialogbox,tutorial.t04.encounter.dialogue.04,"아, 감사합니다. 침식도가 높아져서 걱정이었거든요…",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,
 
 
 
@@ -1078,6 +1078,10 @@ Index04,2,tutorial.guide.index04.name,변이체 파악,tutorial.guide.index04.pa
 또한 해당 행동의 효과 범위와 상세 설명, 행동 유형을 확인할 수 있습니다."
 Index04,3,tutorial.guide.index04.name,변이체 파악,tutorial.guide.index04.page03.name,상태 효과,tutorial.guide.index04.page03.explanation,"변이체의 고유 효과와 현재 적용된 강화 및 약화 효과를 확인할 수 있습니다.
 각 효과의 상세 설명과 지속 여부, 중첩 수치도 함께 표시됩니다."
-Index5
+Index05,1,tutorial.guide.index05.name,침식 오염,tutorial.guide.index05.page01.name,침식 오염 누적,tutorial.guide.index05.page01.explanation,"탐사를 진행하는 동안 점차 침식에 오염됩니다.
 
+1. 새로운 방에 진입할 때마다 +1
+2. 턴을 마치거나 피해를 받을 때마다 +1
+3. 아군이 전투불능이 될 때마다 +10"
+Index05,2,tutorial.guide.index05.name,침식 오염,tutorial.guide.index05.page02.name,침식 오염의 위험,tutorial.guide.index05.page02.explanation,"침식 오염이 100에 도달하면, 매 턴 시작 시 고정 피해 10을 받습니다."
 
