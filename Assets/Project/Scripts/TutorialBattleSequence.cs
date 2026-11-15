@@ -17,6 +17,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 {
     private static bool dialoguePresentationRunning;
     public static bool IsPresentationRunning => dialoguePresentationRunning || TutorialFocusGuideRunner.IsRunning;
+    public static bool IsDialoguePlaying => dialoguePresentationRunning;
     public static bool IsBlockingBattleStart => false;
     public static string ActiveTutorialMapId { get; private set; } = string.Empty;
     public static int ActiveBattleGuideStep => -1;
@@ -662,6 +663,15 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         bool confirmationVisible = UIManager.Instance != null && UIManager.Instance.IsConfirmDialogOpen;
         // Menus and their confirmation dialogs handle their own input blocking.
         dialogueShieldGroup.blocksRaycasts = !menuVisible && !confirmationVisible;
+        // The dialogue is normally above the input shield. While a menu is open,
+        // place it below the menu and its child modal prefabs instead of raising
+        // the whole menu above the modal sorting range.
+        if (dialogCanvas != null)
+        {
+            int targetOrder = menuVisible ? 32739 : 32765;
+            if (dialogCanvas.sortingOrder != targetOrder)
+                dialogCanvas.sortingOrder = targetOrder;
+        }
     }
 
     private void RestoreFrontCanvas(Canvas canvas, bool addedCanvas, bool originalOverride, int originalOrder,

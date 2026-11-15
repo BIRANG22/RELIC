@@ -47,6 +47,8 @@ public static class BattleUIBlurRootCollector
         List<GameObject> roots = Collect(menuPanel.transform);
         AddMenuSettingButton(roots, menuPanel.transform);
         AddTutorialPresentationRoots(roots, menuPanel.transform);
+        // Include the active tutorial guide in the menu background blur capture.
+        AddActivePanelRoots<TutorialGuideController>(roots, menuPanel.transform);
         blurBackground.SetRuntimeBlurredUiRoots(roots);
     }
 

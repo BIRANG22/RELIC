@@ -206,7 +206,6 @@ public class BattleResultChecker : MonoBehaviour
         // Wait for the battle-end text to finish before opening the rewards.
         yield return BattleMapIntroText.ShowMessageAndWait(
             GameLocalization.Get("battle.intro.battle_end", "전투 종료"));
-
         if (!battleEnded)
             yield break;
 
@@ -224,7 +223,6 @@ public class BattleResultChecker : MonoBehaviour
             TutorialMapRoute.IsFinalBattle(
                 DataManager.Instance,
                 DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId);
-
         if (isLastTutorialBattle)
         {
             if (!OpenRewardPanel(OpenExplorationResultPanel, requireContinueButton: true))

@@ -12,6 +12,12 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     public const int DefaultTutorialMenuRootSortingOrder = 32700;
     public const int DefaultTutorialMenuPanelSortingOrder = 32701;
     private const int MaximumModalSortingOrder = 32760;
+    // Event dialogue uses a foreground text canvas at 32765. Keep MenuButton
+    // clickable above its full-screen shield, and the opened menu above the text.
+    private const int DialogueMenuButtonSortingOrder = 32766;
+    // Keep the opened menu BELOW child modal prefabs (ApplyModalSorting caps at 32760).
+    private const int DialogueMenuRootSortingOrder = 32743;
+    private const int DialogueMenuPanelSortingOrder = 32744;
 
     public readonly struct ModalSortingState
     {
@@ -191,7 +197,9 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
             // 행동 선택 중이면 ESC 첫 입력은 우클릭과 동일하게 선택/프리뷰만 취소합니다.
             // MenuPanel이 이미 열려 있을 때는 기존 메뉴 닫기 우선순위를 유지합니다.
-            if (lastHandledEscapeFrame != Time.frameCount)
+            // Tutorial focus steps must retain the selected Move/Skill until the
+            // required grid or target is clicked. ESC can still open the menu.
+            if (lastHandledEscapeFrame != Time.frameCount && !TutorialBattleSequence.IsPresentationRunning)
             {
                 BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>();
                 if (timeline != null && timeline.CancelPendingActionSelection())
@@ -275,9 +283,11 @@ public class BattleMenuEscapeInputController : MonoBehaviour
                 : null;
         if (rootCanvas != null)
             canvas.sortingLayerID = rootCanvas.sortingLayerID;
-        int effectivePanelOrder = IsAnyTutorialPresentationRunning()
-            ? Mathf.Max(menuPanelSortingOrder, tutorialMenuPanelSortingOrder)
-            : menuPanelSortingOrder;
+        int effectivePanelOrder = TutorialBattleSequence.IsDialoguePlaying
+            ? DialogueMenuPanelSortingOrder
+            : IsAnyTutorialPresentationRunning()
+                ? Mathf.Max(menuPanelSortingOrder, tutorialMenuPanelSortingOrder)
+                : menuPanelSortingOrder;
         if (canvas.sortingOrder != effectivePanelOrder)
             canvas.sortingOrder = effectivePanelOrder;
 
@@ -435,7 +445,9 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         bool tutorialRunning = IsAnyTutorialPresentationRunning();
         bool menuOpen = IsMenuPanelOpen();
         int effectiveRootOrder = tutorialRunning && menuOpen
-            ? Mathf.Max(menuRootSortingOrder, tutorialMenuRootSortingOrder)
+            ? (TutorialBattleSequence.IsDialoguePlaying
+                ? DialogueMenuRootSortingOrder
+                : Mathf.Max(menuRootSortingOrder, tutorialMenuRootSortingOrder))
             : menuRootSortingOrder;
         RefreshTutorialMenuButtonCanvas(tutorialRunning && !menuOpen);
         if (menuRootCanvas.sortingOrder != effectiveRootOrder)
@@ -492,7 +504,9 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         }
 
         tutorialMenuButtonCanvas.overrideSorting = true;
-        tutorialMenuButtonCanvas.sortingOrder = tutorialMenuRootSortingOrder;
+        tutorialMenuButtonCanvas.sortingOrder = TutorialBattleSequence.IsDialoguePlaying
+            ? DialogueMenuButtonSortingOrder
+            : tutorialMenuRootSortingOrder;
         if (tutorialMenuButtonRaycaster == null)
         {
             tutorialMenuButtonRaycaster = menuButton.GetComponent<GraphicRaycaster>();

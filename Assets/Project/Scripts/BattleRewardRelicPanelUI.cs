@@ -184,6 +184,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     [Header("Reward Action Buttons")]
     [SerializeField] private Button extractButton;
+    [Tooltip("ExtractButton/Value: displays the Red Dustium earned by extracting the selected relic.")]
+    [SerializeField] private TMP_Text extractionValueText;
     [SerializeField] private Button skipButton;
     [Header("Relic Extraction - Red Dustium")]
     [SerializeField, Min(0)] private int commonExtraction = 10;
@@ -196,6 +198,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     {
         if (extractButton == null) extractButton = transform.Find("ExtractButton")?.GetComponent<Button>();
         if (skipButton == null) skipButton = transform.Find("SkipButton")?.GetComponent<Button>();
+        if (extractionValueText == null)
+            extractionValueText = transform.Find("ExtractButton/Value")?.GetComponent<TMP_Text>();
         if (extractButton != null)
         {
             extractButton.onClick.RemoveListener(ExtractReward);
@@ -940,6 +944,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         if (current == null || DataManager.Instance == null) return;
         RelicData relic = null;
         DataManager.Instance.RelicDatabase?.TryGet(current.RewardId, out relic);
+        if (extractionValueText == null)
+            extractionValueText = transform.Find("ExtractButton/Value")?.GetComponent<TMP_Text>();
+        if (extractionValueText != null)
+        {
+            int extractionAmount = BattleRelicExtractionService.GetExtractionAmount(
+                relic, commonExtraction, rareExtraction, epicExtraction, uniqueExtraction);
+            extractionValueText.text = $"+{extractionAmount}";
+        }
         Sprite icon = current.Icon;
         if (DataManager.Instance.RelicIconDatabase != null) DataManager.Instance.RelicIconDatabase.TryGetIcon(current.RewardId, out icon);
         SetIcon(rewardIcon, icon);
