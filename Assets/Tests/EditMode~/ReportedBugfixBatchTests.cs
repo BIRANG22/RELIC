@@ -69,7 +69,7 @@ public sealed class ReportedBugfixBatchTests
     }
 
     [Test]
-    public void ArabellaIntro_PreservesCameraPositionDuringDialogueSequence()
+    public void ArabellaIntro_ZoomsDuringDialogueSequence()
     {
         string prefab = System.IO.File.ReadAllText(
             "Assets/Project/PrefabsR/Monster/Boss/01.Arabella/Arabella.prefab");
@@ -77,8 +77,69 @@ public sealed class ReportedBugfixBatchTests
         int end = prefab.IndexOf("  useBattleEffectSlide:", sequence, System.StringComparison.Ordinal);
         string block = prefab.Substring(sequence, end - sequence).Replace("\r\n", "\n");
 
-        StringAssert.DoesNotContain("    action: 0\n", block);
+        StringAssert.Contains("  - label: move\n    action: 0\n", block);
         StringAssert.DoesNotContain("    action: 1\n", block);
+        StringAssert.Contains("  restoreCameraOnPresentationEnd: 0\n", prefab);
+
+        string source = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Monster/BossSpawnPresentation.cs");
+        StringAssert.Contains("restoreCameraOnPresentationEnd", source);
+        StringAssert.Contains("FinishIntroCameraRoutine", source);
+        StringAssert.Contains("EndCinematicCameraKeepingCurrentPose", source);
+
+        string sceneController = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        StringAssert.Contains("preserveBossIntroCameraPoseOnFinalize", sceneController);
+        StringAssert.Contains("presenter.KeepsCameraPoseOnPresentationEnd", sceneController);
+    }
+
+    [Test]
+    public void CharacterChange_CancelsOnlyUnmergedFacingFlips()
+    {
+        string source = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/TimeLine/BattleTimelineController.cs");
+        int method = source.IndexOf(
+            "public void SelectCharacter(CharacterRuntimeData runtimeData)",
+            System.StringComparison.Ordinal);
+        int next = source.IndexOf(
+            "public static bool ShouldPlayCharacterChangeSound",
+            method,
+            System.StringComparison.Ordinal);
+        string block = source.Substring(method, next - method);
+
+        StringAssert.Contains("bool characterIdChanged", block);
+        StringAssert.Contains("if (characterIdChanged)", block);
+        StringAssert.Contains("CancelUnmergedFacingFlips();", block);
+        StringAssert.DoesNotContain("ClearAllPlayerReservations", block);
+
+        int clearMethod = source.IndexOf(
+            "public void ClearCharacterSelection()",
+            System.StringComparison.Ordinal);
+        int clearNext = source.IndexOf(
+            "public static void ClearCurrentCharacterSelection()",
+            clearMethod,
+            System.StringComparison.Ordinal);
+        string clearBlock = source.Substring(clearMethod, clearNext - clearMethod);
+        StringAssert.Contains("CancelUnmergedFacingFlips();", clearBlock);
+    }
+
+    [Test]
+    public void BattleFinish_ClearsWorldHudAndPopupPresentation()
+    {
+        string resultChecker = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/BattleResultChecker.cs");
+        int method = resultChecker.IndexOf(
+            "private static void PrepareBattleFinishedPresentation()",
+            System.StringComparison.Ordinal);
+        int next = resultChecker.IndexOf(
+            "private void OpenExplorationResultPanel()",
+            method,
+            System.StringComparison.Ordinal);
+        string block = resultChecker.Substring(method, next - method);
+
+        StringAssert.Contains("BattleDamageTextPopupUI.ClearBattlePresentation();", block);
+        StringAssert.Contains("BattleCharacterHUDController.HideAllForBattleEnd();", block);
+        StringAssert.Contains("MonsterUnit.HideAllTemporaryHUDs();", block);
     }
 
     [Test]
@@ -98,6 +159,31 @@ public sealed class ReportedBugfixBatchTests
         StringAssert.DoesNotContain("FaceByWorldTarget", block);
         StringAssert.DoesNotContain("UnityEngine.Random", block);
         StringAssert.Contains("BattleRandom.Range", block);
+    }
+
+    [Test]
+    public void ArabellaWebPresentation_WaitsForCameraMotionBeforeAnimation()
+    {
+        string camera = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/BattleCameraController.cs");
+        StringAssert.Contains("public IEnumerator WaitForCurrentMotionComplete()", camera);
+
+        string source = System.IO.File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Actionrunner/BattleStatusEffectService.cs");
+        int method = source.IndexOf(
+            "private static IEnumerator PlayArabellaWebCreationRoutine",
+            System.StringComparison.Ordinal);
+        int animation = source.IndexOf(
+            "animator.PlayMonsterActionPresentation(ArabellaWebActionIndex)",
+            method,
+            System.StringComparison.Ordinal);
+        int wait = source.LastIndexOf(
+            "yield return cameraController.WaitForCurrentMotionComplete();",
+            animation,
+            System.StringComparison.Ordinal);
+
+        Assert.That(wait, Is.GreaterThan(method));
+        Assert.That(wait, Is.LessThan(animation));
     }
 
     [Test]

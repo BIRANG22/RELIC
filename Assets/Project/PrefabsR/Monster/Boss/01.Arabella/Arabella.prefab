@@ -1971,8 +1971,8 @@ MonoBehaviour:
     sfxVolume: 1
   objectRevealStartDelay: 8
   sequenceSteps:
-  - label: hold
-    action: 10
+  - label: move
+    action: 0
     overrideLightIntensity: 1
     lightIntensity: 0.2
     lightCurve:
@@ -2143,6 +2143,7 @@ MonoBehaviour:
     parentVfxToOrigin: 0
     vfxLifetime: 0
     destroyVfxOnPresentationEnd: 1
+  restoreCameraOnPresentationEnd: 0
   useBattleEffectSlide: 1
   battleEffectSlideController: {fileID: 0}
 --- !u!1 &2469629087936589391

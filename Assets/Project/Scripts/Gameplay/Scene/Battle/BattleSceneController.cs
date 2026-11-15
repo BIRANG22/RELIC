@@ -113,6 +113,7 @@ public class BattleSceneController : MonoBehaviour
     private bool lastNetworkAppliedNodeCleared;
     private bool forceNextBattleRoomLoad;
     private bool pendingBattleRoomUsesBossIntro;
+    private bool preserveBossIntroCameraPoseOnFinalize;
     private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
     private Coroutine deferredBossIntroRoutine;
     private Coroutine activeBossSpawnPresentationRoutine;
@@ -2979,8 +2980,10 @@ public class BattleSceneController : MonoBehaviour
 
         BossSpawnPresentation presenter =
             loader?.FindDeferredBossSpawnPresentation();
+        preserveBossIntroCameraPoseOnFinalize = false;
         if (presenter != null)
         {
+            preserveBossIntroCameraPoseOnFinalize = presenter.KeepsCameraPoseOnPresentationEnd;
             deferredBossIntroRoutine = StartCoroutine(PlayDeferredBossSpawnPresentation(presenter));
             return;
         }
@@ -3055,10 +3058,13 @@ public class BattleSceneController : MonoBehaviour
     {
         deferredBossIntroRoutine = null;
 
-        if (pendingBattleRoomUsesBossIntro && BattleCameraController.Instance != null)
+        if (pendingBattleRoomUsesBossIntro &&
+            !preserveBossIntroCameraPoseOnFinalize &&
+            BattleCameraController.Instance != null)
             BattleCameraController.Instance.ForceReturnSceneStartPositionImmediate();
 
         // The intro gate must not stay armed during boss phase transitions.
+        preserveBossIntroCameraPoseOnFinalize = false;
         pendingBattleRoomUsesBossIntro = false;
         SetBattleRoomIntroPlaying(false);
     }

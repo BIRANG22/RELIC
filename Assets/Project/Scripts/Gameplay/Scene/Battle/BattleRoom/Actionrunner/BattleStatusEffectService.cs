@@ -193,6 +193,10 @@ public class BattleStatusEffectService
             List<int> targetCells = availableCells[targetIndex];
             int chosen = targetCells[BattleRandom.Range(0, targetCells.Count)];
 
+            BattleCameraController cameraController = BattleCameraController.Instance;
+            if (cameraController != null)
+                yield return cameraController.WaitForCurrentMotionComplete();
+
             BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
             if (animator != null)
             {

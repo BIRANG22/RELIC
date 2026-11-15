@@ -90,6 +90,16 @@ public class BattleCharacterHUDController : MonoBehaviour
         HideAll();
     }
 
+    public static void HideAllForBattleEnd()
+    {
+        if (Instance == null)
+            return;
+
+        Instance.hitHudVisibleUntilByCharacterId.Clear();
+        Instance.timelineIconHoveredCharacterId = "";
+        Instance.HideAll();
+    }
+
     public void ShowCharacterHudForEffect(BattleCharacter character)
     {
         ShowCharacterHudTemporarily(character);

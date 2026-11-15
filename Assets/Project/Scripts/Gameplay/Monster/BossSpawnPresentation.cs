@@ -197,6 +197,8 @@ public sealed class BossSpawnPresentation : MonoBehaviour
     [Header("Camera Sequence (비어 있으면 카메라 연출 없음)")]
     [Tooltip("카메라 동작만 순서대로 실행합니다. X/Y/Z는 월드 절대좌표이며, 애니메이션은 별도로 동시에 진행됩니다.")]
     [SerializeField] private PresentationStep[] sequenceSteps = new PresentationStep[0];
+    [Tooltip("등장 연출 종료 시 시작 전 카메라 자세로 복귀합니다. 끄면 현재 자세를 유지한 채 전투 카메라에 제어권을 넘깁니다.")]
+    [SerializeField] private bool restoreCameraOnPresentationEnd = true;
 
     [Header("Battle Effect Slide During Intro")]
     [Tooltip("보스 등장 연출 동안 BattleEffect 슬라이드 효과를 화면에 표시하고, 종료하면 대기 위치로 퇴장시킵니다.")]
@@ -223,6 +225,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
     private readonly List<GameObject> presentationVfx = new List<GameObject>();
 
     public bool HasPlayed => hasPlayed;
+    public bool KeepsCameraPoseOnPresentationEnd => !restoreCameraOnPresentationEnd;
 
     public bool CanPlay =>
         animator != null &&
@@ -311,7 +314,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         while (!animationCompleted || !dialogueTimelineCompleted)
             yield return null;
 
-        yield return RestoreIntroCameraRoutine();
+        yield return FinishIntroCameraRoutine();
         // Wait for the same reserve-position slide used after a turn.
         yield return EndIntroBattleEffectSlideRoutine();
         RestoreBossIntroLight();
@@ -718,6 +721,23 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         yield return BlendCameraRoutine(cameraBasePosition, cameraRestorePosition,
             cameraBaseSize, cameraRestoreOrthographicSize, duration);
 
+        BattleCameraController.Instance?.EndCinematicCameraKeepingCurrentPose();
+        ownsIntroCamera = false;
+        introCamera = null;
+    }
+
+    private IEnumerator FinishIntroCameraRoutine(float duration = 0.35f)
+    {
+        if (restoreCameraOnPresentationEnd)
+        {
+            yield return RestoreIntroCameraRoutine(duration);
+            yield break;
+        }
+
+        if (!ownsIntroCamera || introCamera == null)
+            yield break;
+
+        StopCameraBlend();
         BattleCameraController.Instance?.EndCinematicCameraKeepingCurrentPose();
         ownsIntroCamera = false;
         introCamera = null;
