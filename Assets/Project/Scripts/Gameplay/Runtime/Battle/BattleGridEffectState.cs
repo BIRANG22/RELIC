@@ -4,14 +4,32 @@ namespace Relic.Gameplay.Battle
 {
     public readonly struct BattleGridEffectPlacement
     {
-        public BattleGridEffectPlacement(int gridIndex, string gridEffectId)
+        public BattleGridEffectPlacement(
+            int gridIndex,
+            string gridEffectId,
+            string ownerRuntimeId = "",
+            string ownerMonsterId = "")
         {
             GridIndex = gridIndex;
             GridEffectId = gridEffectId;
+            OwnerRuntimeId = ownerRuntimeId ?? string.Empty;
+            OwnerMonsterId = ownerMonsterId ?? string.Empty;
         }
 
         public int GridIndex { get; }
         public string GridEffectId { get; }
+        public string OwnerRuntimeId { get; }
+        public string OwnerMonsterId { get; }
+    }
+
+    public static class BattleGridEffectDamagePolicy
+    {
+        public static bool CanMonsterDamage(string ownerRuntimeId, string attackerRuntimeId)
+        {
+            return string.IsNullOrWhiteSpace(ownerRuntimeId) ||
+                   string.IsNullOrWhiteSpace(attackerRuntimeId) ||
+                   !string.Equals(ownerRuntimeId, attackerRuntimeId, System.StringComparison.Ordinal);
+        }
     }
 
     public sealed class BattleGridEffectState
@@ -19,6 +37,8 @@ namespace Relic.Gameplay.Battle
         private readonly Dictionary<int, string> effectIdsByGridIndex = new();
         private readonly Dictionary<int, int> remainingDurationByGridIndex = new();
         private readonly Dictionary<int, int> hitPointsByGridIndex = new();
+        private readonly Dictionary<int, string> ownerRuntimeIdsByGridIndex = new();
+        private readonly Dictionary<int, string> ownerMonsterIdsByGridIndex = new();
 
         public int Count => effectIdsByGridIndex.Count;
 
@@ -27,6 +47,8 @@ namespace Relic.Gameplay.Battle
             effectIdsByGridIndex.Clear();
             remainingDurationByGridIndex.Clear();
             hitPointsByGridIndex.Clear();
+            ownerRuntimeIdsByGridIndex.Clear();
+            ownerMonsterIdsByGridIndex.Clear();
         }
 
         public bool Place(int gridIndex, string gridEffectId, int duration = 0)
@@ -35,6 +57,17 @@ namespace Relic.Gameplay.Battle
         }
 
         public bool Place(int gridIndex, string gridEffectId, int duration, int hitPoints)
+        {
+            return Place(gridIndex, gridEffectId, duration, hitPoints, string.Empty, string.Empty);
+        }
+
+        public bool Place(
+            int gridIndex,
+            string gridEffectId,
+            int duration,
+            int hitPoints,
+            string ownerRuntimeId,
+            string ownerMonsterId)
         {
             if (gridIndex < 0 || string.IsNullOrWhiteSpace(gridEffectId))
                 return false;
@@ -51,6 +84,11 @@ namespace Relic.Gameplay.Battle
             int safeHitPoints = System.Math.Max(0, hitPoints);
             if (safeHitPoints > 0)
                 hitPointsByGridIndex[gridIndex] = safeHitPoints;
+
+            if (!string.IsNullOrWhiteSpace(ownerRuntimeId))
+                ownerRuntimeIdsByGridIndex[gridIndex] = ownerRuntimeId.Trim();
+            if (!string.IsNullOrWhiteSpace(ownerMonsterId))
+                ownerMonsterIdsByGridIndex[gridIndex] = ownerMonsterId.Trim();
 
             return true;
         }
@@ -74,6 +112,8 @@ namespace Relic.Gameplay.Battle
         {
             remainingDurationByGridIndex.Remove(gridIndex);
             hitPointsByGridIndex.Remove(gridIndex);
+            ownerRuntimeIdsByGridIndex.Remove(gridIndex);
+            ownerMonsterIdsByGridIndex.Remove(gridIndex);
             return effectIdsByGridIndex.Remove(gridIndex);
         }
 
@@ -85,6 +125,15 @@ namespace Relic.Gameplay.Battle
         public bool TryGetHitPoints(int gridIndex, out int hitPoints)
         {
             return hitPointsByGridIndex.TryGetValue(gridIndex, out hitPoints);
+        }
+
+        public bool TryGetOwner(int gridIndex, out string ownerRuntimeId, out string ownerMonsterId)
+        {
+            ownerRuntimeIdsByGridIndex.TryGetValue(gridIndex, out ownerRuntimeId);
+            ownerMonsterIdsByGridIndex.TryGetValue(gridIndex, out ownerMonsterId);
+            ownerRuntimeId ??= string.Empty;
+            ownerMonsterId ??= string.Empty;
+            return !string.IsNullOrWhiteSpace(ownerRuntimeId) || !string.IsNullOrWhiteSpace(ownerMonsterId);
         }
 
         /// <summary>
@@ -148,8 +197,10 @@ namespace Relic.Gameplay.Battle
 
                 if (effectIdsByGridIndex.TryGetValue(gridIndex, out string gridEffectId))
                 {
+                    TryGetOwner(gridIndex, out string ownerRuntimeId, out string ownerMonsterId);
                     Remove(gridIndex);
-                    expiredPlacements.Add(new BattleGridEffectPlacement(gridIndex, gridEffectId));
+                    expiredPlacements.Add(new BattleGridEffectPlacement(
+                        gridIndex, gridEffectId, ownerRuntimeId, ownerMonsterId));
                 }
             }
 
@@ -161,9 +212,30 @@ namespace Relic.Gameplay.Battle
             List<BattleGridEffectPlacement> placements = new();
 
             foreach (KeyValuePair<int, string> pair in effectIdsByGridIndex)
-                placements.Add(new BattleGridEffectPlacement(pair.Key, pair.Value));
+            {
+                TryGetOwner(pair.Key, out string ownerRuntimeId, out string ownerMonsterId);
+                placements.Add(new BattleGridEffectPlacement(
+                    pair.Key, pair.Value, ownerRuntimeId, ownerMonsterId));
+            }
 
             return placements;
+        }
+    }
+    public static class VespaExecutionDirectionPolicy
+    {
+        public static BattleDirection Resolve(
+            BattleDirection reservedDirection,
+            bool reservedDirectionHasTarget,
+            bool oppositeDirectionHasTarget)
+        {
+            if (!reservedDirectionHasTarget && oppositeDirectionHasTarget)
+            {
+                return reservedDirection == BattleDirection.Right
+                    ? BattleDirection.Left
+                    : BattleDirection.Right;
+            }
+
+            return reservedDirection;
         }
     }
 }

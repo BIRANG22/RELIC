@@ -220,7 +220,9 @@ public class MonsterSkillEffectService
                 for (int targetIndex = 0; targetIndex < hitGrids.Count; targetIndex++)
                 {
                     int gridIndex = hitGrids[targetIndex];
-                    if (!damagedGrids.Add(gridIndex) || !controller.HasDamageableEffect(gridIndex))
+                    if (!damagedGrids.Add(gridIndex) ||
+                        !controller.HasDamageableEffect(gridIndex) ||
+                        !controller.CanMonsterDamageEffect(gridIndex, command.RuntimeId))
                         continue;
 
                     controller.TryDamageEffect(gridIndex, damage, out _);
@@ -376,9 +378,6 @@ public class MonsterSkillEffectService
                     liveRearAttack);
             }
 
-            int hpBeforeEffect = playerTarget?.RuntimeData?.CurrentHP ?? 0;
-            int shieldBeforeEffect = playerTarget?.RuntimeData?.CurrentShield ?? 0;
-
             try
             {
                 if (mode == EffectExecutionMode.All && isDamageHitEffect)
@@ -419,37 +418,7 @@ public class MonsterSkillEffectService
                 Debug.LogException(e);
             }
 
-            // 기습 판정은 피격 직전의 방향을 사용해야 합니다.
-            // 피해 적용이 끝난 뒤에만 피격 캐릭터가 공격자를 바라보도록 전환합니다.
-            bool receivedDamage = playerTarget != null &&
-                playerTarget.RuntimeData != null &&
-                (playerTarget.RuntimeData.CurrentHP < hpBeforeEffect ||
-                 playerTarget.RuntimeData.CurrentShield < shieldBeforeEffect);
-
-            if (receivedDamage && isDamageHitEffect &&
-                playerTarget.RuntimeData != null && !playerTarget.RuntimeData.IsDead)
-            {
-                FacePlayerToAttacker(playerTarget, caster);
-            }
         }
-    }
-
-    private static void FacePlayerToAttacker(
-        BattleCharacter target,
-        MonsterUnit attacker)
-    {
-        if (target == null || attacker == null)
-            return;
-
-        BattleUnitFacing targetFacing = target.GetComponent<BattleUnitFacing>();
-
-        if (targetFacing == null)
-            return;
-
-        targetFacing.FaceByWorldTarget(attacker.transform.position);
-
-        if (target.RuntimeData != null)
-            target.RuntimeData.Direction = targetFacing.GetBattleDirection();
     }
 
     private int ParseIndexedValue(string text, int index)

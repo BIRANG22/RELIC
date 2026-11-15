@@ -66,6 +66,7 @@ public class CharacterHUDSlot : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         canvasGroup.ignoreParentGroups = true;
+        ApplyCanvasVisibility(false);
 
         ApplyStatusEffectParentLayout();
     }
@@ -75,12 +76,17 @@ public class CharacterHUDSlot : MonoBehaviour
         StopValueAnimations();
         isVisible = false;
         hasDisplayedValues = false;
+        ApplyCanvasVisibility(false);
     }
 
     private void LateUpdate()
     {
-        if (useFollowPosition)
-            UpdateFollowPosition();
+        if (!useFollowPosition)
+            return;
+
+        bool positioned = TryUpdateFollowPosition();
+        if (isVisible && positioned && canvasGroup.alpha <= 0f)
+            RevealAtResolvedPosition();
     }
 
     public void SetUseFollowPosition(bool value)
@@ -115,23 +121,27 @@ public class CharacterHUDSlot : MonoBehaviour
         }
 
         if (useFollowPosition)
-            UpdateFollowPosition();
+        {
+            bool positioned = TryUpdateFollowPosition();
+            if (isVisible && positioned && canvasGroup.alpha <= 0f)
+                RevealAtResolvedPosition();
+        }
     }
 
-    private void UpdateFollowPosition()
+    private bool TryUpdateFollowPosition()
     {
         if (!useFollowPosition || followTarget == null || rectTransform == null ||
             !followTarget.gameObject.activeInHierarchy)
-            return;
+            return false;
 
         Camera cam = Camera.main;
         if (cam == null)
-            return;
+            return false;
 
         Vector3 followWorldPosition = GetFollowWorldPosition();
         Vector3 screenPos = cam.WorldToScreenPoint(followWorldPosition);
         if (screenPos.z <= 0f)
-            return;
+            return false;
 
         if (hasStableColliderWorldOffset)
         {
@@ -140,6 +150,7 @@ public class CharacterHUDSlot : MonoBehaviour
         }
 
         rectTransform.position = screenPos;
+        return true;
     }
 
     private Vector3 GetFollowWorldPosition()
@@ -182,13 +193,20 @@ public class CharacterHUDSlot : MonoBehaviour
 
     public void Show()
     {
-        if (useFollowPosition)
-            UpdateFollowPosition();
-
         isVisible = true;
-        canvasGroup.alpha = 1f;
-        canvasGroup.interactable = true;
-        canvasGroup.blocksRaycasts = true;
+
+        if (useFollowPosition && !TryUpdateFollowPosition())
+        {
+            ApplyCanvasVisibility(false);
+            return;
+        }
+
+        RevealAtResolvedPosition();
+    }
+
+    private void RevealAtResolvedPosition()
+    {
+        ApplyCanvasVisibility(true);
 
         Refresh();
         StartPendingValueAnimations();
@@ -198,10 +216,17 @@ public class CharacterHUDSlot : MonoBehaviour
     {
         isVisible = false;
         StopValueAnimations();
+        ApplyCanvasVisibility(false);
+    }
 
-        canvasGroup.alpha = 0f;
-        canvasGroup.interactable = false;
-        canvasGroup.blocksRaycasts = false;
+    private void ApplyCanvasVisibility(bool visible)
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = visible ? 1f : 0f;
+        canvasGroup.interactable = visible;
+        canvasGroup.blocksRaycasts = visible;
     }
 
     public void Refresh()

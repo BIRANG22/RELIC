@@ -2863,13 +2863,6 @@ public class BattleActionRunner
                         (monster.RuntimeData.CurrentHP < hpBeforeHit ||
                          monster.RuntimeData.CurrentShield < shieldBeforeHit);
 
-                    if (receivedDamage &&
-                        monster.RuntimeData != null &&
-                        !monster.RuntimeData.IsDead)
-                    {
-                        FaceMonsterAgainstAttackDirection(monster, command.Direction);
-                    }
-
                     // 드라우그는 플레이어의 공격 스킬에 실제로 피격된 경우에만 반격 후보가 됩니다.
                     // 다단 공격은 타격마다 반격하지 않고, 해당 스킬의 모든 타격이 끝난 뒤 한 번만 반격합니다.
                     if (receivedDamage &&
@@ -3579,28 +3572,6 @@ public class BattleActionRunner
         return monster != null &&
                monster.RuntimeData != null &&
                !monster.RuntimeData.IsDead;
-    }
-
-    // The defender faces against the direction of the incoming player attack.
-    // Do not use monster.x - caster.x: area attacks may hit both sides.
-    private void FaceMonsterAgainstAttackDirection(MonsterUnit monster, BattleDirection attackDirection)
-    {
-        if (monster == null)
-            return;
-
-        bool faceRight = attackDirection == BattleDirection.Left;
-        BattleUnitFacing hitFacing = monster.GetComponent<BattleUnitFacing>();
-        if (hitFacing == null)
-            hitFacing = monster.GetComponentInChildren<BattleUnitFacing>();
-        if (hitFacing != null)
-        {
-            hitFacing.FaceRight(faceRight);
-        }
-
-        if (monster.RuntimeData != null)
-            monster.RuntimeData.Direction = faceRight
-                ? BattleDirection.Right
-                : BattleDirection.Left;
     }
 
     private void FaceMonsterToAttacker(MonsterUnit monster, BattleCharacter attacker)
@@ -4648,7 +4619,10 @@ public class BattleActionRunner
             ApplyCrashToMonster(monster);
 
             BattleGridEffectController controller = ResolveGridEffectController();
-            if (controller != null)
+            if (controller != null &&
+                controller.CanMonsterDamageEffect(
+                    moveResolution.BlockingGridEffectGridIndex,
+                    monster.RuntimeData?.RuntimeId))
             {
                 controller.TryDamageEffect(
                     moveResolution.BlockingGridEffectGridIndex,
@@ -5065,6 +5039,10 @@ public class BattleActionRunner
                 monsterExecutionDirection = command.ForcedDirection;
         }
 
+        if (string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal))
+            monsterExecutionDirection = ResolveVespaExecutionDirection(
+                monster, command, monsterExecutionDirection);
+
         if (facing == null)
             facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
         if (facing != null)
@@ -5397,6 +5375,46 @@ public class BattleActionRunner
                 command.AttackSpatialPolicy,
                 monster.MainGridIndex,
                 command.RangeOriginGridIndex));
+    }
+
+    private BattleDirection ResolveVespaExecutionDirection(
+        MonsterUnit monster,
+        MonsterReservedCommand command,
+        BattleDirection reservedDirection)
+    {
+        BattleDirection oppositeDirection = reservedDirection == BattleDirection.Right
+            ? BattleDirection.Left
+            : BattleDirection.Right;
+        bool reservedHasTarget = HasVespaExecutionTarget(monster, command, reservedDirection);
+        bool oppositeHasTarget = HasVespaExecutionTarget(monster, command, oppositeDirection);
+
+        return VespaExecutionDirectionPolicy.Resolve(
+            reservedDirection,
+            reservedHasTarget,
+            oppositeHasTarget);
+    }
+
+    private bool HasVespaExecutionTarget(
+        MonsterUnit monster,
+        MonsterReservedCommand command,
+        BattleDirection direction)
+    {
+        if (monster == null || command?.SkillData == null || gridManager == null ||
+            monster.MainGridIndex < 0)
+        {
+            return false;
+        }
+
+        List<int> range = MonsterSkillRangeService.BuildRangeGridIndices(
+            monster,
+            command.SkillData,
+            gridManager,
+            direction == BattleDirection.Right,
+            monster.MainGridIndex);
+        List<int> targets = MonsterSkillRangeService.FilterTargetGridIndices(
+            command.SkillData,
+            range);
+        return targets != null && targets.Count > 0;
     }
 
     private void RecalculateMonsterSkillRangeAtExecution(
@@ -6614,8 +6632,12 @@ public class BattleActionRunner
 
         BattleGridEffectController controller = ResolveGridEffectController();
 
-        if (controller == null || !controller.IsCharacterTargetEffect(gridIndex))
+        if (controller == null ||
+            !controller.IsCharacterTargetEffect(gridIndex) ||
+            !controller.CanMonsterDamageEffect(gridIndex, command.RuntimeId))
+        {
             return;
+        }
 
         int damage = Mathf.Max(0, damageService.GetMonsterDamage(command));
 

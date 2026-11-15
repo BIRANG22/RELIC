@@ -581,7 +581,9 @@ public class SaveSystem : Singleton<SaveSystem>
                 GridIndex = item.GridIndex,
                 GridEffectId = item.GridEffectId,
                 RemainingDuration = item.RemainingDuration,
-                HitPoints = item.HitPoints
+                HitPoints = item.HitPoints,
+                OwnerRuntimeId = item.OwnerRuntimeId,
+                OwnerMonsterId = item.OwnerMonsterId
             });
         }
 
@@ -1278,6 +1280,8 @@ public class BattleRoomGridEffectSaveData
     public string GridEffectId;
     public int RemainingDuration;
     public int HitPoints;
+    public string OwnerRuntimeId;
+    public string OwnerMonsterId;
 }
 
 [Serializable]
