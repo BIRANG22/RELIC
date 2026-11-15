@@ -141,6 +141,7 @@ namespace Relic.Gameplay.Monster
         {
             if (hud != null)
             {
+                hud.ForceHideImmediately();
                 Destroy(hud.gameObject);
                 hud = null;
             }
