@@ -1506,13 +1506,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 
-        // Tutorial_03 (Map_28): Draugr reserves movement and attack
-        // in slot 2 (zero-based index 1) on both turns 1 and 2.
-        // Other turns use normal AI slots.
-        if (IsTutorialThreeMonster(runtime, "Mon_07") &&
-            (plannedBattleTurn == 1 || plannedBattleTurn == 2) && slotCount > 1)
+        // Tutorial_05 (Map_30), first turn: reserve Murk's AI-selected
+        // movement and attack together in timeline slot 3 (zero-based index 2).
+        // Blight and all later turns retain their normal slot selection.
+        if (IsTutorialFiveFirstTurnMurk(runtime) && slotCount > 2)
+            return 2;
+
+        // Tutorial_03 (Map_28) turn 1 only: Draugr's movement and sweep
+        // both execute at slot 2; Lancer's Grudge executes at slot 5.
+        // The timeline uses zero-based slot indices.
+        if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_07") && slotCount > 1)
             return 1;
-        // Lancer's first-turn Grudge remains in slot 5.
         if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_03") && slotCount > 4)
             return 4;
 
@@ -1564,14 +1568,21 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         }
     }
 
-    private bool IsTutorialThreeFirstTurnMonster(MonsterRuntimeData runtime, string monsterId)
+    private bool IsTutorialFiveFirstTurnMurk(MonsterRuntimeData runtime)
     {
-        return plannedBattleTurn == 1 && IsTutorialThreeMonster(runtime, monsterId);
+        if (runtime == null || plannedBattleTurn != 1 ||
+            !string.Equals(runtime.MonsterId, "Mon_01", System.StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        DataManager data = DataManager.Instance;
+        return data?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+               string.Equals(data.MapRuntimeStore?.Get()?.CurrentMapId?.Trim(),
+                   "Map_30", System.StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsTutorialThreeMonster(MonsterRuntimeData runtime, string monsterId)
+    private bool IsTutorialThreeFirstTurnMonster(MonsterRuntimeData runtime, string monsterId)
     {
-        if (runtime == null ||
+        if (runtime == null || plannedBattleTurn != 1 ||
             !string.Equals(runtime.MonsterId, monsterId, System.StringComparison.OrdinalIgnoreCase))
             return false;
 
