@@ -14,25 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   profiles:
   - localeCode: ko
-    defaultFont: {fileID: 11400000, guid: a6c08d631d1faca41b69c753870fb34a, type: 2}
+    defaultFont: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
     roleFonts: []
   - localeCode: en
-    defaultFont: {fileID: 11400000, guid: a6c08d631d1faca41b69c753870fb34a, type: 2}
+    defaultFont: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
     roleFonts: []
   - localeCode: es
-    defaultFont: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+    defaultFont: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
     roleFonts: []
   - localeCode: ja
-    defaultFont: {fileID: 11400000, guid: f3d8d0ecf42114940a0c30e81efcde28, type: 2}
+    defaultFont: {fileID: 11400000, guid: 94a332bcf922c644ca9c354a5a38ab30, type: 2}
     roleFonts: []
   - localeCode: zh-Hans
-    defaultFont: {fileID: 11400000, guid: a7a394cd6486adf4d8d8a6b19dda24cb, type: 2}
+    defaultFont: {fileID: 11400000, guid: 48aa939b7a788574fb5c8ca4a89cd40c, type: 2}
     roleFonts: []
   - localeCode: zh-Hant
-    defaultFont: {fileID: 11400000, guid: 4486ac4c14f79ac42acf64808c5789eb, type: 2}
+    defaultFont: {fileID: 11400000, guid: 239ed67f0b574d64fa120c44657172a5, type: 2}
     roleFonts: []
-  commonNumberFont: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  commonNumberFont: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
   sourceFontRoles:
-  - sourceFont: {fileID: 11400000, guid: 9a815c71f02eb4f4db49652c3cb6a08b, type: 2}
+  - sourceFont: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
     roleId: number
     preserveSourceFont: 1
