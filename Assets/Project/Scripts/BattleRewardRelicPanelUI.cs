@@ -224,6 +224,53 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     [SerializeField, Min(0)] private int uniqueExtraction = 50;
     private Coroutine rewardActionCloseCoroutine;
 
+    [Header("Reward Action Button Lock Appearance")]
+    [SerializeField] private Color lockedRewardButtonColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private readonly System.Collections.Generic.Dictionary<Graphic, Color> rewardButtonOriginalColors =
+        new System.Collections.Generic.Dictionary<Graphic, Color>();
+    private bool? lastRewardButtonsEnabled;
+
+    private bool AreRewardActionButtonsAvailable =>
+        gameObject.activeInHierarchy && current != null && !resolving &&
+        itemIntroCoroutine == null && !firstTutorialRelicGuideActive;
+
+    private void UpdateRewardActionButtons(bool force = false)
+    {
+        bool enabled = AreRewardActionButtonsAvailable;
+        if (!force && lastRewardButtonsEnabled == enabled) return;
+        lastRewardButtonsEnabled = enabled;
+        SetRewardActionButtonState(extractButton, enabled);
+        SetRewardActionButtonState(skipButton, enabled);
+        if (extractButton != null)
+        {
+            ExtractButtonHoverReveal hover = extractButton.GetComponent<ExtractButtonHoverReveal>();
+            if (hover != null) hover.SetInteractionEnabled(enabled);
+        }
+    }
+
+    private void SetRewardActionButtonState(Button button, bool enabled)
+    {
+        if (button == null) return;
+        button.interactable = enabled;
+        string[] parts = { "back (1)", "back (2)", "front", "Text (TMP)" };
+        foreach (string part in parts)
+        {
+            Transform child = button.transform.Find(part);
+            Graphic graphic = child != null ? child.GetComponent<Graphic>() : null;
+            if (graphic == null) continue;
+            if (!rewardButtonOriginalColors.ContainsKey(graphic))
+                rewardButtonOriginalColors.Add(graphic, graphic.color);
+            graphic.color = enabled ? rewardButtonOriginalColors[graphic] : lockedRewardButtonColor;
+        }
+        foreach (DBAudioSource audio in button.GetComponentsInChildren<DBAudioSource>(true))
+            audio.SetInteractionEnabled(enabled);
+        foreach (UIChildHoverTransform hover in button.GetComponentsInChildren<UIChildHoverTransform>(true))
+        {
+            if (!enabled) hover.ApplyDefaultImmediately();
+            hover.enabled = enabled;
+        }
+    }
+
     private void BindRewardActionButtons()
     {
         if (extractButton == null) extractButton = transform.Find("ExtractButton")?.GetComponent<Button>();
@@ -245,12 +292,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             skipButton.onClick.RemoveListener(SkipReward);
             skipButton.onClick.AddListener(SkipReward);
         }
+        UpdateRewardActionButtons(true);
     }
 
     public void SkipReward()
     {
         if (current == null || resolving || itemIntroCoroutine != null || firstTutorialRelicGuideActive) return;
         resolving = true;
+        UpdateRewardActionButtons();
         ClearRarityIndicatorVfx();
         rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
     }
@@ -275,6 +324,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         }
 
         resolving = true;
+        UpdateRewardActionButtons();
         ClearRarityIndicatorVfx();
         BattleGoldHudUI.RefreshAll();
         Debug.Log($"[BattleRewardRelicPanelUI] Extracted relic. RelicId:{current.RewardId} Remnant:{amount}", this);
@@ -372,6 +422,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         ClearEquipVfx();
         ClearSlotPreviewVfx();
         RestoreEquippedIconScale();
+        lastRewardButtonsEnabled = null;
         if (panelCanvasGroup != null)
         {
             panelCanvasGroup.alpha = 1f;
@@ -427,6 +478,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         SpawnRarityIndicatorVfx();
         transform.SetAsLastSibling();
         BeginItemIntro();
+        UpdateRewardActionButtons();
     }
 
     // Preserve the original active state of the other direct children.
@@ -485,6 +537,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         // blocking here lets hover/click events pass through to the shop UI.
         panelCanvasGroup.blocksRaycasts = true;
         itemIntroCoroutine = StartCoroutine(AnimateItemIntro(centerWorld));
+        UpdateRewardActionButtons();
     }
 
     private IEnumerator AnimateItemIntro(Vector3 centerWorld)
@@ -581,6 +634,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         panelCanvasGroup.interactable = true;
         panelCanvasGroup.blocksRaycasts = true;
         itemIntroCoroutine = null;
+        UpdateRewardActionButtons();
     }
 
     private IEnumerator FadeInOtherIntroObjects()
@@ -1300,6 +1354,9 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        // Keep reward buttons locked during intro, guide, and equip sequences.
+        UpdateRewardActionButtons();
+
         // Recalculate only on resolution changes. Following the animated slot
         // scale every frame makes the tooltip visibly slide on hover.
         if (tooltipUI != null && tooltipUI.gameObject.activeInHierarchy && activeTooltipSlot != null &&
@@ -1464,6 +1521,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             active);
         if (destination < 0) return;
         resolving = true;
+        UpdateRewardActionButtons();
         // Keep the rarity indicator visible throughout relic equip/replace feedback.
         // It is cleaned up when the reward panel closes (OnDisable).
         LockEquippingCharacter(index);
@@ -1875,6 +1933,25 @@ public sealed class ExtractButtonHoverReveal : MonoBehaviour, IPointerEnterHandl
     private Coroutine hoverAnimationCoroutine;
     private float progress;
     private bool initialized;
+    private bool interactionEnabled;
+
+    public void SetInteractionEnabled(bool enabled)
+    {
+        interactionEnabled = enabled;
+        if (!enabled)
+        {
+            if (hoverAnimationCoroutine != null)
+            {
+                StopCoroutine(hoverAnimationCoroutine);
+                hoverAnimationCoroutine = null;
+            }
+            if (initialized)
+            {
+                Apply(0f);
+                HideTargets();
+            }
+        }
+    }
 
     public void Configure()
     {
@@ -1908,7 +1985,7 @@ public sealed class ExtractButtonHoverReveal : MonoBehaviour, IPointerEnterHandl
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!isActiveAndEnabled) return;
+        if (!isActiveAndEnabled || !interactionEnabled) return;
         Configure();
         BeginAnimation(1f, fadeInDuration);
     }

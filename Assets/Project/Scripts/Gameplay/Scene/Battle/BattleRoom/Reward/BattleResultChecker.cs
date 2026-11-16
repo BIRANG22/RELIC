@@ -16,6 +16,7 @@ public class BattleResultChecker : MonoBehaviour
     public static BattleResultChecker Instance { get; private set; }
     public static event System.Action BattleFinished;
     public static event System.Action DefeatStarted;
+    public static event System.Action BossVictoryStarted;
 
     public bool BattleEnded => battleEnded;
 
@@ -170,6 +171,15 @@ public class BattleResultChecker : MonoBehaviour
             PrepareBattleFinishedPresentation();
             RestoreIncapacitatedPartyIdleAfterVictory();
             ResetBattleEffectOnFinish();
+            // Phase one queues a transition above; only the defeated phase-two boss
+            // can trigger the dedicated victory music.
+            bool arabellaPhaseTwoDefeated = IsCurrentNodeBoss() &&
+                System.Array.Exists(unitsForPhaseCheck, unit =>
+                    unit != null && unit.RuntimeData != null &&
+                    unit.RuntimeData.MonsterId == ArabellaPhaseTransition.PhaseTwoMonsterId &&
+                    unit.RuntimeData.CurrentHP <= 0);
+            if (arabellaPhaseTwoDefeated)
+                BossVictoryStarted?.Invoke();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Win");
             BattleEquipmentEffectService.ApplyBattleEndHealToParty();

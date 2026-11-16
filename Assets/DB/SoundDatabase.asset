@@ -104,6 +104,19 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     ambienceClips: []
+  - state: 19
+    mainClip:
+      clip: {fileID: 8300000, guid: b8d21d173e1cfc24f811ad0626460a63, type: 3}
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      useLoopRegion: 0
+      loopStartSeconds: 0
+      loopEndSeconds: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
   ambienceList:
   - id: Fire Burning
     aliases: []

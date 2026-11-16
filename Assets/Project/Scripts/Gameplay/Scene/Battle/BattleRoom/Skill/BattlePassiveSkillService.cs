@@ -264,13 +264,8 @@ public class BattlePassiveSkillService
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None);
 
-        int livingCount = 0;
         int appliedCount = 0;
-        int commonGain = -1;
-        bool sameGain = true;
-        System.Collections.Generic.List<int> gains = new System.Collections.Generic.List<int>();
-        for (int j = 0; j < characters.Length; j++)
-            if (characters[j] != null && characters[j].RuntimeData != null && !characters[j].RuntimeData.IsDead) livingCount++;
+        int displayedGain = 0;
         for (int i = 0; i < characters.Length; i++)
         {
             BattleCharacter character = characters[i];
@@ -284,7 +279,11 @@ public class BattlePassiveSkillService
                 int beforeShield = targetRuntime.CurrentShield;
                 ApplyArmorToPlayer(ownerRuntime, targetRuntime, passiveSkill, appliedValue);
                 int gainedArmor = targetRuntime.CurrentShield - beforeShield;
-                if (gainedArmor > 0) { appliedCount++; gains.Add(gainedArmor); if (commonGain >= 0 && commonGain != gainedArmor) sameGain = false; commonGain = gainedArmor; }
+                if (gainedArmor > 0)
+                {
+                    appliedCount++;
+                    displayedGain = Mathf.Max(displayedGain, gainedArmor);
+                }
                 continue;
             }
 
@@ -297,15 +296,15 @@ public class BattlePassiveSkillService
                 continue;
 
             BattleEffectUtility.AddStatusToPlayer(character, effectId, finalStack, 1);
-            appliedCount++; gains.Add(finalStack);
-            if (commonGain >= 0 && commonGain != finalStack) sameGain = false;
-            commonGain = finalStack;
+            appliedCount++;
+            displayedGain = Mathf.Max(displayedGain, finalStack);
         }
-        if (appliedCount == livingCount && appliedCount > 0 && sameGain)
-            BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, commonGain, true, false, true);
-        else
-            for (int i = 0; i < gains.Count; i++)
-                BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, gains[i], false, false, false);
+
+        // A party-wide passive is one activation, even when equipment modifies
+        // the actual gain differently for each ally. Keep each target's effect
+        // unchanged, but enqueue only one BattleEffectInfo notification.
+        if (appliedCount > 0)
+            BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, displayedGain, true, false, true);
     }
 
     private static void ApplyArmorToPlayer(
