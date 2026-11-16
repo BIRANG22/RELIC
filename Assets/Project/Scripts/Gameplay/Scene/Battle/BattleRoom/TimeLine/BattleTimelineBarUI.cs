@@ -336,6 +336,10 @@ public class BattleTimelineBarUI : MonoBehaviour
         if (group == null)
             return;
 
+        // RefreshTimeline calls this repeatedly; consumed markers stay hidden.
+        if (visible && group.IsTurnMarkAlreadyPassed)
+            return;
+
         Transform turnMark = FindChildRecursive(group.transform, "TurnMark");
 
         if (turnMark == null)

@@ -627,7 +627,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 // The animation runs independently while the gameplay action resolves.
                 Coroutine orderAnimation = timelineController != null
                     ? StartCoroutine(timelineController.PlayTimelineIconsAfterActionRoutine(
-                        currentSlotIndex, executableOrderIndices))
+                        currentSlotIndex, executableOrderIndices,
+                        GetExecutableTimelineOrderSpans(batch, currentSlotIndex, executableOrderIndices)))
                     : null;
 
                 // Refresh the remaining orders on the exact frame Swift is applied.
@@ -1029,7 +1030,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 // The animation runs independently while the gameplay action resolves.
                 Coroutine orderAnimation = timelineController != null
                     ? StartCoroutine(timelineController.PlayTimelineIconsAfterActionRoutine(
-                        currentSlotIndex, executableOrderIndices))
+                        currentSlotIndex, executableOrderIndices,
+                        GetExecutableTimelineOrderSpans(batch, currentSlotIndex, executableOrderIndices)))
                     : null;
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
@@ -1915,6 +1917,38 @@ public class BattleTurnExecutor : MonoBehaviour
 
         orderIndices.Sort();
         return orderIndices;
+    }
+
+    // Each reservation has one start order but can occupy 1-3 timeline cells.
+    private List<int> GetExecutableTimelineOrderSpans(
+        BattleActionBatch batch, int slotIndex, IReadOnlyList<int> orderIndices)
+    {
+        List<int> spans = new List<int>();
+        for (int i = 0; i < orderIndices.Count; i++)
+        {
+            int order = orderIndices[i];
+            int span = 1;
+            if (batch.PlayerCommands != null)
+            {
+                for (int j = 0; j < batch.PlayerCommands.Count; j++)
+                {
+                    PlayerReservedCommand command = batch.PlayerCommands[j];
+                    if (IsExecutablePlayerCommand(command) && GetTimelineOrderIndex(slotIndex, command) == order)
+                        span = Mathf.Max(span, command.TimelineEntryCost);
+                }
+            }
+            if (batch.MonsterCommands != null)
+            {
+                for (int j = 0; j < batch.MonsterCommands.Count; j++)
+                {
+                    MonsterReservedCommand command = batch.MonsterCommands[j];
+                    if (IsExecutableMonsterCommand(command) && GetTimelineOrderIndex(slotIndex, command) == order)
+                        span = Mathf.Max(span, command.TimelineEntryCost);
+                }
+            }
+            spans.Add(Mathf.Clamp(span, 1, 5 - order));
+        }
+        return spans;
     }
 
     private void OnSwiftAppliedDuringAction(BattleCharacter target)
