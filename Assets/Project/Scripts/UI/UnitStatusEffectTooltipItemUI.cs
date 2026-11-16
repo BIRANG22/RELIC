@@ -51,6 +51,7 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
         if (iconImage != null)
         {
             iconImage.sprite = GetIcon(data.EffectId);
+            iconImage.color = GetEffectIconColor(data.EffectId);
             iconImage.enabled = iconImage.sprite != null;
             iconImage.raycastTarget = false;
         }
@@ -95,6 +96,8 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
             // Slime (GR_Residue) shares the Trail status effect icon.
             Sprite gridIcon = data.GridEffectID == "GR_Residue" ? GetIcon("E_Trail") : null;
             iconImage.sprite = gridIcon;
+            // Grid effects are not beneficial or harmful. Reset pooled icon tint.
+            iconImage.color = Color.white;
             iconImage.enabled = gridIcon != null;
             iconImage.raycastTarget = false;
         }
@@ -132,6 +135,16 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
 
         DataManager.Instance.EffectDatabase.TryGet(effectId, out EffectMasterData masterData);
         return masterData;
+    }
+
+    private Color GetEffectIconColor(string effectId)
+    {
+        DataManager manager = DataManager.Instance;
+        if (manager == null || manager.StatusEffectIconDatabase == null)
+            return Color.white;
+
+        return manager.StatusEffectIconDatabase.GetIconColor(
+            effectId, manager.EffectDatabase, false);
     }
 
     private Sprite GetIcon(string effectId)

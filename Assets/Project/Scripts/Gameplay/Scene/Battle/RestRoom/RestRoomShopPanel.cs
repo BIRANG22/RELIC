@@ -22,6 +22,15 @@ public class RestRoomShopPanel : MonoBehaviour
     // Runtime instances are created under Content when stock is bound.
     private readonly List<GoodsIconItem> goodsSlots = new();
 
+    [Header("Shop Effect Text Cursor Tooltip")]
+    [Tooltip("Screen-pixel distance from the mouse cursor to the left edge of the linked effect tooltip.")]
+    [SerializeField, Min(0f)] private float shopEffectCursorRightGap = 12f;
+    [Tooltip("Screen-pixel vertical offset of the linked effect tooltip from the cursor.")]
+    [SerializeField] private float shopEffectCursorTopOffset = 8f;
+
+    public float ShopEffectCursorRightGap => shopEffectCursorRightGap;
+    public float ShopEffectCursorTopOffset => shopEffectCursorTopOffset;
+
     [Header("Skill Resource Icons")]
     [SerializeField] private Sprite costResourceIcon;
     [SerializeField] private Sprite hpResourceIcon;

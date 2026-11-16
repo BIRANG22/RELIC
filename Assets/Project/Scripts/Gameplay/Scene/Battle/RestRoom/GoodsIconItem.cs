@@ -331,9 +331,9 @@ public class GoodsIconItem : MonoBehaviour
         SetText(relicName, GameDataLocalization.RelicName(relic));
         SetImage(goodsIcon, icon);
         SetText(goodsName, GameDataLocalization.RelicName(relic));
-        SetText(goodsDetail, GameDataLocalization.RelicEffectDescription(relic));
+        RelicDescriptionPresenter.Set(goodsDetail, GameDataLocalization.RelicEffectDescription(relic));
         ApplyRelicRarityPresentation(relic);
-        SetText(relicDetail, GameDataLocalization.RelicEffectDescription(relic));
+        RelicDescriptionPresenter.Set(relicDetail, GameDataLocalization.RelicEffectDescription(relic));
     }
 
     private void ApplySkillRarityPresentation(SkillRarity rarity)
