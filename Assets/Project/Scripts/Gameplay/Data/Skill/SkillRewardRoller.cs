@@ -52,6 +52,9 @@ namespace Relic.Gameplay.Data
             if (mapData == null || random == null || count <= 0)
                 return offers;
 
+            // Each card is rolled independently against the map rarity weights.
+            // Once an exact memory is offered it is removed, but other rarities
+            // remain eligible for the next card. Never lock all cards to one rarity.
             while (offers.Count < count && remaining.Count > 0)
             {
                 float totalRarityWeight = 0f;
@@ -61,37 +64,56 @@ namespace Relic.Gameplay.Data
                         totalRarityWeight += GetRarityWeight(mapData, rarity);
                 }
 
+                // A map can set a rarity weight to zero. If every remaining
+                // candidate has zero weight, still fill the requested cards
+                // rather than returning an incomplete reward selection.
+                int selectedIndex;
                 if (totalRarityWeight <= 0f)
-                    break;
-
-                float rarityRoll = random.Value() * totalRarityWeight;
-                SkillRarity selectedRarity = SkillRarity.Common;
-                foreach (SkillRarity rarity in CoreDropRarities)
                 {
-                    if (!HasCandidateOfRarity(remaining, rarity))
-                        continue;
+                    selectedIndex = random.Range(0, remaining.Count);
+                }
+                else
+                {
+                    float rarityRoll = random.Value() * totalRarityWeight;
+                    SkillRarity selectedRarity = SkillRarity.Common;
+                    bool chosen = false;
+                    foreach (SkillRarity rarity in CoreDropRarities)
+                    {
+                        if (!HasCandidateOfRarity(remaining, rarity))
+                            continue;
 
-                    float weight = GetRarityWeight(mapData, rarity);
-                    if (weight <= 0f)
-                        continue;
+                        float weight = GetRarityWeight(mapData, rarity);
+                        if (weight <= 0f)
+                            continue;
 
-                    selectedRarity = rarity;
-                    rarityRoll -= weight;
-                    if (rarityRoll <= 0f)
-                        break;
+                        selectedRarity = rarity;
+                        rarityRoll -= weight;
+                        if (rarityRoll <= 0f)
+                        {
+                            chosen = true;
+                            break;
+                        }
+                    }
+                    // In floating point edge cases, choose the last positive
+                    // rarity encountered rather than implicitly selecting Common.
+                    if (!chosen && !HasCandidateOfRarity(remaining, selectedRarity))
+                    {
+                        selectedIndex = random.Range(0, remaining.Count);
+                    }
+                    else
+                    {
+                        List<int> matchingIndices = new();
+                        for (int i = 0; i < remaining.Count; i++)
+                        {
+                            if (remaining[i] != null && remaining[i].Rarity == selectedRarity)
+                                matchingIndices.Add(i);
+                        }
+                        selectedIndex = matchingIndices.Count > 0
+                            ? matchingIndices[random.Range(0, matchingIndices.Count)]
+                            : random.Range(0, remaining.Count);
+                    }
                 }
 
-                List<int> matchingIndices = new();
-                for (int i = 0; i < remaining.Count; i++)
-                {
-                    if (remaining[i] != null && remaining[i].Rarity == selectedRarity)
-                        matchingIndices.Add(i);
-                }
-
-                if (matchingIndices.Count == 0)
-                    break;
-
-                int selectedIndex = matchingIndices[random.Range(0, matchingIndices.Count)];
                 offers.Add(remaining[selectedIndex]);
                 remaining.RemoveAt(selectedIndex);
             }

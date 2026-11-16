@@ -699,6 +699,13 @@ public class BattleSceneController : MonoBehaviour
 
         panel.OpenSavedResult(resume.ExplorationResultDefeat,
             resume.ExplorationResultRewardMultiplier);
+        if (!resume.ExplorationResultDefeat &&
+            BattleBgmDirector.IsRestoredBossVictory(mapRuntime))
+        {
+            BattleBgmDirector bgmDirector = Object.FindFirstObjectByType<BattleBgmDirector>(
+                FindObjectsInactive.Include);
+            bgmDirector?.RestoreBossVictoryBgm();
+        }
         save.ClearPendingResumeData();
         save.CompleteCheckpointAutosaveRestore();
         return true;
@@ -1335,6 +1342,47 @@ public class BattleSceneController : MonoBehaviour
         // 진행 중인 튜토리얼은 지도 선택 화면으로 우회하지 않습니다.
         if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true)
             return false;
+
+        // The final boss has no following map node. If the player closed the game
+        // after claiming boss rewards but before confirming the result, restore the
+        // successful exploration result instead of an unusable empty map.
+        GeneratedMapNodeData clearedNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+        if (clearedNode != null &&
+            string.Equals(clearedNode.Type, "Boss", StringComparison.OrdinalIgnoreCase))
+        {
+            ExplorationResultPanelUI resultPanel = explorationResultPanel != null
+                ? explorationResultPanel.GetComponent<ExplorationResultPanelUI>()
+                : null;
+            if (resultPanel == null)
+                resultPanel = Object.FindFirstObjectByType<ExplorationResultPanelUI>(FindObjectsInactive.Include);
+
+            if (resultPanel != null)
+            {
+                CloseAllRooms();
+                battleMapPanel?.Close();
+                mapSelectionPresenter?.Hide();
+                SetErosionSelectVisible(false);
+                CloseInventoryAndBagPanelsImmediate();
+                SetSharedPartyPresentationVisible(false);
+                if (battleRoom != null)
+                {
+                    ShowRoomBackground(battleRoom, clearedNode);
+                    ApplyRoomVisual(battleRoom, clearedNode);
+                    battleRoom.SetActive(true);
+                    BattleRoomLoader loader = battleRoom.GetComponentInChildren<BattleRoomLoader>(true);
+                    loader?.RestoreCompletedBattleCharacters();
+                }
+                resultPanel.Open();
+                BattleBgmDirector bgmDirector = Object.FindFirstObjectByType<BattleBgmDirector>(
+                    FindObjectsInactive.Include);
+                bgmDirector?.RestoreBossVictoryBgm();
+                SaveSystem.Instance?.CompleteCheckpointAutosaveRestore();
+                return true;
+            }
+
+            Debug.LogError("[BattleSceneController] Cleared boss resume requires ExplorationResultPanelUI; refusing to open an empty map.", this);
+            return true;
+        }
 
         CloseAllRooms();
         OpenMapPanelImmediate();
