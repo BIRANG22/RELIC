@@ -575,9 +575,25 @@ public sealed class BossSpawnPresentation : MonoBehaviour
                 else if (string.Equals(entry.fallbackText, "고통은 잠시뿐입니다. 구원은 영원하니까요", StringComparison.Ordinal))
                     dialogueKey = "battle.boss.arabella.appear.02";
             }
-            dialogueText.text = string.IsNullOrWhiteSpace(dialogueKey)
+            // Older prefab instances can retain the first dialogue's key on the
+            // second entry. Prefer the correct built-in key when the fallback
+            // identifies the second Arabella line unambiguously.
+            if (string.Equals(entry.fallbackText?.Trim(), "고통은 잠시뿐입니다. 구원은 영원하니까요", StringComparison.Ordinal) ||
+                string.Equals(entry.fallbackText?.Trim(), "고통은 잠시뿐입니다. 구원은 영원하니까요.", StringComparison.Ordinal))
+                dialogueKey = "battle.boss.arabella.appear.02";
+
+            string resolvedDialogue = string.IsNullOrWhiteSpace(dialogueKey)
                 ? entry.fallbackText
                 : GameLocalization.Get(dialogueKey, entry.fallbackText);
+
+            // Prevent a duplicated localized entry from repeating the first
+            // line in the Korean boss introduction. Other languages continue
+            // using their own localized table entries.
+            if (i == 1 && string.Equals(dialogueKey, "battle.boss.arabella.appear.02", StringComparison.Ordinal) &&
+                string.Equals(resolvedDialogue?.Trim(), "들리시나요? 이토록 아름다운 기도가...", StringComparison.Ordinal))
+                resolvedDialogue = "고통은 잠시뿐입니다. 구원은 영원하니까요.";
+
+            dialogueText.text = resolvedDialogue;
             LocaleTMPFontGuard.Prepare(dialogueText);
             dialogueRoot.SetActive(true);
             PlayDialogueSfx(entry);

@@ -2169,7 +2169,12 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                 if (offers.Count < 3 && dm.SkillDatabase.TryGet(skillId.Trim(), out SkillMasterData offered) &&
                     offered != null && !offers.Exists(x => x.SkillId == offered.SkillId))
                     offers.Add(offered);
-            return offers;
+            // Saved offers are stable if complete. Older saves may contain
+            // only one or two offers; rebuild those instead of showing fewer
+            // than three cards when the character still has enough memories.
+            if (offers.Count >= 3) return offers;
+            offers.Clear();
+            battleOfferCharacterId = null;
         }
 
         // Event selections explicitly supply the three weighted, character-filtered offers.
@@ -2217,7 +2222,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
         // Battle drops draw from the character's full memory catalogue.  Inventory
         // history must not accidentally narrow the pool to a single rarity.
-        // Currently equipped memories are excluded to avoid unusable reward cards.
+        // Exclude already owned memories (equipped, acquired, or in inventory).
         string source = rewardData?.SourceKey ?? string.Empty;
         bool isBattleDrop = source.StartsWith("Skill|", StringComparison.OrdinalIgnoreCase);
         HashSet<string> acquired = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -2258,7 +2263,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId) || skill.Category != Category.Core ||
                 !SkillRarityUtility.IsCoreDropRarity(skill.Rarity) ||
                 !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) ||
-                (isBattleDrop ? equipped.Contains(skill.SkillId.Trim()) : acquired.Contains(skill.SkillId.Trim()))) continue;
+                acquired.Contains(skill.SkillId.Trim())) continue;
             if (typeFilter.HasValue && skill.SkillType != typeFilter.Value) continue;
             if (commonRare)
             {
@@ -2272,8 +2277,8 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
 
         // Prefer characters with at least three obtainable memories when possible.
-        // A battle drop uses the full memory catalogue, excluding only memories
-        // currently equipped by the selected owner (handled by the equip UI).
+        // A battle drop considers all eligible rarities while excluding memories
+        // already owned by the party.
         bool hasFullOfferPool = eligibleOwners.Exists(id => pools[id].Count >= 3);
         float totalWeight = 0f;
         foreach (string id in eligibleOwners)
@@ -2306,7 +2311,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(battleOfferCharacterId)) return offers;
         List<SkillMasterData> candidates = pools[battleOfferCharacterId];
         if (isBattleDrop && candidates.Count < 3)
-            Debug.LogWarning($"[BattleRewardSkillPanelUI] Only {candidates.Count} core memories found for {battleOfferCharacterId}. Check SkillMaster core entries and ownership.");
+            Debug.LogWarning($"[BattleRewardSkillPanelUI] Only {candidates.Count} eligible core memories found for {battleOfferCharacterId}; cannot show three unique cards without enough candidates.");
         BattleMapData dropSettings = null;
         if (isBattleDrop && dm.BattleMapDatabase != null)
         {

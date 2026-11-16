@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Relic.Gameplay.Data;
 
 public static class BattleBgmPolicy
 {
@@ -135,19 +136,55 @@ public class BattleBgmDirector : MonoBehaviour
         defeatPlaying = false;
         victoryFinished = false;
         arabellaPhaseTwoPlaying = false;
+        if (IsRestoredBossVictory(DataManager.Instance?.MapRuntimeStore?.Get()))
+        {
+            RestoreBossVictoryBgm();
+            return;
+        }
         Refresh();
     }
 
     private void OnRoomIntroStarted() { if (currentRoomType == "Boss") { bossIntroPlaying = true; Refresh(); } }
     private void OnRoomIntroCompleted() { if (bossIntroPlaying) { bossIntroPlaying = false; Refresh(); } }
     private void OnDefeatStarted() { defeatPlaying = true; Refresh(); }
-    private void OnBossVictoryStarted()
+    // Saved boss victories are restored without running BattleResultChecker again.
+    // A cleared boss node (or a saved successful result for that boss) must play
+    // the victory track, not the room's phase-one track.
+    public static bool IsRestoredBossVictory(MapRuntimeData runtime)
     {
-        // Only called after Arabella phase two reaches zero HP and the battle is won.
+        GeneratedMapNodeData node = MapRuntimeProgressUtility.FindCurrentNode(runtime);
+        if (node == null || !string.Equals(node.Type, "Boss", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (MapRuntimeProgressUtility.IsCurrentNodeCleared(runtime))
+            return true;
+
+        SaveSystem save = SaveSystem.Instance;
+        return save != null &&
+            save.TryGetPendingResumeData(out ResumeData resume) &&
+            resume.Phase == ResumePhase.ExplorationResult &&
+            !resume.ExplorationResultDefeat;
+    }
+
+    public void RestoreBossVictoryBgm()
+    {
         victoryFinished = true;
+        bossIntroPlaying = false;
+        defeatPlaying = false;
+        arabellaPhaseTwoPlaying = false;
         AudioManager audio = AudioManager.Instance;
         if (audio != null && audio.IsBgmConfigured(bossVictoryState))
             audio.PlayBgm(bossVictoryState, bossVictoryFadeOutDuration, bossVictoryFadeInDuration);
+        else
+        {
+            Debug.LogWarning($"[BattleBgmDirector] Boss victory BGM is not configured: {bossVictoryState}");
+            audio?.FadeOutBgm(0.5f);
+        }
+    }
+
+    private void OnBossVictoryStarted()
+    {
+        RestoreBossVictoryBgm();
     }
     private void OnBattleFinished()
     {
@@ -166,6 +203,22 @@ public class BattleBgmDirector : MonoBehaviour
     {
         arabellaPhaseTwoPlaying = true;
         Refresh(0f, arabellaPhaseTwoFadeInDuration);
+    }
+
+    // The Start room can be selected only after its position-panel presentation.
+    public bool HasSelectedRoom => !string.IsNullOrWhiteSpace(currentRoomType);
+
+    // Re-assert the selected room's BGM after scene loading completes. This is
+    // important when returning from Title via an exploration checkpoint.
+    public void EnsureRoomBgmAfterSceneLoad()
+    {
+        if (IsRestoredBossVictory(DataManager.Instance?.MapRuntimeStore?.Get()))
+        {
+            RestoreBossVictoryBgm();
+            return;
+        }
+        if (!string.IsNullOrWhiteSpace(currentRoomType))
+            Refresh();
     }
 
     private void Refresh()
@@ -198,7 +251,19 @@ public class BattleBgmDirector : MonoBehaviour
             roomState,
             audio.IsBgmConfigured);
         if (!resolved.HasValue)
-            return;
+        {
+            // Do not preserve TitleMain when an optional room-specific BGM
+            // has no playable clip configured in the SoundDatabase.
+            BgmState? fallback = BattleBgmPolicy.ResolveFirstConfigured(
+                new[] { BgmState.Stage1Common, BgmState.Stage1Special },
+                audio.IsBgmConfigured);
+            if (!fallback.HasValue)
+            {
+                audio.FadeOutBgm(0.5f);
+                return;
+            }
+            resolved = fallback;
+        }
         if (fadeOutDuration.HasValue && fadeInDuration.HasValue)
             audio.PlayBgm(resolved.Value, fadeOutDuration.Value, fadeInDuration.Value);
         else
@@ -229,6 +294,27 @@ public class BattleBgmDirector : MonoBehaviour
                 state = binding.state;
                 return true;
             }
+        }
+        // A resumed room must never leave TitleMain playing just because its
+        // serialized room binding is missing or does not match the saved stage.
+        // Explicit inspector bindings above always take priority.
+        switch (roomType?.Trim().ToLowerInvariant())
+        {
+            case "boss": state = BgmState.Stage1Boss; return true;
+            case "elite": state = BgmState.Stage1Elite; return true;
+            case "common":
+                state = BgmState.Stage1Common;
+                return true;
+            case "rest": state = BgmState.Stage1Rest; return true;
+            case "shop": state = BgmState.Stage1Shop; return true;
+            case "event":
+            case "special": state = BgmState.Stage1Special; return true;
+            case "start": state = BgmState.Stage1Start; return true;
+        }
+        if (hasBattleMap)
+        {
+            state = BgmState.Stage1Common;
+            return true;
         }
         state = default;
         return false;
