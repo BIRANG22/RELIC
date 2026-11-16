@@ -908,7 +908,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (monsterUnits == null)
             return plans;
 
-        plannedBattleTurn++;
+        // Planning can be retried within the same turn (including after a reload).
+        // Use the executor's actual turn number, not the number of planning calls.
+        BattleTurnExecutor turnExecutor =
+            UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        plannedBattleTurn = turnExecutor != null
+            ? turnExecutor.CurrentBattleTurnNumber
+            : Mathf.Max(1, plannedBattleTurn + 1);
 
         BattleContext context = new BattleContext
         {
@@ -938,7 +944,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             {
                 // Tutorial_03, turn one only: Lancer uses Grudge without its usual
                 // conditional attack/escape actions. Other turns retain normal AI.
-                if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_03"))
+                if (GetTutorialThreeFixedSlot(runtime) == 4)
                 {
                     plan = new MonsterAIPlan();
                     plan.Add(new MonsterAIAction(
@@ -983,9 +989,15 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             }
 
             // 아라벨라는 턴마다 고정 슬롯 패턴을 사용합니다.
-            int baseSlotIndex = runtime.MonsterId == "Mon_12_1" || runtime.MonsterId == "Mon_12_2"
-                ? 0
-                : FindAvailableMonsterSlot(runtime, plans, plan.Actions);
+            // Tutorial_03: determine the reserved slot before generic AI base-slot
+            // validation. Otherwise a valid fixed-slot action can be skipped while
+            // searching for an unrelated random base slot.
+            int tutorialFixedSlot = GetTutorialThreeFixedSlot(runtime);
+            int baseSlotIndex = tutorialFixedSlot >= 0
+                ? tutorialFixedSlot
+                : runtime.MonsterId == "Mon_12_1" || runtime.MonsterId == "Mon_12_2"
+                    ? 0
+                    : FindAvailableMonsterSlot(runtime, plans, plan.Actions);
 
             if (baseSlotIndex < 0)
             {
@@ -1512,13 +1524,11 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (IsTutorialFiveFirstTurnMurk(runtime) && slotCount > 2)
             return 2;
 
-        // Tutorial_03 (Map_28) turn 1 only: Draugr's movement and sweep
-        // both execute at slot 2; Lancer's Grudge executes at slot 5.
-        // The timeline uses zero-based slot indices.
-        if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_07") && slotCount > 1)
-            return 1;
-        if (IsTutorialThreeFirstTurnMonster(runtime, "Mon_03") && slotCount > 4)
-            return 4;
+        // Tutorial_03: use the same fixed slot chosen before generic validation.
+        // Draugr occupies slot 2 in turns 1 and 2; Lancer uses slot 5 on turn 1.
+        int tutorialFixedSlot = GetTutorialThreeFixedSlot(runtime);
+        if (tutorialFixedSlot >= 0 && slotCount > tutorialFixedSlot)
+            return tutorialFixedSlot;
 
         // 튜토리얼 1 전투(Map_26)는 몬스터의 AI 패턴과 행동 선택은
         // 그대로 사용하되, 예약되는 타임라인 위치만 항상 3번 슬롯으로 고정합니다.
@@ -1578,6 +1588,29 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         return data?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
                string.Equals(data.MapRuntimeStore?.Get()?.CurrentMapId?.Trim(),
                    "Map_30", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private int GetTutorialThreeFixedSlot(MonsterRuntimeData runtime)
+    {
+        if (runtime == null || plannedBattleTurn < 1)
+            return -1;
+
+        // Map_28 is the dedicated Tutorial_03 battle. Checking the map directly
+        // also covers battle-runtime flags not yet restored after event transitions.
+        string mapId = DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId?.Trim();
+        if (!string.Equals(mapId, TutorialBattleEntrySetup.SecondTutorialMapId,
+                System.StringComparison.OrdinalIgnoreCase))
+            return -1;
+
+        if (plannedBattleTurn <= 2 &&
+            string.Equals(runtime.MonsterId, "Mon_07", System.StringComparison.OrdinalIgnoreCase))
+            return 1;
+
+        if (plannedBattleTurn == 1 &&
+            string.Equals(runtime.MonsterId, "Mon_03", System.StringComparison.OrdinalIgnoreCase))
+            return 4;
+
+        return -1;
     }
 
     private bool IsTutorialThreeFirstTurnMonster(MonsterRuntimeData runtime, string monsterId)
