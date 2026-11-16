@@ -60,7 +60,7 @@ MonoBehaviour:
       Active: 1
   - MapId: Map_21
     Spawns:
-    - Prefab: {fileID: 1000000000000000001, guid: 56b34273b32e5b048b4e14f033eeb84e, type: 3}
+    - Prefab: {fileID: 1000000000000000001, guid: 87f3e0b699c68af4eb05c3753e331e13, type: 3}
       VisualObjectId: event6
       AnchorName: 
       LocalPosition: {x: 4, y: 0.26, z: 0}

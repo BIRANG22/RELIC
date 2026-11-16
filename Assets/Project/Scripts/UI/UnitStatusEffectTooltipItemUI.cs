@@ -175,7 +175,9 @@ public static class MonsterInnateEffectDescriptionFormatter
                 .ThenBy(value => value.EffectId, StringComparer.Ordinal);
             foreach (EffectMasterData effect in effects)
             {
-                if (string.Equals(effect.EffectId, currentEffectId, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(effect.EffectId, currentEffectId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(effect.EffectId, "E_Strike", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(effect.EffectId, "E_Move", StringComparison.OrdinalIgnoreCase))
                     continue;
                 string name = GameDataLocalization.EffectName(effect)?.Trim();
                 if (!string.IsNullOrEmpty(name) && !byName.ContainsKey(name))
