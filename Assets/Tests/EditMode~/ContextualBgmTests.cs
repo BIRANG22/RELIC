@@ -14,6 +14,20 @@ public class ContextualBgmTests
             Is.EqualTo(expected));
     }
 
+    [TestCase(false, true, true)]
+    [TestCase(true, true, false)]
+    public void DefaultBattleBgm_UsesEntryStateBeforeSceneLoad(
+        bool hadUnclearedNodeBeforeLoad,
+        bool hasUnclearedNodeAfterLoad,
+        bool expected)
+    {
+        Assert.That(
+            BattleState.ShouldPlayDefaultBattleBgm(
+                hadUnclearedNodeBeforeLoad,
+                hasUnclearedNodeAfterLoad),
+            Is.EqualTo(expected));
+    }
+
     [TestCase(0f, 2f, 1f)]
     [TestCase(1f, 2f, 0.5f)]
     [TestCase(2f, 2f, 0f)]

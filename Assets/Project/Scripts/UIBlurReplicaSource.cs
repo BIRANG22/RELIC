@@ -13,41 +13,47 @@ public sealed class UIBlurReplicaSource
     private readonly List<TransformPair> transforms = new();
     private readonly List<MaskSync> masks = new();
     private bool originalRenderingHidden;
-    private int hierarchySignature;
+    private readonly List<HierarchyNode> hierarchyNodes = new();
 
     public UIBlurReplicaSource(Transform sourceRoot, RectTransform parent, Camera replicaCamera, int layer)
     {
         this.sourceRoot = sourceRoot;
         replicaRoot = CloneTransformTree(sourceRoot, parent, replicaCamera, layer, true);
         SyncNow();
-        hierarchySignature = CalculateHierarchySignature(sourceRoot);
+        CaptureHierarchy(sourceRoot);
     }
 
     public GameObject GameObject => replicaRoot != null ? replicaRoot.gameObject : null;
 
     // Dynamic panel content may add/remove graphics after the replica was built.
     // Transform state and sprite changes are handled by SyncNow; structural changes need a rebuild.
-    public bool NeedsRebuild => sourceRoot != null &&
-        hierarchySignature != CalculateHierarchySignature(sourceRoot);
+    public bool NeedsRebuild => sourceRoot != null && HasHierarchyChanged();
 
-    private static int CalculateHierarchySignature(Transform root)
+    private void CaptureHierarchy(Transform root)
     {
-        unchecked
-        {
-            if (root == null || root.name == SettingUpperName)
-                return 0;
+        hierarchyNodes.Clear();
+        CaptureHierarchyRecursive(root);
+    }
 
-            int hash = 17;
-            hash = hash * 31 + root.GetInstanceID();
-            hash = hash * 31 + root.childCount;
-            Graphic graphic = root.GetComponent<Graphic>();
-            hash = hash * 31 + (graphic != null ? graphic.GetType().GetHashCode() : 0);
-            hash = hash * 31 + (root.GetComponent<Mask>() != null ? 1 : 0);
-            hash = hash * 31 + (root.GetComponent<RectMask2D>() != null ? 1 : 0);
-            for (int i = 0; i < root.childCount; i++)
-                hash = hash * 31 + CalculateHierarchySignature(root.GetChild(i));
-            return hash;
+    private void CaptureHierarchyRecursive(Transform root)
+    {
+        if (root == null || root.name == SettingUpperName)
+            return;
+
+        hierarchyNodes.Add(new HierarchyNode(root));
+        for (int i = 0; i < root.childCount; i++)
+            CaptureHierarchyRecursive(root.GetChild(i));
+    }
+
+    private bool HasHierarchyChanged()
+    {
+        for (int i = 0; i < hierarchyNodes.Count; i++)
+        {
+            if (hierarchyNodes[i].HasChanged())
+                return true;
         }
+
+        return false;
     }
 
     public void SetVisible(bool visible)
@@ -338,6 +344,7 @@ public sealed class UIBlurReplicaSource
         protected readonly Graphic Source;
         protected readonly Graphic Replica;
         private readonly CanvasRenderer sourceRenderer;
+        private readonly CanvasGroup[][] canvasGroupsByLevel;
         private bool sourceRendererHidden;
 
         protected GraphicPair(Graphic source, Graphic replica)
@@ -345,6 +352,7 @@ public sealed class UIBlurReplicaSource
             Source = source;
             Replica = replica;
             sourceRenderer = source != null ? source.canvasRenderer : null;
+            canvasGroupsByLevel = CacheCanvasGroups(source != null ? source.transform : null);
         }
 
         public virtual void Sync()
@@ -356,7 +364,7 @@ public sealed class UIBlurReplicaSource
             Color color = Source.color;
             if (sourceRenderer != null)
                 color *= sourceRenderer.GetColor();
-            color.a *= GetEffectiveCanvasGroupAlpha(Source.transform);
+            color.a *= GetEffectiveCanvasGroupAlpha(canvasGroupsByLevel);
             Replica.color = color;
             Replica.material = Source.material;
             Replica.raycastTarget = false;
@@ -380,14 +388,24 @@ public sealed class UIBlurReplicaSource
                 Source.SetAllDirty();
         }
 
-        private static float GetEffectiveCanvasGroupAlpha(Transform transform)
+        private static CanvasGroup[][] CacheCanvasGroups(Transform transform)
         {
-            float alpha = 1f;
+            List<CanvasGroup[]> levels = new();
             Transform current = transform;
-
             while (current != null)
             {
-                CanvasGroup[] groups = current.GetComponents<CanvasGroup>();
+                levels.Add(current.GetComponents<CanvasGroup>());
+                current = current.parent;
+            }
+            return levels.ToArray();
+        }
+
+        private static float GetEffectiveCanvasGroupAlpha(CanvasGroup[][] levels)
+        {
+            float alpha = 1f;
+            for (int level = 0; level < levels.Length; level++)
+            {
+                CanvasGroup[] groups = levels[level];
                 bool ignoreParents = false;
 
                 for (int i = 0; i < groups.Length; i++)
@@ -403,11 +421,36 @@ public sealed class UIBlurReplicaSource
 
                 if (alpha <= 0f || ignoreParents)
                     break;
-
-                current = current.parent;
             }
 
             return Mathf.Clamp01(alpha);
+        }
+    }
+
+    private sealed class HierarchyNode
+    {
+        private readonly Transform transform;
+        private readonly int[] childIds;
+
+        public HierarchyNode(Transform transform)
+        {
+            this.transform = transform;
+            childIds = new int[transform.childCount];
+            for (int i = 0; i < childIds.Length; i++)
+                childIds[i] = transform.GetChild(i).GetInstanceID();
+        }
+
+        public bool HasChanged()
+        {
+            if (transform == null || transform.childCount != childIds.Length)
+                return true;
+
+            for (int i = 0; i < childIds.Length; i++)
+            {
+                if (transform.GetChild(i).GetInstanceID() != childIds[i])
+                    return true;
+            }
+            return false;
         }
     }
 
