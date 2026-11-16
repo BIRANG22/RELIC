@@ -7,6 +7,59 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+public sealed class TutorialFocusTargetCache
+{
+    private Transform root;
+    private readonly List<Transform> nodes = new();
+    private readonly List<int[]> childIds = new();
+
+    public bool NeedsRefresh(Transform target)
+    {
+        if (target == null || target != root || nodes.Count == 0)
+            return true;
+
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            Transform node = nodes[i];
+            int[] expectedChildren = childIds[i];
+            if (node == null || node.childCount != expectedChildren.Length)
+                return true;
+
+            for (int childIndex = 0; childIndex < expectedChildren.Length; childIndex++)
+            {
+                if (node.GetChild(childIndex).GetInstanceID() != expectedChildren[childIndex])
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void Capture(Transform target)
+    {
+        root = target;
+        nodes.Clear();
+        childIds.Clear();
+        CaptureRecursive(target);
+    }
+
+    private void CaptureRecursive(Transform node)
+    {
+        if (node == null)
+            return;
+
+        nodes.Add(node);
+        int[] ids = new int[node.childCount];
+        childIds.Add(ids);
+        for (int i = 0; i < node.childCount; i++)
+        {
+            Transform child = node.GetChild(i);
+            ids[i] = child.GetInstanceID();
+            CaptureRecursive(child);
+        }
+    }
+}
+
 /// <summary>
 /// Runs the new interactive Tutorial sheet rows AFTER the index guide is closed.
 /// Tooltip positioning follows HighlightTarget; TooltipPosition 0 means screen center.
@@ -88,6 +141,10 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
 
     private RectTransform uiTarget;
     private Transform worldTarget;
+    private readonly TutorialFocusTargetCache focusTargetCache = new();
+    private MonsterInfoSkillItemUI[] cachedSkillItems = Array.Empty<MonsterInfoSkillItemUI>();
+    private MonsterInfoStatusItemUI[] cachedStatusItems = Array.Empty<MonsterInfoStatusItemUI>();
+    private RectTransform[] cachedTargetRects = Array.Empty<RectTransform>();
     private TMP_Text tooltipText;
     private TMP_Text tooltipCompleteText;
     private int initialCommandCount;
@@ -1616,6 +1673,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         Vector2 screenMax;
         if (uiTarget != null)
         {
+            RefreshFocusTargetCacheIfNeeded();
             screenMin = new Vector2(float.MaxValue, float.MaxValue);
             screenMax = new Vector2(float.MinValue, float.MinValue);
             // For monster-info lists, fit the actual instantiated item prefabs.
@@ -1623,7 +1681,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             bool foundItems = false;
             if (uiTarget.name == "SkillList")
             {
-                foreach (MonsterInfoSkillItemUI item in uiTarget.GetComponentsInChildren<MonsterInfoSkillItemUI>(false))
+                foreach (MonsterInfoSkillItemUI item in cachedSkillItems)
                 {
                     if (item == null || !item.gameObject.activeInHierarchy) continue;
                     if (item.transform is RectTransform itemRect)
@@ -1635,7 +1693,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             }
             else if (uiTarget.name == "StatusEffectList")
             {
-                foreach (MonsterInfoStatusItemUI item in uiTarget.GetComponentsInChildren<MonsterInfoStatusItemUI>(false))
+                foreach (MonsterInfoStatusItemUI item in cachedStatusItems)
                 {
                     if (item == null || !item.gameObject.activeInHierarchy) continue;
                     if (item.transform is RectTransform itemRect)
@@ -1651,7 +1709,7 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
                 // The Artifact parent covers a different area from the six actual
                 // artifact slots. Frame only Artifact01-Artifact06, preserving their
                 // existing hover handlers and tooltips.
-                foreach (RectTransform child in uiTarget.GetComponentsInChildren<RectTransform>(false))
+                foreach (RectTransform child in cachedTargetRects)
                 {
                     if (child == null || child == uiTarget || !child.gameObject.activeInHierarchy) continue;
                     string name = child.name;
@@ -1728,6 +1786,23 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             tooltipPositionLocked = true;
         }
         UpdateDimmingMask((screenMin + screenMax) * 0.5f);
+    }
+
+    private void RefreshFocusTargetCacheIfNeeded()
+    {
+        if (!focusTargetCache.NeedsRefresh(uiTarget))
+            return;
+
+        focusTargetCache.Capture(uiTarget);
+        cachedSkillItems = uiTarget != null
+            ? uiTarget.GetComponentsInChildren<MonsterInfoSkillItemUI>(false)
+            : Array.Empty<MonsterInfoSkillItemUI>();
+        cachedStatusItems = uiTarget != null
+            ? uiTarget.GetComponentsInChildren<MonsterInfoStatusItemUI>(false)
+            : Array.Empty<MonsterInfoStatusItemUI>();
+        cachedTargetRects = uiTarget != null
+            ? uiTarget.GetComponentsInChildren<RectTransform>(false)
+            : Array.Empty<RectTransform>();
     }
 
     // Project the eight corners of a cell's world-space bounds. Using the cell's

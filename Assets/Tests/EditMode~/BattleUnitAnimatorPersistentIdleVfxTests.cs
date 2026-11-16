@@ -109,3 +109,25 @@ public class BattleUnitAnimatorPersistentIdleVfxTests
         field.SetValue(target, value);
     }
 }
+
+public sealed class PersistentIdleVfxFrameStateTests
+{
+    [Test]
+    public void RequiresRefresh_WhenSnapshotIsUnchanged_ReturnsFalse()
+    {
+        PersistentIdleVfxFrameState previous = new PersistentIdleVfxFrameState(
+            "Mon_06_2", true, 0, false);
+        Assert.That(previous.RequiresRefresh(previous), Is.False);
+    }
+
+    [Test]
+    public void RequiresRefresh_WhenFacingOrMonsterChanges_ReturnsTrue()
+    {
+        PersistentIdleVfxFrameState previous = new PersistentIdleVfxFrameState(
+            "Mon_06", true, 0, false);
+        Assert.That(previous.RequiresRefresh(new PersistentIdleVfxFrameState(
+            "Mon_06", false, 0, false)), Is.True);
+        Assert.That(previous.RequiresRefresh(new PersistentIdleVfxFrameState(
+            "Mon_06_2", true, 0, false)), Is.True);
+    }
+}

@@ -30,6 +30,30 @@ public enum IdleVfxSpriteRootOrder
     AboveSpriteRoot = 1
 }
 
+public readonly struct PersistentIdleVfxFrameState
+{
+    public readonly string MonsterId;
+    public readonly bool FacingRight;
+    public readonly int SuspendCount;
+    public readonly bool IsDead;
+
+    public PersistentIdleVfxFrameState(string monsterId, bool facingRight, int suspendCount, bool isDead)
+    {
+        MonsterId = monsterId ?? string.Empty;
+        FacingRight = facingRight;
+        SuspendCount = suspendCount;
+        IsDead = isDead;
+    }
+
+    public bool RequiresRefresh(PersistentIdleVfxFrameState current)
+    {
+        return !string.Equals(MonsterId, current.MonsterId, System.StringComparison.Ordinal) ||
+               FacingRight != current.FacingRight ||
+               SuspendCount != current.SuspendCount ||
+               IsDead != current.IsDead;
+    }
+}
+
 public class BattleUnitAnimator : MonoBehaviour
 {
     private const string DefaultVfxSortingReferenceName = "SpriteRoot";
@@ -178,6 +202,9 @@ public class BattleUnitAnimator : MonoBehaviour
     private int persistentIdleVfxSuspendCount;
     private bool phaseTwoIdleVfxFirstSpawnScheduled;
     private float phaseTwoIdleVfxFirstSpawnTime;
+    private MonsterUnit persistentIdleOwnerMonster;
+    private PersistentIdleVfxFrameState persistentIdleFrameState;
+    private bool persistentIdleFrameStateInitialized;
 
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
@@ -1400,18 +1427,47 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private bool IsPhaseTwoIdleVfx()
     {
-        MonsterUnit monster = GetComponent<MonsterUnit>();
-        if (monster == null)
-            monster = GetComponentInParent<MonsterUnit>();
+        MonsterUnit monster = ResolvePersistentIdleOwnerMonster();
         return monster != null && monster.RuntimeData != null &&
             string.Equals(monster.RuntimeData.MonsterId,
                 ArabellaPhaseTransition.PhaseTwoMonsterId, System.StringComparison.Ordinal);
+    }
+
+    private MonsterUnit ResolvePersistentIdleOwnerMonster()
+    {
+        if (persistentIdleOwnerMonster != null)
+            return persistentIdleOwnerMonster;
+
+        persistentIdleOwnerMonster = GetComponent<MonsterUnit>();
+        if (persistentIdleOwnerMonster == null)
+            persistentIdleOwnerMonster = GetComponentInParent<MonsterUnit>();
+        return persistentIdleOwnerMonster;
+    }
+
+    private PersistentIdleVfxFrameState CapturePersistentIdleVfxFrameState()
+    {
+        MonsterUnit monster = ResolvePersistentIdleOwnerMonster();
+        string monsterId = monster != null && monster.RuntimeData != null
+            ? monster.RuntimeData.MonsterId : string.Empty;
+        return new PersistentIdleVfxFrameState(
+            monsterId,
+            GetPersistentIdleVfxFacingRight(),
+            persistentIdleVfxSuspendCount,
+            deathPresentationPlayed);
     }
 
     private void RefreshPersistentIdleVfx()
     {
         if (!isActiveAndEnabled || deathPresentationPlayed)
             return;
+
+        PersistentIdleVfxFrameState frameState = CapturePersistentIdleVfxFrameState();
+        if (persistentIdleFrameStateInitialized &&
+            !persistentIdleFrameState.RequiresRefresh(frameState) &&
+            persistentIdleVfxInstance != null)
+            return;
+        persistentIdleFrameState = frameState;
+        persistentIdleFrameStateInitialized = true;
 
         if (persistentIdleVfxSuspendCount > 0)
         {
@@ -1499,9 +1555,31 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void CachePersistentIdleVfxRenderers()
     {
-        persistentIdleVfxRenderers = persistentIdleVfxInstance != null
-            ? persistentIdleVfxInstance.GetComponentsInChildren<Renderer>(true)
-            : null;
+        if (persistentIdleVfxInstance == null)
+        {
+            persistentIdleVfxRenderers = null;
+        }
+        else
+        {
+            Renderer[] renderers = persistentIdleVfxInstance.GetComponentsInChildren<Renderer>(true);
+            if (!persistentIdleUsesWorldVfxHandle)
+            {
+                persistentIdleVfxRenderers = renderers;
+            }
+            else
+            {
+                List<Renderer> displayedRenderers = new(renderers.Length);
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    Renderer renderer = renderers[i];
+                    if (renderer == null || renderer is ParticleSystemRenderer ||
+                        renderer.GetComponent<VisualEffect>() != null)
+                        continue;
+                    displayedRenderers.Add(renderer);
+                }
+                persistentIdleVfxRenderers = displayedRenderers.ToArray();
+            }
+        }
         persistentIdleSpriteRootRenderer = null;
     }
 
@@ -1539,14 +1617,10 @@ public class BattleUnitAnimator : MonoBehaviour
             if (renderer == null)
                 continue;
 
-            // RenderTexture routes can contain hidden source particle renderers.
-            // Only override the displayed proxy renderers; leave source VFX alone.
-            if (persistentIdleUsesWorldVfxHandle &&
-                (renderer is ParticleSystemRenderer || renderer.GetComponent<VisualEffect>() != null))
-                continue;
-
-            renderer.sortingLayerID = targetSortingLayer;
-            renderer.sortingOrder = targetOrder;
+            if (renderer.sortingLayerID != targetSortingLayer)
+                renderer.sortingLayerID = targetSortingLayer;
+            if (renderer.sortingOrder != targetOrder)
+                renderer.sortingOrder = targetOrder;
         }
     }
 

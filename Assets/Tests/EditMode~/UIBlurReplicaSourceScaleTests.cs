@@ -45,4 +45,22 @@ public sealed class UIBlurReplicaSourceScaleTests
         Assert.That(replicaChild, Is.Not.Null);
         Assert.That(replicaChild.localScale, Is.EqualTo(sourceChild.localScale));
     }
+
+    [Test]
+    public void NeedsRebuild_DetectsNestedChildAddition()
+    {
+        replicaParentObject = new GameObject("ReplicaParent", typeof(RectTransform));
+        RectTransform replicaParent = replicaParentObject.GetComponent<RectTransform>();
+        sourceRootObject = new GameObject("SourceRoot", typeof(RectTransform));
+        RectTransform sourceRoot = sourceRootObject.GetComponent<RectTransform>();
+        GameObject container = new GameObject("Container", typeof(RectTransform));
+        container.transform.SetParent(sourceRoot, false);
+        replicaSource = new UIBlurReplicaSource(sourceRoot, replicaParent, null, 0);
+
+        Assert.That(replicaSource.NeedsRebuild, Is.False);
+
+        new GameObject("DynamicChild", typeof(RectTransform)).transform.SetParent(container.transform, false);
+
+        Assert.That(replicaSource.NeedsRebuild, Is.True);
+    }
 }
