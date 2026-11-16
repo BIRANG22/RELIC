@@ -726,13 +726,18 @@ public sealed class BossSpawnPresentation : MonoBehaviour
         cameraBaseSize = cameraRestoreOrthographicSize;
     }
 
-    private IEnumerator RestoreIntroCameraRoutine(float duration = 0.35f)
+    private IEnumerator RestoreIntroCameraRoutine(float duration = 0.35f, bool isPresentationEnd = false)
     {
         if (!ownsIntroCamera || introCamera == null)
             yield break;
 
         StopCameraBlend();
-        yield return BlendCameraRoutine(cameraBasePosition, cameraRestorePosition,
+        Vector3 returnPosition = cameraRestorePosition;
+        // 보스 소개 텍스트 종료 시 포커스 아웃은 일반 전투 시작 구도(Y=1)로 복귀합니다.
+        // 시퀀스 중간의 RestoreCamera 스텝은 기존 복귀 위치를 유지합니다.
+        if (isPresentationEnd)
+            returnPosition.y = 1f;
+        yield return BlendCameraRoutine(cameraBasePosition, returnPosition,
             cameraBaseSize, cameraRestoreOrthographicSize, duration);
 
         BattleCameraController.Instance?.EndCinematicCameraKeepingCurrentPose();
@@ -744,7 +749,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
     {
         if (restoreCameraOnPresentationEnd)
         {
-            yield return RestoreIntroCameraRoutine(duration);
+            yield return RestoreIntroCameraRoutine(duration, true);
             yield break;
         }
 

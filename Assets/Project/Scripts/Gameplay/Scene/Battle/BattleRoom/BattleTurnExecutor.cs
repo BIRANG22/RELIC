@@ -630,7 +630,17 @@ public class BattleTurnExecutor : MonoBehaviour
                         currentSlotIndex, executableOrderIndices))
                     : null;
 
-                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                // Refresh the remaining orders on the exact frame Swift is applied.
+                // The existing batch rebuild below still runs after the action completes.
+                BattleEffectUtility.OnPlayerSwiftApplied += OnSwiftAppliedDuringAction;
+                try
+                {
+                    yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                }
+                finally
+                {
+                    BattleEffectUtility.OnPlayerSwiftApplied -= OnSwiftAppliedDuringAction;
+                }
 
                 // 연속 행동 그룹이 끝나는 슬롯 경계에서만 카메라를 복귀합니다.
                 if (!keepCameraAfterBatch &&
@@ -1905,6 +1915,16 @@ public class BattleTurnExecutor : MonoBehaviour
 
         orderIndices.Sort();
         return orderIndices;
+    }
+
+    private void OnSwiftAppliedDuringAction(BattleCharacter target)
+    {
+        if (!isExecuting || timelineController == null || target == null || target.RuntimeData == null)
+            return;
+
+        // Only a real runtime status, never a merely reserved skill, moves orders.
+        if (BattleActionOrderUtility.HasSwift(target.RuntimeData))
+            timelineController.RefreshTimelineAfterAppliedSwift();
     }
 
     private string GetAppliedSwiftSnapshot()

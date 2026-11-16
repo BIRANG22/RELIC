@@ -3058,9 +3058,8 @@ public class BattleSceneController : MonoBehaviour
     {
         deferredBossIntroRoutine = null;
 
-        if (pendingBattleRoomUsesBossIntro &&
-            !preserveBossIntroCameraPoseOnFinalize &&
-            BattleCameraController.Instance != null)
+        // 보스 연출의 마지막 카메라 위치와 관계없이 일반 전투방 시작 구도로 복귀합니다.
+        if (pendingBattleRoomUsesBossIntro && BattleCameraController.Instance != null)
             BattleCameraController.Instance.ForceReturnSceneStartPositionImmediate();
 
         // The intro gate must not stay armed during boss phase transitions.
