@@ -1483,6 +1483,14 @@ public class BattleActionRunner
         if (currentGridIndex < 0)
             yield break;
 
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                character.RuntimeData.StatusEffects))
+        {
+            command.SetExecutedMoveDistance(0);
+            hudService.RefreshHUDs();
+            yield break;
+        }
+
         if (IsConsumedVisualSkipMove(command))
         {
             command.SetExecutedMoveDistance(0);
@@ -3208,12 +3216,9 @@ public class BattleActionRunner
         if (caster.RuntimeData.IsDead || caster.CurrentGridIndex < 0 || gridManager == null)
             yield break;
 
-        if (HasStatus(caster.RuntimeData.StatusEffects, "E_Bondage"))
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                caster.RuntimeData.StatusEffects))
         {
-            BattleStatusEffectService.TryConsumeOnTrigger(
-                caster.RuntimeData.StatusEffects,
-                "E_Bondage",
-                id => DataManager.Instance?.EffectDatabase?.Get(id));
             yield break;
         }
 
@@ -4041,6 +4046,12 @@ public class BattleActionRunner
             gridManager == null || monster.MainGridIndex < 0 || command.RangeOriginGridIndex < 0)
             yield break;
 
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                monster.RuntimeData.StatusEffects))
+        {
+            yield break;
+        }
+
         int destinationIndex = command.RangeOriginGridIndex;
         GridCell cell = gridManager.GetCellByIndex(destinationIndex);
         if (cell == null)
@@ -4100,6 +4111,9 @@ public class BattleActionRunner
                 occupant != null && occupant.RuntimeData != null && !occupant.RuntimeData.IsDead)
             {
                 initiallyOccupiedCharacter = occupant;
+                bool occupantWasBound = HasStatus(
+                    occupant.RuntimeData.StatusEffects,
+                    "E_Bondage");
                 BattleUnitFacing targetFacing = occupant.GetComponent<BattleUnitFacing>();
                 BattleDirection reverse = targetFacing != null
                     ? (targetFacing.IsFacingRight ? BattleDirection.Left : BattleDirection.Right)
@@ -4119,7 +4133,7 @@ public class BattleActionRunner
                 });
                 // 반대 방향 넉백이 벽이나 점유로 실패해도 착지가 막히지 않게
                 // 주변의 유효한 빈칸으로 캐릭터를 밀어냅니다.
-                if (occupant.CurrentGridIndex == destinationIndex)
+                if (!occupantWasBound && occupant.CurrentGridIndex == destinationIndex)
                 {
                     Vector2Int[] offsets =
                     {
@@ -4251,12 +4265,9 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
-        if (HasStatus(monster.RuntimeData?.StatusEffects, "E_Bondage"))
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                monster.RuntimeData?.StatusEffects))
         {
-            BattleStatusEffectService.TryConsumeOnTrigger(
-                monster.RuntimeData.StatusEffects,
-                "E_Bondage",
-                id => DataManager.Instance?.EffectDatabase?.Get(id));
             yield break;
         }
 
@@ -6279,6 +6290,12 @@ public class BattleActionRunner
 
         if (monster == null || command == null || command.SkillData == null)
             yield break;
+
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                monster.RuntimeData?.StatusEffects))
+        {
+            yield break;
+        }
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 

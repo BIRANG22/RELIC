@@ -22,19 +22,19 @@ Char_06,Char_06,70,13,4,5,Karma,2,2,S_Passive_11,S_Passive_12,S_Unique_11,S_Uniq
 # Monster
 몬스터ID,페이즈,이름,등급,HP,방어도,최소 가격,최대 가격,고유아이템,고유 아이템 확률,이동범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID
 MonsterId,Phase,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05
-Mon_01,0,머크,Common,50,0,24,32,Item_001,0.35,Range_18,S_Monster_01,S_Monster_02,0,0,0
-Mon_02,0,블롭,Common,20,0,10,16,Item_002,0.35,Range_17,S_Monster_03,S_Monster_04,0,0,0
-Mon_03,0,랜서,Common,38,0,18,24,Item_003,0.35,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0
-Mon_04,0,블라이트,Common,42,0,18,24,Item_004,0.35,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0
-Mon_05,0,베스파,Common,55,0,25,30,Item_005,0.35,Range_19,S_Monster_11,S_Monster_12,0,0,0
-Mon_06,0,신더,Common,32,20,20,25,Item_006,0.35,Range_18,S_Monster_13,S_Monster_14,0,0,0
-Mon_07,0,드라우그,Common,64,0,30,35,Item_007,0.35,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0
-Mon_08,0,바로우,Common,58,0,30,35,Item_008,0.35,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,0,0
-Mon_09,0,루크,Elite,105,0,55,65,Item_009,0.3,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0
-Mon_10,0,녹턴,Elite,96,0,60,70,Item_010,0.3,0,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0
-Mon_11,0,모르트,Elite,88,0,50,60,Item_011,0.3,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0
+Mon_01,0,머크,Common,50,0,24,32,Item_001,0.34999999999999998,Range_18,S_Monster_01,S_Monster_02,0,0,0
+Mon_02,0,블롭,Common,20,0,10,16,Item_002,0.34999999999999998,Range_17,S_Monster_03,S_Monster_04,0,0,0
+Mon_03,0,랜서,Common,38,0,18,24,Item_003,0.34999999999999998,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0
+Mon_04,0,블라이트,Common,42,0,18,24,Item_004,0.34999999999999998,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0
+Mon_05,0,베스파,Common,55,0,25,30,Item_005,0.34999999999999998,Range_19,S_Monster_11,S_Monster_12,0,0,0
+Mon_06,0,신더,Common,32,20,20,25,Item_006,0.34999999999999998,Range_18,S_Monster_13,S_Monster_14,0,0,0
+Mon_07,0,드라우그,Common,64,0,30,35,Item_007,0.34999999999999998,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0
+Mon_08,0,바로우,Common,58,0,30,35,Item_008,0.34999999999999998,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,0,0
+Mon_09,0,루크,Elite,105,0,55,65,Item_009,0.29999999999999999,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0
+Mon_10,0,녹턴,Elite,96,0,60,70,Item_010,0.29999999999999999,0,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0
+Mon_11,0,모르트,Elite,88,0,50,60,Item_011,0.29999999999999999,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0
 Mon_12_1,1,아라벨라,Boss,148,0,0,0,0,0,Range_19,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37
-Mon_12_2,2,각성 아라벨라,Boss,112,0,80,95,Item_012,0.7,Range_18,S_Monster_38,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40
+Mon_12_2,2,각성 아라벨라,Boss,112,0,80,95,Item_012,0.69999999999999996,Range_18,S_Monster_38,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
@@ -241,7 +241,7 @@ E_Bond,유대,Beneficial,Decrease,턴 종료 시 1 감소,유대를 보유한 �
 AR_DamageReductionThisTurn,경화,Beneficial,Decrease,턴 종료 시 1 감소,받는 피해가 50% 감소한다.,1
 E_Charge,충전,Beneficial,Remove,턴 종료 시 소멸,턴 종료 시 수치만큼 마나를 회복한다.,1
 E_Focus,집중,Beneficial,Remove,턴 종료 시 소멸,턴 종료 시 수치만큼 카르마를 회복한다.,1
-E_Swift,신속,Beneficial,Decrease,턴 종료 시 1 감소,행동 예약 시 슬롯의 앞순서에 배치할 수 있다.,1
+E_Swift,신속,Beneficial,Decrease,턴 종료 시 1 감소,행동이 슬롯의 앞순서로 우선 배치된다.,1
 E_Lifesteal,흡혈,Beneficial,DecreaseOnTrigger,공격 시 1 감소,준 피해의 30%만큼 생명력을 회복한다.,1
 E_Ward,가시,Beneficial,DecreaseOnTrigger,피격 시 1 감소,피격 시 수치만큼 반격 피해를 준다.,1
 E_Poison,중독,Harmful,Decrease,턴 종료 시 1 감소,턴 종료 시 수치만큼 피해를 받는다.,1
@@ -828,7 +828,7 @@ Relic_P_02,에테르 조각,E_Max_Cost,1,1,최대 마나가 {ValueRate1} 증가�
 Relic_P_03,은빛 태엽,E_Cost_Recovery_Delta,1,1,마나 재생량이 {ValueRate1} 증가한다.,Common,104,31,,,,,
 Relic_P_04,메마른 그릇,E_Max_HP;E_Max_Cost,-8;2,1;1,"최대 생명력이 {ValueRate1} 감소하고, 최대 마나가 {ValueRate2} 증가한다.",Common,78,22,,,,,
 Relic_P_05,영혼 기생충,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,"최대 생명력이 {ValueRate1} 감소하고, 마나 재생량이 {ValueRate2} 증가한다.",Common,91,27
-Relic_P_06,붉은 서약검,E_Attack_Cost_Delta;E_Attack_Value_Delta,1;2,1;1,"공격 기억의 마나 소모량이 {ValueRate1} 증가하지만, 피해량이 {ValueRate2} 증가한다.",Common,88,26
+Relic_P_06,붉은 서약검,E_Attack_Cost_Delta;E_Attack_Value_Delta,1;2,1;1,"공격 기억의 자원 소모량이 {ValueRate1} 증가하지만, 피해량이 {ValueRate2} 증가한다.",Common,88,26
 Relic_P_07,날카로운 파편,E_Attack_Value_Delta;E_Attack_Count_Delta,-2;1,1;1,"공격 기억의 피해량이 {ValueRate1} 감소하는 대신, 공격 횟수가 {ValueRate2}회 증가한다.",Common,101,30
 Relic_P_08,유령 인형,E_Debuff_Cost_Delta;E_Debuff_Value_Delta,2;2,1;1,"디버프 기억의 마나 소모량이 {ValueRate1} 증가하지만, 효과 수치가 {ValueRate2} 증가한다.",Common,86,25,,,,,,
 Relic_P_09,선봉의 날개,E_Slot1_First_Skill_Cost_Delta,-1,1,1번 슬롯에 등록하는 첫 번째 기억의 마나 소모량이 {ValueRate1} 감소한다.,Rare,120,35,,,,,,

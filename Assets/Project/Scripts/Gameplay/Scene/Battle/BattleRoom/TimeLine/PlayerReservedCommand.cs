@@ -351,6 +351,76 @@ public class PlayerReservedCommand
         ShieldCost = Mathf.Max(0, shieldCost);
     }
 
+    public void RecalculateVariableCostForAdditionalDelta(int additionalDelta)
+    {
+        if (SkillData == null)
+            return;
+
+        string formula = string.IsNullOrWhiteSpace(SkillData.ResourceCostFormula)
+            ? SkillData.ResourceCostValue.ToString()
+            : SkillData.ResourceCostFormula;
+        if (!SkillNumericExpression.TryParse(formula, out SkillNumericExpression expression) ||
+            !expression.UsesX)
+        {
+            return;
+        }
+
+        int baseCost;
+        int currentCost;
+        switch (SkillData.ReferenceResource)
+        {
+            case ReferenceResource.HP:
+                baseCost = BaseHPCost;
+                currentCost = HPCost;
+                break;
+
+            case ReferenceResource.UniqueResource:
+                baseCost = BaseResourceCost;
+                currentCost = ResourceCost;
+                break;
+
+            case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
+                baseCost = BaseCost;
+                currentCost = Cost;
+                break;
+
+            default:
+                return;
+        }
+
+        int existingDelta = currentCost - baseCost;
+        int available = SkillCostCalculator.GetPreviewResource(
+            UserRuntime,
+            SkillData.ReferenceResource);
+        int formulaBudget = Mathf.Max(0, available - existingDelta - additionalDelta);
+
+        ResolvedX = expression.ResolveMaximumX(formulaBudget);
+        IsSkillCostResolved = ResolvedX > 0;
+        int resolvedCost = IsSkillCostResolved
+            ? expression.Resolve(formulaBudget, ResolvedX)
+            : 0;
+        ResolvedResourceCost = resolvedCost;
+        ResolveEffectExpressions(SkillData);
+
+        int adjustedCost = Mathf.Max(0, resolvedCost + existingDelta);
+        switch (SkillData.ReferenceResource)
+        {
+            case ReferenceResource.HP:
+                HPCost = adjustedCost;
+                break;
+
+            case ReferenceResource.UniqueResource:
+                ResourceCost = adjustedCost;
+                break;
+
+            case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
+                Cost = adjustedCost;
+                break;
+        }
+    }
+
     public void SetMoveReservationCostMultiplier(int multiplier)
     {
         MoveReservationCostMultiplier = Mathf.Max(1, multiplier);

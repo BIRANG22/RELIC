@@ -42,8 +42,8 @@ public sealed class BattlePlayerSkillPreview
 }
 
 /// <summary>
-/// ÀüÅõ Áß ½ºÅ³ UI¿Í Å¸ÀÓ¶óÀÎÀÌ ½ÇÁ¦ ¿¹¾à/½ÇÇà °è»ê°ú °°Àº °ªÀ» »ç¿ëÇÏµµ·Ï ¸¸µå´Â °øÅë ¹Ì¸®º¸±â °è»ê±âÀÔ´Ï´Ù.
-/// °è»ê ¼ø¼­: GameData ±âº»°ª + ÆÄÆí º¸Á¤ -> À¯¹° º¸Á¤(½½·Ô Á¶°Ç Æ÷ÇÔ) -> ÀüÅõ Áß »óÅÂ È¿°ú.
+/// ì „íˆ¬ ì¤‘ ìŠ¤í‚¬ UIì™€ íƒ€ì„ë¼ì¸ì´ ì‹¤ì œ ì˜ˆì•½/ì‹¤í–‰ ê³„ì‚°ê³¼ ê°™ì€ ê°’ì„ ì‚¬ìš©í•˜ë„ë¡ ë§Œë“œëŠ” ê³µí†µ ë¯¸ë¦¬ë³´ê¸° ê³„ì‚°ê¸°ì…ë‹ˆë‹¤.
+/// ê³„ì‚° ìˆœì„œ: GameData ê¸°ë³¸ê°’ + íŒŒí¸ ë³´ì • -> ìœ ë¬¼ ë³´ì •(ìŠ¬ë¡¯ ì¡°ê±´ í¬í•¨) -> ì „íˆ¬ ì¤‘ ìƒíƒœ íš¨ê³¼.
 /// </summary>
 public static class BattlePlayerSkillPreviewCalculator
 {
@@ -225,7 +225,7 @@ public static class BattlePlayerSkillPreviewCalculator
             display = $"{display}({formula})";
 
         if (linkId == hoveredLinkId || hoveredLinkId == SkillDetailNumericLinkHandler.AllLinksHoverId)
-            display = $"<size={SkillDetailNumericLinkHandler.HoverScalePercent}%>{display}</size>"; // Skill_Details Hover ½Ã ¼ıÀÚ 1.2¹è
+            display = $"<size={SkillDetailNumericLinkHandler.HoverScalePercent}%>{display}</size>"; // Skill_Details Hover ì‹œ ìˆ«ì 1.2ë°°
 
         return $"<link=\"{linkId}\"><color=#FFEB04>{display}</color></link>";
     }
@@ -276,13 +276,6 @@ public static class BattlePlayerSkillPreviewCalculator
         AppendDelta(formulaParts, equipmentValue - valueBeforeEquipment);
 
         int finalValue = Mathf.Max(0, equipmentValue);
-        // Ã¶°©µ¹Áø: E_ArmorStrike´Â ÇöÀç ¹æ¾îµµ x °è¼ö·Î ½ÇÁ¦ ÇÇÇØ¸¦ °è»êÇÕ´Ï´Ù.
-        if (entry.EffectId == "E_ArmorStrike" && runtime != null)
-        {
-            finalValue = NewSkillEffectRules.ResolveArmorStrikeDamage(runtime.CurrentShield, finalValue);
-            formulaParts.Insert(0, runtime.CurrentShield + "x(");
-            formulaParts.Add(")");
-        }
         if (IsDamageEffect(entry.EffectId))
         {
             int smiteAttacksAlreadyReserved = command != null
@@ -336,8 +329,8 @@ public static class BattlePlayerSkillPreviewCalculator
                         entryIndex < command.ResolvedEffectCounts.Count
             ? Mathf.Max(1, command.ResolvedEffectCounts[entryIndex])
             : Mathf.Max(1, entry.CountAmount);
-        // È¯¿µ°Ë¹«: ½ÇÁ¦ ÀüÅõ ½ÇÇà°ú µ¿ÀÏÇÏ°Ô ÇöÀç ÀÌ·Î¿î È¿°úÀÇ Á¾·ù ¼ö¸¦
-        // Á÷Á¢ ÇÇÇØ È¿°úÀÇ Å¸°İ È½¼ö¿¡ ´õÇÕ´Ï´Ù. ÁßÃ¸ ¼ö°¡ ¾Æ´Ñ ¼­·Î ´Ù¸¥ È¿°ú ID¸¦ ¼Á´Ï´Ù.
+        // í™˜ì˜ê²€ë¬´: ì‹¤ì œ ì „íˆ¬ ì‹¤í–‰ê³¼ ë™ì¼í•˜ê²Œ í˜„ì¬ ì´ë¡œìš´ íš¨ê³¼ì˜ ì¢…ë¥˜ ìˆ˜ë¥¼
+        // ì§ì ‘ í”¼í•´ íš¨ê³¼ì˜ íƒ€ê²© íšŸìˆ˜ì— ë”í•©ë‹ˆë‹¤. ì¤‘ì²© ìˆ˜ê°€ ì•„ë‹Œ ì„œë¡œ ë‹¤ë¥¸ íš¨ê³¼ IDë¥¼ ì…‰ë‹ˆë‹¤.
         int buffTypeBonus = 0;
         if (IsDamageEffect(entry.EffectId) && HasEffect(command?.SkillData, "E_StrikeCountByBuff"))
             buffTypeBonus = CountBeneficialEffectTypes(runtime);
@@ -411,7 +404,7 @@ public static class BattlePlayerSkillPreviewCalculator
                     break;
                 case "E_Smite":
                     if (isAttackSkill && smiteAttacksAlreadyReserved < status.Stack)
-                        formulaParts.Add("+50%"); // ¿¹: 13(6+3+50%)
+                        formulaParts.Add("+50%"); // ì˜ˆ: 13(6+3+50%)
                     break;
                 case "E_Weaken":
                     formulaParts.Add("-15%");

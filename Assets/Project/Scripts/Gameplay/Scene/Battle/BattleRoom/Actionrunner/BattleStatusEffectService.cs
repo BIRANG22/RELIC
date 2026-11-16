@@ -350,6 +350,31 @@ public class BattleStatusEffectService
         return false;
     }
 
+    public static bool TryBlockGridMovement(
+        List<StatusEffectRuntimeData> statuses,
+        System.Func<string, EffectMasterData> effectResolver = null)
+    {
+        if (statuses == null)
+            return false;
+
+        bool hasBondage = false;
+        for (int i = 0; i < statuses.Count; i++)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+            if (status != null && status.EffectId == "E_Bondage" && status.Stack > 0)
+            {
+                hasBondage = true;
+                break;
+            }
+        }
+
+        if (!hasBondage)
+            return false;
+
+        TryConsumeOnTrigger(statuses, "E_Bondage", effectResolver);
+        return true;
+    }
+
     private static EffectMasterData ResolveEffect(string effectId)
     {
         return DataManager.Instance?.EffectDatabase?.Get(effectId);

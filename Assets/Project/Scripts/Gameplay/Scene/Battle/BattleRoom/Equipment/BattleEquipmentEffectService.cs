@@ -27,7 +27,7 @@ public static class BattleEquipmentEffectService
     private const string MoveCostDeltaEffectId = "E_Move_Cost_Delta";
     private const string ArmorGainDeltaEffectId = "E_Armor_Gain_Delta";
     private const string ArmorGainPercentEffectId = "E_Armor_Gain_Percent";
-    private const string AttackCostDeltaEffectId = "E_Attack_Cost_Delta";
+    private const string AttackResourceCostDeltaEffectId = "E_Attack_Resource_Cost_Delta";
     private const string BuffCostDeltaEffectId = "E_Buff_Cost_Delta";
     private const string DebuffCostDeltaEffectId = "E_Debuff_Cost_Delta";
     private const string MoveCostZeroEffectId = "E_Move_Cost_Zero";
@@ -671,6 +671,26 @@ public static class BattleEquipmentEffectService
                 ref resourceCost,
                 ref shieldCost);
         }
+
+        int attackResourceCostDelta = SelectAttackResourceCostDelta(
+            command.SkillData,
+            SumConfiguredRelicEffectValues(
+                command.UserRuntime,
+                AttackResourceCostDeltaEffectId));
+        command.SetCosts(hpCost, cost, resourceCost, shieldCost);
+        command.RecalculateVariableCostForAdditionalDelta(attackResourceCostDelta);
+        hpCost = command.HPCost;
+        cost = command.Cost;
+        resourceCost = command.ResourceCost;
+        shieldCost = command.ShieldCost;
+        ApplyResourceCostDelta(
+            command.SkillData != null
+                ? command.SkillData.ReferenceResource
+                : ReferenceResource.Cost,
+            attackResourceCostDelta,
+            ref hpCost,
+            ref cost,
+            ref resourceCost);
 
         cost = Mathf.Max(
             0,
@@ -1376,23 +1396,24 @@ public static class BattleEquipmentEffectService
                 runtime, RuneTargetBoostValueDeltaEffectId);
         }
 
-        if (IsDamageEffect(entry.EffectId))
+        if (IsPlayerDamageEffect(entry.EffectId))
         {
-            value += SumConfiguredRuneEffectValues(
-                runtime, RuneTargetDamageValueDeltaEffectId);
+            value = ResolvePlayerDamageBaseValue(
+                entry.EffectId,
+                value,
+                runtime.CurrentShield,
+                runtime.MaxHP,
+                runtime.CurrentHP);
+            value = Mathf.Max(
+                0,
+                value + SumConfiguredRuneEffectValues(
+                    runtime, RuneTargetDamageValueDeltaEffectId));
+            value = ApplyOrderedRelicDamageModifiers(runtime, command, value);
         }
-
-        value = Mathf.Max(
-            0,
-            value + GetConfiguredEffectValueDelta(runtime, command, entry));
-
-        if (command.SkillData != null &&
-            command.SkillData.Category == Category.Unique)
+        else
         {
-            int uniquePercent = SumConfiguredRelicEffectValues(runtime, UniqueSkillValuePercentEffectId);
-
-            if (uniquePercent != 0)
-                value = Mathf.Max(0, Mathf.CeilToInt(value * (1f + uniquePercent / 100f)));
+            int configuredDelta = GetConfiguredEffectValueDelta(runtime, command, entry);
+            value = Mathf.Max(0, value + configuredDelta);
         }
 
         if (IsLastTimelineSlot(command) &&
@@ -1448,7 +1469,7 @@ public static class BattleEquipmentEffectService
         if (runtime == null || command == null || entry == null)
             return count;
 
-        if (IsDamageEffect(entry.EffectId) &&
+        if (IsPlayerHitCountEffect(entry.EffectId) &&
             command.SkillData != null &&
             command.SkillData.SkillType == SkillType.Attack &&
             command.TimelineSlotIndex == 0 &&
@@ -1458,7 +1479,7 @@ public static class BattleEquipmentEffectService
         }
 
         // 횟수 역시 기본값 + 파편 -> 유물 순서로 계산합니다.
-        if (IsDamageEffect(entry.EffectId) &&
+        if (IsPlayerHitCountEffect(entry.EffectId) &&
             command.SkillData != null &&
             command.SkillData.SkillType == SkillType.Attack)
         {
@@ -1472,15 +1493,14 @@ public static class BattleEquipmentEffectService
                 count + SumConfiguredRelicEffectValues(runtime, AttackCountDeltaEffectId));
         }
 
-        if (command.SkillData != null &&
-            command.SkillData.Category == Category.Unique)
+        if (UsesUniqueResource(command.SkillData))
         {
             count = Mathf.Max(
                 0,
                 count + SumConfiguredRelicEffectValues(runtime, UniqueSkillCountDeltaEffectId));
         }
 
-        if (!IsDamageEffect(entry.EffectId) ||
+        if (!IsPlayerHitCountEffect(entry.EffectId) ||
             command.SkillData == null ||
             command.SkillData.SkillType != SkillType.Attack)
         {
@@ -2087,9 +2107,6 @@ public static class BattleEquipmentEffectService
         int delta = SumConfiguredRuneEffectValues(
             runtime, RuneTargetSkillCostDeltaEffectId);
 
-        if (skillType == SkillType.Attack)
-            delta += SumConfiguredRelicEffectValues(runtime, AttackCostDeltaEffectId);
-
         if (skillType == SkillType.Buff)
             delta += SumConfiguredRelicEffectValues(runtime, BuffCostDeltaEffectId);
 
@@ -2123,6 +2140,48 @@ public static class BattleEquipmentEffectService
             delta += SumConfiguredRelicEffectValues(runtime, Slot5SkillCostDeltaEffectId);
 
         return delta;
+    }
+
+    public static bool UsesUniqueResource(SkillMasterData skillData)
+    {
+        return skillData != null &&
+               skillData.ReferenceResource == ReferenceResource.UniqueResource;
+    }
+
+    public static int SelectAttackResourceCostDelta(
+        SkillMasterData skillData,
+        int configuredDelta)
+    {
+        return skillData != null && skillData.SkillType == SkillType.Attack
+            ? configuredDelta
+            : 0;
+    }
+
+    public static void ApplyResourceCostDelta(
+        ReferenceResource resource,
+        int delta,
+        ref int hpCost,
+        ref int cost,
+        ref int resourceCost)
+    {
+        if (delta == 0)
+            return;
+
+        switch (resource)
+        {
+            case ReferenceResource.HP:
+                hpCost = Mathf.Max(0, hpCost + delta);
+                break;
+
+            case ReferenceResource.UniqueResource:
+                resourceCost = Mathf.Max(0, resourceCost + delta);
+                break;
+
+            case ReferenceResource.Cost:
+            case ReferenceResource.MovePoint:
+                cost = Mathf.Max(0, cost + delta);
+                break;
+        }
     }
 
     private static int GetConfiguredUniqueResourceCostDelta(PlayerReservedCommand command)
@@ -2212,9 +2271,7 @@ public static class BattleEquipmentEffectService
                 RefundCommandCost(runtime, command);
         }
 
-        if (command != null &&
-            command.SkillData != null &&
-            command.SkillData.Category == Category.Unique)
+        if (command != null && UsesUniqueResource(command.SkillData))
         {
             int focus = SumConfiguredEffectValues(runtime, UniqueSkillKillFocusEffectId);
 
@@ -2256,7 +2313,7 @@ public static class BattleEquipmentEffectService
         }
 
         SkillType skillType = command.SkillData.SkillType;
-        bool isDamageEffect = IsDamageEffect(entry.EffectId);
+        bool isDamageEffect = IsPlayerDamageEffect(entry.EffectId);
         int delta = 0;
 
         if (skillType == SkillType.Attack && isDamageEffect)
@@ -2901,9 +2958,119 @@ public static class BattleEquipmentEffectService
         }
     }
 
-    private static bool IsDamageEffect(string effectId)
+    public static bool IsPlayerDamageEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
+        return effectId == "E_Strike" || effectId == "E_Pierce" ||
+               effectId == "E_MissingHPStrike" || effectId == "E_ArmorStrike" ||
+               effectId == "E_RandomStrike" || effectId == "E_StrikeByVulnerable" ||
+               effectId == "E_StrikeByTargetPoison" || effectId == "E_DamageUpIfBleeding" ||
+               effectId == "E_StrikeCountByBuff" || effectId == "E_StrikeCountByDebuff";
+    }
+
+    public static bool IsPlayerHitCountEffect(string effectId)
+    {
+        return effectId == "E_Strike" || effectId == "E_Pierce" ||
+               effectId == "E_MissingHPStrike";
+    }
+
+    public static int ResolvePlayerDamageBaseValue(
+        string effectId,
+        int effectValue,
+        int currentShield,
+        int maxHp,
+        int currentHp)
+    {
+        int value = Mathf.Max(0, effectValue);
+
+        if (effectId == "E_ArmorStrike")
+            return NewSkillEffectRules.ResolveArmorStrikeDamage(currentShield, value);
+
+        if (effectId == "E_MissingHPStrike")
+        {
+            int missingHp = Mathf.Max(0, maxHp - currentHp);
+            return Mathf.Max(0, Mathf.CeilToInt(missingHp * (value / 100f)));
+        }
+
+        return value;
+    }
+
+    public static int ApplyDamageRelicModifier(
+        int currentValue,
+        string effectId,
+        int modifierValue)
+    {
+        int value = Mathf.Max(0, currentValue);
+        if (effectId == UniqueSkillValuePercentEffectId)
+            return Mathf.Max(0, Mathf.CeilToInt(value * (1f + modifierValue / 100f)));
+
+        return Mathf.Max(0, value + modifierValue);
+    }
+
+    private static int ApplyOrderedRelicDamageModifiers(
+        CharacterRuntimeData runtime,
+        PlayerReservedCommand command,
+        int baseValue)
+    {
+        int value = Mathf.Max(0, baseValue);
+        if (runtime == null || command?.SkillData == null)
+            return value;
+
+        List<EquipmentEffectEntry> effects = new();
+        AddConfiguredRelicEffects(effects, runtime);
+        for (int i = 0; i < effects.Count; i++)
+        {
+            SkillEffectEntry relicEffect = effects[i].Entry;
+            if (relicEffect == null)
+                continue;
+
+            if (relicEffect.EffectId == UniqueSkillValuePercentEffectId)
+            {
+                if (UsesUniqueResource(command.SkillData))
+                    value = ApplyDamageRelicModifier(
+                        value,
+                        relicEffect.EffectId,
+                        relicEffect.ValueAmount);
+                continue;
+            }
+
+            int delta = GetRelicDamageDeltaForEntry(runtime, command, relicEffect);
+            if (delta != 0)
+                value = ApplyDamageRelicModifier(value, relicEffect.EffectId, delta);
+        }
+
+        return value;
+    }
+
+    private static int GetRelicDamageDeltaForEntry(
+        CharacterRuntimeData runtime,
+        PlayerReservedCommand command,
+        SkillEffectEntry relicEffect)
+    {
+        if (runtime == null || command?.SkillData == null || relicEffect == null ||
+            command.SkillData.SkillType != SkillType.Attack)
+        {
+            return 0;
+        }
+
+        switch (relicEffect.EffectId)
+        {
+            case AttackValueDeltaEffectId:
+                return relicEffect.ValueAmount;
+            case Slot1AttackValueDeltaEffectId:
+                return command.TimelineSlotIndex == 0 ? relicEffect.ValueAmount : 0;
+            case Slot5AttackValueDeltaEffectId:
+                return command.TimelineSlotIndex == LastTimelineSlotIndex
+                    ? relicEffect.ValueAmount
+                    : 0;
+            case AfterMoveAttackValuePerCostEffectId:
+                return command.HadEarlierMoveInSlot
+                    ? Mathf.Max(0, command.SameSlotMoveCostBeforeCommand) * relicEffect.ValueAmount
+                    : 0;
+            case LowHpAttackValueDeltaEffectId:
+                return ShouldApplyLowHp(runtime) ? relicEffect.ValueAmount : 0;
+            default:
+                return 0;
+        }
     }
 
     private static bool ShouldDoubleBuffApplication(
@@ -2920,7 +3087,7 @@ public static class BattleEquipmentEffectService
         if (command.SkillData.SkillType != SkillType.Buff)
             return false;
 
-        return !IsDamageEffect(entry.EffectId);
+        return !IsPlayerHitCountEffect(entry.EffectId);
     }
 
     private static bool IsLastTimelineSlot(PlayerReservedCommand command)

@@ -274,6 +274,13 @@ public sealed class ActiveRelicService
             return false;
         }
 
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                character.RuntimeData?.StatusEffects))
+        {
+            message = "Movement is blocked by bondage.";
+            return true;
+        }
+
         if (gridEffectController != null && gridEffectController.IsBlocked(gridIndex))
         {
             message = "Target cell is blocked.";
@@ -318,6 +325,15 @@ public sealed class ActiveRelicService
         {
             message = "Character grid is invalid.";
             return false;
+        }
+
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                character.RuntimeData?.StatusEffects) ||
+            BattleStatusEffectService.TryBlockGridMovement(
+                ally.RuntimeData?.StatusEffects))
+        {
+            message = "Movement is blocked by bondage.";
+            return true;
         }
 
         MoveCharacterToGrid(character, targetGridIndex, gridManager);
@@ -369,11 +385,11 @@ public sealed class ActiveRelicService
 
             case ActiveRelicEffectIds.RecoverCostToMax:
                 {
-                    // Compound_04: ÇöÀç/ÃÖ´ë ¸¶³ª¿Í °ü°è¾øÀÌ ¸¶³ª¸¦ Á¤È®È÷ 10 È¸º¹ÇÑ´Ù.
-                    // ÃÖ´ë ¸¶³ª(MaxCost)¿Í ¿¹¾à ¸¶³ª(ReservedCost)´Â º¯°æÇÏÁö ¾Ê´Â´Ù.
-                    // ¿¹) CurrentCost 10, ReservedCost 8 -> PreviewCost 2/10
-                    //     »ç¿ë ÈÄ CurrentCost 20, ReservedCost 8 -> PreviewCost 12/10
-                    //     ¿¹¾à Ãë¼Ò ÈÄ ReservedCost 0 -> PreviewCost 20/10
+                    // Compound_04: í˜„ì¬/ìµœëŒ€ ë§ˆë‚˜ì™€ ê´€ê³„ì—†ì´ ë§ˆë‚˜ë¥¼ ì •í™•íˆ 10 íšŒë³µí•œë‹¤.
+                    // ìµœëŒ€ ë§ˆë‚˜(MaxCost)ì™€ ì˜ˆì•½ ë§ˆë‚˜(ReservedCost)ëŠ” ë³€ê²½í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // ì˜ˆ) CurrentCost 10, ReservedCost 8 -> PreviewCost 2/10
+                    //     ì‚¬ìš© í›„ CurrentCost 20, ReservedCost 8 -> PreviewCost 12/10
+                    //     ì˜ˆì•½ ì·¨ì†Œ í›„ ReservedCost 0 -> PreviewCost 20/10
                     int recoverAmount = Mathf.Max(0, GetRelicValue(availability.RelicData, 10));
                     runtime.CurrentCost = Mathf.Max(0, runtime.CurrentCost) + recoverAmount;
                     return true;
@@ -381,13 +397,13 @@ public sealed class ActiveRelicService
 
             case ActiveRelicEffectIds.RecoverUniqueResourceToMax:
                 {
-                    // Compound_03: Ä«¸£¸¶¸¦ Á¤È®È÷ 3 È¸º¹ÇÏµÇ ÃÑ º¸À¯·®Àº ÃÖ´ëÄ¡¸¦ ³ÑÁö ¾Ê´Â´Ù.
-                    // CurrentResource´Â ¿¹¾àµÈ Ä«¸£¸¶±îÁö Æ÷ÇÔÇÑ ÃÑ º¸À¯·®ÀÌ¹Ç·Î
-                    // ReservedResourceCost¸¦ °Çµå¸®Áö ¾Ê°í CurrentResource¸¸ È¸º¹ÇÏ¸é
-                    // ¿¹¾à Ãë¼Ò·Î Ä«¸£¸¶°¡ º¹Á¦µÇ´Â ¹®Á¦¸¦ ¸·À» ¼ö ÀÖ´Ù.
-                    // ¿¹) ÃÖ´ë 5, CurrentResource 5, ReservedResourceCost 3 -> PreviewResource 2
-                    //     ´Ù½Ã »ç¿ëÇØµµ ÃÑ º¸À¯·®ÀÌ ÀÌ¹Ì 5ÀÌ¹Ç·Î È¸º¹ 0
-                    //     ¿¹¾à Ãë¼Ò ÈÄ PreviewResource´Â 5
+                    // Compound_03: ì¹´ë¥´ë§ˆë¥¼ ì •í™•íˆ 3 íšŒë³µí•˜ë˜ ì´ ë³´ìœ ëŸ‰ì€ ìµœëŒ€ì¹˜ë¥¼ ë„˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // CurrentResourceëŠ” ì˜ˆì•½ëœ ì¹´ë¥´ë§ˆê¹Œì§€ í¬í•¨í•œ ì´ ë³´ìœ ëŸ‰ì´ë¯€ë¡œ
+                    // ReservedResourceCostë¥¼ ê±´ë“œë¦¬ì§€ ì•Šê³  CurrentResourceë§Œ íšŒë³µí•˜ë©´
+                    // ì˜ˆì•½ ì·¨ì†Œë¡œ ì¹´ë¥´ë§ˆê°€ ë³µì œë˜ëŠ” ë¬¸ì œë¥¼ ë§‰ì„ ìˆ˜ ìˆë‹¤.
+                    // ì˜ˆ) ìµœëŒ€ 5, CurrentResource 5, ReservedResourceCost 3 -> PreviewResource 2
+                    //     ë‹¤ì‹œ ì‚¬ìš©í•´ë„ ì´ ë³´ìœ ëŸ‰ì´ ì´ë¯¸ 5ì´ë¯€ë¡œ íšŒë³µ 0
+                    //     ì˜ˆì•½ ì·¨ì†Œ í›„ PreviewResourceëŠ” 5
                     int maxKarma = ResolveMaxUniqueResource(runtime);
                     int recoverAmount = Mathf.Max(0, GetRelicValue(availability.RelicData, 3));
                     int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, recoverAmount);

@@ -18,6 +18,14 @@ public class GrabEffect : BattleEffectBase
 
         BattleCharacter playerTarget = context.PlayerTarget;
         MonsterUnit monsterTarget = context.MonsterTarget;
+        if (BattleStatusEffectService.TryBlockGridMovement(
+                playerTarget != null
+                    ? playerTarget.RuntimeData?.StatusEffects
+                    : monsterTarget?.RuntimeData?.StatusEffects))
+        {
+            return;
+        }
+
         Vector3 startWorldPosition = playerTarget != null
             ? playerTarget.transform.position
             : monsterTarget != null ? monsterTarget.transform.position : Vector3.zero;
