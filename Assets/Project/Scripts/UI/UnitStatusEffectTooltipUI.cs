@@ -160,6 +160,31 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         UpdateCursorRightPosition(owner, cursorScreenPosition);
     }
 
+    // MonsterStatus Detail links can refer to grid effects (e.g. slime), not just status effects.
+    public void ShowGridCursorRight(Object owner, GridEffectData gridEffect, Vector2 cursorScreenPosition)
+    {
+        InitializeIfNeeded();
+        if (owner == null || gridEffect == null || itemView == null)
+        {
+            Hide(owner);
+            return;
+        }
+
+        pinnedToOwner = false;
+        cursorRightPinned = false;
+        currentOwner = owner;
+        currentSide = UnitStatusEffectTooltipSide.Right;
+        itemView.SetGridEffect(gridEffect);
+        if (!itemView.gameObject.activeSelf)
+            itemView.gameObject.SetActive(true);
+        BringToFront();
+        UpdatePosition(cursorScreenPosition, UnitStatusEffectTooltipSide.Right);
+        ShowWithFade();
+        pinnedToOwner = true;
+        cursorRightPinned = true;
+        UpdateCursorRightPosition(owner, cursorScreenPosition);
+    }
+
     public void UpdateCursorRightPosition(Object owner, Vector2 cursorScreenPosition)
     {
         if (!cursorRightPinned || currentOwner != owner || itemRect == null || itemParentRect == null)
@@ -276,7 +301,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     /// </summary>
     public void ShowSkillEffectList(Object owner, IReadOnlyList<StatusEffectRuntimeData> effects,
         RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f,
-        float listFadeInDuration = 0.12f, float listFadeOutDuration = 0.05f)
+        float listFadeInDuration = 0.12f, float listFadeOutDuration = 0.05f,
+        bool anchorTopRightStackDown = false)
     {
         InitializeIfNeeded();
         List<StatusEffectRuntimeData> valid = GetValidStatusEffects(effects);
@@ -310,14 +336,15 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         gameObject.SetActive(true);
         if (canvasGroup != null)
             canvasGroup.alpha = 1f;
-        UpdateSkillEffectListPosition(owner, tooltipPanel, customAnchor, offset, verticalSpacing);
+        UpdateSkillEffectListPosition(owner, tooltipPanel, customAnchor, offset, verticalSpacing, anchorTopRightStackDown);
         if (listFadeInDuration > 0f)
             skillEffectListFadeRoutine = StartCoroutine(FadeSkillEffectItems(
                 new List<UnitStatusEffectTooltipItemUI>(skillEffectItems), 1f,
                 listFadeInDuration, false));
     }
 
-    public void UpdateSkillEffectListPosition(Object owner, RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f)
+    public void UpdateSkillEffectListPosition(Object owner, RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset,
+        float verticalSpacing = -1f, bool anchorTopRightStackDown = false)
     {
         if (skillEffectOwner != owner || skillEffectRects.Count == 0 ||
             itemRoot == null || tooltipPanel == null)
@@ -335,13 +362,37 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             ? rootCanvas.worldCamera : null;
         Vector3[] anchorCorners = new Vector3[4];
         anchor.GetWorldCorners(anchorCorners);
-        Vector3 targetWorld = anchorCorners[1] + anchor.TransformVector(new Vector3(offset.x, offset.y, 0f));
+        Vector3 targetWorld = anchorCorners[anchorTopRightStackDown ? 2 : 1] +
+            anchor.TransformVector(new Vector3(offset.x, offset.y, 0f));
         Vector2 topLeftScreen = RectTransformUtility.WorldToScreenPoint(anchorCamera, targetWorld);
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 itemRoot, topLeftScreen, effectCamera, out Vector2 topLeftLocal))
             return;
 
         float spacing = verticalSpacing >= 0f ? verticalSpacing : skillEffectVerticalSpacing;
+        if (anchorTopRightStackDown)
+        {
+            // Place each tooltip item's top-left corner to the right of item/Background's
+            // top-right corner, stacking subsequent items downward.
+            float nextTopY = topLeftLocal.y;
+            Vector3[] downwardCorners = new Vector3[4];
+            for (int i = 0; i < skillEffectRects.Count; i++)
+            {
+                RectTransform rect = skillEffectRects[i];
+                if (rect == null)
+                    continue;
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                rect.GetWorldCorners(downwardCorners);
+                Vector3 topLeft = itemRoot.InverseTransformPoint(downwardCorners[1]);
+                Vector3 bottomLeft = itemRoot.InverseTransformPoint(downwardCorners[0]);
+                float height = topLeft.y - bottomLeft.y;
+                Vector3 delta = itemRoot.TransformVector(new Vector3(
+                    topLeftLocal.x - topLeft.x, nextTopY - topLeft.y, 0f));
+                rect.position += delta;
+                nextTopY -= height + spacing;
+            }
+            return;
+        }
         float bottomY = topLeftLocal.y + spacing;
         float leftX = topLeftLocal.x;
         Vector3[] itemCorners = new Vector3[4];

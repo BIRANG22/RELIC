@@ -1359,6 +1359,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 public sealed class MonsterSkillEffectLinkTooltip : MonoBehaviour
 {
     private const string EffectLinkPrefix = "effecticon:";
+    private const string GridLinkPrefix = "gridicon:";
 
     private TMP_Text targetText;
     private UnitStatusEffectTooltipUI tooltip;
@@ -1434,23 +1435,54 @@ public sealed class MonsterSkillEffectLinkTooltip : MonoBehaviour
 
         targetText.ForceMeshUpdate();
         TMP_TextInfo textInfo = targetText.textInfo;
-        if (linkIndex >= textInfo.linkCount ||
-            !TryParseEffectId(textInfo.linkInfo[linkIndex].GetLinkID(), out string effectId))
+        if (linkIndex >= textInfo.linkCount)
         {
             ClearHover();
             return;
         }
 
-        if (string.Equals(activeEffectId, effectId, StringComparison.OrdinalIgnoreCase))
+        string linkId = textInfo.linkInfo[linkIndex].GetLinkID();
+        bool gridLink = linkId.StartsWith(GridLinkPrefix, StringComparison.OrdinalIgnoreCase);
+        string effectId;
+        if (gridLink)
+            effectId = linkId.Substring(GridLinkPrefix.Length).Trim();
+        else if (!TryParseEffectId(linkId, out effectId))
+        {
+            ClearHover();
+            return;
+        }
+        if (string.IsNullOrEmpty(effectId))
+        {
+            ClearHover();
+            return;
+        }
+        string hoverKey = (gridLink ? GridLinkPrefix : EffectLinkPrefix) + effectId;
+
+        if (string.Equals(activeEffectId, hoverKey, StringComparison.OrdinalIgnoreCase))
         {
             tooltip?.UpdateCursorRightPosition(this, Input.mousePosition);
             return;
         }
 
         DataManager manager = DataManager.Instance;
-        if (manager?.EffectDatabase == null ||
-            !manager.EffectDatabase.TryGet(effectId, out EffectMasterData effectData) ||
-            effectData == null)
+        if (manager == null)
+        {
+            ClearHover();
+            return;
+        }
+
+        GridEffectData gridData = null;
+        if (gridLink)
+        {
+            if (manager.GridEffectDatabase == null ||
+                !manager.GridEffectDatabase.TryGet(effectId, out gridData) || gridData == null)
+            {
+                ClearHover();
+                return;
+            }
+        }
+        else if (manager.EffectDatabase == null ||
+            !manager.EffectDatabase.TryGet(effectId, out EffectMasterData effectData) || effectData == null)
         {
             ClearHover();
             return;
@@ -1460,13 +1492,15 @@ public sealed class MonsterSkillEffectLinkTooltip : MonoBehaviour
         if (tooltip == null)
             return;
 
-        activeEffectId = effectId;
+        activeEffectId = hoverKey;
         effectPreview.Clear();
-        effectPreview.Add(new StatusEffectRuntimeData(effectId, 1));
-        tooltip.ShowCursorRight(
-            this,
-            effectPreview,
-            Input.mousePosition);
+        if (gridLink)
+            tooltip.ShowGridCursorRight(this, gridData, Input.mousePosition);
+        else
+        {
+            effectPreview.Add(new StatusEffectRuntimeData(effectId, 1));
+            tooltip.ShowCursorRight(this, effectPreview, Input.mousePosition);
+        }
         isTooltipVisible = true;
         tooltip.UpdateCursorRightPosition(this, Input.mousePosition);
     }

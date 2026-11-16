@@ -17,6 +17,7 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
     [SerializeField] private TMP_Text detailText;
 
     private StatusEffectRuntimeData boundStatus;
+    private MonsterSkillEffectLinkTooltip effectLinkTooltip;
 
     private void Awake()
     {
@@ -33,6 +34,7 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
 
     private void OnDisable()
     {
+        effectLinkTooltip?.ClearHover();
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
@@ -57,6 +59,7 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
 
     public void Bind(StatusEffectRuntimeData statusData)
     {
+        effectLinkTooltip?.ClearHover();
         ResolveReferences();
         DisableFixedLocalizationWriters();
         boundStatus = statusData;
@@ -101,6 +104,13 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
                 effectData,
                 dataManager != null ? dataManager.EffectDatabase : null,
                 dataManager != null ? dataManager.GridEffectDatabase : null);
+
+            // Share the same cursor-following effect-link tooltip as MonsterSkill.
+            if (effectLinkTooltip == null)
+                effectLinkTooltip = detailText.GetComponent<MonsterSkillEffectLinkTooltip>();
+            if (effectLinkTooltip == null)
+                effectLinkTooltip = detailText.gameObject.AddComponent<MonsterSkillEffectLinkTooltip>();
+            effectLinkTooltip.Bind(detailText);
         }
     }
 
@@ -137,6 +147,7 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
 
     private void Clear()
     {
+        effectLinkTooltip?.ClearHover();
         if (statusIconImage != null)
         {
             statusIconImage.color = ComposeIconColor(Color.white, statusIconImage.color);

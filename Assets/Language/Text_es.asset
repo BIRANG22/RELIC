@@ -616,8 +616,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631994
-    m_Localized: "Permite reservar acciones en posiciones anteriores de una ranura
-      de la l\xEDnea temporal."
+    m_Localized: "Las acciones se colocan con prioridad al inicio de la ranura de
+      la l\xEDnea de tiempo."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631995

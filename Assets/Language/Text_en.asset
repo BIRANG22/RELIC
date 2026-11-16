@@ -602,7 +602,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631994
-    m_Localized: Allows actions to be queued earlier within a timeline slot.
+    m_Localized: Actions are prioritized at the front of the timeline slot.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631995
