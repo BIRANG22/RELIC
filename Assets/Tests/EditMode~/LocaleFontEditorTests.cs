@@ -12,7 +12,7 @@ public sealed class LocaleFontEditorTests
     }
 
     [Test]
-    public void DefaultDatabase_ContainsEveryProjectLocaleAndInitialRole()
+    public void DefaultDatabase_ContainsEveryProjectLocaleAndCommonNumberFont()
     {
         const string path = "Assets/Resources/Localization/LocaleFontDatabase.asset";
         Assert.That(File.Exists(path), Is.True);
@@ -20,8 +20,7 @@ public sealed class LocaleFontEditorTests
         string yaml = File.ReadAllText(path);
         foreach (string locale in new[] { "ko", "en", "es", "ja", "zh-Hans" })
             Assert.That(yaml, Does.Contain("localeCode: " + locale));
-        foreach (string role in new[] { "body", "title", "number" })
-            Assert.That(yaml, Does.Contain("roleId: " + role));
+        Assert.That(yaml, Does.Contain("commonNumberFont:"));
     }
 
     [Test]

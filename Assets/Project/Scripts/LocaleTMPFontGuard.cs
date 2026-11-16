@@ -10,6 +10,33 @@ using UnityEngine.Localization.Settings;
 /// </summary>
 public static class LocaleTMPFontGuard
 {
+    public static bool ApplyResolvedFont(TMP_Text target, TMP_FontAsset font)
+    {
+        if (target == null || font == null)
+            return false;
+
+        bool changed = false;
+        if (target.font != font)
+        {
+            target.font = font;
+            changed = true;
+        }
+
+        Material fontMaterial = font.material;
+        Material currentMaterial = target.fontSharedMaterial;
+        if (fontMaterial != null &&
+            (currentMaterial == null || currentMaterial.mainTexture != fontMaterial.mainTexture))
+        {
+            target.fontSharedMaterial = fontMaterial;
+            changed = true;
+        }
+
+        if (changed)
+            target.SetAllDirty();
+
+        return changed;
+    }
+
     public static void Prepare(TMP_Text target)
     {
         if (target == null)
@@ -42,7 +69,6 @@ public static class LocaleTMPFontGuard
             font == null)
             return;
 
-        if (target.font != font)
-            target.font = font;
+        ApplyResolvedFont(target, font);
     }
 }

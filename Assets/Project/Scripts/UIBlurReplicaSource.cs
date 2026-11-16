@@ -106,12 +106,11 @@ public sealed class UIBlurReplicaSource
             role = detectedRole;
 
         if (!database.TryResolve(locale.Identifier.Code, role, out TMP_FontAsset replacement) ||
-            replacement == null || replacement == text.font ||
+            replacement == null ||
             !FontCoversDisplayedCharacters(replacement, content))
             return;
 
-        text.font = replacement;
-        text.SetAllDirty();
+        LocaleTMPFontGuard.ApplyResolvedFont(text, replacement);
     }
 
     private static bool FontCoversDisplayedCharacters(TMP_FontAsset font, string content)
@@ -125,7 +124,7 @@ public sealed class UIBlurReplicaSource
             if (insideTag || c <= 127 || char.IsWhiteSpace(c) ||
                 char.IsHighSurrogate(c) || char.IsLowSurrogate(c))
                 continue;
-            if (!font.HasCharacter(c, true, false))
+            if (!font.HasCharacter(c, false, true))
                 return false;
         }
         return true;

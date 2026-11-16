@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// TMP_DropdownÀÇ Template ¿ÀºêÁ§Æ®(Dropdown List)¸¦ º¹Á¦ÇÏÁö ¾Ê°í,
-/// ±âÁ¸¿¡ ¹èÄ¡µÈ ¿øº» TemplateÀ» Á÷Á¢ »ç¿ëÇÕ´Ï´Ù.
+/// TMP_Dropdownì˜ Template ì˜¤ë¸Œì íŠ¸(Dropdown List)ë¥¼ ë³µì œí•˜ì§€ ì•Šê³ ,
+/// ê¸°ì¡´ì— ë°°ì¹˜ëœ ì›ë³¸ Templateì„ ì§ì ‘ ì‚¬ìš©í•©ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler, ISubmitHandler, ICancelHandler
@@ -85,11 +85,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
             db.TryResolve(optionLocaleCodes[index], LocaleFontDatabase.BodyRoleId, out font);
         }
 
-        if (font != null && text.font != font)
-        {
-            text.font = font;
-            text.SetAllDirty();
-        }
+        LocaleTMPFontGuard.ApplyResolvedFont(text, font);
     }
 
     public void ApplyCaptionFont()
@@ -129,7 +125,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
 
         CreateClickCatcher();
 
-        // ±âº» TMP_DropdownÀÇ ¿É¼Ç Ã³¸®¿Í Áßº¹ ½ÇÇàµÇÁö ¾Êµµ·Ï ºñÈ°¼ºÈ­ÇÕ´Ï´Ù.
+        // ê¸°ë³¸ TMP_Dropdownì˜ ì˜µì…˜ ì²˜ë¦¬ì™€ ì¤‘ë³µ ì‹¤í–‰ë˜ì§€ ì•Šë„ë¡ ë¹„í™œì„±í™”í•©ë‹ˆë‹¤.
         ColorBlock colors = dropdown.colors;
         colors.disabledColor = colors.normalColor;
         dropdown.colors = colors;
@@ -326,7 +322,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
         if (itemTemplate == null)
         {
             Debug.LogWarning(
-                "[DirectTemplateDropdown] Template ³»ºÎ¿¡¼­ Item ToggleÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.",
+                "[DirectTemplateDropdown] Template ë‚´ë¶€ì—ì„œ Item Toggleì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.",
                 dropdown);
             return false;
         }
@@ -458,7 +454,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
 }
 
 /// <summary>
-/// Å¬¸¯À» ºÎ¸ğ TMP_DropdownÀ¸·Î Àü´ŞÇÏÁö ¾Ê°í ¿øº» Template ¸ñ·ÏÀ» Åä±ÛÇÕ´Ï´Ù.
+/// í´ë¦­ì„ ë¶€ëª¨ TMP_Dropdownìœ¼ë¡œ ì „ë‹¬í•˜ì§€ ì•Šê³  ì›ë³¸ Template ëª©ë¡ì„ í† ê¸€í•©ë‹ˆë‹¤.
 /// </summary>
 public sealed class DirectTemplateDropdownClickCatcher : MonoBehaviour, IPointerClickHandler
 {

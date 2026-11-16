@@ -64,8 +64,7 @@ public sealed class LocalizedTMPFont : MonoBehaviour
         string localeCode = locale != null ? locale.Identifier.Code : string.Empty;
         if (selectedDatabase.TryResolve(localeCode, roleId, out TMP_FontAsset resolvedFont))
         {
-            target.font = resolvedFont;
-            target.SetAllDirty();
+            LocaleTMPFontGuard.ApplyResolvedFont(target, resolvedFont);
             return;
         }
 
