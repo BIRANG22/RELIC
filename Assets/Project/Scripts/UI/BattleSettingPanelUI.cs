@@ -22,6 +22,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         Rune,
         Relic,
         Compound,
+        HP,
         Mana,
         Recovery,
         Karma
@@ -99,6 +100,8 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         public TMP_Text ManaValue;
         public TMP_Text RegenValue;
         public readonly Image[] Karma = new Image[5];
+        public RectTransform HpHoverArea;
+        public RectTransform KarmaHoverArea;
         public RectTransform ManaHoverArea;
         public RectTransform RegenHoverArea;
         public Image Passive;
@@ -115,6 +118,12 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     [SerializeField] private Button closeButton;
     [SerializeField] private Transform characterContent;
     [SerializeField] private BattleCharacterPanelUI battleCharacterPanel;
+
+    [Header("Setting Job Image Breathing")]
+    [SerializeField, Range(0, 255)] private int jobImageMinAlpha = 3;
+    [SerializeField, Range(0, 255)] private int jobImageMaxAlpha = 8;
+    [SerializeField, Min(0.1f)] private float jobImageBreathingCycle = 2f;
+    private float jobImageBreathingElapsed;
 
     private readonly CharacterView[] views = new CharacterView[PartySlotCount];
     private readonly List<TooltipBinding> tooltipBindings = new List<TooltipBinding>(60);
@@ -235,6 +244,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             BringPanelToFront();
             MaintainPause();
             Refresh(false);
+            UpdateJobImageBreathing(Time.unscaledDeltaTime);
             UpdateTooltipHover();
             UpdateTooltipFades();
         }
@@ -251,6 +261,35 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         ResolveViews();
         ResolveTooltipViews();
         Refresh(true);
+        jobImageBreathingElapsed = 0f;
+        UpdateJobImageBreathing(0f);
+    }
+
+    private void UpdateJobImageBreathing(float deltaTime)
+    {
+        // Unscaled time allows the effect to keep breathing while the settings window pauses combat.
+        jobImageBreathingElapsed += deltaTime;
+        float cycle = Mathf.Max(0.1f, jobImageBreathingCycle);
+        float progress = Mathf.Repeat(jobImageBreathingElapsed / cycle, 1f);
+        float wave = 0.5f - 0.5f * Mathf.Cos(progress * Mathf.PI * 2f);
+        int minimum = Mathf.Clamp(jobImageMinAlpha, 0, 255);
+        int maximum = Mathf.Clamp(jobImageMaxAlpha, minimum, 255);
+        byte alpha = (byte)Mathf.RoundToInt(Mathf.Lerp(minimum, maximum, wave));
+        SetJobImageAlpha(alpha);
+    }
+
+    private void SetJobImageAlpha(byte alpha)
+    {
+        foreach (CharacterView view in views)
+        {
+            if (view == null || view.Job == null)
+                continue;
+            Color32 color = view.Job.color;
+            if (color.a == alpha)
+                continue;
+            color.a = alpha;
+            view.Job.color = color;
+        }
     }
 
     public void Toggle()
@@ -275,6 +314,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         if (skillTooltipPanel != null) skillTooltipPanel.SetActive(false);
         if (equipmentTooltipPanel != null) equipmentTooltipPanel.SetActive(false);
         if (statNameTooltipPanel != null) statNameTooltipPanel.SetActive(false);
+        SetJobImageAlpha((byte)Mathf.Clamp(jobImageMinAlpha, 0, 255));
         if (panelRoot != null)
             panelRoot.SetActive(false);
         ReleasePauseIfNeeded();
@@ -325,7 +365,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
 
     public static bool CanShowTooltip(TooltipKind kind, string dataId)
     {
-        return kind == TooltipKind.Mana || kind == TooltipKind.Recovery || kind == TooltipKind.Karma ||
+        return kind == TooltipKind.HP || kind == TooltipKind.Mana || kind == TooltipKind.Recovery || kind == TooltipKind.Karma ||
                !string.IsNullOrWhiteSpace(dataId);
     }
 
@@ -333,6 +373,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     {
         switch (kind)
         {
+            case TooltipKind.HP: return new StatTooltipText("common.hp", "생명력");
             case TooltipKind.Mana: return new StatTooltipText("common.mana", "마나");
             case TooltipKind.Recovery: return new StatTooltipText("common.recovery", "마나재생량");
             case TooltipKind.Karma: return new StatTooltipText("resource.karma", "카르마");
@@ -342,6 +383,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
 
     public static TooltipKind GetResourceTooltipKind(string sectionName)
     {
+        if (string.Equals(sectionName, "HP", StringComparison.OrdinalIgnoreCase)) return TooltipKind.HP;
         if (string.Equals(sectionName, "Mana", StringComparison.Ordinal)) return TooltipKind.Mana;
         if (string.Equals(sectionName, "Regen", StringComparison.Ordinal)) return TooltipKind.Recovery;
         if (string.Equals(sectionName, "Karma", StringComparison.Ordinal)) return TooltipKind.Karma;
@@ -426,14 +468,30 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             view.HpValue = FindNamedText(hp, "Value", "Text", "HP_Value", "Resources_Value");
             view.ManaValue = FindNamedText(FindPath(root, "Resources/Mana"), "Value");
             view.RegenValue = FindNamedText(FindPath(root, "Resources/Regen"), "Value");
+            view.HpHoverArea = FindPath(hp, "Icon") as RectTransform;
+            view.KarmaHoverArea = FindPath(root, "Resources/Karma") as RectTransform;
             view.ManaHoverArea = FindPath(root, "Resources/Mana/Icon") as RectTransform;
             view.RegenHoverArea = FindPath(root, "Resources/Regen/Icon") as RectTransform;
             for (int karma = 0; karma < view.Karma.Length; karma++)
                 view.Karma[karma] = GetImage(FindPath(root, $"Resources/Karma/Icon{karma + 1:00}"));
+            BindResourceHover(view.HpHoverArea, TooltipKind.HP);
             BindResourceHover(view.ManaHoverArea, TooltipKind.Mana);
             BindResourceHover(view.RegenHoverArea, TooltipKind.Recovery);
-            for (int karma = 0; karma < view.Karma.Length; karma++)
-                BindResourceHover(view.Karma[karma] != null ? view.Karma[karma].rectTransform : null, TooltipKind.Karma);
+            // Use the entire Karma parent as a single hover and tooltip anchor.
+            // Decorative child icons must not intercept its pointer events.
+            if (view.KarmaHoverArea != null)
+            {
+                for (int karma = 0; karma < view.Karma.Length; karma++)
+                    if (view.Karma[karma] != null)
+                        view.Karma[karma].raycastTarget = false;
+                Image karmaHitArea = view.KarmaHoverArea.GetComponent<Image>();
+                if (karmaHitArea == null)
+                {
+                    karmaHitArea = view.KarmaHoverArea.gameObject.AddComponent<Image>();
+                    karmaHitArea.color = Color.clear;
+                }
+                BindResourceHover(view.KarmaHoverArea, TooltipKind.Karma);
+            }
             view.Passive = GetIconInSection(root, "Passive");
             view.Ultimate = GetImage(FindPath(root, "Skill/Content/Ultimate/Icon"));
             view.ActiveRelic = GetIconInSection(root, "Compound");
@@ -612,7 +670,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         if (resourceTarget != null)
         {
             UpdateStatNameTooltipText(resourceHoverState.Kind);
-            PositionStatNameTooltip(resourceTarget);
+            PositionStatNameTooltip(resourceTarget, resourceHoverState.Kind);
             return;
         }
 
@@ -634,7 +692,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         if (activeTooltipBinding != null)
         {
             if (IsStatTooltip(activeTooltipBinding.Kind))
-                PositionStatNameTooltip(activeTooltipBinding.Target);
+                PositionStatNameTooltip(activeTooltipBinding.Target, activeTooltipBinding.Kind);
             else
                 PositionTooltip(activeTooltipBinding.Target,
                     activeTooltipBinding.Kind == TooltipKind.Skill ? skillTooltipRect : equipmentTooltipRect);
@@ -860,12 +918,36 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     }
 
     [Header("Setting Tooltip Position")]
-    [SerializeField, Min(0f)] private float tooltipTopGap = 8f;
+    [SerializeField, Min(0f)] private float tooltipTopGap = 5f;
     [SerializeField, Min(0f)] private float tooltipScreenPadding = 8f;
+
+    [Header("Setting Resource Tooltip Position Offsets (X / Y)")]
+    [Tooltip("Offset shared by all resource name tooltips. Positive X moves right, positive Y moves up.")]
+    [SerializeField] private Vector2 resourceTooltipOffset = Vector2.zero;
+    [Tooltip("Additional offset for the HP (Health) name tooltip.")]
+    [SerializeField] private Vector2 hpTooltipOffset = Vector2.zero;
+    [Tooltip("Additional offset for the Mana name tooltip.")]
+    [SerializeField] private Vector2 manaTooltipOffset = Vector2.zero;
+    [Tooltip("Additional offset for the Mana Recovery name tooltip.")]
+    [SerializeField] private Vector2 regenTooltipOffset = Vector2.zero;
+    [Tooltip("Additional offset for the Karma name tooltip (anchored to the Karma parent).")]
+    [SerializeField] private Vector2 karmaTooltipOffset = Vector2.zero;
+
+    private Vector2 GetResourceTooltipOffset(TooltipKind kind)
+    {
+        switch (kind)
+        {
+            case TooltipKind.HP: return resourceTooltipOffset + hpTooltipOffset;
+            case TooltipKind.Mana: return resourceTooltipOffset + manaTooltipOffset;
+            case TooltipKind.Recovery: return resourceTooltipOffset + regenTooltipOffset;
+            case TooltipKind.Karma: return resourceTooltipOffset + karmaTooltipOffset;
+            default: return resourceTooltipOffset;
+        }
+    }
 
     // Position each popup below its hovered icon. Use the actual root Canvas viewport,
     // not the immediate parent rect, because the parent can be smaller than the screen.
-    private void PositionTooltip(RectTransform source, RectTransform tooltip)
+    private void PositionTooltip(RectTransform source, RectTransform tooltip, Vector2 positionOffset = default(Vector2))
     {
         if (source == null || tooltip == null || !(tooltip.parent is RectTransform parent))
             return;
@@ -885,8 +967,8 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         LayoutRebuilder.ForceRebuildLayoutImmediate(tooltip);
         Vector2 size = GetTooltipSizeInParent(tooltip, parent);
         Vector2 target = new Vector2(
-            local.x + (tooltip.pivot.x - 0.5f) * size.x,
-            local.y + Mathf.Max(0f, tooltipTopGap) + (1f - tooltip.pivot.y) * size.y);
+            local.x + (tooltip.pivot.x - 0.5f) * size.x + positionOffset.x,
+            local.y + Mathf.Max(0f, tooltipTopGap) + (1f - tooltip.pivot.y) * size.y + positionOffset.y);
         tooltip.localPosition = new Vector3(target.x, target.y, tooltip.localPosition.z);
         ClampTooltipToScreen(tooltip, parent, tooltipCamera);
     }
@@ -1002,11 +1084,11 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
     }
 
     private static bool IsStatTooltip(TooltipKind kind) =>
-        kind == TooltipKind.Mana || kind == TooltipKind.Recovery || kind == TooltipKind.Karma;
+        kind == TooltipKind.HP || kind == TooltipKind.Mana || kind == TooltipKind.Recovery || kind == TooltipKind.Karma;
 
-    private void PositionStatNameTooltip(RectTransform source)
+    private void PositionStatNameTooltip(RectTransform source, TooltipKind kind)
     {
-        PositionTooltip(source, statNameTooltipRect);
+        PositionTooltip(source, statNameTooltipRect, GetResourceTooltipOffset(kind));
     }
 
     // Display every linked effect together with its skill / equipment tooltip.
@@ -1186,7 +1268,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         if (view.HpFill != null)
             view.HpFill.fillAmount = snapshot.MaxHP > 0 ? Mathf.Clamp01((float)snapshot.CurrentHP / snapshot.MaxHP) : 0f;
         if (view.HpValue != null)
-            view.HpValue.text = $"{snapshot.CurrentHP} / {snapshot.MaxHP}";
+            view.HpValue.text = $"{snapshot.CurrentHP}/{snapshot.MaxHP}";
         if (view.ManaValue != null)
             view.ManaValue.text = FormatMana(snapshot.CurrentCost, snapshot.MaxCost);
         if (view.RegenValue != null)

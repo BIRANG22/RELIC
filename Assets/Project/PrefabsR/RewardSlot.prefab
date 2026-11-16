@@ -32,9 +32,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1846488243129929008}
+  - {fileID: 6423279199063938243}
   - {fileID: 6489344286830675229}
   - {fileID: 647408077755644824}
-  - {fileID: 6423279199063938243}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -67,6 +67,7 @@ MonoBehaviour:
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
   clearClickedStateWhenAnotherButtonHovered: 1
+  usePressOnlyClickedState: 0
   hoverHitArea: {fileID: 0}
   hoverExitPadding: 4
   hoverExitDelay: 0.05
