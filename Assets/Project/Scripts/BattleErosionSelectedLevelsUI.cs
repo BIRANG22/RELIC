@@ -323,32 +323,6 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
                 grid.startAxis = GridLayoutGroup.Axis.Vertical;
         }
 
-        if (IsLobbySelect && ids.Count == 0)
-        {
-            GameObject prefab = noDifficultySlotPrefab != null ? noDifficultySlotPrefab : erosionLevelPrefab;
-            if (prefab != null && prefab != gameObject)
-            {
-                GameObject emptyItem = Instantiate(prefab, content, false);
-                emptyItem.name = "ErosionLevel_None";
-                emptyItem.SetActive(true);
-                Transform iconTransform = emptyItem.transform.Find("Icon");
-                Image iconImage = iconTransform != null ? iconTransform.GetComponent<Image>() : null;
-                if (iconImage != null && noDifficultyIcon != null)
-                {
-                    iconImage.sprite = noDifficultyIcon;
-                    iconImage.enabled = true;
-                    iconImage.preserveAspect = true;
-                    iconImage.color = noDifficultyIconColor;
-                }
-                CanvasGroup group = emptyItem.GetComponent<CanvasGroup>();
-                if (group == null) group = emptyItem.AddComponent<CanvasGroup>();
-                group.alpha = 0f;
-                group.blocksRaycasts = false;
-                group.interactable = false;
-                entries.Add(new Entry { gameObject = emptyItem, rect = emptyItem.transform as RectTransform, group = group });
-            }
-        }
-
         foreach (string id in new List<string>(ids))
         {
             if (string.IsNullOrWhiteSpace(id) ||
