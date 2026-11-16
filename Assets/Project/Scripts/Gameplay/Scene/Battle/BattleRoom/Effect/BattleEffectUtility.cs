@@ -11,6 +11,8 @@ public static class BattleEffectUtility
 
     public static System.Action<BattleCharacter> OnPlayerDamaged;
     public static System.Action<BattleCharacter> OnPlayerHudRefreshRequested;
+    // Raised as soon as Swift is actually applied, before the skill animation finishes.
+    public static System.Action<BattleCharacter> OnPlayerSwiftApplied;
 
     public static BattleCharacter GetPlayerTargetOrCaster(BattleEffectContext context)
     {
@@ -139,6 +141,8 @@ public static class BattleEffectUtility
         {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
             OnPlayerHudRefreshRequested?.Invoke(target);
+            if (effectId == "E_Swift")
+                OnPlayerSwiftApplied?.Invoke(target);
             return true;
         }
 
