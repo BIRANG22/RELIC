@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -10,6 +11,7 @@ public enum BattleDirection
 
 public class PlayerReservedCommand
 {
+    public string ReservationId { get; }
     public CharacterRuntimeData UserRuntime { get; private set; }
     public SkillMasterData SkillData { get; private set; }
 
@@ -184,8 +186,14 @@ public class PlayerReservedCommand
         return direction;
     }
 
-    public PlayerReservedCommand(CharacterRuntimeData userRuntime, SkillMasterData skillData)
+    public PlayerReservedCommand(
+        CharacterRuntimeData userRuntime,
+        SkillMasterData skillData,
+        string reservationId = null)
     {
+        ReservationId = string.IsNullOrWhiteSpace(reservationId)
+            ? Guid.NewGuid().ToString("N")
+            : reservationId;
         UserRuntime = userRuntime;
         SkillData = skillData;
         ExecutionResult = new SkillExecutionResult

@@ -264,6 +264,49 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         return true;
     }
 
+    public static bool TryHandlePlayerReservationHistory(
+        BattleTimelineController controller,
+        PlayerReservationHistoryAction action,
+        out bool accepted)
+    {
+        accepted = false;
+        if (Instance == null || !Instance.IsNetworkBattleActive ||
+            Instance.applyingNetworkTimeline || controller == null ||
+            Instance.timelineController != controller)
+        {
+            return false;
+        }
+
+        accepted = Instance.RequestPlayerReservationHistory(action);
+        return true;
+    }
+
+    public static bool TryGetPlayerReservationHistoryAvailability(
+        BattleTimelineController controller,
+        PlayerReservationHistoryAction action,
+        out bool available)
+    {
+        available = false;
+#if STEAMWORKS_NET
+        if (Instance == null || !Instance.IsNetworkBattleActive ||
+            controller == null || Instance.timelineController != controller)
+        {
+            return false;
+        }
+
+        string characterId = Instance.IsLocalHost()
+            ? controller.GetNextPlayerReservationHistoryCharacterId(action)
+            : action == PlayerReservationHistoryAction.Undo
+                ? Instance.CurrentSnapshot?.undoReservationCharacterId
+                : Instance.CurrentSnapshot?.redoReservationCharacterId;
+        available = !string.IsNullOrWhiteSpace(characterId) &&
+                    CanLocalPlayerControlCharacter(characterId);
+        return true;
+#else
+        return false;
+#endif
+    }
+
     public static void TryBroadcastBattleExecution(IReadOnlyList<BattleActionBatch> batches)
     {
         if (Instance == null || !Instance.IsNetworkBattleActive)
@@ -523,6 +566,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         networkCommand.destinationSlotIndex = destinationSlotIndex;
         networkCommand.destinationCommandIndex = destinationCommandIndex;
         networkCommand.characterId = command.CharacterId;
+        networkCommand.reservationId = command.ReservationId;
         networkCommand.skillId = command.SkillId;
         networkCommand.direction = (int)command.Direction;
         networkCommand.selectedGridIndex = command.SelectedGridIndex;
@@ -553,14 +597,27 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         networkCommand.slotIndex = slotIndex;
         networkCommand.commandIndex = orderIndex;
         networkCommand.characterId = command.CharacterId;
+        networkCommand.reservationId = command.ReservationId;
 
         if (!SendOrApplyCommand(networkCommand, true))
             return false;
 
         if (!IsLocalHost())
-            timelineController.RemoveCommandFromNetwork(slotIndex, orderIndex);
+            timelineController.RemoveCommandFromPlayerAction(slotIndex, orderIndex);
 
         return true;
+#else
+        return false;
+#endif
+    }
+
+    private bool RequestPlayerReservationHistory(PlayerReservationHistoryAction action)
+    {
+#if STEAMWORKS_NET
+        BattleNetworkCommandType commandType = action == PlayerReservationHistoryAction.Undo
+            ? BattleNetworkCommandType.UndoPlayerReservation
+            : BattleNetworkCommandType.RedoPlayerReservation;
+        return SendOrApplyCommand(CreateCommand(commandType), true);
 #else
         return false;
 #endif
@@ -596,6 +653,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     {
         BattleNetworkCommand dto = CreateCommand(type);
         dto.slotIndex = slotIndex;
+        dto.reservationId = command.ReservationId;
         dto.characterId = command.CharacterId;
         dto.skillId = command.SkillId;
         dto.direction = (int)command.Direction;
@@ -757,6 +815,10 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             BattleNetworkCommandType.ReservePlayerCommand => ApplyHostPlayerReservation(requester, command),
             BattleNetworkCommandType.RemovePlayerCommand => ApplyHostRemovePlayerCommand(requester, command),
             BattleNetworkCommandType.MovePlayerCommand => ApplyHostMovePlayerCommand(requester, command),
+            BattleNetworkCommandType.UndoPlayerReservation =>
+                ApplyHostPlayerReservationHistory(requester, PlayerReservationHistoryAction.Undo),
+            BattleNetworkCommandType.RedoPlayerReservation =>
+                ApplyHostPlayerReservationHistory(requester, PlayerReservationHistoryAction.Redo),
             BattleNetworkCommandType.SetReady => ApplyHostReady(requester, command),
             BattleNetworkCommandType.EquipRelic => ApplyHostEquipmentCommand(requester, command),
             BattleNetworkCommandType.UnequipRelic => ApplyHostEquipmentCommand(requester, command),
@@ -785,12 +847,6 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (!IsValidTimelineSlot(command.slotIndex))
             return BattleNetworkRejectReason.InvalidSlot;
 
-        if (IsSlotViewedByOtherMember(command.slotIndex, requester))
-            return BattleNetworkRejectReason.SlotViewedByOtherMember;
-
-        if (IsTimelineSlotReservedByOtherMember(command.slotIndex, requester))
-            return BattleNetworkRejectReason.SlotReservedByOtherMember;
-
         viewedSlotsByMember[requester] = command.slotIndex;
 
         if (requester == localSteamId)
@@ -814,9 +870,6 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         if (!SteamLobbySessionState.IsMemberAllowedToControlCharacter(requester, command.characterId))
             return BattleNetworkRejectReason.NotCharacterOwner;
-
-        if (IsSlotViewedByOtherMember(command.slotIndex, requester))
-            return BattleNetworkRejectReason.SlotViewedByOtherMember;
 
         PlayerReservedCommand playerCommand = RebuildPlayerCommand(command);
         if (playerCommand == null)
@@ -848,9 +901,6 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (!IsValidTimelineSlot(command.destinationSlotIndex))
             return BattleNetworkRejectReason.InvalidSlot;
 
-        if (IsSlotViewedByOtherMember(command.destinationSlotIndex, requester))
-            return BattleNetworkRejectReason.SlotViewedByOtherMember;
-
         if (!TryGetPlayerCommand(
                 command.slotIndex,
                 command.commandIndex,
@@ -864,6 +914,14 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 reservedCommand.CharacterId))
         {
             return BattleNetworkRejectReason.NotCharacterOwner;
+        }
+
+        if (!string.Equals(
+                reservedCommand.ReservationId,
+                command.reservationId,
+                StringComparison.Ordinal))
+        {
+            return BattleNetworkRejectReason.InvalidCommand;
         }
 
         if (!string.Equals(reservedCommand.SkillId, command.skillId, StringComparison.Ordinal) ||
@@ -902,11 +960,42 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return BattleNetworkRejectReason.NotCharacterOwner;
         }
 
+        if (!string.Equals(
+                reservedCommand.ReservationId,
+                command.reservationId,
+                StringComparison.Ordinal))
+        {
+            return BattleNetworkRejectReason.InvalidCommand;
+        }
+
         bool removed =
             timelineController != null &&
-            timelineController.RemoveCommandFromNetwork(command.slotIndex, command.commandIndex);
+            timelineController.RemoveCommandFromPlayerAction(command.slotIndex, command.commandIndex);
 
         return removed
+            ? BattleNetworkRejectReason.None
+            : BattleNetworkRejectReason.RejectedByService;
+    }
+
+    private BattleNetworkRejectReason ApplyHostPlayerReservationHistory(
+        ulong requester,
+        PlayerReservationHistoryAction action)
+    {
+        if (timelineController == null)
+            return BattleNetworkRejectReason.RejectedByService;
+
+        string characterId =
+            timelineController.GetNextPlayerReservationHistoryCharacterId(action);
+        if (string.IsNullOrWhiteSpace(characterId))
+            return BattleNetworkRejectReason.InvalidCommand;
+
+        if (!SteamLobbySessionState.IsMemberAllowedToControlCharacter(requester, characterId))
+            return BattleNetworkRejectReason.NotCharacterOwner;
+
+        bool applied = action == PlayerReservationHistoryAction.Undo
+            ? timelineController.UndoLastPlayerReservationFromNetwork()
+            : timelineController.RedoLastPlayerReservationFromNetwork();
+        return applied
             ? BattleNetworkRejectReason.None
             : BattleNetworkRejectReason.RejectedByService;
     }
@@ -1702,7 +1791,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (skill == null)
             return null;
 
-        PlayerReservedCommand rebuilt = new(runtime, skill);
+        PlayerReservedCommand rebuilt = new(runtime, skill, command.reservationId);
         ApplyPlayerCommandFields(rebuilt, command);
         return rebuilt;
     }
@@ -1724,7 +1813,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (skill == null)
             return null;
 
-        PlayerReservedCommand command = new(runtime, skill);
+        PlayerReservedCommand command = new(runtime, skill, snapshot.reservationId);
         if (snapshot.isFacingFlipCommand)
             command.SetFacingFlipCommand();
         command.SetFlipBeforeAction(snapshot.flipBeforeAction);
@@ -1875,7 +1964,13 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             monsters = CreateMonsterSnapshots(),
             timelineSlots = CreateTimelineSnapshots(),
             viewedSlots = CreateViewedSlotSnapshots(),
-            readyStates = CreateReadyStateSnapshots()
+            readyStates = CreateReadyStateSnapshots(),
+            undoReservationCharacterId = timelineController != null
+                ? timelineController.GetNextPlayerReservationHistoryCharacterId(PlayerReservationHistoryAction.Undo)
+                : string.Empty,
+            redoReservationCharacterId = timelineController != null
+                ? timelineController.GetNextPlayerReservationHistoryCharacterId(PlayerReservationHistoryAction.Redo)
+                : string.Empty
         };
     }
 
@@ -2043,6 +2138,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         return new BattleNetworkPlayerCommandSnapshot
         {
+            reservationId = command.ReservationId,
             characterId = command.CharacterId,
             skillId = command.SkillId,
             direction = (int)command.Direction,
@@ -2353,7 +2449,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 #if STEAMWORKS_NET
             if (!IsLocalHost())
             {
-                timelineController.ClearAllReservations();
+                timelineController.ClearAllReservationsFromNetworkSnapshot();
 
                 if (snapshot.timelineSlots != null)
                 {

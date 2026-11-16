@@ -3,7 +3,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
-using UnityEngine.Localization.Components;
 using UnityEngine.SceneManagement;
 
 /// <summary>
@@ -17,9 +16,6 @@ public static class GlobalLocalizedTMPFontApplicator
     private static readonly HashSet<int> CurrentTextIds = new();
     private static LocaleFontDatabase defaultDatabase;
     private static readonly Dictionary<int, string> SourceRoleByTextId = new();
-    private static readonly HashSet<int> PreserveSourceTextIds = new();
-    // Dynamic localized labels can lack a LocalizedTMPText component.
-    private static readonly HashSet<int> RecognizedLocalizedTextIds = new();
     private static readonly Dictionary<int, TMP_FontAsset> OriginalFonts = new();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -31,8 +27,6 @@ public static class GlobalLocalizedTMPFontApplicator
         CurrentTextIds.Clear();
         defaultDatabase = null;
         SourceRoleByTextId.Clear();
-        PreserveSourceTextIds.Clear();
-        RecognizedLocalizedTextIds.Clear();
         OriginalFonts.Clear();
     }
 
@@ -63,28 +57,12 @@ public static class GlobalLocalizedTMPFontApplicator
         if (selector != null && selector.OwnsFont(text))
             return false;
 
+        if (IsBlurReplica(text.transform))
+            return false;
+
         int textId = text.GetInstanceID();
         if (!OriginalFonts.ContainsKey(textId))
             OriginalFonts[textId] = text.font;
-
-        // Level counters and other fixed numeric UI labels retain their source font,
-        // even if this TMP previously displayed a localized CJK string.
-        if (IsFixedNonLocalizedLabel(text.text))
-        {
-            if (OriginalFonts.TryGetValue(textId, out TMP_FontAsset original) &&
-                original != null && text.font != original)
-            {
-                text.font = original;
-                text.SetAllDirty();
-            }
-            return false;
-        }
-
-        // Only actual localized content may receive a locale-dependent font.
-        // Numeric counters, input hints and fixed English identifiers must
-        // retain the font assigned in the Inspector.
-        if (!ShouldApplyLocaleFont(text))
-            return false;
 
         LocalizedTMPFont explicitOwner = text.GetComponent<LocalizedTMPFont>();
         if (explicitOwner != null)
@@ -93,38 +71,27 @@ public static class GlobalLocalizedTMPFontApplicator
             return true;
         }
 
-        // Cache each TMP's role on its first encounter. Later font changes must not
-        // change the role when the user switches locales repeatedly.
-        if (PreserveSourceTextIds.Contains(textId))
+        if (!SourceRoleByTextId.TryGetValue(textId, out string sourceRoleId))
         {
-            if (!ContainsLocalizedScript(text.text))
-                return true;
-            PreserveSourceTextIds.Remove(textId);
-            SourceRoleByTextId[textId] = LocaleFontDatabase.BodyRoleId;
-        }
+            sourceRoleId = LocaleFontDatabase.BodyRoleId;
 
-        if (!SourceRoleByTextId.TryGetValue(textId, out string roleId))
-        {
-            roleId = LocaleFontDatabase.BodyRoleId;
+            TMP_FontAsset sourceFont = OriginalFonts.TryGetValue(textId, out TMP_FontAsset original)
+                ? original
+                : text.font;
             if (database != null &&
-                database.TryGetRoleIdForSourceFont(text.font, out string sourceRole, out bool preserveSourceFont))
+                database.TryGetRoleIdForSourceFont(sourceFont, out string sourceRole, out bool preserveSourceFont))
             {
                 if (!string.IsNullOrEmpty(sourceRole))
-                    roleId = sourceRole;
-                // A preserved number font is for numerical counters, not
-                // localized words dynamically written into the same TMP.
-                if (preserveSourceFont && !ContainsLocalizedScript(text.text))
-                {
-                    PreserveSourceTextIds.Add(textId);
+                    sourceRoleId = sourceRole;
+                if (preserveSourceFont)
                     return true;
-                }
-                if (preserveSourceFont && ContainsLocalizedScript(text.text))
-                    roleId = LocaleFontDatabase.BodyRoleId;
             }
-            if (ContainsLocalizedScript(text.text) && roleId == LocaleFontDatabase.NumberRoleId)
-                roleId = LocaleFontDatabase.BodyRoleId;
-            SourceRoleByTextId[textId] = roleId;
+            SourceRoleByTextId[textId] = sourceRoleId;
         }
+
+        string roleId = IsFixedNonLocalizedLabel(text.text)
+            ? LocaleFontDatabase.NumberRoleId
+            : sourceRoleId;
 
         if (database == null ||
             !database.TryResolve(locale.Identifier.Code, roleId, out TMP_FontAsset font) ||
@@ -133,52 +100,9 @@ public static class GlobalLocalizedTMPFontApplicator
             return false;
         }
 
-        if (text.font != font)
-        {
-            text.font = font;
-            text.SetAllDirty();
-        }
+        LocaleTMPFontGuard.ApplyResolvedFont(text, font);
 
         return true;
-    }
-
-    public static bool ShouldApplyLocaleFont(TMP_Text text)
-    {
-        if (text == null || IsBlurReplica(text.transform) ||
-            IsFixedNonLocalizedLabel(text.text))
-            return false;
-
-        // Controller-owned TMPs often use GameLocalization.Get directly,
-        // without a binding component. Recognize translated CJK labels while
-        // preserving fixed Latin UI labels and numeric counters. Once a TMP
-        // has shown localized script, keep its role across locale changes.
-        int textId = text.GetInstanceID();
-        if (RecognizedLocalizedTextIds.Contains(textId))
-            return true;
-        if (ContainsLocalizedScript(text.text))
-        {
-            RecognizedLocalizedTextIds.Add(textId);
-            return true;
-        }
-
-        LocalizedTMPText staticText = text.GetComponent<LocalizedTMPText>();
-        if (staticText != null && staticText.isActiveAndEnabled &&
-            !string.IsNullOrWhiteSpace(staticText.LocalizationKey) &&
-            LocalizedTMPText.ShouldManageText(text))
-            return true;
-
-        DynamicLocalizedTMPText dynamicText = text.GetComponent<DynamicLocalizedTMPText>();
-        if (dynamicText != null && dynamicText.isActiveAndEnabled &&
-            dynamicText.HasLocalizationKey)
-            return true;
-
-        LocalizeStringEvent localizedString = text.GetComponent<LocalizeStringEvent>();
-        if (localizedString != null && localizedString.isActiveAndEnabled &&
-            localizedString.StringReference.TableEntryReference.ReferenceType != UnityEngine.Localization.Tables.TableEntryReference.Type.Empty &&
-            text.GetComponentInParent<LocalizationIgnore>(true) == null)
-            return true;
-
-        return false;
     }
 
     public static void RefreshAll(Locale locale)
@@ -271,8 +195,6 @@ public static class GlobalLocalizedTMPFontApplicator
         foreach (int id in SourceRoleByTextId.Keys)
             if (!CurrentTextIds.Contains(id)) stale.Add(id);
         for (int i = 0; i < stale.Count; i++) SourceRoleByTextId.Remove(stale[i]);
-        PreserveSourceTextIds.IntersectWith(CurrentTextIds);
-        RecognizedLocalizedTextIds.IntersectWith(CurrentTextIds);
         stale.Clear();
         foreach (int id in OriginalFonts.Keys)
             if (!CurrentTextIds.Contains(id)) stale.Add(id);
@@ -323,27 +245,10 @@ public static class GlobalLocalizedTMPFontApplicator
         {
             char ch = trimmed[i];
             if (char.IsDigit(ch)) containsDigit = true;
-            else if (!char.IsWhiteSpace(ch) && "./:%+-¡¿".IndexOf(ch) < 0)
+            else if (!char.IsWhiteSpace(ch) && "./:%+-Ã—".IndexOf(ch) < 0)
                 numericOnly = false;
         }
         return numericOnly && containsDigit;
-    }
-
-    private static bool ContainsLocalizedScript(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return false;
-
-        for (int i = 0; i < value.Length; i++)
-        {
-            char ch = value[i];
-            if ((ch >= '\u3040' && ch <= '\u30ff') || // Japanese kana
-                (ch >= '\u3400' && ch <= '\u9fff') || // Chinese ideographs
-                (ch >= '\uac00' && ch <= '\ud7a3') || // Hangul syllables
-                (ch >= '\u1100' && ch <= '\u11ff'))   // Hangul jamo
-                return true;
-        }
-        return false;
     }
 
     private static bool IsBlurReplica(Transform transform)

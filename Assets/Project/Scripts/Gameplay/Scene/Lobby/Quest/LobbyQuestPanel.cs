@@ -66,12 +66,12 @@ public sealed class LobbyQuestPanel : MonoBehaviour
         LocaleFontDatabase database = LocaleFontDatabaseProvider.LoadDefault();
         if (database == null ||
             !database.TryResolve(locale.Identifier.Code, LocaleFontDatabase.BodyRoleId, out TMP_FontAsset localeFont) ||
-            localeFont == null || questText.font == localeFont)
+            localeFont == null)
         {
             return;
         }
 
-        questText.font = localeFont;
+        LocaleTMPFontGuard.ApplyResolvedFont(questText, localeFont);
     }
 
     private void ResizeToText()

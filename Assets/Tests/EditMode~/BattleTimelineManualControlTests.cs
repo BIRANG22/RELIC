@@ -350,7 +350,7 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
-    public void DirectReservationRemoval_AfterUndo_RedoRestoresClickedCommand()
+    public void DirectReservationRemoval_AfterUndo_UndoRestoresClickedCommandAndInvalidatesRedo()
     {
         BattleTimelineController controller = CreateControllerWithSlots(1, 0);
         CharacterRuntimeData runtime = Runtime("RedoDeleteBranch", BattleDirection.Right);
@@ -362,8 +362,37 @@ public class BattleTimelineManualControlTests
 
         controller.RemoveCommand(0, retained);
 
-        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
         Assert.That(Slot(0).Commands, Is.EqualTo(new[] { retained }));
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.Empty);
+    }
+
+    [Test]
+    public void MultipleDirectReservationRemovals_UndoAndRedoEachDeletion()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("DeleteSteps", BattleDirection.Right);
+        PlayerReservedCommand first = Attack(runtime);
+        PlayerReservedCommand second = Attack(runtime);
+        PlayerReservedCommand third = Attack(runtime);
+        Assert.That(controller.ConfirmPlayerCommand(0, first), Is.True);
+        Assert.That(controller.ConfirmPlayerCommand(0, second), Is.True);
+        Assert.That(controller.ConfirmPlayerCommand(0, third), Is.True);
+
+        controller.RemoveCommand(0, second);
+        controller.RemoveCommand(0, third);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { first }));
+
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { first, third }));
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { first, second, third }));
+
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { first, third }));
+        Assert.That(controller.RedoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { first }));
     }
 
     [Test]
@@ -514,6 +543,72 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
+    public void NetworkSnapshotRebuild_MultipleMovesRemainUndoableByReservationId()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(3, 0);
+        CharacterRuntimeData runtime = Runtime("SnapshotMoveSteps", BattleDirection.Right);
+        PlayerReservedCommand original = Attack(runtime);
+        Assert.That(controller.ConfirmPlayerCommand(0, original), Is.True);
+        Assert.That(controller.TryMovePlayerReservation(original, 1, 0), Is.True);
+        Assert.That(controller.TryMovePlayerReservation(original, 2, 0), Is.True);
+        controller.PlayerReservationHistoryChanged += () =>
+        {
+            _ = controller.CanUndoPlayerReservation;
+            _ = controller.CanRedoPlayerReservation;
+        };
+
+        controller.ClearAllReservationsFromNetworkSnapshot();
+        PlayerReservedCommand rebuilt = new(
+            runtime,
+            original.SkillData,
+            original.ReservationId);
+        Assert.That(controller.AddPlayerCommandFromNetworkSnapshot(2, rebuilt), Is.True);
+        controller.FinalizeNetworkSnapshotReservations();
+
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(1).Commands, Is.EqualTo(new[] { rebuilt }));
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { rebuilt }));
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.Empty);
+    }
+
+    [Test]
+    public void MoveReservation_UndoThenUndoAllAdds_RemovesMovedCommandLast()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(2, 0);
+        CharacterRuntimeData runtime = Runtime("MoveThenUndoAdds", BattleDirection.Right);
+        PlayerReservedCommand moved = Attack(runtime);
+        PlayerReservedCommand second = Attack(runtime);
+        PlayerReservedCommand third = Attack(runtime);
+        Assert.That(controller.ConfirmPlayerCommand(0, moved), Is.True);
+        Assert.That(controller.ConfirmPlayerCommand(0, second), Is.True);
+        Assert.That(controller.ConfirmPlayerCommand(0, third), Is.True);
+        Assert.That(controller.TryMovePlayerReservation(moved, 1, 0), Is.True);
+
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { moved, second, third }));
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { moved, second }));
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { moved }));
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.Empty);
+    }
+
+    [Test]
+    public void NetworkViewedSlot_DoesNotBlockSelectionOrReservationEditing()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(3, 0);
+
+        controller.SetNetworkViewedSlots(new[] { 1, 2 });
+
+        Assert.That(controller.IsPlayerSlotLocked(1), Is.False);
+        Assert.That(controller.IsPlayerSlotLocked(2), Is.False);
+        Assert.That(controller.SelectTimelineSlotFromNetwork(1, false), Is.True);
+    }
+
+    [Test]
     public void MoveReservationUndo_WhenOriginalSlotHasOtherCharacter_LeavesMoveUnchanged()
     {
         BattleTimelineController controller = CreateControllerWithSlots(2, 0);
@@ -583,6 +678,25 @@ public class BattleTimelineManualControlTests
         Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, inserted), Is.True);
 
         Assert.That(Slot(0).Commands, Is.EqualTo(new[] { before, inserted, after }));
+    }
+
+    [Test]
+    public void PendingInsertion_MultipleDragReservations_UndoEachReservation()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("DropUndoSteps", BattleDirection.Right);
+        PlayerReservedCommand first = Attack(runtime);
+        PlayerReservedCommand second = Attack(runtime);
+
+        controller.SetPendingPlayerInsertion(0, 0);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, first), Is.True);
+        controller.SetPendingPlayerInsertion(0, 1);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, second), Is.True);
+
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { first }));
+        Assert.That(controller.UndoLastPlayerReservation(), Is.True);
+        Assert.That(Slot(0).Commands, Is.Empty);
     }
 
     [Test]

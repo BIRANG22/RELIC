@@ -50,11 +50,15 @@ public sealed class ReportedBugfixBatchTests
         Assert.That(result, Is.EqualTo(new Vector3(0f, 1f, -20f)));
     }
 
-    [TestCase(false)]
-    [TestCase(true)]
-    public void BattleEntry_AlwaysClaimsBgmOwnership(bool hasUnclearedCurrentNode)
+    [TestCase(false, true)]
+    [TestCase(true, false)]
+    public void BattleEntry_PlaysDefaultBgmOnlyWithoutUnclearedCurrentNode(
+        bool hasUnclearedCurrentNode,
+        bool expected)
     {
-        Assert.That(BattleState.ShouldPlayDefaultBattleBgm(hasUnclearedCurrentNode), Is.True);
+        Assert.That(
+            BattleState.ShouldPlayDefaultBattleBgm(hasUnclearedCurrentNode),
+            Is.EqualTo(expected));
     }
 
     [TestCase(BgmState.Stage1TutorialBattle)]

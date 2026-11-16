@@ -4,7 +4,7 @@ using NUnit.Framework;
 public class ContextualBgmTests
 {
     [TestCase(false, true)]
-    [TestCase(true, true)]
+    [TestCase(true, false)]
     public void DefaultBattleBgm_IsSkippedWhenResumingUnclearedRoom(
         bool hasUnclearedCurrentNode,
         bool expected)

@@ -41,9 +41,10 @@ public class BattleState : BaseGameState
             AudioManager.Instance.PlayBgm(BgmState.Stage1Common);
     }
 
-    // Battle 씬이 열린 순간 이전 씬(로비/타이틀)의 BGM 소유권을 반드시 넘겨받습니다.
-    // 이어하기 방의 구체적인 곡은 BattleBgmDirector가 노드 선택 이벤트에서 즉시 덮어씁니다.
-    public static bool ShouldPlayDefaultBattleBgm(bool hasUnclearedCurrentNode) => true;
+    // 신규 진입에서만 기본 BGM을 재생합니다. 이어하기 방은 BattleBgmDirector가
+    // 복원된 노드에 맞는 BGM을 이미 선택하므로 여기서 덮어쓰지 않습니다.
+    public static bool ShouldPlayDefaultBattleBgm(bool hasUnclearedCurrentNode) =>
+        !hasUnclearedCurrentNode;
 
     public override Task Exit()
     {

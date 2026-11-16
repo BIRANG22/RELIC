@@ -13,7 +13,9 @@ public enum BattleNetworkCommandType
     UnequipRelic = 7,
     EquipSkill = 8,
     UnequipSkill = 9,
-    MovePlayerCommand = 10
+    MovePlayerCommand = 10,
+    UndoPlayerReservation = 11,
+    RedoPlayerReservation = 12
 }
 
 public enum BattleNetworkRejectReason
@@ -40,6 +42,7 @@ public sealed class BattleNetworkCommand
     public int destinationSlotIndex = -1;
     public int destinationCommandIndex = -1;
     public string characterId;
+    public string reservationId;
     public string itemId;
     public string skillId;
     public int direction;
@@ -86,6 +89,8 @@ public sealed class BattleNetworkSnapshot
     public BattleNetworkTimelineSlotSnapshot[] timelineSlots;
     public BattleNetworkMemberTimelineSelection[] viewedSlots;
     public BattleNetworkMemberReadyState[] readyStates;
+    public string undoReservationCharacterId;
+    public string redoReservationCharacterId;
 }
 
 [Serializable]
@@ -141,6 +146,7 @@ public sealed class BattleNetworkTimelineSlotSnapshot
 [Serializable]
 public sealed class BattleNetworkPlayerCommandSnapshot
 {
+    public string reservationId;
     public string characterId;
     public string skillId;
     public int direction;
