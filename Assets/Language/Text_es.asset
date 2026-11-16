@@ -124,7 +124,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466060
-    m_Localized: Gota
+    m_Localized: Blob
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466063
@@ -706,7 +706,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826192
-    m_Localized: "Al eliminarse este efecto, se divide en 2 bl\xF3bs."
+    m_Localized: Se reduce en 1 al recibir un golpe directo. Al llegar a 0, se divide
+      en 2 Blobs.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826193
@@ -714,7 +715,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826194
-    m_Localized: "Al eliminarse este efecto, utiliza Gran explosi\xF3n."
+    m_Localized: "Se reduce en 1 al final de cada turno. Al llegar a 0, usa Gran
+      Explosi\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826219
@@ -3696,7 +3698,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528623431692
-    m_Localized: "Al\xE9jate 2 casillas del personaje m\xE1s cercano."
+    m_Localized: "Se mueve 2 casillas para alejarse del personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 17531528623431694
@@ -4982,7 +4984,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554375
-    m_Localized: "Investigaci\xF3n"
+    m_Localized: Combinar
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554376
@@ -6378,15 +6380,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 32716823346028544
-    m_Localized: "Al\xE9jate 2 casillas del personaje m\xE1s cercano."
+    m_Localized: "Se mueve 2 casillas para alejarse del personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 32716823371194370
-    m_Localized: "Al\xE9jate 2 casillas del personaje m\xE1s cercano."
+    m_Localized: "Se mueve 2 casillas para alejarse del personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 32716823371194375
-    m_Localized: "Al\xE9jate 1 o 2 casillas del personaje m\xE1s cercano."
+    m_Localized: "Se mueve 1 o 2 casillas para alejarse del personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
   - m_Id: 32753678519869441
@@ -7053,6 +7055,14 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 34955470141890560
+    m_Localized: Consumibles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35203227603673088
+    m_Localized: Combinar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35203227649810432
     m_Localized: Consumibles
     m_Metadata:
       m_Items: []

@@ -69357,7 +69357,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1127006642}
-  localizationKey: ui.storagepanel.compoundtext.27d0889a
+  localizationKey: ui.lobby.text.1c62d921
   koreanSource: "\uC5F0\uC131\uC81C"
   automaticallyRegistered: 1
 --- !u!1 &1128527671
@@ -78487,7 +78487,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC5F0\uAD6C"
+  m_text: "\uC870\uD569"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -78580,8 +78580,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1387265591}
-  localizationKey: ui.canvas.text_tmp.1e682874
-  koreanSource: "\uC5F0\uAD6C"
+  localizationKey: ui.lobby.text.38f85c80
+  koreanSource: "\uC870\uD569"
   automaticallyRegistered: 1
 --- !u!1 &1388707782
 GameObject:
