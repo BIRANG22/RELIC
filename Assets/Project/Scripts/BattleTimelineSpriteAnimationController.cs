@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -135,6 +136,8 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         if (!IsValidSlotIndex(slotIndex) || !passedTurnMarks.Add(slotIndex))
             return;
 
+        SetGroupPassedState(slotIndex, true);
+
         if (turnMarkFadeCoroutines.TryGetValue(slotIndex, out Coroutine old) && old != null)
             StopCoroutine(old);
         turnMarkFadeCoroutines[slotIndex] = StartCoroutine(FadePassedTurnMark(slotIndex));
@@ -146,6 +149,7 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         if (!IsValidSlotIndex(slotIndex))
             return;
         passedTurnMarks.Add(slotIndex);
+        SetGroupPassedState(slotIndex, true);
         if (turnMarkFadeCoroutines.TryGetValue(slotIndex, out Coroutine old) && old != null)
             StopCoroutine(old);
         turnMarkFadeCoroutines.Remove(slotIndex);
@@ -170,6 +174,13 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         }
         group.alpha = 0f;
         turnMarkFadeCoroutines.Remove(slotIndex);
+    }
+
+    private void SetGroupPassedState(int slotIndex, bool passed)
+    {
+        Transform slot = FindTimelineSlot(slotIndex);
+        BattleTimelineGroupUI group = slot != null ? slot.GetComponent<BattleTimelineGroupUI>() : null;
+        if (group != null) group.SetTurnMarkAlreadyPassed(passed);
     }
 
     private CanvasGroup GetTurnMarkCanvasGroup(int slotIndex)
@@ -201,14 +212,14 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         StartCoroutine(PlayUseSkillRoutine(slotIndex, orderIndex));
     }
 
-    public IEnumerator PlayUseSkillRoutine(int slotIndex, int orderIndex)
+    public IEnumerator PlayUseSkillRoutine(int slotIndex, int orderIndex, Action onFadeStart = null)
     {
         EnsureTargetsIfNeeded();
 
         if (!IsValidSlotIndex(slotIndex) || !IsValidOrderIndex(orderIndex))
             yield break;
 
-        yield return PlayUseSkillByLinearIndexRoutine(GetUseSkillIndex(slotIndex, orderIndex));
+        yield return PlayUseSkillByLinearIndexRoutine(GetUseSkillIndex(slotIndex, orderIndex), onFadeStart);
     }
 
     public IEnumerator PlayUseSkillsRoutine(int slotIndex, int startOrderIndex, int count)
@@ -270,6 +281,7 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
 
     public float GetTurnMarkAnimationDuration() => turnMarkFadeDuration;
     public float GetUseSkillAnimationDuration() => scaleUpDuration + scaleDownDuration + fadeOutDuration;
+    public float GetUseSkillFadeOutDuration() => fadeOutDuration;
     public float GetFrameAnimationDuration(Sprite[] frames) => 0f;
 
     public void StopAllAnimations(bool resetPositions)
@@ -319,12 +331,13 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         passedTurnMarks.Clear();
         for (int i = 0; i < TimelineSlotCount; i++)
         {
+            SetGroupPassedState(i, false);
             CanvasGroup marker = GetTurnMarkCanvasGroup(i);
             if (marker != null) marker.alpha = 1f;
         }
     }
 
-    private IEnumerator PlayUseSkillByLinearIndexRoutine(int index)
+    private IEnumerator PlayUseSkillByLinearIndexRoutine(int index, Action onFadeStart = null)
     {
         if (useSkillImages == null || index < 0 || index >= useSkillImages.Length)
             yield break;
@@ -349,10 +362,10 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
                 }
             }
         }
-        yield return PlayImageRoutineSafe(target);
+        yield return PlayImageRoutineSafe(target, onFadeStart);
     }
 
-    private IEnumerator PlayImageRoutineSafe(Image image)
+    private IEnumerator PlayImageRoutineSafe(Image image, Action onFadeStart = null)
     {
         if (image == null) yield break;
         GameObject root = GetHideRoot(image);
@@ -376,18 +389,19 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         rect.localScale = originalScales[rect];
         rect.anchoredPosition = originalPositions[rect];
         group.alpha = 1f;
-        Coroutine running = StartCoroutine(PlayOrderAnimation(rect, group));
+        Coroutine running = StartCoroutine(PlayOrderAnimation(rect, group, onFadeStart));
         runningCoroutines[image] = running;
         yield return running;
         runningCoroutines.Remove(image);
     }
 
-    private IEnumerator PlayOrderAnimation(RectTransform rect, CanvasGroup group)
+    private IEnumerator PlayOrderAnimation(RectTransform rect, CanvasGroup group, Action onFadeStart = null)
     {
         Vector3 baseScale = originalScales[rect];
         Vector2 basePosition = originalPositions[rect];
         yield return AnimateScale(rect, baseScale, baseScale * actionScale, scaleUpDuration);
         yield return AnimateScale(rect, baseScale * actionScale, baseScale, scaleDownDuration);
+        onFadeStart?.Invoke();
         float elapsed = 0f;
         while (elapsed < fadeOutDuration)
         {

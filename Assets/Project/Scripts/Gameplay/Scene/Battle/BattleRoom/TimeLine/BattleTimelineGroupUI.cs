@@ -115,6 +115,20 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     private Vector3 ownerIconBaseScale = Vector3.one;
     private Coroutine ownerIconScaleRoutine;
 
+    // A consumed marker must not reappear during timeline preview refreshes.
+    private bool turnMarkAlreadyPassed;
+    public bool IsTurnMarkAlreadyPassed => turnMarkAlreadyPassed;
+
+    public void SetTurnMarkAlreadyPassed(bool passed)
+    {
+        turnMarkAlreadyPassed = passed;
+        if (passed)
+        {
+            if (firstIconRootImage != null) firstIconRootImage.gameObject.SetActive(false);
+            if (laterIconRootImage != null) laterIconRootImage.gameObject.SetActive(false);
+        }
+    }
+
     public int SlotIndex => slotIndex;
 
     private void OnEnable()
@@ -170,6 +184,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     {
         this.owner = owner;
         this.slotIndex = slotIndex;
+        turnMarkAlreadyPassed = false;
 
         EnsureTransformCache();
         transformCache.Clear();
@@ -2420,6 +2435,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         Color reservedColor)
     {
         bool show = visible && sprite != null;
+        if (turnMarkAlreadyPassed &&
+            (rootImage == firstIconRootImage || rootImage == laterIconRootImage))
+            show = false;
 
         if (rootImage != null)
         {

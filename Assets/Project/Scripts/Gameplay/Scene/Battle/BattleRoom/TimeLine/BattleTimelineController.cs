@@ -1686,8 +1686,7 @@ public class BattleTimelineController : MonoBehaviour
             yield break;
 
         // TurnMark 프레임만 재생합니다. 실제 라인 이동은 PlayTimelineTurnMarkAnimationAndLineSlideRoutine에서 함께 처리합니다.
-        PlayTimelineSlideGearRotation(1);
-        SpawnTimelineGrindVfx();
+        // A standalone marker fade does not move the bar; do not start the grind VFX early.
         yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
     }
 
@@ -1712,7 +1711,6 @@ public class BattleTimelineController : MonoBehaviour
 
         if (timelineSpriteAnimationController != null)
         {
-            SpawnTimelineGrindVfx();
             turnMarkAnimation = StartCoroutine(
                 timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex)
             );
@@ -1828,7 +1826,7 @@ public class BattleTimelineController : MonoBehaviour
     }
 
     // Play the icon animation after the action resolves, not before it.
-    public IEnumerator PlayTimelineIconsAfterActionRoutine(int slotIndex, IReadOnlyList<int> orderIndices)
+    public IEnumerator PlayTimelineIconsAfterActionRoutine(int slotIndex, IReadOnlyList<int> orderIndices, IReadOnlyList<int> orderSpans = null)
     {
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         ConfigureTimelineSpriteAnimationRootForActiveBar();
@@ -1842,23 +1840,42 @@ public class BattleTimelineController : MonoBehaviour
             if (orderIndex < 0 || orderIndex >= 5)
                 continue;
 
-            // The executor has already moved the timeline to this order and stopped.
-            // Do not issue a second movement command while playing the icon animation.
+            // The bar pauses before the action. Once its icon starts fading, grind
+            // through ALL occupied cells while the TimelineBar gears rotate.
+            int span = orderSpans != null && i < orderSpans.Count
+                ? Mathf.Clamp(orderSpans[i], 1, 5 - orderIndex)
+                : 1;
+            float endX = GetOrderGrindPositionX(slotIndex, orderIndex + span - 1);
+            Coroutine barAdvance = null;
+            System.Action beginBarAdvance = () =>
+            {
+                barAdvance = StartCoroutine(MoveTimelineSlotToGrindPositionRoutine(
+                    slotIndex, endX, timelineSpriteAnimationController.GetUseSkillFadeOutDuration()));
+            };
             PlayTimelineGearTickSfx();
             if (timelineSpriteAnimationController != null)
             {
-                SpawnTimelineGrindVfx();
-                yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
+                yield return timelineSpriteAnimationController.PlayUseSkillRoutine(
+                    slotIndex, orderIndex, beginBarAdvance);
             }
+            else
+            {
+                yield return MoveTimelineSlotToGrindPositionRoutine(slotIndex, endX, GetUseSkillGrindDuration());
+            }
+            if (barAdvance != null)
+                yield return barAdvance;
+            else if (timelineSpriteAnimationController != null)
+                yield return MoveTimelineSlotToGrindPositionRoutine(slotIndex, endX, GetUseSkillGrindDuration());
         }
     }
 
     // Move through unused orders after the last action in a slot has finished.
     public IEnumerator MoveTimelineToOrderAfterActionRoutine(int slotIndex, int orderIndex)
     {
+        // After the final action, traverse the remaining empty cells too.
         yield return MoveTimelineSlotToGrindPositionRoutine(
             slotIndex,
-            GetActionOrderStopPositionX(slotIndex, orderIndex),
+            GetOrderGrindPositionX(slotIndex, orderIndex),
             GetUseSkillGrindDuration());
     }
 
@@ -1898,7 +1915,6 @@ public class BattleTimelineController : MonoBehaviour
 
             if (timelineSpriteAnimationController != null)
             {
-                SpawnTimelineGrindVfx();
                 yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
             }
 
@@ -1945,7 +1961,6 @@ public class BattleTimelineController : MonoBehaviour
 
             if (timelineSpriteAnimationController != null)
             {
-                SpawnTimelineGrindVfx();
                 yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
             }
 
@@ -2010,6 +2025,9 @@ public class BattleTimelineController : MonoBehaviour
         if (offsetX >= -0.01f)
             yield break;
 
+        // Spawn the grind effect only when the timeline actually starts travelling.
+        // Gear rotation and bar movement begin in the same frame as the VFX.
+        SpawnTimelineGrindVfx();
         PlayTimelineSlideGearRotation(1, duration);
         yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(offsetX, duration);
     }
