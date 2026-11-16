@@ -87,10 +87,18 @@ public class HUDSlot : MonoBehaviour
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+
+        // Reposition before the first visible canvas render, including reactivation.
+        // A camera may move in LateUpdate after this component has already followed it.
+        Canvas.willRenderCanvases -= SyncFollowBeforeCanvasRender;
+        Canvas.willRenderCanvases += SyncFollowBeforeCanvasRender;
+        if (useFollowPosition)
+            ApplyCanvasVisibility(isVisible && TryUpdateFollowPosition());
     }
 
     private void OnDisable()
     {
+        Canvas.willRenderCanvases -= SyncFollowBeforeCanvasRender;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         StopValueAnimations();
         isVisible = false;
@@ -111,6 +119,18 @@ public class HUDSlot : MonoBehaviour
         }
 
         MonitorCharacterRuntime();
+    }
+
+    // The last position check happens just before UI batching, after camera LateUpdate.
+    // This also prevents a previously shown HUD from rendering at its stale position
+    // during camera transitions, spawning, or when a target is disabled.
+    private void SyncFollowBeforeCanvasRender()
+    {
+        if (!isActiveAndEnabled || !useFollowPosition)
+            return;
+
+        bool positionReady = TryUpdateFollowPosition();
+        ApplyCanvasVisibility(isVisible && positionReady);
     }
 
     public void SetUseFollowPosition(bool value)
@@ -198,7 +218,7 @@ public class HUDSlot : MonoBehaviour
 
     private Camera GetMainCamera()
     {
-        if (cachedMainCamera == null)
+        if (cachedMainCamera == null || !cachedMainCamera.isActiveAndEnabled)
             cachedMainCamera = Camera.main;
 
         return cachedMainCamera;
