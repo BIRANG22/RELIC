@@ -59,7 +59,7 @@ public class BattleActionSimulationService
                 {
                     for (int i = 0; i < playerCommands.Count; i++)
                     {
-                        if (BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                        if (BattleActionOrderUtility.HasSwiftForSlot(playerCommands[i], timelineController, slotIndex))
                             SimulatePlayerCommand(playerCommands[i]);
                     }
                 }
@@ -75,7 +75,7 @@ public class BattleActionSimulationService
                 {
                     for (int i = 0; i < playerCommands.Count; i++)
                     {
-                        if (!BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                        if (!BattleActionOrderUtility.HasSwiftForSlot(playerCommands[i], timelineController, slotIndex))
                             SimulatePlayerCommand(playerCommands[i]);
                     }
                 }
@@ -107,7 +107,7 @@ public class BattleActionSimulationService
         {
             for (int i = 0; i < playerCommands.Count; i++)
             {
-                if (BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                if (BattleActionOrderUtility.HasSwiftForSlot(playerCommands[i], timelineController, slotIndex))
                     SimulatePlayerCommand(playerCommands[i]);
             }
         }
@@ -124,7 +124,7 @@ public class BattleActionSimulationService
         {
             for (int i = 0; i < playerCommands.Count; i++)
             {
-                if (!BattleActionOrderUtility.HasSwift(playerCommands[i]))
+                if (!BattleActionOrderUtility.HasSwiftForSlot(playerCommands[i], timelineController, slotIndex))
                     SimulatePlayerCommand(playerCommands[i]);
             }
         }

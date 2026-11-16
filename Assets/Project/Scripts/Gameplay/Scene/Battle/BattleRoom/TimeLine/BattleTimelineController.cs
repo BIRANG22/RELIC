@@ -5976,6 +5976,13 @@ public class BattleTimelineController : MonoBehaviour
                message.Contains("?");
     }
 
+    // Called during action execution when an applied Swift status changes.
+    // Reservations remain untouched; only their displayed order is refreshed.
+    public void RefreshTimelineAfterAppliedSwift()
+    {
+        RefreshTimeline();
+    }
+
     private void RefreshTimeline()
     {
         BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();

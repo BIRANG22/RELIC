@@ -27,4 +27,12 @@ public static class BattleActionOrderUtility
         return false;
     }
 
+
+    // Reservation never grants Swift. Only an applied runtime status (or
+    // the skill's own fast flag) can change action order.
+    public static bool HasSwiftForSlot(PlayerReservedCommand command,
+        BattleTimelineController timeline, int slotIndex)
+    {
+        return HasSwift(command);
+    }
 }
