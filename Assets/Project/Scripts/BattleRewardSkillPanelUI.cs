@@ -127,6 +127,14 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private RectTransform equippedSkillTooltipAnchor;
     private readonly Vector3[] equippedSkillTooltipCorners = new Vector3[4];
 
+    [Header("Reward Skill Effect Text Cursor Tooltip")]
+    [Tooltip("Horizontal distance from the cursor to the underlined effect tooltip.")]
+    [SerializeField, Min(0f)] private float rewardEffectCursorRightGap = 12f;
+    [Tooltip("Vertical offset of the underlined effect tooltip relative to the cursor.")]
+    [SerializeField] private float rewardEffectCursorTopOffset = 8f;
+    public float RewardEffectCursorRightGap => rewardEffectCursorRightGap;
+    public float RewardEffectCursorTopOffset => rewardEffectCursorTopOffset;
+
     [Header("Offered Skill Effect Tooltip (Card Top Right)")]
     [SerializeField, Min(0f)] private float offeredSkillEffectTooltipVerticalSpacing = 8f;
     private UnitStatusEffectTooltipUI offeredSkillEffectTooltip;
@@ -601,7 +609,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (cardHovered[index])
         {
             ShowPreviewForOfferedCard(index);
-            ShowOfferedSkillEffectTooltip(index);
+            // Effect tooltips are shown only when hovering a linked word in Detail.
         }
         else if (!hovered)
         {
@@ -2604,6 +2612,10 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         DisableStaticLocalization(target);
         SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(target,
             skill != null ? GameDataLocalization.SkillDetails(skill) : string.Empty);
+        // Reuse the existing linked-effect hover handler used by Relic_panel.
+        // It shows only the hovered effect and follows the cursor instead of
+        // stacking every effect beside the whole reward card.
+        RelicEffectTooltipAutoBinder.TryBind(target);
     }
 
     private void SetText(Transform root, string path, string text)

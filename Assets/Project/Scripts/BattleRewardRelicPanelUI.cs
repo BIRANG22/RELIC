@@ -63,6 +63,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     public Vector2 RewardEffectTooltipOffset => rewardEffectTooltipOffset;
     public float RewardEffectTooltipSpacing => rewardEffectTooltipSpacing;
 
+    [Header("Reward Effect Text Cursor Tooltip")]
+    [Tooltip("Horizontal distance from the cursor to the underlined effect tooltip.")]
+    [SerializeField, Min(0f)] private float rewardEffectCursorRightGap = 12f;
+    [Tooltip("Vertical offset of the underlined effect tooltip relative to the cursor.")]
+    [SerializeField] private float rewardEffectCursorTopOffset = 8f;
+    public float RewardEffectCursorRightGap => rewardEffectCursorRightGap;
+    public float RewardEffectCursorTopOffset => rewardEffectCursorTopOffset;
+
     [Header("Equipped Relic Tooltip")]
     [SerializeField] private RectTransform tooltipUI;
     [SerializeField] private Vector2 tooltipOffset = new Vector2(170f, 0f);

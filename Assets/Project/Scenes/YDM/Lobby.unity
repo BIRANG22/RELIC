@@ -19268,6 +19268,7 @@ GameObject:
   - component: {fileID: 230010005}
   - component: {fileID: 230019990}
   - component: {fileID: 230019991}
+  - component: {fileID: 230019992}
   m_Layer: 5
   m_Name: RelicShopPanel
   m_TagString: Untagged
@@ -20201,6 +20202,24 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &230019992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230010000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b72e470928223d4d8b754141552c3de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectItemPrefab: {fileID: 4954593663760763798, guid: 38ab076db77aff246b044db49b76eb1a, type: 3}
+  prefabCursorRightGap: 35
+  prefabCursorTopOffset: -10
+  prefabScreenPadding: 8
+  prefabFadeInDuration: 0.12
+  prefabFadeOutDuration: 0.05
 --- !u!1 &230020010
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,23 @@ namespace Relic.Gameplay.Data
     [DisallowMultipleComponent]
     public sealed class RelicEffectTooltipFallbackUI : MonoBehaviour
     {
+        [Header("Optional Prefab (Lobby Relic Shop)")]
+        [Tooltip("Assign the existing UnitStatusEffectTooltipItemUI prefab. If empty, the generated fallback is used.")]
+        [SerializeField] private UnitStatusEffectTooltipItemUI effectItemPrefab;
+        [Header("Prefab Cursor Follow")]
+        [SerializeField, Min(0f)] private float prefabCursorRightGap = 12f;
+        [SerializeField] private float prefabCursorTopOffset = 8f;
+        [SerializeField, Min(0f)] private float prefabScreenPadding = 8f;
+        [SerializeField, Min(0f)] private float prefabFadeInDuration = 0.12f;
+        [SerializeField, Min(0f)] private float prefabFadeOutDuration = 0.05f;
+        private Canvas prefabOverlayCanvas;
+        private RectTransform prefabOverlayRect;
+        private UnitStatusEffectTooltipItemUI prefabItem;
+        private CanvasGroup prefabItemGroup;
+        private Coroutine prefabFadeRoutine;
+        private readonly Vector3[] prefabCorners = new Vector3[4];
+        public bool HasAssignedPrefab => effectItemPrefab != null;
+
         private const float CardWidth = 360f;
         private const float CardHeight = 96f;
         private const float DefaultSpacing = 8f;
@@ -18,35 +36,14 @@ namespace Relic.Gameplay.Data
         private Object owner;
         private float currentSpacing = DefaultSpacing;
 
+        // Use only the component placed on a scene object (e.g. RelicShopPanel).
+        // Do not create a separate RelicEffectTooltipFallbackUI GameObject at runtime.
         public static RelicEffectTooltipFallbackUI GetOrCreate()
         {
-            if (instance != null)
+            if (instance != null && instance.isActiveAndEnabled)
                 return instance;
 
-            instance = FindFirstObjectByType<RelicEffectTooltipFallbackUI>(FindObjectsInactive.Include);
-            if (instance != null)
-                return instance;
-
-            GameObject root = new(
-                "RelicEffectTooltipFallbackUI",
-                typeof(RectTransform),
-                typeof(Canvas),
-                typeof(CanvasScaler),
-                typeof(GraphicRaycaster),
-                typeof(RelicEffectTooltipFallbackUI));
-            Canvas canvas = root.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.overrideSorting = true;
-            canvas.sortingOrder = short.MaxValue;
-
-            CanvasScaler scaler = root.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            GraphicRaycaster raycaster = root.GetComponent<GraphicRaycaster>();
-            raycaster.enabled = false;
-            instance = root.GetComponent<RelicEffectTooltipFallbackUI>();
+            instance = FindFirstObjectByType<RelicEffectTooltipFallbackUI>();
             return instance;
         }
 
@@ -58,8 +55,66 @@ namespace Relic.Gameplay.Data
 
         private void OnDestroy()
         {
+            ClearPrefabItem();
+            if (prefabOverlayCanvas != null && prefabOverlayCanvas.gameObject != gameObject)
+                Destroy(prefabOverlayCanvas.gameObject);
             if (instance == this)
                 instance = null;
+        }
+
+        private void OnDisable()
+        {
+            if (prefabFadeRoutine != null) StopCoroutine(prefabFadeRoutine);
+            prefabFadeRoutine = null;
+            ClearPrefabItem();
+        }
+
+        private void EnsurePrefabOverlay()
+        {
+            if (prefabOverlayRect != null) return;
+            Canvas ownCanvas = GetComponent<Canvas>();
+            if (ownCanvas != null && ownCanvas.renderMode == RenderMode.ScreenSpaceOverlay &&
+                transform.parent == null)
+            {
+                prefabOverlayCanvas = ownCanvas;
+                prefabOverlayRect = transform as RectTransform;
+                return;
+            }
+            GameObject overlay = new GameObject("RelicEffectTooltipPrefabCanvas", typeof(RectTransform),
+                typeof(Canvas), typeof(CanvasScaler));
+            prefabOverlayCanvas = overlay.GetComponent<Canvas>();
+            prefabOverlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            prefabOverlayCanvas.overrideSorting = true;
+            prefabOverlayCanvas.sortingOrder = 32767;
+            CanvasScaler scaler = overlay.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+            prefabOverlayRect = overlay.transform as RectTransform;
+        }
+
+        private void ClearPrefabItem()
+        {
+            if (prefabItem != null) Destroy(prefabItem.gameObject);
+            prefabItem = null;
+            prefabItemGroup = null;
+        }
+
+        private IEnumerator FadePrefab(float targetAlpha, float duration, bool clear)
+        {
+            CanvasGroup group = prefabItemGroup;
+            if (group == null) yield break;
+            float startAlpha = group.alpha;
+            float elapsed = 0f;
+            while (elapsed < duration && group != null)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                group.alpha = Mathf.Lerp(startAlpha, targetAlpha, Mathf.Clamp01(elapsed / duration));
+                yield return null;
+            }
+            if (group != null) group.alpha = targetAlpha;
+            if (clear) ClearPrefabItem();
+            prefabFadeRoutine = null;
         }
 
         public void Show(
@@ -96,12 +151,100 @@ namespace Relic.Gameplay.Data
             ClampCardsInsideCanvas();
         }
 
+        // Backup UI when the normal effect tooltip prefab is not available.
+        // The reward panel uses this for a single hovered effect next to the cursor.
+        public void ShowAtCursor(Object sourceOwner,
+            IReadOnlyList<StatusEffectRuntimeData> effects, Vector2 cursorScreenPosition)
+        {
+            ClearCards();
+            owner = sourceOwner;
+            if (prefabFadeRoutine != null) StopCoroutine(prefabFadeRoutine);
+            prefabFadeRoutine = null;
+            ClearPrefabItem();
+            if (effects == null || effects.Count == 0)
+                return;
+
+            if (effectItemPrefab != null)
+            {
+                EnsurePrefabOverlay();
+                if (prefabOverlayRect == null) return;
+                prefabItem = Instantiate(effectItemPrefab, prefabOverlayRect, false);
+                prefabItem.Set(effects[0]);
+                prefabItem.gameObject.SetActive(true);
+                prefabItemGroup = prefabItem.GetComponent<CanvasGroup>();
+                if (prefabItemGroup == null)
+                    prefabItemGroup = prefabItem.gameObject.AddComponent<CanvasGroup>();
+                prefabItemGroup.blocksRaycasts = false;
+                prefabItemGroup.interactable = false;
+                prefabItemGroup.alpha = prefabFadeInDuration > 0f ? 0f : 1f;
+                Canvas.ForceUpdateCanvases();
+                UpdateCursorPosition(sourceOwner, cursorScreenPosition);
+                if (prefabFadeInDuration > 0f)
+                    prefabFadeRoutine = StartCoroutine(FadePrefab(1f, prefabFadeInDuration, false));
+                return;
+            }
+
+            Vector2 canvasPoint = ScreenToCanvasPoint(cursorScreenPosition);
+            float scale = GetComponent<Canvas>()?.scaleFactor ?? 1f;
+            Vector2 topLeft = canvasPoint + new Vector2(12f, 8f) * Mathf.Max(0.0001f, scale);
+            GameObject card = CreateCard(effects[0]);
+            RectTransform rect = card.transform as RectTransform;
+            rect.anchoredPosition = topLeft;
+            cards.Add(card);
+            ClampCardsInsideCanvas();
+        }
+
+        // Reposition existing hover cards without rebuilding them or restarting their effect UI.
+        public void UpdateCursorPosition(Object sourceOwner, Vector2 cursorScreenPosition)
+        {
+            if (owner != sourceOwner) return;
+            if (prefabItem != null && prefabOverlayRect != null)
+            {
+                RectTransform rect = prefabItem.transform as RectTransform;
+                float prefabCanvasScale = Mathf.Max(0.0001f, prefabOverlayCanvas.scaleFactor);
+                Vector2 screenTarget = cursorScreenPosition +
+                    new Vector2(prefabCursorRightGap, prefabCursorTopOffset) * prefabCanvasScale;
+                if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                        prefabOverlayRect, screenTarget, null, out Vector3 target)) return;
+                rect.GetWorldCorners(prefabCorners);
+                rect.position += target - prefabCorners[1];
+                rect.GetWorldCorners(prefabCorners);
+                float minX = Mathf.Min(prefabCorners[0].x, prefabCorners[1].x, prefabCorners[2].x, prefabCorners[3].x);
+                float maxX = Mathf.Max(prefabCorners[0].x, prefabCorners[1].x, prefabCorners[2].x, prefabCorners[3].x);
+                float minY = Mathf.Min(prefabCorners[0].y, prefabCorners[1].y, prefabCorners[2].y, prefabCorners[3].y);
+                float maxY = Mathf.Max(prefabCorners[0].y, prefabCorners[1].y, prefabCorners[2].y, prefabCorners[3].y);
+                float pad = prefabScreenPadding * prefabCanvasScale;
+                float dx = maxX > Screen.width - pad ? Screen.width - pad - maxX :
+                    (minX < pad ? pad - minX : 0f);
+                float dy = maxY > Screen.height - pad ? Screen.height - pad - maxY :
+                    (minY < pad ? pad - minY : 0f);
+                rect.position += new Vector3(dx, dy, 0f);
+                return;
+            }
+            if (cards.Count == 0 || cards[0] == null) return;
+
+            RectTransform cardRect = cards[0].transform as RectTransform;
+            if (cardRect == null)
+                return;
+
+            Vector2 canvasPoint = ScreenToCanvasPoint(cursorScreenPosition);
+            float scale = GetComponent<Canvas>()?.scaleFactor ?? 1f;
+            cardRect.anchoredPosition = canvasPoint + new Vector2(12f, 8f) * Mathf.Max(0.0001f, scale);
+            ClampCardsInsideCanvas();
+        }
+
         public void Hide(Object sourceOwner)
         {
             if (sourceOwner != null && owner != sourceOwner)
                 return;
             owner = null;
             ClearCards();
+            if (prefabFadeRoutine != null) StopCoroutine(prefabFadeRoutine);
+            prefabFadeRoutine = null;
+            if (prefabItem == null) return;
+            if (prefabFadeOutDuration > 0f)
+                prefabFadeRoutine = StartCoroutine(FadePrefab(0f, prefabFadeOutDuration, true));
+            else ClearPrefabItem();
         }
 
         private GameObject CreateCard(StatusEffectRuntimeData effect)

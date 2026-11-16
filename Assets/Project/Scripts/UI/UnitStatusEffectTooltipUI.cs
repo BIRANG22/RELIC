@@ -70,6 +70,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     private bool isVisible;
     private bool pinnedToOwner;
     private bool cursorRightPinned;
+    private float cursorRightGapOverride = -1f;
+    private float cursorTopOffsetOverride = float.NaN;
 
     [Header("Monster Info Cursor Tooltip")]
     [Tooltip("몬스터 정보 패널에서 마우스 이미지 오른쪽에 띄우는 간격(Canvas UI 단위).")]
@@ -151,12 +153,14 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     // 몬스터 정보 패널 전용. 툴팁의 왼쪽 위 모서리를 커서 이미지 오른쪽에 고정합니다.
     // 기존 일반 효과 및 기억 보상 툴팁 위치에는 영향을 주지 않습니다.
-    public void ShowCursorRight(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 cursorScreenPosition)
+    public void ShowCursorRight(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 cursorScreenPosition, float rightGapOverride = -1f, float topOffsetOverride = float.NaN)
     {
         Show(owner, statusEffects, cursorScreenPosition, UnitStatusEffectTooltipSide.Right);
         if (currentOwner != owner || itemRect == null) return;
         pinnedToOwner = true;
         cursorRightPinned = true;
+        cursorRightGapOverride = rightGapOverride;
+        cursorTopOffsetOverride = topOffsetOverride;
         UpdateCursorRightPosition(owner, cursorScreenPosition);
     }
 
@@ -174,6 +178,8 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         cursorRightPinned = false;
         currentOwner = owner;
         currentSide = UnitStatusEffectTooltipSide.Right;
+        cursorRightGapOverride = -1f;
+        cursorTopOffsetOverride = float.NaN;
         itemView.SetGridEffect(gridEffect);
         if (!itemView.gameObject.activeSelf)
             itemView.gameObject.SetActive(true);
@@ -192,9 +198,12 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
         Camera camera = rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
             ? (rootCanvas.worldCamera != null ? rootCanvas.worldCamera : Camera.main) : null;
-        float scale = rootCanvas != null ? Mathf.Max(0.0001f, rootCanvas.scaleFactor) : 1f;
+        // Cursor offsets are SCREEN PIXELS, not Canvas Scaler units.
+        // Multiplying by canvas.scaleFactor changes their visible distance
+        // when the Game view resolution or Canvas Scaler scale changes.
         Vector2 topLeftScreenPosition = cursorScreenPosition +
-            new Vector2(monsterInfoCursorRightGap, monsterInfoCursorTopOffset) * scale;
+            new Vector2(cursorRightGapOverride >= 0f ? cursorRightGapOverride : monsterInfoCursorRightGap,
+                float.IsNaN(cursorTopOffsetOverride) ? monsterInfoCursorTopOffset : cursorTopOffsetOverride);
         if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(
                 itemParentRect, topLeftScreenPosition, camera, out Vector3 requestedTopLeft))
             return;
@@ -714,10 +723,12 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         }
 
         Rect canvasBounds = canvasRect.rect;
-        float allowedMinX = canvasBounds.xMin + statusTooltipScreenPaddingX;
-        float allowedMaxX = canvasBounds.xMax - statusTooltipScreenPaddingX;
-        float allowedMinY = canvasBounds.yMin + statusTooltipScreenPaddingY;
-        float allowedMaxY = canvasBounds.yMax - statusTooltipScreenPaddingY;
+        float edgePaddingX = statusTooltipScreenPaddingX;
+        float edgePaddingY = statusTooltipScreenPaddingY;
+        float allowedMinX = canvasBounds.xMin + edgePaddingX;
+        float allowedMaxX = canvasBounds.xMax - edgePaddingX;
+        float allowedMinY = canvasBounds.yMin + edgePaddingY;
+        float allowedMaxY = canvasBounds.yMax - edgePaddingY;
 
         Vector2 canvasLocalCorrection = Vector2.zero;
 
@@ -864,10 +875,21 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         }
 
         Rect canvasBounds = canvasRect.rect;
-        float allowedMinX = canvasBounds.xMin + statusTooltipScreenPaddingX;
-        float allowedMaxX = canvasBounds.xMax - statusTooltipScreenPaddingX;
-        float allowedMinY = canvasBounds.yMin + statusTooltipScreenPaddingY;
-        float allowedMaxY = canvasBounds.yMax - statusTooltipScreenPaddingY;
+        // Cursor-follow tooltips use a small edge padding in screen pixels.
+        // Other status tooltips retain their inspector-configured padding.
+        float edgePaddingX = statusTooltipScreenPaddingX;
+        float edgePaddingY = statusTooltipScreenPaddingY;
+        if (cursorRightPinned && targetRect == itemRect)
+        {
+            float pixelsToCanvasUnits = rootCanvas != null
+                ? 1f / Mathf.Max(0.0001f, rootCanvas.scaleFactor) : 1f;
+            edgePaddingX = 12f * pixelsToCanvasUnits;
+            edgePaddingY = 12f * pixelsToCanvasUnits;
+        }
+        float allowedMinX = canvasBounds.xMin + edgePaddingX;
+        float allowedMaxX = canvasBounds.xMax - edgePaddingX;
+        float allowedMinY = canvasBounds.yMin + edgePaddingY;
+        float allowedMaxY = canvasBounds.yMax - edgePaddingY;
 
         Vector2 canvasLocalCorrection = Vector2.zero;
 
