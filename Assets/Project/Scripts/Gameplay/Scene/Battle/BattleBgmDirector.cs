@@ -81,6 +81,10 @@ public class BattleBgmDirector : MonoBehaviour
     [SerializeField] private BgmState lowHealthState = BgmState.Stage1LowHealth;
     [SerializeField] private BgmState bossIntroState = BgmState.Stage1BossIntro;
     [SerializeField] private BgmState defeatState = BgmState.Stage1Defeat;
+    [Header("Boss Final Victory BGM")]
+    [SerializeField] private BgmState bossVictoryState = BgmState.Stage1BossVictory;
+    [SerializeField, Min(0f)] private float bossVictoryFadeOutDuration = 0.5f;
+    [SerializeField, Min(0f)] private float bossVictoryFadeInDuration = 0.5f;
     [SerializeField] private BgmState arabellaPhaseTwoState = BgmState.ArabellaPhase2;
     [SerializeField, Min(0f)] private float arabellaPhaseTwoFadeOutDuration = 0.5f;
     [SerializeField, Min(0f)] private float arabellaPhaseTwoFadeInDuration = 0.5f;
@@ -100,6 +104,7 @@ public class BattleBgmDirector : MonoBehaviour
         BattleSceneController.BattleRoomIntroStarted += OnRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted += OnRoomIntroCompleted;
         BattleResultChecker.DefeatStarted += OnDefeatStarted;
+        BattleResultChecker.BossVictoryStarted += OnBossVictoryStarted;
         BattleResultChecker.BattleFinished += OnBattleFinished;
         BattleEffectUtility.OnPlayerDamaged += OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned += Refresh;
@@ -113,6 +118,7 @@ public class BattleBgmDirector : MonoBehaviour
         BattleSceneController.BattleRoomIntroStarted -= OnRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= OnRoomIntroCompleted;
         BattleResultChecker.DefeatStarted -= OnDefeatStarted;
+        BattleResultChecker.BossVictoryStarted -= OnBossVictoryStarted;
         BattleResultChecker.BattleFinished -= OnBattleFinished;
         BattleEffectUtility.OnPlayerDamaged -= OnPlayerDamaged;
         BattleTurnExecutor.PlayerTurnReturned -= Refresh;
@@ -135,6 +141,14 @@ public class BattleBgmDirector : MonoBehaviour
     private void OnRoomIntroStarted() { if (currentRoomType == "Boss") { bossIntroPlaying = true; Refresh(); } }
     private void OnRoomIntroCompleted() { if (bossIntroPlaying) { bossIntroPlaying = false; Refresh(); } }
     private void OnDefeatStarted() { defeatPlaying = true; Refresh(); }
+    private void OnBossVictoryStarted()
+    {
+        // Only called after Arabella phase two reaches zero HP and the battle is won.
+        victoryFinished = true;
+        AudioManager audio = AudioManager.Instance;
+        if (audio != null && audio.IsBgmConfigured(bossVictoryState))
+            audio.PlayBgm(bossVictoryState, bossVictoryFadeOutDuration, bossVictoryFadeInDuration);
+    }
     private void OnBattleFinished()
     {
         // DefeatStarted is raised before BattleFinished on a defeat.

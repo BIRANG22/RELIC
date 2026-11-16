@@ -28,7 +28,8 @@ public enum BgmState
     Stage1BossIntro = 15,
     Stage1Defeat = 16,
     Stage1TutorialEvent = 17,
-    ArabellaPhase2 = 18
+    ArabellaPhase2 = 18,
+    Stage1BossVictory = 19
 }
 
 [AttributeUsage(AttributeTargets.Field)]
