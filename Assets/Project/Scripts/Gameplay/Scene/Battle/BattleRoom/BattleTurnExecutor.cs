@@ -538,6 +538,9 @@ public class BattleTurnExecutor : MonoBehaviour
             simulator.Simulate(timelineController);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
+            string appliedSwiftSnapshot = GetAppliedSwiftSnapshot();
+            HashSet<PlayerReservedCommand> executedPlayerCommands = new();
+            HashSet<MonsterReservedCommand> executedMonsterCommands = new();
             BattleEquipmentEffectService.PrepareConsecutiveAttackRune(batches);
             BattleConsecutiveActionPlan consecutiveActionPlan =
                 BattleConsecutiveActionPlan.Build(
@@ -624,10 +627,21 @@ public class BattleTurnExecutor : MonoBehaviour
                 // The animation runs independently while the gameplay action resolves.
                 Coroutine orderAnimation = timelineController != null
                     ? StartCoroutine(timelineController.PlayTimelineIconsAfterActionRoutine(
-                        currentSlotIndex, executableOrderIndices))
+                        currentSlotIndex, executableOrderIndices,
+                        GetExecutableTimelineOrderSpans(batch, currentSlotIndex, executableOrderIndices)))
                     : null;
 
-                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                // Refresh the remaining orders on the exact frame Swift is applied.
+                // The existing batch rebuild below still runs after the action completes.
+                BattleEffectUtility.OnPlayerSwiftApplied += OnSwiftAppliedDuringAction;
+                try
+                {
+                    yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                }
+                finally
+                {
+                    BattleEffectUtility.OnPlayerSwiftApplied -= OnSwiftAppliedDuringAction;
+                }
 
                 // 연속 행동 그룹이 끝나는 슬롯 경계에서만 카메라를 복귀합니다.
                 if (!keepCameraAfterBatch &&
@@ -670,6 +684,47 @@ public class BattleTurnExecutor : MonoBehaviour
                 // Do not advance the timeline until both the action and its visual finish.
                 if (orderAnimation != null)
                     yield return orderAnimation;
+
+                // The completed action must never run again when we rebuild the remaining order.
+                if (batch.PlayerCommands != null)
+                {
+                    for (int commandIndex = 0; commandIndex < batch.PlayerCommands.Count; commandIndex++)
+                        executedPlayerCommands.Add(batch.PlayerCommands[commandIndex]);
+                }
+                if (batch.MonsterCommands != null)
+                {
+                    for (int commandIndex = 0; commandIndex < batch.MonsterCommands.Count; commandIndex++)
+                        executedMonsterCommands.Add(batch.MonsterCommands[commandIndex]);
+                }
+
+                // An actually applied Swift changes the order IMMEDIATELY after this
+                // action, including remaining commands in the very same timeline slot.
+                string updatedSwiftSnapshot = GetAppliedSwiftSnapshot();
+                if (!string.Equals(appliedSwiftSnapshot, updatedSwiftSnapshot, StringComparison.Ordinal))
+                {
+                    appliedSwiftSnapshot = updatedSwiftSnapshot;
+                    List<BattleActionBatch> updated = builder.Build(timelineController);
+                    batches.RemoveRange(i + 1, batches.Count - i - 1);
+                    for (int updatedIndex = 0; updatedIndex < updated.Count; updatedIndex++)
+                    {
+                        BattleActionBatch pending = updated[updatedIndex];
+                        if (GetBatchTimelineSlotIndex(pending, updatedIndex) < currentSlotIndex)
+                            continue;
+
+                        if (pending.PlayerCommands != null)
+                            pending.PlayerCommands.RemoveAll(executedPlayerCommands.Contains);
+                        if (pending.MonsterCommands != null)
+                            pending.MonsterCommands.RemoveAll(executedMonsterCommands.Contains);
+
+                        if ((pending.PlayerCommands == null || pending.PlayerCommands.Count == 0) &&
+                            (pending.MonsterCommands == null || pending.MonsterCommands.Count == 0))
+                            continue;
+                        batches.Add(pending);
+                    }
+                    timelineController?.RefreshTimelineAfterAppliedSwift();
+                    hasNextBatchInSameTimelineSlot =
+                        HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
+                }
 
                 // Travel across unused trailing orders only after the final action has executed.
                 if (!hasNextBatchInSameTimelineSlot && timelineController != null &&
@@ -975,7 +1030,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 // The animation runs independently while the gameplay action resolves.
                 Coroutine orderAnimation = timelineController != null
                     ? StartCoroutine(timelineController.PlayTimelineIconsAfterActionRoutine(
-                        currentSlotIndex, executableOrderIndices))
+                        currentSlotIndex, executableOrderIndices,
+                        GetExecutableTimelineOrderSpans(batch, currentSlotIndex, executableOrderIndices)))
                     : null;
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
@@ -1863,6 +1919,73 @@ public class BattleTurnExecutor : MonoBehaviour
         return orderIndices;
     }
 
+    // Each reservation has one start order but can occupy 1-3 timeline cells.
+    private List<int> GetExecutableTimelineOrderSpans(
+        BattleActionBatch batch, int slotIndex, IReadOnlyList<int> orderIndices)
+    {
+        List<int> spans = new List<int>();
+        for (int i = 0; i < orderIndices.Count; i++)
+        {
+            int order = orderIndices[i];
+            int span = 1;
+            if (batch.PlayerCommands != null)
+            {
+                for (int j = 0; j < batch.PlayerCommands.Count; j++)
+                {
+                    PlayerReservedCommand command = batch.PlayerCommands[j];
+                    if (IsExecutablePlayerCommand(command) && GetTimelineOrderIndex(slotIndex, command) == order)
+                        span = Mathf.Max(span, command.TimelineEntryCost);
+                }
+            }
+            if (batch.MonsterCommands != null)
+            {
+                for (int j = 0; j < batch.MonsterCommands.Count; j++)
+                {
+                    MonsterReservedCommand command = batch.MonsterCommands[j];
+                    if (IsExecutableMonsterCommand(command) && GetTimelineOrderIndex(slotIndex, command) == order)
+                        span = Mathf.Max(span, command.TimelineEntryCost);
+                }
+            }
+            spans.Add(Mathf.Clamp(span, 1, 5 - order));
+        }
+        return spans;
+    }
+
+    private void OnSwiftAppliedDuringAction(BattleCharacter target)
+    {
+        if (!isExecuting || timelineController == null || target == null || target.RuntimeData == null)
+            return;
+
+        // Only a real runtime status, never a merely reserved skill, moves orders.
+        if (BattleActionOrderUtility.HasSwift(target.RuntimeData))
+            timelineController.RefreshTimelineAfterAppliedSwift();
+    }
+
+    private string GetAppliedSwiftSnapshot()
+    {
+        if (timelineController == null)
+            return string.Empty;
+
+        System.Text.StringBuilder signature = new();
+        HashSet<string> seen = new();
+        for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
+        {
+            IReadOnlyList<PlayerReservedCommand> commands = timelineController.GetPlayerCommands(slotIndex);
+            if (commands == null)
+                continue;
+            for (int i = 0; i < commands.Count; i++)
+            {
+                PlayerReservedCommand command = commands[i];
+                if (command == null || command.UserRuntime == null ||
+                    string.IsNullOrEmpty(command.CharacterId) || !seen.Add(command.CharacterId))
+                    continue;
+                signature.Append(command.CharacterId).Append(':')
+                    .Append(BattleActionOrderUtility.HasSwift(command.UserRuntime) ? '1' : '0').Append(';');
+            }
+        }
+        return signature.ToString();
+    }
+
     private int GetTimelineOrderIndex(
         int timelineSlotIndex,
         PlayerReservedCommand targetCommand)
@@ -1882,7 +2005,7 @@ public class BattleTurnExecutor : MonoBehaviour
             for (int i = 0; i < playerCommands.Count; i++)
             {
                 PlayerReservedCommand command = playerCommands[i];
-                if (command == null || !BattleActionOrderUtility.HasSwift(command))
+                if (command == null || !BattleActionOrderUtility.HasSwiftForSlot(command, timelineController, timelineSlotIndex))
                     continue;
 
                 if (ReferenceEquals(command, targetCommand))
@@ -1900,7 +2023,7 @@ public class BattleTurnExecutor : MonoBehaviour
             for (int i = 0; i < playerCommands.Count; i++)
             {
                 PlayerReservedCommand command = playerCommands[i];
-                if (command == null || BattleActionOrderUtility.HasSwift(command))
+                if (command == null || BattleActionOrderUtility.HasSwiftForSlot(command, timelineController, timelineSlotIndex))
                     continue;
 
                 if (ReferenceEquals(command, targetCommand))
@@ -1932,7 +2055,7 @@ public class BattleTurnExecutor : MonoBehaviour
             for (int i = 0; i < playerCommands.Count; i++)
             {
                 PlayerReservedCommand command = playerCommands[i];
-                if (command != null && BattleActionOrderUtility.HasSwift(command))
+                if (command != null && BattleActionOrderUtility.HasSwiftForSlot(command, timelineController, timelineSlotIndex))
                     orderIndex += Mathf.Max(1, command.TimelineEntryCost);
             }
         }

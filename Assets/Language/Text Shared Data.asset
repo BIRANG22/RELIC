@@ -4023,10 +4023,6 @@ MonoBehaviour:
     m_Key: data.monster_skill.s_monster_04.effect_description
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528623431692
-    m_Key: data.monster_skill.s_monster_05.effect_description
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528623431694
     m_Key: data.monster_skill.s_monster_06.name
     m_Metadata:
@@ -4233,6 +4229,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17531528627626011
     m_Key: data.monster_skill.s_monster_37.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17531528623431692
+    m_Key: data.monster_skill.s_monster_05.effect_description
     m_Metadata:
       m_Items: []
   - m_Id: 32716823346028544
@@ -5161,6 +5161,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 34946042025975808
     m_Key: ui.lobby.text_tmp.36ad8928
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35203227603673088
+    m_Key: ui.lobby.text.38f85c80
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35203227649810432
+    m_Key: ui.lobby.text.1c62d921
     m_Metadata:
       m_Items: []
   - m_Id: 17041964720988228

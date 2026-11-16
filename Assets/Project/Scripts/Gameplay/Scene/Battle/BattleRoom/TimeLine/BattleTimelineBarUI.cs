@@ -233,7 +233,7 @@ public class BattleTimelineBarUI : MonoBehaviour
                 if (command.IsFacingFlipCommand)
                     continue;
 
-                if (!BattleActionOrderUtility.HasSwift(command))
+                if (!BattleActionOrderUtility.HasSwiftForSlot(command, owner, i))
                     continue;
 
                 BattleTimelinePreviewEntry entry =
@@ -270,7 +270,7 @@ public class BattleTimelineBarUI : MonoBehaviour
                 if (command.IsFacingFlipCommand)
                     continue;
 
-                if (BattleActionOrderUtility.HasSwift(command))
+                if (BattleActionOrderUtility.HasSwiftForSlot(command, owner, i))
                     continue;
 
                 BattleTimelinePreviewEntry entry =
@@ -334,6 +334,10 @@ public class BattleTimelineBarUI : MonoBehaviour
     private void SetTurnMarkChildrenVisible(BattleTimelineGroupUI group, bool visible)
     {
         if (group == null)
+            return;
+
+        // RefreshTimeline calls this repeatedly; consumed markers stay hidden.
+        if (visible && group.IsTurnMarkAlreadyPassed)
             return;
 
         Transform turnMark = FindChildRecursive(group.transform, "TurnMark");
@@ -651,9 +655,9 @@ public class BattleTimelineBarUI : MonoBehaviour
         if (IsTimelineActionClickBlocked())
             return;
 
-        // ù ���� Ʃ�丮�󿡼� ��� ��ġ�� 2�ʰ� �����ִ� ���ȿ���
-        // ����ڰ� Ÿ�Ӷ����� Ŭ���� ��� ����� �ൿ�� �������� ���ϰ� �մϴ�.
-        // �ȳ��� ���� �ڿ��� ���� Ŭ�� ���� ������ �״�� ����մϴ�.
+        // 첫 전투 튜토리얼에서 등록된 행동을 안내하는 동안에는
+        // 사용자가 타임라인을 클릭해 예약된 행동을 취소하지 못하도록 합니다.
+        // 안내가 끝난 뒤에는 기존 클릭 취소 동작을 그대로 허용합니다.
         if (BattleFirstTutorialController.IsTimelineRegisteredSkillPreviewLocked)
             return;
 

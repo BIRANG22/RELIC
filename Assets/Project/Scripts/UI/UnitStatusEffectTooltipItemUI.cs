@@ -79,6 +79,37 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
         }
     }
 
+    // Grid effects referenced by monster innate descriptions share this item view.
+    public void SetGridEffect(GridEffectData data)
+    {
+        if (data == null)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        gameObject.SetActive(true);
+        DisableRaycastTargets();
+        if (iconImage != null)
+        {
+            // Slime (GR_Residue) shares the Trail status effect icon.
+            Sprite gridIcon = data.GridEffectID == "GR_Residue" ? GetIcon("E_Trail") : null;
+            iconImage.sprite = gridIcon;
+            iconImage.enabled = gridIcon != null;
+            iconImage.raycastTarget = false;
+        }
+        if (titleText != null)
+            titleText.text = GameDataLocalization.GridEffectName(data);
+        if (descriptionText != null)
+        {
+            string description = GameDataLocalization.GridEffectTooltip(data) ?? string.Empty;
+            description = description.Replace("{ValueRate1}", data.ValueRate.ToString())
+                .Replace("{ValueRate}", data.ValueRate.ToString())
+                .Replace("{Duration}", Mathf.Max(0, data.Duration).ToString());
+            descriptionText.text = SkillDescriptionFormatter.ReplaceEffectTokens(description);
+        }
+    }
+
     private void DisableRaycastTargets()
     {
         if (backgroundImage != null)
@@ -156,7 +187,7 @@ public static class MonsterInnateEffectDescriptionFormatter
                 Reference reference = byName[match.Value];
                 return reference.IsEffect
                     ? $"<link=\"effecticon:{reference.Id}\"><u>{reference.Name}</u></link>"
-                    : $"<u>{reference.Name}</u>";
+                    : $"<link=\"gridicon:{reference.Id}\"><u>{reference.Name}</u></link>";
             },
             RegexOptions.CultureInvariant);
     }
@@ -175,7 +206,9 @@ public static class MonsterInnateEffectDescriptionFormatter
                 .ThenBy(value => value.EffectId, StringComparer.Ordinal);
             foreach (EffectMasterData effect in effects)
             {
-                if (string.Equals(effect.EffectId, currentEffectId, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(effect.EffectId, currentEffectId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(effect.EffectId, "E_Strike", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(effect.EffectId, "E_Move", StringComparison.OrdinalIgnoreCase))
                     continue;
                 string name = GameDataLocalization.EffectName(effect)?.Trim();
                 if (!string.IsNullOrEmpty(name) && !byName.ContainsKey(name))

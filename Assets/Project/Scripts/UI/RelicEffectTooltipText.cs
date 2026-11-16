@@ -79,6 +79,13 @@ namespace Relic.Gameplay.Data
             if (effects.Count == 0)
                 return;
 
+            BattleRewardRelicPanelUI rewardPanel = GetComponentInParent<BattleRewardRelicPanelUI>();
+            RectTransform rewardAnchor = rewardPanel != null ? rewardPanel.RewardEffectTooltipAnchor : null;
+            bool useRewardPlacement = rewardAnchor != null;
+            RectTransform displayAnchor = useRewardPlacement ? rewardAnchor : targetText.rectTransform;
+            Vector2 displayOffset = useRewardPlacement ? rewardPanel.RewardEffectTooltipOffset : tooltipOffset;
+            float displaySpacing = useRewardPlacement ? rewardPanel.RewardEffectTooltipSpacing : verticalSpacing;
+
             tooltip ??= UnitStatusEffectTooltipUI.GetOrCreate();
             if (tooltip != null)
             {
@@ -86,10 +93,13 @@ namespace Relic.Gameplay.Data
                 tooltip.ShowSkillEffectList(
                     this,
                     effects,
-                    targetText.rectTransform,
+                    displayAnchor,
                     null,
-                    tooltipOffset,
-                    verticalSpacing);
+                    displayOffset,
+                    displaySpacing,
+                    0.12f,
+                    0.05f,
+                    useRewardPlacement);
                 return;
             }
 
@@ -97,9 +107,9 @@ namespace Relic.Gameplay.Data
             fallbackTooltip?.Show(
                 this,
                 effects,
-                targetText.rectTransform,
-                tooltipOffset,
-                verticalSpacing);
+                displayAnchor,
+                displayOffset,
+                displaySpacing);
         }
 
         private void OnDisable()

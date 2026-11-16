@@ -48,7 +48,7 @@ public class BattleActionBatchBuilder
                     if (IsDeadPlayerCommand(command))
                         continue;
 
-                    if (BattleActionOrderUtility.HasSwift(command))
+                    if (BattleActionOrderUtility.HasSwiftForSlot(command, timelineController, slotIndex))
                     {
                         int batchIndex = AddPlayerCommand(
                             batches,
@@ -91,7 +91,7 @@ public class BattleActionBatchBuilder
                     if (IsDeadPlayerCommand(command))
                         continue;
 
-                    if (!BattleActionOrderUtility.HasSwift(command))
+                    if (!BattleActionOrderUtility.HasSwiftForSlot(command, timelineController, slotIndex))
                     {
                         AddPlayerCommand(
                             batches,

@@ -1955,17 +1955,12 @@ public class BattleCameraController : MonoBehaviour
                timelineController.SelectedCharacter != null;
     }
 
-    // Boss intro camera framing is temporary. Resume from the same panel-down
-    // battle baseline used by normal rooms so the next selection focus continues smoothly.
+    // 보스 등장 연출 종료 후 전투 시작 인트로의 카메라 위치(Y=1)로 복귀합니다.
+    // 캐릭터 포커스 계산에 사용되는 기본 위치는 지도 기준으로 유지합니다.
     public void ForceReturnSceneStartPositionImmediate()
     {
-        ForceReturnDefaultImmediate();
-
-        defaultPosition = BattleCameraPositionPolicy.ResolveSceneStartBattlePosition(
-            mapPosition,
-            PanelDownPositionY);
-        if (targetCamera != null)
-            targetCamera.transform.position = defaultPosition;
+        defaultPosition = mapPosition;
+        ForceReturnPanelDownImmediate();
     }
 
     public void ForceReturnDefaultImmediate()

@@ -41,6 +41,28 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     [SerializeField] private Vector3 itemIconRarityVfxScale = Vector3.one;
     private GameObject activeItemIconRarityVfx;
 
+    [Header("Reward Relic Effect Tooltip Position")]
+    [Tooltip("Effect tooltips appear to the right of item/Background, aligned to its top-right corner, and stack downward.")]
+    [SerializeField] private RectTransform rewardEffectTooltipAnchor;
+    [Tooltip("Position relative to the top-right corner of item/Background. X: right (+), Y: up (+).")]
+    [SerializeField] private Vector2 rewardEffectTooltipOffset = new Vector2(10f, 0f);
+    [Tooltip("Vertical spacing between effect tooltip items.")]
+    [SerializeField, Min(0f)] private float rewardEffectTooltipSpacing = 8f;
+
+    public RectTransform RewardEffectTooltipAnchor
+    {
+        get
+        {
+            if (rewardEffectTooltipAnchor != null)
+                return rewardEffectTooltipAnchor;
+            Transform itemRoot = transform.Find("item");
+            Transform background = itemRoot != null ? itemRoot.Find("Background") : null;
+            return background as RectTransform;
+        }
+    }
+    public Vector2 RewardEffectTooltipOffset => rewardEffectTooltipOffset;
+    public float RewardEffectTooltipSpacing => rewardEffectTooltipSpacing;
+
     [Header("Equipped Relic Tooltip")]
     [SerializeField] private RectTransform tooltipUI;
     [SerializeField] private Vector2 tooltipOffset = new Vector2(170f, 0f);

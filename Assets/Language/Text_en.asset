@@ -602,7 +602,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631994
-    m_Localized: Allows actions to be queued earlier within a timeline slot.
+    m_Localized: Actions are prioritized at the front of the timeline slot.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631995
@@ -690,7 +690,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826192
-    m_Localized: When this effect is removed, split into 2 Blobs.
+    m_Localized: Decreases by 1 when directly hit. At 0, splits into 2 Blobs.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826193
@@ -698,7 +698,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826194
-    m_Localized: When this effect is removed, use Massive Explosion.
+    m_Localized: Decreases by 1 at the end of each turn. At 0, uses Massive Explosion.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826219
@@ -3315,7 +3315,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528623431692
-    m_Localized: Move 2 tiles away from the nearest character.
+    m_Localized: Moves 2 tiles away from the nearest character.
     m_Metadata:
       m_Items: []
   - m_Id: 17531528623431694
@@ -4905,7 +4905,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554375
-    m_Localized: Research
+    m_Localized: Combine
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554376
@@ -6280,7 +6280,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 32716823346028544
-    m_Localized: Move 2 tiles away from the nearest character.
+    m_Localized: Moves 2 tiles away from the nearest character.
     m_Metadata:
       m_Items: []
   - m_Id: 32716823371194368
@@ -6292,7 +6292,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 32716823371194370
-    m_Localized: Move 2 tiles away from the nearest character.
+    m_Localized: Moves 2 tiles away from the nearest character.
     m_Metadata:
       m_Items: []
   - m_Id: 32716823371194371
@@ -6313,7 +6313,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 32716823371194375
-    m_Localized: Move 1 or 2 tiles away from the nearest character.
+    m_Localized: Moves 1 or 2 tiles away from the nearest character.
     m_Metadata:
       m_Items: []
   - m_Id: 32716823371194376
@@ -6966,6 +6966,14 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 34955470141890560
+    m_Localized: Consumables
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35203227603673088
+    m_Localized: Combine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35203227649810432
     m_Localized: Consumables
     m_Metadata:
       m_Items: []
