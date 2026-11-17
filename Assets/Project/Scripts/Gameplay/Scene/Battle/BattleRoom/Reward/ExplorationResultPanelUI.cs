@@ -50,6 +50,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private Sprite noErosionIcon;
     private const int AcquiredItemSlotCount = 8;
     [SerializeField] private Button returnToBaseButton;
+    [SerializeField] private GameObject terminalEndingPanel;
     [SerializeField] private Canvas sortingCanvas;
     [SerializeField] private int resultPanelSortingOrder = 25000;
     [SerializeField] private List<StagePresentationEntry> stagePresentations = new();
@@ -70,6 +71,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private ExplorationResultData result;
     private bool isTransitioning;
     private bool isDefeatResult;
+    private bool terminalEndingShown;
+    private Transform returnButtonOriginalParent;
+    private int returnButtonOriginalSiblingIndex;
     private bool stageClearExperienceApplied;
     private int tutorialFirstClearBonus;
     private bool tutorialFirstClearBonusApplied;
@@ -177,7 +181,11 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         AutoBindSceneReferences();
 
         if (returnToBaseButton != null)
-            returnToBaseButton.onClick.AddListener(ReturnToBase);
+        {
+            returnButtonOriginalParent = returnToBaseButton.transform.parent;
+            returnButtonOriginalSiblingIndex = returnToBaseButton.transform.GetSiblingIndex();
+            returnToBaseButton.onClick.AddListener(OnReturnToBaseClicked);
+        }
         HideSlotName();
     }
 
@@ -213,6 +221,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             BattleStageClearExperienceService.BuildContext(mapRuntime, currentNode, defeat);
         researchRewardMultiplier = Mathf.Max(0f, rewardMultiplier);
         isTransitioning = false;
+        terminalEndingShown = false;
         stageClearExperienceApplied = false;
         tutorialFirstClearBonus = runtime?.IsTutorialBattle == true &&
             !TutorialSettings.HasClaimedFirstCompletionExperience ? 300 : 0;
@@ -223,7 +232,13 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             statisticsOverlayRoot.SetActive(false);
 
         if (returnToBaseButton != null)
+        {
+            RestoreReturnButtonParent();
             returnToBaseButton.interactable = true;
+        }
+
+        if (terminalEndingPanel != null)
+            terminalEndingPanel.SetActive(false);
 
         gameObject.SetActive(true);
 
@@ -1599,6 +1614,56 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             text.AppendLine($"입힌 피해 {stats.DamageDealt} / 받은 피해 {stats.DamageTaken}");
             text.AppendLine($"사망 {stats.DeathCount} / 처치 {stats.KillCount} / 버프 {stats.BuffApplied}");
         }
+    }
+
+    private void OnReturnToBaseClicked()
+    {
+        if (TryShowTerminalEnding())
+            return;
+
+        ReturnToBase();
+    }
+
+    private bool TryShowTerminalEnding()
+    {
+        BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.Get();
+        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (!RegularBattleTerminalEndingPolicy.ShouldEnter(
+                battleRuntime,
+                mapRuntime,
+                isDefeatResult,
+                terminalEndingShown))
+        {
+            return false;
+        }
+
+        if (terminalEndingPanel == null)
+        {
+            Debug.LogError("[ExplorationResultPanelUI] Terminal ending panel is not assigned.", this);
+            return false;
+        }
+
+        terminalEndingShown = true;
+        terminalEndingPanel.SetActive(true);
+        terminalEndingPanel.transform.SetAsLastSibling();
+
+        if (returnToBaseButton != null)
+        {
+            returnToBaseButton.transform.SetParent(terminalEndingPanel.transform, false);
+            returnToBaseButton.transform.SetAsLastSibling();
+        }
+
+        return true;
+    }
+
+    private void RestoreReturnButtonParent()
+    {
+        if (returnToBaseButton == null || returnButtonOriginalParent == null)
+            return;
+
+        returnToBaseButton.transform.SetParent(returnButtonOriginalParent, false);
+        returnToBaseButton.transform.SetSiblingIndex(
+            Mathf.Clamp(returnButtonOriginalSiblingIndex, 0, returnButtonOriginalParent.childCount - 1));
     }
 
     private async void ReturnToBase()
