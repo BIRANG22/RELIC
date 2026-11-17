@@ -240,6 +240,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
 
     public void OnClickSlot()
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return;
         EnsureOwner();
 
         if (owner != null)
@@ -301,6 +302,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return;
         SetTurnMarkHovered(true);
     }
 

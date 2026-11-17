@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.Localization.Components;
 using UnityEngine.Rendering.Universal;
 
 [DisallowMultipleComponent]
@@ -236,6 +237,7 @@ public sealed class BossSpawnPresentation : MonoBehaviour
 
     private void Awake()
     {
+        EnsureDialogueTextOwnership();
         ApplyDialogueLayout();
         HideDialogue();
     }
@@ -542,12 +544,37 @@ public sealed class BossSpawnPresentation : MonoBehaviour
     private void BeginDialogueTimeline()
     {
         StopDialogueTimeline();
+        EnsureDialogueTextOwnership();
         ApplyDialogueLayout();
         if (timedDialogues == null || timedDialogues.Count == 0 || dialogueRoot == null || dialogueText == null)
             return;
 
         dialogueTimelineCompleted = false;
         dialogueCoroutine = StartCoroutine(PlayDialogueTimeline());
+    }
+
+    // The dialogue is localized per entry by this presenter. Automatic TMP localization
+    // components can otherwise restore the first line when the bubble is re-enabled.
+    private void EnsureDialogueTextOwnership()
+    {
+        if (dialogueText == null)
+            return;
+
+        GameObject textObject = dialogueText.gameObject;
+        if (textObject.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            textObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticLocalizer = textObject.GetComponent<LocalizedTMPText>();
+        if (staticLocalizer != null)
+            staticLocalizer.enabled = false;
+
+        DynamicLocalizedTMPText dynamicLocalizer = textObject.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizer != null)
+            dynamicLocalizer.enabled = false;
+
+        LocalizeStringEvent stringEvent = textObject.GetComponent<LocalizeStringEvent>();
+        if (stringEvent != null)
+            stringEvent.enabled = false;
     }
 
     private IEnumerator PlayDialogueTimeline()
@@ -575,6 +602,12 @@ public sealed class BossSpawnPresentation : MonoBehaviour
                 else if (string.Equals(entry.fallbackText, "고통은 잠시뿐입니다. 구원은 영원하니까요", StringComparison.Ordinal))
                     dialogueKey = "battle.boss.arabella.appear.02";
             }
+            // Correct a duplicated first key on older serialized boss prefabs.
+            if (i == 1 && timedDialogues.Count >= 2 &&
+                string.Equals(timedDialogues[0]?.localizationKey?.Trim(), "battle.boss.arabella.appear.01", StringComparison.Ordinal) &&
+                string.Equals(dialogueKey?.Trim(), "battle.boss.arabella.appear.01", StringComparison.Ordinal))
+                dialogueKey = "battle.boss.arabella.appear.02";
+
             // Older prefab instances can retain the first dialogue's key on the
             // second entry. Prefer the correct built-in key when the fallback
             // identifies the second Arabella line unambiguously.

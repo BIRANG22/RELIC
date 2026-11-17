@@ -40,6 +40,7 @@ public class TimelineOrderClickTarget : MonoBehaviour, IPointerClickHandler, IPo
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return;
         if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
             return;
 
@@ -49,6 +50,7 @@ public class TimelineOrderClickTarget : MonoBehaviour, IPointerClickHandler, IPo
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return;
         if (owner != null && owner.HasOrderEntry(orderIndex))
             AnimateScale(true);
     }

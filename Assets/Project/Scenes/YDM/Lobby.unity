@@ -66396,6 +66396,7 @@ MonoBehaviour:
   smallConversionTransferCount: 5
   largeConversionTransferCount: 8
   acquisitionLaunchInterval: 0.045
+  redDustiumCountdownDuration: 1
   redLaunchGlow: {fileID: 0}
   redLaunchGlowScale: 1.25
   fixedRedIconPulseScale: 1.1
@@ -74160,8 +74161,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 626, y: -245}
-  m_SizeDelta: {x: 220, y: 80}
+  m_AnchoredPosition: {x: 725, y: 420}
+  m_SizeDelta: {x: 220, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1256107354
 MonoBehaviour:
@@ -74183,17 +74184,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: +99
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
-  m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
+  m_sharedMaterial: {fileID: -7133732941862592188, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4291611852
+  m_fontColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -74210,10 +74211,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 35
+  m_fontSizeBase: 35
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 16
   m_fontSizeMax: 48
   m_fontStyle: 0

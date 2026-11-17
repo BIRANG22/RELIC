@@ -368,7 +368,16 @@ public sealed class RecordPanelUI : MonoBehaviour
                         Sprite icon = null;
                         if (data.StatusEffectIconDatabase != null)
                             data.StatusEffectIconDatabase.TryGetIcon(effect.EffectId, out icon);
-                        AddSlot(icon, GameDataLocalization.EffectName(effect), true);
+                        Color? effectBackColor = null;
+                        if (data.StatusEffectIconDatabase != null &&
+                            (effect.EffectType == EffectType.Beneficial || effect.EffectType == EffectType.Harmful ||
+                             string.Equals(effect.EffectId, "E_Spider_Web", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            // Share the same buff/debuff palette used by status effect tooltips.
+                            effectBackColor = data.StatusEffectIconDatabase.GetIconColor(
+                                effect.EffectId, data.EffectDatabase, false);
+                        }
+                        AddSlot(icon, GameDataLocalization.EffectName(effect), true, null, effectBackColor);
                     }
                 break;
         }
@@ -546,7 +555,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         createdSlots.Clear();
     }
 
-    private void AddSlot(Sprite icon, string displayName, bool discovered, string rarity = null)
+    private void AddSlot(Sprite icon, string displayName, bool discovered, string rarity = null, Color? backColor = null)
     {
         RecordIconSlotUI slot = Instantiate(iconSlotPrefab, recordGridContent, false);
         slot.gameObject.SetActive(true);
@@ -555,7 +564,9 @@ public sealed class RecordPanelUI : MonoBehaviour
             : GameLocalization.Get(LocalizationKeys.Record.Undiscovered);
         slot.Initialize(discovered ? icon : null, slotDisplayName, discovered ? HandleSlotClicked : null, discovered, HandleSlotHover);
         if (discovered) clickableInfoSlots.Add(slot);
-        if (!string.IsNullOrWhiteSpace(rarity))
+        if (backColor.HasValue)
+            slot.SetBackColor(backColor.Value);
+        else if (!string.IsNullOrWhiteSpace(rarity))
             slot.SetBackColor(GetRarityDisplayColor(rarity));
         createdSlots.Add(slot);
     }

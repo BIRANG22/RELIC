@@ -203,7 +203,7 @@ public class BattleCharacter : MonoBehaviour
     {
         ResolveBattlePresentationReferences();
         bool executionActive = cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting;
-        bool tutorialBlocked = IsTutorialHighlightBlocked();
+        bool tutorialBlocked = IsTutorialHighlightBlocked() || BattleBossCinematicInputGate.IsBlocked;
         bool battleEnded = IsBattleEnded();
 
         // 전투 행동 실행 및 튜토리얼 제한 중에는 즉시 투명하게 고정합니다.
@@ -284,7 +284,7 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        if (TutorialGuideController.IsModalOpen) return;
+        if (TutorialGuideController.IsModalOpen || BattleBossCinematicInputGate.IsBlocked) return;
         if (IsTutorialHighlightBlocked())
             return;
 
@@ -321,6 +321,7 @@ public class BattleCharacter : MonoBehaviour
     /// </summary>
     public void SetLinkedHudHoverHighlight(bool active)
     {
+        if (BattleBossCinematicInputGate.IsBlocked) active = false;
         if (selectionHighlightVisible)
             active = false;
 
@@ -388,7 +389,7 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (TutorialGuideController.IsModalOpen) return;
+        if (TutorialGuideController.IsModalOpen || BattleBossCinematicInputGate.IsBlocked) return;
         // In Tutorial_03 order 9 only a direct world click on Kaya is allowed.
         if (TutorialFocusGuideRunner.IsTutorial03WorldSelectStep &&
             (RuntimeData == null || !TutorialBattleSequence.CanClickFinalTutorialWorldCharacter(RuntimeData.CharacterId)))
