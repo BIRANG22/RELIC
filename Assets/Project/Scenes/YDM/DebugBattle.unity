@@ -101140,6 +101140,7 @@ MonoBehaviour:
   maxHardModeSlots: 12
   noErosionIcon: {fileID: 21300000, guid: adc9e615648417147b56f37b39067431, type: 3}
   returnToBaseButton: {fileID: 258440102}
+  terminalEndingPanel: {fileID: 960000000000000001}
   sortingCanvas: {fileID: 940000000000000251}
   resultPanelSortingOrder: 25000
   stagePresentations:
@@ -134779,6 +134780,7 @@ GameObject:
   - component: {fileID: 960000000000000003}
   - component: {fileID: 960000000000000004}
   - component: {fileID: 960000000000000005}
+  - component: {fileID: 960000000000000011}
   m_Layer: 5
   m_Name: DemoEndingPanel
   m_TagString: Untagged
@@ -134829,6 +134831,23 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 26000
   m_TargetDisplay: 0
+--- !u!114 &960000000000000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 960000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!222 &960000000000000004
 CanvasRenderer:
   m_ObjectHideFlags: 0
