@@ -66,6 +66,8 @@ namespace Relic.Gameplay.Data
         public int PendingUniqueResourceMaxCostRecovery;
         public int PendingUniqueResourceMaxArmor;
         public int PendingUniqueResourceMaxSelfLowestAllyArmor;
+        public bool RuneNextTurnFirstSkillFreePending;
+        public bool RuneNextTurnFirstSkillFreeActive;
 
         public bool IsUnlocked;
 

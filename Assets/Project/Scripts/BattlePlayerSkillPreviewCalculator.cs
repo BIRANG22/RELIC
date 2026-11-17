@@ -403,7 +403,9 @@ public static class BattlePlayerSkillPreviewCalculator
                     formulaParts.Add($"+{status.Stack}");
                     break;
                 case "E_Smite":
-                    if (isAttackSkill && smiteAttacksAlreadyReserved < status.Stack)
+                    if (isAttackSkill &&
+                        smiteAttacksAlreadyReserved == 0 &&
+                        BattleEquipmentEffectService.IsSmiteReady(runtime))
                         formulaParts.Add("+50%"); // 예: 13(6+3+50%)
                     break;
                 case "E_Weaken":
@@ -478,6 +480,8 @@ public static class BattlePlayerSkillPreviewCalculator
                 runtime,
                 skill != null && skill.SkillType == SkillType.Attack,
                 smiteAttacksAlreadyReserved);
+            value = Mathf.RoundToInt(
+                BattleEquipmentEffectService.ModifyLowHpRuneDamage(runtime, value));
         }
 
         return Mathf.Max(0, value);

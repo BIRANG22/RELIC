@@ -425,43 +425,13 @@ public class BattleActionRunner
             return false;
         }
 
-        for (int i = 0; i < command.UserRuntime.StatusEffects.Count; i++)
-        {
-            StatusEffectRuntimeData status = command.UserRuntime.StatusEffects[i];
-
-            if (status != null && status.EffectId == "E_Smite" && status.Stack > 0)
-                return true;
-        }
-
-        return false;
+        return BattleEquipmentEffectService.IsSmiteReady(command.UserRuntime);
     }
 
     private static void ConsumeSmiteAfterAttack(PlayerReservedCommand command)
     {
-        if (command == null || command.UserRuntime == null || command.UserRuntime.StatusEffects == null)
-            return;
-
-        List<StatusEffectRuntimeData> statuses = command.UserRuntime.StatusEffects;
-
-        for (int i = statuses.Count - 1; i >= 0; i--)
-        {
-            StatusEffectRuntimeData status = statuses[i];
-
-            if (status == null || status.EffectId != "E_Smite")
-                continue;
-
-            if (status.Stack > 1)
-            {
-                status.Stack--;
-                status.TurnCount = Mathf.Max(status.TurnCount, 1);
-            }
-            else
-            {
-                statuses.RemoveAt(i);
-            }
-
-            return;
-        }
+        if (command?.UserRuntime != null)
+            BattleEquipmentEffectService.TryConsumeSmiteForAttack(command.UserRuntime);
     }
 
     private IEnumerator RunPostActionPresentationRoutine(
@@ -3362,8 +3332,25 @@ public class BattleActionRunner
             EffectId = effectId,
             Value = value,
             Count = count,
+            LivingEnemyCount = CountLivingEnemies(),
             ExecutionResult = command.ExecutionResult
         };
+    }
+
+    private static int CountLivingEnemies()
+    {
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+        int count = 0;
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            if (monsters[i]?.RuntimeData != null && !monsters[i].RuntimeData.IsDead)
+                count++;
+        }
+
+        return count;
     }
 
     private bool IsDamageHitEffect(string effectId)
