@@ -5,6 +5,8 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
@@ -93,6 +95,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnSelectedLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnSelectedLocaleChanged;
         ResolveErosionValueText();
         EnsureDynamicErosionValueTextOwnership();
         // 패널이 다시 켜질 때 Inspector 기본 텍스트가 잠깐 보이지 않도록 먼저 0%로 덮습니다.
@@ -108,7 +112,24 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnSelectedLocaleChanged;
         HideErosionTooltipImmediate();
+    }
+
+    private void OnDestroy()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnSelectedLocaleChanged;
+    }
+
+    private void OnSelectedLocaleChanged(Locale locale)
+    {
+        if (!isActiveAndEnabled || locale == null ||
+            locale != LocalizationSettings.SelectedLocale)
+            return;
+
+        // Keep the current animated value: language changes must not reset the score.
+        ResolveErosionValueText();
+        ApplyErosionValueTexts(displayedScore);
     }
 
     [ContextMenu("Auto Bind Erosion Difficulty UI")]
@@ -1010,6 +1031,9 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     {
         if (erosionValueText != null)
         {
+            // The auto-localizer is intentionally disabled for this runtime value.
+            // Assign the locale's body font before writing Chinese/Japanese glyphs.
+            LocaleTMPFontGuard.PrepareLocalized(erosionValueText, LocalizationSettings.SelectedLocale);
             erosionValueText.text = GameLocalization.FormatWithFallback(
                 "lobby.erosion.reward_bonus_format",
                 "재화 획득량 +{0}% / 경험치 획득량 +{0}%",
