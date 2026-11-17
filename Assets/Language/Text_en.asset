@@ -4325,8 +4325,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975831
-    m_Localized: Block 1 random timeline slot with a Spider Web at the start of each
-      turn.
+    m_Localized: At the start of each turn, locks 1 random timeline slot.
     m_Metadata:
       m_Items: []
   - m_Id: 24322630701555712
