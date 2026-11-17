@@ -14,6 +14,7 @@ public class BattleTimelineMonsterHoverTarget : MonoBehaviour, IPointerEnterHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return;
         MonsterUnit monster = FindMonster();
 
         if (monster != null)

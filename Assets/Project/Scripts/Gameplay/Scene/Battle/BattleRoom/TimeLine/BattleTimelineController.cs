@@ -447,6 +447,7 @@ public class BattleTimelineController : MonoBehaviour
     {
         get
         {
+            if (BattleBossCinematicInputGate.IsBlocked) return false;
             if (turnExecutor == null)
             {
                 turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(
@@ -1344,6 +1345,7 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool OnTimelineSlotClicked(int slotIndex)
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return false;
         if (!TutorialFocusGuideRunner.AllowsSlot(slotIndex)) return false;
         if (isSlotSelectionLocked)
         {

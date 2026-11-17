@@ -225,11 +225,13 @@ public static class ArabellaPhaseTransition
 
     public static void NotifyPhaseTwoPresentationStarted()
     {
+        BattleBossCinematicInputGate.SetPhase(true);
         PhaseTwoPresentationStarted?.Invoke();
     }
 
     public static void NotifyPhaseTwoPresentationCompleted()
     {
+        BattleBossCinematicInputGate.SetPhase(false);
         PhaseTwoPresentationCompleted?.Invoke();
     }
 

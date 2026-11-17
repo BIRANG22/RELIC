@@ -1346,6 +1346,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return;
         if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
             return;
 

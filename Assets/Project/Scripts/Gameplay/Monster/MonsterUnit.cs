@@ -340,8 +340,25 @@ namespace Relic.Gameplay.Monster
             HideStatusHoverTooltip();
         }
 
+        private bool wasBossCinematicBlocked;
+
         private void Update()
         {
+            if (BattleBossCinematicInputGate.IsBlocked)
+            {
+                // Clear pre-existing hover only once; the cinematic may intentionally
+                // display the boss HP/HUD during its phase transition.
+                if (!wasBossCinematicBlocked)
+                {
+                    HideStatusHoverTooltip();
+                    HideAttackRangePreview();
+                    HideTemporaryHUD();
+                    SetTimelineHoverHighlight(false);
+                }
+                wasBossCinematicBlocked = true;
+                return;
+            }
+            wasBossCinematicBlocked = false;
             UpdateStatusHoverTooltipPosition();
 
             if (selectedMonster != this)
@@ -484,7 +501,7 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
-            if (TutorialGuideController.IsModalOpen) return;
+            if (TutorialGuideController.IsModalOpen || BattleBossCinematicInputGate.IsBlocked) return;
             if (TutorialBattleSequence.CanClickFinalTutorialWorldMonster(this))
             {
                 if (lastTutorialWorldClickFrame == Time.frameCount) return;
@@ -574,7 +591,7 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseEnter()
         {
-            if (TutorialGuideController.IsModalOpen) return;
+            if (TutorialGuideController.IsModalOpen || BattleBossCinematicInputGate.IsBlocked) return;
             // Do not show status tooltips for any monster while a monster info panel is open.
             if (infoSelectedMonster != null)
                 return;

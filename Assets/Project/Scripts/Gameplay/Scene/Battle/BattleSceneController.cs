@@ -120,8 +120,11 @@ public class BattleSceneController : MonoBehaviour
     private TimedObjectRevealSequence activeBossRevealSequence;
     private bool deferBattlePartyEntryUntilUncover;
 
+    private BossCinematicUiRaycastBlocker bossCinematicUiBlocker;
+
     private void Awake()
     {
+        bossCinematicUiBlocker = gameObject.AddComponent<BossCinematicUiRaycastBlocker>();
         HideSharedNextButtonOnSceneStart();
         AutoFindRoomRootIfNeeded();
         AutoFindSharedRoomPresentationIfNeeded();
@@ -144,6 +147,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void OnDestroy()
     {
+        BattleBossCinematicInputGate.SetIntro(false);
         if (tutorialSkipButton != null)
             tutorialSkipButton.onClick.RemoveListener(OnTutorialSkipButtonClicked);
     }
@@ -699,13 +703,6 @@ public class BattleSceneController : MonoBehaviour
 
         panel.OpenSavedResult(resume.ExplorationResultDefeat,
             resume.ExplorationResultRewardMultiplier);
-        if (!resume.ExplorationResultDefeat &&
-            BattleBgmDirector.IsRestoredBossVictory(mapRuntime))
-        {
-            BattleBgmDirector bgmDirector = Object.FindFirstObjectByType<BattleBgmDirector>(
-                FindObjectsInactive.Include);
-            bgmDirector?.RestoreBossVictoryBgm();
-        }
         save.ClearPendingResumeData();
         save.CompleteCheckpointAutosaveRestore();
         return true;
@@ -780,6 +777,8 @@ public class BattleSceneController : MonoBehaviour
 
     private void OnDisable()
     {
+        BattleBossCinematicInputGate.SetIntro(false);
+        BattleBossCinematicInputGate.SetPhase(false);
         CancelPendingBattleRoomIntro();
         SetBattleRoomIntroPlaying(false);
     }
@@ -1373,9 +1372,6 @@ public class BattleSceneController : MonoBehaviour
                     loader?.RestoreCompletedBattleCharacters();
                 }
                 resultPanel.Open();
-                BattleBgmDirector bgmDirector = Object.FindFirstObjectByType<BattleBgmDirector>(
-                    FindObjectsInactive.Include);
-                bgmDirector?.RestoreBossVictoryBgm();
                 SaveSystem.Instance?.CompleteCheckpointAutosaveRestore();
                 return true;
             }
@@ -2890,6 +2886,7 @@ public class BattleSceneController : MonoBehaviour
 
         if (pendingBattleRoomUsesBossIntro)
         {
+            BattleBossCinematicInputGate.SetIntro(true);
             SetBattleRoomIntroPlaying(true);
             SuppressBattleRoomExecutionUiUntilPlayerInputReady();
             LoadBattleRoomNow();
@@ -2957,6 +2954,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void CancelPendingBattleRoomIntro()
     {
+        BattleBossCinematicInputGate.SetIntro(false);
         battleRoomIntroLoadGate.Cancel();
 
         if (deferredBossIntroRoutine != null)
@@ -3104,6 +3102,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void FinalizeDeferredBossIntro()
     {
+        BattleBossCinematicInputGate.SetIntro(false);
         deferredBossIntroRoutine = null;
 
         // 보스 연출의 마지막 카메라 위치와 관계없이 일반 전투방 시작 구도로 복귀합니다.
@@ -3565,4 +3564,101 @@ public sealed class BattleErosionSelectClickHandler : MonoBehaviour
         if (lineImage != null)
             lineImage.color = hovering ? Color.white : normalLineColor;
     }
+}
+
+
+// Independent of the battle execution flag: cinematics must suppress both hover and UI clicks.
+public static class BattleBossCinematicInputGate
+{
+    private static bool introPlaying;
+    private static bool phasePlaying;
+    public static bool IsBlocked => introPlaying || phasePlaying;
+    public static void SetIntro(bool active) { introPlaying = active; }
+    public static void SetPhase(bool active) { phasePlaying = active; }
+}
+
+// Blocks raycasts for battle controls, without covering cinematic dialogue or the screen.
+public sealed class BossCinematicUiRaycastBlocker : MonoBehaviour
+{
+    private sealed class Entry
+    {
+        public CanvasGroup Group;
+        public bool OriginallyEnabled;
+        public bool OriginalBlocksRaycasts;
+        public bool OriginalInteractable;
+        public bool WasAdded;
+    }
+    private readonly System.Collections.Generic.List<Entry> entries = new System.Collections.Generic.List<Entry>();
+    private bool active;
+
+    private void LateUpdate()
+    {
+        bool blocked = BattleBossCinematicInputGate.IsBlocked;
+        if (blocked && !active) { active = true; CaptureControls(); }
+        else if (!blocked && active) { RestoreControls(); active = false; }
+        if (blocked)
+        {
+            if (entries.Count == 0) CaptureControls();
+            for (int i = 0; i < entries.Count; ++i)
+            {
+                if (entries[i].Group == null) continue;
+                entries[i].Group.blocksRaycasts = false;
+                entries[i].Group.interactable = false;
+            }
+        }
+    }
+
+    private void CaptureControls()
+    {
+        // The panel root includes skill/move/flip/item controls.
+        BattleCharacterPanelUI[] panels = Object.FindObjectsByType<BattleCharacterPanelUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (BattleCharacterPanelUI panel in panels) if (panel != null) Add(panel.gameObject);
+
+        // Timeline group UI lives under the BattleSlot root.
+        BattleTimelineGroupUI[] groups = Object.FindObjectsByType<BattleTimelineGroupUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (BattleTimelineGroupUI group in groups)
+        {
+            if (group == null) continue;
+            Transform p = group.transform;
+            while (p != null && p.name != "BattleSlot") p = p.parent;
+            if (p != null) Add(p.gameObject);
+            else Add(group.gameObject);
+        }
+    }
+
+    private void Add(GameObject target)
+    {
+        for (int i = 0; i < entries.Count; ++i) if (entries[i].Group != null && entries[i].Group.gameObject == target) return;
+        CanvasGroup group = target.GetComponent<CanvasGroup>();
+        bool added = group == null;
+        if (added) group = target.AddComponent<CanvasGroup>();
+        entries.Add(new Entry
+        {
+            Group = group,
+            WasAdded = added,
+            OriginallyEnabled = group.enabled,
+            OriginalBlocksRaycasts = group.blocksRaycasts,
+            OriginalInteractable = group.interactable
+        });
+        group.blocksRaycasts = false;
+        group.interactable = false;
+    }
+
+    private void RestoreControls()
+    {
+        foreach (Entry entry in entries)
+        {
+            if (entry.Group == null) continue;
+            if (entry.WasAdded) Destroy(entry.Group);
+            else
+            {
+                entry.Group.blocksRaycasts = entry.OriginalBlocksRaycasts;
+                entry.Group.interactable = entry.OriginalInteractable;
+                entry.Group.enabled = entry.OriginallyEnabled;
+            }
+        }
+        entries.Clear();
+    }
+    private void OnDisable() { RestoreControls(); active = false; BattleBossCinematicInputGate.SetIntro(false); }
+    private void OnDestroy() { RestoreControls(); }
 }

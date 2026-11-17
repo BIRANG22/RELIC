@@ -210,6 +210,11 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
     [Tooltip("Seconds between launches. Smaller values create a rapid, overlapping stream of VFX.")]
     [SerializeField, Min(0.005f)] private float acquisitionLaunchInterval = 0.045f;
 
+    [Header("Red Dustium Value Countdown")]
+    [Tooltip("Total seconds for the Red Dustium value to decrease from its starting amount to zero, regardless of the amount. Applies to the repeated conversion VFX.")]
+    [SerializeField, Min(0.01f)] private float redDustiumCountdownDuration = 3f;
+    private Coroutine redDustiumCountdownCoroutine;
+
     [Header("Fixed Red Dustium Icon Pulse")]
     [Tooltip("Optional red glow Image over the source icon. Pulses with each orb launch.")]
     [SerializeField] private Image redLaunchGlow;
@@ -491,8 +496,8 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         presentationCanvasGroup.interactable = false;
         presentationCanvasGroup.blocksRaycasts = false;
         redDustiumValueText.gameObject.SetActive(true);
-        redDustiumValueText.text = convertedRedDustium.ToString();
-        redDustiumValueText.color = ConversionStartColor;
+        redDustiumValueText.text = "+" + convertedRedDustium.ToString();
+        // Keep the TMP vertex color configured on RedDustiumValue in the Inspector.
         fixedRedDustiumIcon.gameObject.SetActive(true);
         // Respect the RectTransform position authored in the Inspector.
         // Transfer effects originate from the icon's actual screen-space center.
@@ -604,6 +609,13 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         int arrivedCount = 0;
         int thisSession = ++conversionSession;
 
+        // Animate the whole value over one fixed duration, independently of
+        // how many VFX transfers are spawned or how much each one carries.
+        if (redDustiumCountdownCoroutine != null)
+            StopCoroutine(redDustiumCountdownCoroutine);
+        redDustiumCountdownCoroutine = StartCoroutine(
+            AnimateRedDustiumCountdown(total, redDustiumCountdownDuration));
+
         RectTransform targetRect = blueDustiumHud.transform as RectTransform;
         Camera sourceCamera = ResolveConversionUiCamera(fixedRedDustiumIcon);
         Camera targetCamera = ResolveConversionUiCamera(targetRect);
@@ -629,18 +641,20 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
                 blueDustiumHud.SetValueImmediate(settlement.BlueBefore + arrivedAmount);
                 QueueArrivalPulse();
             }));
-            redDustiumValueText.text = (total - launchedAmount).ToString();
-            // One and only one complete icon pulse for each VFX launch.
-            // Waiting for the pulse prevents rapid launches from merging into a
-            // single visual pulse. There are exactly numberOfTransfers cycles.
+            // Keep the one-pulse-per-launch visual timing unchanged.
             float pulseDuration = Mathf.Max(interval, fixedRedIconPulsePeriod, 0.01f);
             yield return PulseFixedRedIconOnce(pulseDuration);
-            if (launchedAmount >= total)
-            {
-                fixedRedDustiumIcon.gameObject.SetActive(false);
-                redDustiumValueText.gameObject.SetActive(false);
-            }
         }
+
+        // Do not hide the value until the full fixed-time countdown completes.
+        // A 100 -> 0 and 500 -> 0 countdown take exactly the same duration.
+        if (redDustiumCountdownCoroutine != null)
+        {
+            yield return redDustiumCountdownCoroutine;
+            redDustiumCountdownCoroutine = null;
+        }
+        fixedRedDustiumIcon.gameObject.SetActive(false);
+        redDustiumValueText.gameObject.SetActive(false);
 
         // The effect can last beyond the last launch. Wait for the final arrival
         // before ending the conversion panel and its HUD presentation state.
@@ -662,6 +676,30 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             yield return null;
         }
         blueDustiumHud.transform.localScale = hudOriginalScale;
+    }
+
+    private IEnumerator AnimateRedDustiumCountdown(int startingAmount, float totalDuration)
+    {
+        startingAmount = Mathf.Max(0, startingAmount);
+        totalDuration = Mathf.Max(0.01f, totalDuration);
+        redDustiumValueText.text = "+" + startingAmount.ToString();
+        if (startingAmount == 0)
+            yield break;
+
+        float elapsed = 0f;
+        while (elapsed < totalDuration)
+        {
+            elapsed = Mathf.Min(totalDuration, elapsed + Time.unscaledDeltaTime);
+            // Linear time-based countdown: frame rate does not affect the end time.
+            // At large starting values, numbers may visually skip if there are
+            // more decrements per second than the display refresh rate.
+            int remaining = Mathf.Clamp(
+                Mathf.CeilToInt(startingAmount * (1f - elapsed / totalDuration)),
+                0, startingAmount);
+            redDustiumValueText.text = "+" + remaining.ToString();
+            yield return null;
+        }
+        redDustiumValueText.text = "+0";
     }
 
     // Only conversion uses this direct prefab path; the shared acquisition orb
@@ -904,7 +942,7 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             }
             int remainingRedDustium = CalculateRemainingRedDustium(
                 settlement.ConvertedRedDustium, progress);
-            redDustiumValueText.text = remainingRedDustium.ToString();
+            redDustiumValueText.text = "+" + remainingRedDustium.ToString();
             bool showFixedRedDustium = ShouldShowFixedRedDustium(
                 settlement.ConvertedRedDustium, progress);
             // The legacy one-shot transfer has one single pulse, synchronized
@@ -1039,6 +1077,11 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         {
             StopCoroutine(presentationCoroutine);
             presentationCoroutine = null;
+        }
+        if (redDustiumCountdownCoroutine != null)
+        {
+            StopCoroutine(redDustiumCountdownCoroutine);
+            redDustiumCountdownCoroutine = null;
         }
 
         RestoreHud();

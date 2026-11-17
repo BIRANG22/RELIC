@@ -15,6 +15,10 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text descriptionText;
 
+    [Header("Grid Effect Icons")]
+    [Tooltip("유골(GR_Skull_bone) 툴팁에 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite skullBoneGridIcon;
+
     public void BindFallbackReferences(Image icon, TMP_Text title, TMP_Text description)
     {
         iconImage = icon;
@@ -93,8 +97,13 @@ public class UnitStatusEffectTooltipItemUI : MonoBehaviour
         DisableRaycastTargets();
         if (iconImage != null)
         {
-            // Slime (GR_Residue) shares the Trail status effect icon.
-            Sprite gridIcon = data.GridEffectID == "GR_Residue" ? GetIcon("E_Trail") : null;
+            // Preserve the existing residue icon, and allow the skull-bone grid
+            // effect to use a sprite assigned on this tooltip item prefab.
+            Sprite gridIcon = null;
+            if (string.Equals(data.GridEffectID, "GR_Residue", StringComparison.OrdinalIgnoreCase))
+                gridIcon = GetIcon("E_Trail");
+            else if (string.Equals(data.GridEffectID, "GR_Skull_bone", StringComparison.OrdinalIgnoreCase))
+                gridIcon = skullBoneGridIcon;
             iconImage.sprite = gridIcon;
             // Grid effects are not beneficial or harmful. Reset pooled icon tint.
             iconImage.color = Color.white;

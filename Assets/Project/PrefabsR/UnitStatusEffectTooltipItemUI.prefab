@@ -67,6 +67,7 @@ MonoBehaviour:
   iconImage: {fileID: 4064266583389744543}
   titleText: {fileID: 7252654766307790384}
   descriptionText: {fileID: 4859964964385404999}
+  skullBoneGridIcon: {fileID: 21300000, guid: 40d7b8ea83e8cde48bdb5204d17fb42b, type: 3}
 --- !u!1 &762621031840915382
 GameObject:
   m_ObjectHideFlags: 0
@@ -210,8 +211,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
-  m_sharedMaterial: {fileID: 4522203511505876769, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
+  m_sharedMaterial: {fileID: -7133732941862592188, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -363,8 +364,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
-  m_sharedMaterial: {fileID: 4522203511505876769, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
+  m_sharedMaterial: {fileID: -7133732941862592188, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

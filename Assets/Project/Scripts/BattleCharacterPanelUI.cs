@@ -2783,6 +2783,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void HandleBattleKeyboardShortcuts()
     {
+        if (BattleBossCinematicInputGate.IsBlocked) return;
         if (TutorialGuideController.IsModalOpen) return;
         if (UIPanelButton.IsMenuPanelOpen)
             return;
