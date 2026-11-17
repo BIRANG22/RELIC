@@ -180,9 +180,9 @@ public class BattleResultChecker : MonoBehaviour
                     unit.RuntimeData.CurrentHP <= 0);
             if (arabellaPhaseTwoDefeated)
                 BossVictoryStarted?.Invoke();
+            BattleEquipmentEffectService.ApplyBattleEndHealToParty();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Win");
-            BattleEquipmentEffectService.ApplyBattleEndHealToParty();
 
             IReadOnlyList<MonsterRuntimeData> defeatedMonsters =
                 BattleRewardCollector.Instance != null

@@ -4918,8 +4918,13 @@ public class BattleTimelineController : MonoBehaviour
             command.UserRuntime,
             slotIndex,
             command);
+        int earlierSkillReservationCount = GetEarlierSkillCommandCount(
+            command.UserRuntime,
+            slotIndex,
+            command);
 
         command.SetEarlierAttackReservationCount(earlierAttackReservationCount);
+        command.SetEarlierSkillReservationCount(earlierSkillReservationCount);
 
         BattleEquipmentEffectService.ApplyReservationCostModifiers(
             command,
@@ -4993,6 +4998,41 @@ public class BattleTimelineController : MonoBehaviour
 
                 if (candidate.SkillData.SkillType == SkillType.Attack)
                     count++;
+            }
+        }
+
+        return count;
+    }
+
+    private int GetEarlierSkillCommandCount(
+        CharacterRuntimeData runtime,
+        int targetSlotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        if (runtime == null || reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int safeTargetSlotIndex = Mathf.Clamp(targetSlotIndex, 0, reserveSlots.Length - 1);
+        int count = 0;
+
+        for (int slotIndex = 0; slotIndex <= safeTargetSlotIndex; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+            if (slot?.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand candidate = slot.Commands[i];
+                if (candidate == currentCommand)
+                    return count;
+
+                if (IsSameRuntimeCommand(runtime, candidate) &&
+                    candidate.SkillData != null &&
+                    !BattleEquipmentEffectService.IsMoveCommand(candidate))
+                {
+                    count++;
+                }
             }
         }
 
@@ -5207,8 +5247,13 @@ public class BattleTimelineController : MonoBehaviour
                     command.UserRuntime,
                     slotIndex,
                     command);
+                int earlierSkillReservationCount = GetEarlierSkillCommandCount(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
 
                 command.SetEarlierAttackReservationCount(earlierAttackReservationCount);
+                command.SetEarlierSkillReservationCount(earlierSkillReservationCount);
 
                 BattleEquipmentEffectService.ApplyReservationCostModifiers(
                     command,

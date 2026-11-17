@@ -140,7 +140,6 @@ public static class BattleEquipmentEffectService
     private const string RuneZeroManaNextFirstSkillFreeEffectId = "E_Rune_Zero_Mana_Next_First_Skill_Free";
     private const string RuneTurnStartAdjacentAllyHealEffectId = "E_Rune_Turn_Start_Adjacent_Ally_Heal";
     private const string RuneHighHpHealRemoveFirstDebuffEffectId = "E_Rune_High_HP_Heal_Remove_First_Debuff";
-    private const string RuneNextTurnFirstSkillFreeStateId = "State_Rune_Next_Turn_First_Skill_Free";
     private const string MoveFirstAttackPowerEffectId = "E_Move_First_Attack_Power";
     private const string PoisonApplyDoubleEffectId = "E_Poison_Apply_Double";
     private const string BleedingApplyDoubleEffectId = "E_Bleeding_Apply_Double";
@@ -150,6 +149,7 @@ public static class BattleEquipmentEffectService
     private const string BuffApplyDoubleEffectId = "E_Buff_Apply_Double";
     private const string MovePointUpEffectId = "E_Move_Point_Up";
     private const string MoveFirstAttackReadyStateId = "State_MoveFirstAttackPowerReady";
+    private const string SmiteConsumedThisTurnStateId = "State_SmiteConsumedThisTurn";
     private const string SpiderWebMoveCostPenaltyEffectId = "E_Spider_Web";
     private const int SpiderWebActiveTurnCount = 1;
     public const int SpiderWebCostMultiplier = 2;
@@ -307,6 +307,8 @@ public static class BattleEquipmentEffectService
         runtime.PendingUniqueResourceMaxCostRecovery = 0;
         runtime.PendingUniqueResourceMaxArmor = 0;
         runtime.PendingUniqueResourceMaxSelfLowestAllyArmor = 0;
+        runtime.RuneNextTurnFirstSkillFreePending = false;
+        runtime.RuneNextTurnFirstSkillFreeActive = false;
     }
 
     public static void MarkMovedBeforeNextAttack(CharacterRuntimeData runtime)
@@ -336,6 +338,39 @@ public static class BattleEquipmentEffectService
             return;
 
         RemoveBattleEffectApplied(runtime, MoveFirstAttackReadyStateId);
+    }
+
+    public static bool IsSmiteReady(CharacterRuntimeData runtime)
+    {
+        return GetStatusStack(runtime, "E_Smite") > 0 &&
+               !HasBattleEffectApplied(runtime, SmiteConsumedThisTurnStateId);
+    }
+
+    public static bool TryConsumeSmiteForAttack(CharacterRuntimeData runtime)
+    {
+        if (!IsSmiteReady(runtime) || runtime.StatusEffects == null)
+            return false;
+
+        for (int i = runtime.StatusEffects.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = runtime.StatusEffects[i];
+            if (status == null || status.EffectId != "E_Smite" || status.Stack <= 0)
+                continue;
+
+            status.Stack--;
+            if (status.Stack <= 0)
+                runtime.StatusEffects.RemoveAt(i);
+
+            TryMarkBattleEffectApplied(runtime, SmiteConsumedThisTurnStateId);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static void ResetSmiteTurnUsage(CharacterRuntimeData runtime)
+    {
+        RemoveBattleEffectApplied(runtime, SmiteConsumedThisTurnStateId);
     }
 
     public static void ApplyPlayerLifesteal(BattleEffectContext context, int dealtDamage)
@@ -398,6 +433,9 @@ public static class BattleEquipmentEffectService
         if (runtime == null)
             return;
 
+        runtime.RuneNextTurnFirstSkillFreeActive = runtime.RuneNextTurnFirstSkillFreePending;
+        runtime.RuneNextTurnFirstSkillFreePending = false;
+        ResetSmiteTurnUsage(runtime);
         ApplyQueuedNextTurnSmite(runtime, playerTurnNumber);
         ApplyQueuedNextTurnBoost(runtime, playerTurnNumber);
         ApplyQueuedUniqueResourceMaxRuneEffects(runtime);
@@ -713,10 +751,10 @@ public static class BattleEquipmentEffectService
                 cost += lowHpCostDelta;
         }
 
-        if (slotIndex == 0 &&
-            isFirstSkillInSlot &&
-            !IsMoveCommand(command) &&
-            HasBattleEffectApplied(command.UserRuntime, RuneNextTurnFirstSkillFreeStateId))
+        if (command.UserRuntime.RuneNextTurnFirstSkillFreeActive &&
+            RuneEffectRules.IsFirstNonMoveMemory(
+                command.EarlierSkillReservationCount,
+                IsMoveCommand(command)))
         {
             cost = 0;
         }
@@ -1122,13 +1160,13 @@ public static class BattleEquipmentEffectService
 
         int remainingCost = Mathf.Max(0, runtime.CurrentCost - runtime.ReservedCost);
 
-        if (SumConfiguredEffectValues(runtime, RuneZeroManaNextFirstSkillFreeEffectId) > 0)
-        {
-            if (remainingCost <= 0)
-                TryMarkBattleEffectApplied(runtime, RuneNextTurnFirstSkillFreeStateId);
-            else
-                RemoveBattleEffectApplied(runtime, RuneNextTurnFirstSkillFreeStateId);
-        }
+        runtime.RuneNextTurnFirstSkillFreePending =
+            SumConfiguredEffectValues(runtime, RuneZeroManaNextFirstSkillFreeEffectId) > 0 &&
+            remainingCost <= 0;
+
+        int armorThreshold = SumConfiguredEffectValues(runtime, RuneArmorThresholdSmiteEffectId);
+        if (RuneEffectRules.MeetsArmorThresholdAtTurnEnd(runtime.CurrentShield, armorThreshold))
+            AddTemporaryStatus(runtime, "E_Smite", 1, RuneArmorThresholdSmiteEffectId);
 
         int recovery = SumConfiguredEffectValues(runtime, OnceBattleEndTurnZeroCostChargeEffectId);
 
@@ -1167,19 +1205,14 @@ public static class BattleEquipmentEffectService
         CharacterRuntimeData runtime = context.PlayerCaster.RuntimeData;
         MonsterRuntimeData targetRuntime = context.MonsterTarget.RuntimeData;
 
-        int lowHpPercent = SumConfiguredEffectValues(runtime, RuneLowHpDamagePercentEffectId);
-        if (lowHpPercent > 0 && RuneEffectRules.IsAtOrBelowHalfHp(runtime.CurrentHP, runtime.MaxHP))
-            result *= 1f + lowHpPercent / 100f;
+        result = ModifyLowHpRuneDamage(runtime, result);
 
-        int hitCount = 1;
-        if (context.PlayerCommand?.ResolvedEffectCounts != null)
-            for (int i = 0; i < context.PlayerCommand.ResolvedEffectCounts.Count; i++)
-                hitCount = Mathf.Max(hitCount, context.PlayerCommand.ResolvedEffectCounts[i]);
+        int hitCount = Mathf.Max(1, context.Count);
 
-        int targetCount = context.PlayerCommand?.TargetGridIndices?.Count ?? 0;
+        int livingEnemyCount = context.LivingEnemyCount;
         if (hitCount >= 3)
             result += SumConfiguredEffectValues(runtime, RuneMultiHitDamageDeltaEffectId);
-        if (targetCount == 1)
+        if (livingEnemyCount == 1)
             result += SumConfiguredEffectValues(runtime, RuneSingleTargetDamageDeltaEffectId);
 
         if (targetRuntime.MaxHP > 0 && targetRuntime.CurrentHP >= targetRuntime.MaxHP)
@@ -1190,6 +1223,14 @@ public static class BattleEquipmentEffectService
         }
 
         return result;
+    }
+
+    public static float ModifyLowHpRuneDamage(CharacterRuntimeData runtime, float damage)
+    {
+        int percent = SumConfiguredEffectValues(runtime, RuneLowHpDamagePercentEffectId);
+        bool conditionMet = runtime != null &&
+            RuneEffectRules.IsAtOrBelowHalfHp(runtime.CurrentHP, runtime.MaxHP);
+        return RuneEffectRules.ApplyLowHpDamagePercent(damage, percent, conditionMet);
     }
 
     public static int GetCollisionTargetDamageDelta(CharacterRuntimeData runtime)
@@ -1365,9 +1406,15 @@ public static class BattleEquipmentEffectService
         if (runtime == null || command == null || entry == null)
             return value;
 
+        SkillType skillType = command.SkillData?.SkillType ?? SkillType.None;
+
         if (entry.EffectId == "E_Cure")
         {
             // 파편 보정을 먼저 확정한 뒤 유물 보정을 적용합니다.
+            value += RuneEffectRules.ResolveGeneralRuneValueDelta(
+                entry.EffectId,
+                skillType,
+                SumConfiguredRuneEffectValues(runtime, HealValueDeltaEffectId));
             value += SumConfiguredRuneEffectValues(
                 runtime, RuneTargetHealValueDeltaEffectId);
             value += SumConfiguredRelicEffectValues(runtime, HealValueDeltaEffectId);
@@ -1381,14 +1428,30 @@ public static class BattleEquipmentEffectService
             if (armorMultiplier > 1)
                 value *= armorMultiplier;
 
+            value += RuneEffectRules.ResolveGeneralRuneValueDelta(
+                entry.EffectId,
+                skillType,
+                SumConfiguredRuneEffectValues(runtime, SkillArmorValueDeltaEffectId));
             value += SumConfiguredRelicEffectValues(runtime, SkillArmorValueDeltaEffectId);
         }
 
         if (entry.EffectId == "E_Poison")
+        {
+            value += RuneEffectRules.ResolveGeneralRuneValueDelta(
+                entry.EffectId,
+                skillType,
+                SumConfiguredRuneEffectValues(runtime, PoisonValueDeltaEffectId));
             value += SumConfiguredRelicEffectValues(runtime, PoisonValueDeltaEffectId);
+        }
 
         if (entry.EffectId == "E_Bleed")
+        {
+            value += RuneEffectRules.ResolveGeneralRuneValueDelta(
+                entry.EffectId,
+                skillType,
+                SumConfiguredRuneEffectValues(runtime, BleedValueDeltaEffectId));
             value += SumConfiguredRelicEffectValues(runtime, BleedValueDeltaEffectId);
+        }
 
         if (entry.EffectId == "E_Boost")
         {
@@ -1406,7 +1469,11 @@ public static class BattleEquipmentEffectService
                 runtime.CurrentHP);
             value = Mathf.Max(
                 0,
-                value + SumConfiguredRuneEffectValues(
+                value + RuneEffectRules.ResolveGeneralRuneValueDelta(
+                    entry.EffectId,
+                    skillType,
+                    SumConfiguredRuneEffectValues(runtime, AttackValueDeltaEffectId)) +
+                SumConfiguredRuneEffectValues(
                     runtime, RuneTargetDamageValueDeltaEffectId));
             value = ApplyOrderedRelicDamageModifiers(runtime, command, value);
         }
@@ -1471,9 +1538,9 @@ public static class BattleEquipmentEffectService
 
         if (IsPlayerHitCountEffect(entry.EffectId) &&
             command.SkillData != null &&
-            command.SkillData.SkillType == SkillType.Attack &&
-            command.TimelineSlotIndex == 0 &&
-            command.IsFirstSkillInSlot)
+            RuneEffectRules.ResolveFirstRegisteredAttackCountDelta(
+                command.EarlierAttackReservationCount,
+                command.SkillData.SkillType == SkillType.Attack) > 0)
         {
             count += SumConfiguredEffectValues(runtime, RuneFirstRegisteredAttackCountEffectId);
         }
@@ -1752,10 +1819,6 @@ public static class BattleEquipmentEffectService
     {
         if (runtime == null || runtime.IsDead)
             return;
-
-        int armorThreshold = SumConfiguredEffectValues(runtime, RuneArmorThresholdSmiteEffectId);
-        if (armorThreshold > 0 && runtime.CurrentShield >= armorThreshold)
-            AddTemporaryStatus(runtime, "E_Smite", 1, RuneArmorThresholdSmiteEffectId);
 
         ApplyAdjacentAllyTurnStartHeal(runtime);
 
@@ -2732,7 +2795,7 @@ public static class BattleEquipmentEffectService
             TurnStartBoostEffectId => "E_Boost",
             TurnStartSmiteEffectId => "E_Smite",
             TurnStartLifestealEffectId => "E_Lifesteal",
-            "E_Rune_Turn1_Ward" => "E_Ward",
+            "E_Rune_Turn1_Ward" => RuneEffectRules.ResolveTurnStartRuneStatus("E_Rune_Turn1_Ward"),
             _ => string.Empty
         };
     }

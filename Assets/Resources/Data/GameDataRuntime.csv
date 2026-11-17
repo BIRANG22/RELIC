@@ -229,7 +229,7 @@ E_Crash,충돌,Neutral,0,0,이동 중 유닛이나 장애물에 막히면 고정
 E_Knockback,넉백,Neutral,0,0,대상을 시전자에게서 멀어지는 방향으로 밀어낸다.,1
 E_Grab,그랩,Neutral,0,0,대상을 시전자에게 가까워지는 방향으로 당겨온다.,1
 E_Boost,증폭,Beneficial,Remove,턴 종료 시 소멸,수치만큼 공격의 피해량이 증가한다.,1
-E_Smite,강타,Beneficial,Decrease,턴 종료 시 1 감소,첫 공격의 피해가 50% 증가한다.,1
+E_Smite,강타,Beneficial,DecreaseOnTrigger,첫 공격 적용 시 1 감소,첫 공격의 피해가 50% 증가한다.,1
 E_Blindside,기습,Beneficial,Decrease,턴 종료 시 1 감소,후방 공격 시 피해가 50% 증가한다. ,1
 E_Grit,투지,Beneficial,Decrease,턴 종료 시 1 감소,주는 피해가 30% 증가한다.,1
 AR_DamageBoostThisTurn,힘,Beneficial,Decrease,턴 종료 시 1 감소,주는 피해가 100% 증가한다.,1
@@ -770,7 +770,7 @@ Range_m_02,-,0;0,0;1,1;0,0;-1,-1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 룬ID,이름,대상캐릭터ID,효과ID,수치계수,횟수계수,해금가격,해금레벨,효과설명,레어도
 RuneId,Name,TargetCharacterId,EffectIds,ValueRate,CountRate,BlueDustiumCost,UnlockLevel,EffectDesc,Rarity
 Rune_51,투혼,Char_01,E_Rune_Low_HP_Damage_Percent,30,1,0,3,생명력이 50% 이하일 때 주는 피해가 {ValueRate1}% 증가한다.,Exclusive
-Rune_52,기세,Char_01,E_Rune_Armor10_Smite,10,1,0,6,턴 시작 시 방어도가 {ValueRate1} 이상이면 강타 1을 획득한다.,Exclusive
+Rune_52,기세,Char_01,E_Rune_Armor10_Smite,10,1,0,6,턴 종료 시 방어도가 {ValueRate1} 이상이면 강타 1을 획득한다.,Exclusive
 Rune_53,수호,Char_01,E_Rune_Turn1_Ward,1,1,0,9,첫 턴 시작 시 장막 {ValueRate1}을 획득한다.,Exclusive
 Rune_54,충만,Char_01,E_Overheal_To_Armor,1,1,0,12,생명력 초과 회복량만큼 방어도를 획득한다.,Exclusive
 Rune_55,격진,Char_01,E_Rune_Turn_Start_Lose_HP_Boost,1,1,0,15,턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,Exclusive

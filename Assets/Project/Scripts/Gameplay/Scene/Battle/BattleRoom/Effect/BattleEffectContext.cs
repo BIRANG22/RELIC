@@ -21,6 +21,7 @@ public class BattleEffectContext
     public string EffectId;
     public int Value;
     public int Count;
+    public int LivingEnemyCount;
     public SkillExecutionResult ExecutionResult;
 
     // 같은 공격 행동의 연타는 첫 피해 판정 시점의 기습 성립 여부를 공유합니다.

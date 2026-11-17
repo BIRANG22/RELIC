@@ -172,7 +172,9 @@ public static class BattleDamageModifierUtility
                     break;
 
                 case "E_Smite":
-                    if (isAttackSkill && smiteAttacksAlreadyReserved < status.Stack)
+                    if (isAttackSkill &&
+                        smiteAttacksAlreadyReserved == 0 &&
+                        BattleEquipmentEffectService.IsSmiteReady(runtime))
                         value *= 1.5f;
                     break;
 
