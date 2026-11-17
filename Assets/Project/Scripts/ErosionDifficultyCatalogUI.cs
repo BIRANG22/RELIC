@@ -1131,13 +1131,20 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         if (target.GetComponent<LocalizationIgnore>() == null)
             target.AddComponent<LocalizationIgnore>();
 
+        // Prevent auto-localization on UI text owned by this presenter.
+        if (target.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            target.AddComponent<LocalizationAutoBindingIgnore>();
+
         LocalizedTMPText localizedTmp = target.GetComponent<LocalizedTMPText>();
         if (localizedTmp != null)
             localizedTmp.enabled = false;
 
         DynamicLocalizedTMPText dynamicLocalizedTmp = target.GetComponent<DynamicLocalizedTMPText>();
         if (dynamicLocalizedTmp != null)
+        {
             dynamicLocalizedTmp.enabled = false;
+            Destroy(dynamicLocalizedTmp);
+        }
 
         LocalizeStringEvent localizeStringEvent = target.GetComponent<LocalizeStringEvent>();
         if (localizeStringEvent != null)
