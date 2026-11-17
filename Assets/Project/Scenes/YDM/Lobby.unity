@@ -130570,6 +130570,10 @@ MonoBehaviour:
   - {fileID: 782155788}
   - {fileID: 205560709}
   - {fileID: 1740849652}
+  descriptionCommonColor: {r: 0.7607843, g: 0.81960785, b: 0.8901961, a: 1}
+  descriptionRareColor: {r: 0.39607844, g: 0.6, b: 0.8117647, a: 1}
+  descriptionEpicColor: {r: 0.7411765, g: 0.4627451, b: 0.8980392, a: 1}
+  descriptionUniqueColor: {r: 0.9254902, g: 0.41568628, b: 0.42352942, a: 1}
   purchaseTransferStartSoundId: effect_get
   purchaseTransferStartSoundVolume: 0.5
   purchaseBounceOffset: {x: 180, y: 120}

@@ -22,6 +22,16 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField, HideInInspector] private LobbyRelicRefreshButtonUI[] refreshButtons = Array.Empty<LobbyRelicRefreshButtonUI>();
     [SerializeField] private GameObject[] relicDescriptionRoots = new GameObject[RelicDescriptionSlotCount];
 
+    [Header("Relic Description Back Rarity Colors")]
+    [Tooltip("RecordPanelUI 색상을 사용할 수 없을 때 relic##_info/Back에 적용할 일반 등급 색상입니다.")]
+    [SerializeField] private Color descriptionCommonColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    [Tooltip("RecordPanelUI 색상을 사용할 수 없을 때 사용할 레어 등급 색상입니다.")]
+    [SerializeField] private Color descriptionRareColor = new Color32(0x52, 0x86, 0xC7, 0xFF);
+    [Tooltip("RecordPanelUI 색상을 사용할 수 없을 때 사용할 에픽 등급 색상입니다.")]
+    [SerializeField] private Color descriptionEpicColor = new Color32(0xA0, 0x72, 0xC2, 0xFF);
+    [Tooltip("RecordPanelUI 색상을 사용할 수 없을 때 사용할 유니크 등급 색상입니다.")]
+    [SerializeField] private Color descriptionUniqueColor = new Color32(0xCD, 0xA4, 0x52, 0xFF);
+
     private readonly TMP_Text[] relicDescriptionNameTexts = new TMP_Text[RelicDescriptionSlotCount];
     private readonly TMP_Text[] relicDescriptionRarityTexts = new TMP_Text[RelicDescriptionSlotCount];
     private readonly TMP_Text[] relicDescriptionBodyTexts = new TMP_Text[RelicDescriptionSlotCount];
@@ -1050,6 +1060,14 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private Color ResolveRecordRarityColor(string rarity)
     {
+        // RecordPanelUI가 비활성화되어 있거나 아직 팔레트를 초기화하지 않았어도
+        // 유물 상점의 설명 배경에는 반드시 레어도 색상이 적용되어야 한다.
+        if (RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out Color cachedColor) &&
+            !IsUnconfiguredRarityColor(rarity, cachedColor))
+        {
+            return cachedColor;
+        }
+
         if (recordPanelUI == null)
         {
             RecordPanelUI[] panels = FindObjectsByType<RecordPanelUI>(
@@ -1060,9 +1078,33 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
                 recordPanelUI = panels[0];
         }
 
-        return recordPanelUI != null
-            ? recordPanelUI.GetRarityDisplayColor(rarity)
-            : Color.white;
+        if (recordPanelUI != null)
+        {
+            Color color = recordPanelUI.GetRarityDisplayColor(rarity);
+            if (!IsUnconfiguredRarityColor(rarity, color))
+                return color;
+        }
+
+        switch ((rarity ?? string.Empty).Trim().ToLowerInvariant())
+        {
+            case "rare": return descriptionRareColor;
+            case "epic": return descriptionEpicColor;
+            case "unique": return descriptionUniqueColor;
+            default: return descriptionCommonColor;
+        }
+    }
+
+    private static bool IsUnconfiguredRarityColor(string rarity, Color color)
+    {
+        // RecordPanelUI의 필드는 기본적으로 흰색이므로, 색상이 등록되지 않은
+        // 레어/에픽/유니크는 상점의 기본 팔레트로 대체한다.
+        if (string.IsNullOrWhiteSpace(rarity) ||
+            string.Equals(rarity.Trim(), "Common", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return Mathf.Approximately(color.r, 1f) &&
+               Mathf.Approximately(color.g, 1f) &&
+               Mathf.Approximately(color.b, 1f);
     }
 
     private void RestoreOfferVisibility()
