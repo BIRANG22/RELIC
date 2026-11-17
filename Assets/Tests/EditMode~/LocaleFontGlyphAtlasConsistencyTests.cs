@@ -9,8 +9,6 @@ public sealed class LocaleFontGlyphAtlasConsistencyTests
 
     [TestCase("Assets/Fonts/TMP/Pretendard-Bold SDF.asset")]
     [TestCase("Assets/Fonts/TMP/PretendardJP-Bold SDF.asset")]
-    [TestCase("Assets/Fonts/TMP/ZiTiQuanWeiJunHei-W2-2 SDF.asset")]
-    [TestCase("Assets/Fonts/TMP/ZhiyiSans-Bold SDF.asset")]
     public void LocaleFont_IsDynamicAndAllowsAdditionalAtlasTextures(string assetPath)
     {
         TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
@@ -20,10 +18,35 @@ public sealed class LocaleFontGlyphAtlasConsistencyTests
         Assert.That(font.isMultiAtlasTexturesEnabled, Is.True, assetPath);
     }
 
+    [TestCase("zh-Hans", "继续探索 奖励 选择 休息")]
+    [TestCase("zh-Hant", "繼續探索 獎勵 選擇 休息")]
+    public void ChineseLocaleFont_IsDynamicMultiAtlasAndContainsRepresentativeText(
+        string localeCode,
+        string content)
+    {
+        LocaleFontDatabase database = AssetDatabase.LoadAssetAtPath<LocaleFontDatabase>(DatabasePath);
+
+        Assert.That(database, Is.Not.Null);
+        Assert.That(
+            database.TryResolve(localeCode, LocaleFontDatabase.BodyRoleId, out TMP_FontAsset font),
+            Is.True,
+            localeCode);
+        Assert.That(font, Is.Not.Null, localeCode);
+        Assert.That(font.atlasPopulationMode, Is.EqualTo(AtlasPopulationMode.Dynamic), localeCode);
+        Assert.That(font.isMultiAtlasTexturesEnabled, Is.True, localeCode);
+        Assert.That(font.sourceFontFile, Is.Not.Null, localeCode);
+
+        foreach (char character in content)
+        {
+            if (char.IsWhiteSpace(character))
+                continue;
+            Assert.That(font.sourceFontFile.HasCharacter(character), Is.True, $"{localeCode} missing '{character}'");
+        }
+    }
+
     [TestCase("Assets/Fonts/TMP/Pretendard-Bold SDF.asset", "탐사진행 이름 버리기 스킬 휴식 정예 보스 사건")]
     [TestCase("Assets/Fonts/TMP/Pretendard-Bold SDF.asset", "Exploración Recompensa Selección")]
     [TestCase("Assets/Fonts/TMP/PretendardJP-Bold SDF.asset", "探索を続ける 報酬 選択 休息")]
-    [TestCase("Assets/Fonts/TMP/ZiTiQuanWeiJunHei-W2-2 SDF.asset", "继续探索 奖励 选择 休息")]
     public void LocaleFont_SourceContainsRepresentativeTexts(string assetPath, string content)
     {
         TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
@@ -36,18 +59,6 @@ public sealed class LocaleFontGlyphAtlasConsistencyTests
                 continue;
             Assert.That(font.sourceFontFile.HasCharacter(character), Is.True, $"Missing '{character}'");
         }
-    }
-
-    [Test]
-    public void TraditionalChinese_UsesFontWhoseSourceContainsRepresentativeDatabaseText()
-    {
-        LocaleFontDatabase database = AssetDatabase.LoadAssetAtPath<LocaleFontDatabase>(DatabasePath);
-
-        Assert.That(database, Is.Not.Null);
-        Assert.That(database.TryResolve("zh-Hant", LocaleFontDatabase.BodyRoleId, out TMP_FontAsset font), Is.True);
-        Assert.That(font.name, Is.EqualTo("ZhiyiSans-Bold SDF"));
-        foreach (char character in "繼續探索獎勵選擇")
-            Assert.That(font.sourceFontFile.HasCharacter(character), Is.True, $"Missing '{character}'");
     }
 
     [Test]
