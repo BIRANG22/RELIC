@@ -55,7 +55,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100720
-    m_Localized: Combine
+    m_Localized: Crafting
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100721
@@ -63,7 +63,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100724
-    m_Localized: Explore
+    m_Localized: Expedition
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100726
@@ -251,7 +251,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631881
-    m_Localized: Liberation
+    m_Localized: Duty
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631882
@@ -598,7 +598,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631993
-    m_Localized: Swift
+    m_Localized: Haste
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631994
@@ -1355,7 +1355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992003
-    m_Localized: Dry Bowl
+    m_Localized: Dried Vessel
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992004
@@ -1371,7 +1371,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992009
-    m_Localized: Red Oath Sword
+    m_Localized: Crimson Oathblade
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992010
@@ -1398,7 +1398,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992018
-    m_Localized: Wings of the Vanguard
+    m_Localized: Vanguard Wings
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992019
@@ -1425,7 +1425,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992027
-    m_Localized: Golden Cup
+    m_Localized: Golden Chalice
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992028
@@ -1434,7 +1434,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992030
-    m_Localized: Solid Hourglass
+    m_Localized: Hardened Hourglass
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992031
@@ -1497,7 +1497,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992051
-    m_Localized: Solid Helmet
+    m_Localized: Sturdy Helmet
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992052
@@ -1515,7 +1515,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992057
-    m_Localized: Telescope
+    m_Localized: Spyglass
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992058
@@ -1542,7 +1542,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992066
-    m_Localized: Prophet's Talisman
+    m_Localized: Visionary's Amulet
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992067
@@ -1551,7 +1551,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992069
-    m_Localized: Censer of Plague
+    m_Localized: Plague Censer
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992070
@@ -1595,7 +1595,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992084
-    m_Localized: Heavy foot decoration
+    m_Localized: Heavy Anklet
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992085
@@ -1639,7 +1639,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992099
-    m_Localized: Scale of the Abyss
+    m_Localized: Abyssal Scale
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992100
@@ -1647,7 +1647,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992102
-    m_Localized: Cast Iron Boots
+    m_Localized: Iron Boots
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992103
@@ -1673,7 +1673,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992111
-    m_Localized: Cup of Blood
+    m_Localized: Blood Chalice
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992112
@@ -1699,7 +1699,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992120
-    m_Localized: Horn of the Divine Beast
+    m_Localized: Divine Beast's Horn
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992121
@@ -1707,7 +1707,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992123
-    m_Localized: Old Belt
+    m_Localized: Worn Belt
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992124
@@ -1749,7 +1749,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992138
-    m_Localized: Poison syringe scam
+    m_Localized: Poison Syringe
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992139
@@ -1821,7 +1821,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992162
-    m_Localized: Shining crystal ball
+    m_Localized: Glowing Crystal Ball
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992163
@@ -1839,7 +1839,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992168
-    m_Localized: Chain Scythe
+    m_Localized: Chain Sickle
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992169
@@ -1848,7 +1848,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992171
-    m_Localized: Magic Power Lens
+    m_Localized: Arcane Lens
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992172
@@ -1856,7 +1856,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992174
-    m_Localized: Magic Power Crystal
+    m_Localized: Arcane Crystal
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992175
@@ -1872,7 +1872,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992180
-    m_Localized: Unexploded bomb
+    m_Localized: Dud
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992181
@@ -1897,7 +1897,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186306
-    m_Localized: Merchant's Gold Seal
+    m_Localized: Merchant's Golden Seal
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186307
@@ -1905,7 +1905,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186309
-    m_Localized: Bag of beads
+    m_Localized: Marble Pouch
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186310
@@ -1985,7 +1985,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186384
-    m_Localized: Shield Piece
+    m_Localized: Shield Fragment
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186386
@@ -2105,11 +2105,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839810
-    m_Localized: Pledge
+    m_Localized: Oath
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839811
-    m_Localized: Yearning
+    m_Localized: Ardor
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839815
@@ -2129,7 +2129,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839819
-    m_Localized: Toxic Deluge
+    m_Localized: Toxic Overflow
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839820
@@ -2173,7 +2173,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839845
-    m_Localized: Guardian's Aura
+    m_Localized: Protective Aura
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839847
@@ -2205,7 +2205,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839861
-    m_Localized: Ironclad Charge
+    m_Localized: Ironclad Rush
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839863
@@ -2221,7 +2221,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839869
-    m_Localized: Flying Swallow Blade
+    m_Localized: Swallow Blade
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839871
@@ -2229,7 +2229,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839873
-    m_Localized: Rending Slash
+    m_Localized: Scarring Slash
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839875
@@ -2339,7 +2339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101026
-    m_Localized: Bloodline Thrust
+    m_Localized: Vein Pierce
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101027
@@ -2353,7 +2353,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101030
-    m_Localized: Bloodbloom
+    m_Localized: Blood Blossom
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101031
@@ -2396,7 +2396,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101050
-    m_Localized: Razor Flash
+    m_Localized: Piercing Flash
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101054
@@ -2500,7 +2500,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101106
-    m_Localized: Bond
+    m_Localized: Unity
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101107
@@ -2549,15 +2549,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10173380895973443
-    m_Localized: Lothern Ruins
+    m_Localized: Roderne Ruins
     m_Metadata:
       m_Items: []
   - m_Id: 10175616531308544
-    m_Localized: Exploration progress
+    m_Localized: Exploration Progress
     m_Metadata:
       m_Items: []
   - m_Id: 10175616548085760
-    m_Localized: Abandon exploration
+    m_Localized: Abandon Exploration
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510643
@@ -2737,15 +2737,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510730
-    m_Localized: Shadow merchant
+    m_Localized: Shadow Merchant
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510745
-    m_Localized: Seraphia's support
+    m_Localized: Seraphia's Support
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510747
-    m_Localized: Forbidden ritual
+    m_Localized: Forbidden Ritual
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510754
@@ -2757,15 +2757,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510769
-    m_Localized: Dustium Deposit
+    m_Localized: Dustium Vein
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510782
-    m_Localized: Fountain of rest
+    m_Localized: Fountain of Repose
     m_Metadata:
       m_Items: []
   - m_Id: 10185974318899314
-    m_Localized: Magic Flask
+    m_Localized: Mana Flask
     m_Metadata:
       m_Items: []
   - m_Id: 10185974318899318
@@ -3226,7 +3226,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17041964720988168
-    m_Localized: Store
+    m_Localized: Shop
     m_Metadata:
       m_Items: []
   - m_Id: 17041964720988218
@@ -3522,7 +3522,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626027
-    m_Localized: Thorns
+    m_Localized: Thorny vine
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626028
@@ -3935,7 +3935,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 20540429581164556
-    m_Localized: Bind
+    m_Localized: Root
     m_Metadata:
       m_Items: []
   - m_Id: 20540429581164557
@@ -4430,7 +4430,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819998
-    m_Localized: Ancient engraving
+    m_Localized: Ancient Inscription
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819999
@@ -4466,7 +4466,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132820012
-    m_Localized: A mysterious stranger
+    m_Localized: Mysterious Stranger
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132820013
@@ -4924,7 +4924,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554380
-    m_Localized: Expedition
+    m_Localized: Exploration
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554382
@@ -5506,11 +5506,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31271136545447936
-    m_Localized: Charge
+    m_Localized: Rush
     m_Metadata:
       m_Items: []
   - m_Id: 31271136545447937
-    m_Localized: Install
+    m_Localized: Place
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179202
@@ -5575,11 +5575,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179217
-    m_Localized: Background Music
+    m_Localized: BGM
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179218
-    m_Localized: Sound Effects
+    m_Localized: SFX
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179219
@@ -5707,7 +5707,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373527
-    m_Localized: 'Acquired: {0}'
+    m_Localized: 'Acquire: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373528
@@ -5911,11 +5911,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31323240152670208
-    m_Localized: Save and Quit
+    m_Localized: Save & Quit
     m_Metadata:
       m_Items: []
   - m_Id: 31323240102338560
-    m_Localized: Return to Title
+    m_Localized: "\tTo Title"
     m_Metadata:
       m_Items: []
   - m_Id: 31333428003840000
@@ -5943,7 +5943,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31924965792260096
-    m_Localized: Continuous
+    m_Localized: Duration
     m_Metadata:
       m_Items: []
   - m_Id: 31941125527019550
@@ -6731,7 +6731,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 33785562188193795
-    m_Localized: A Chance Encounter
+    m_Localized: Chance Encounter
     m_Metadata:
       m_Items: []
   - m_Id: 33785562188193796
@@ -6969,7 +6969,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 35203227603673088
-    m_Localized: Combine
+    m_Localized: Crafting
     m_Metadata:
       m_Items: []
   - m_Id: 35203227649810432

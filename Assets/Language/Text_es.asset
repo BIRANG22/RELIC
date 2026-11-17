@@ -55,7 +55,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100720
-    m_Localized: Combinar
+    m_Localized: "\tFabricaci\xF3n\t"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100721
@@ -63,7 +63,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100724
-    m_Localized: Explorar
+    m_Localized: "Expedici\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100726
@@ -256,7 +256,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631881
-    m_Localized: "Liberaci\xF3n"
+    m_Localized: Deber
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631882
@@ -612,7 +612,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631993
-    m_Localized: Rapidez
+    m_Localized: Celeridad
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631994
@@ -1369,7 +1369,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797877
-    m_Localized: "Pieza de \xC9ter"
+    m_Localized: "Fragmento de \xE9ter"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797878
@@ -1377,7 +1377,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992000
-    m_Localized: Muelle principal plateado
+    m_Localized: "Resorte plateado\t"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992001
@@ -1385,7 +1385,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992003
-    m_Localized: "Taz\xF3n Seco"
+    m_Localized: Recipiente seco
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992004
@@ -1403,7 +1403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992009
-    m_Localized: Espada Juramento Roja
+    m_Localized: "Espada del Juramento Carmes\xED"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992010
@@ -1457,7 +1457,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992027
-    m_Localized: Copa de Oro
+    m_Localized: "C\xE1liz dorado"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992028
@@ -1547,7 +1547,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992057
-    m_Localized: Telescopio
+    m_Localized: Catalejo
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992058
@@ -1574,7 +1574,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992066
-    m_Localized: "Talism\xE1n del profeta"
+    m_Localized: "\tAmuleto del visionario"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992067
@@ -1583,7 +1583,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992069
-    m_Localized: Incensario de la plaga
+    m_Localized: Incensario de la peste
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992070
@@ -1627,7 +1627,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992084
-    m_Localized: "Decoraci\xF3n pesada para pies."
+    m_Localized: Tobillera pesada
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992085
@@ -1636,7 +1636,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992087
-    m_Localized: Trozo de cuerno
+    m_Localized: Fragmento de cuerno
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992088
@@ -1674,7 +1674,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992099
-    m_Localized: Escala del Abismo
+    m_Localized: Escama abisal
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992100
@@ -1682,7 +1682,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992102
-    m_Localized: Botas de hierro fundido
+    m_Localized: Botas de hierro
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992103
@@ -1708,7 +1708,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992111
-    m_Localized: Copa de Sangre
+    m_Localized: "C\xE1liz de sangre"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992112
@@ -1733,7 +1733,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992120
-    m_Localized: Cuerno de la Divina Bestia
+    m_Localized: "\tCuerno de la bestia divina"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992121
@@ -1742,7 +1742,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992123
-    m_Localized: "Cintur\xF3n viejo"
+    m_Localized: "Cintur\xF3n desgastado"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992124
@@ -1787,7 +1787,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992138
-    m_Localized: Estafa con jeringa venenosa
+    m_Localized: Jeringa de veneno
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992139
@@ -1805,7 +1805,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992144
-    m_Localized: Brazaletes agrietados
+    m_Localized: Guardabrazo agrietado
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992145
@@ -1859,7 +1859,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992162
-    m_Localized: Bola de cristal brillante
+    m_Localized: Bola de cristal luminosa
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992163
@@ -1877,7 +1877,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992168
-    m_Localized: "Guada\xF1a de Cadena"
+    m_Localized: Hoz con cadena
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992169
@@ -1886,7 +1886,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992171
-    m_Localized: "Lente de poder m\xE1gico"
+    m_Localized: Lente arcana
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992172
@@ -1895,7 +1895,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992174
-    m_Localized: "Cristal de poder m\xE1gico"
+    m_Localized: Cristal arcano
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992175
@@ -1913,7 +1913,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992180
-    m_Localized: Bomba sin explotar
+    m_Localized: "Munici\xF3n sin detonar"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992181
@@ -1921,7 +1921,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992183
-    m_Localized: Gafas de verdugo
+    m_Localized: Gafas del verdugo
     m_Metadata:
       m_Items: []
   - m_Id: 41385915732992184
@@ -1938,7 +1938,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186306
-    m_Localized: Sello de oro del comerciante
+    m_Localized: Sello de oro del mercader
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186307
@@ -1947,7 +1947,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186309
-    m_Localized: Bolsa de cuentas
+    m_Localized: Bolsa de canicas
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186310
@@ -1956,7 +1956,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186312
-    m_Localized: Vendaje
+    m_Localized: Venda
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186313
@@ -1972,7 +1972,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186363
-    m_Localized: Mucosidad blanda
+    m_Localized: Baba blanda
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186365
@@ -2210,11 +2210,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839839
-    m_Localized: "Retribuci\xF3n"
+    m_Localized: Castigo
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839845
-    m_Localized: "Aura del guardi\xE1n"
+    m_Localized: Aura protectora
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839847
@@ -2246,7 +2246,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839861
-    m_Localized: "Carga f\xE9rrea"
+    m_Localized: Embestida acorazada
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839863
@@ -2258,7 +2258,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839867
-    m_Localized: Hoja ascendente
+    m_Localized: Espada voladora
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839869
@@ -2270,11 +2270,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839873
-    m_Localized: Tajo desgarrador
+    m_Localized: Tajo cicatrizante
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839875
-    m_Localized: Tajo fugaz
+    m_Localized: "\tTajo fulminante"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100944
@@ -2383,7 +2383,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101026
-    m_Localized: Estocada sangrienta
+    m_Localized: Estocada a las venas
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101027
@@ -2440,7 +2440,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101050
-    m_Localized: Destello afilado
+    m_Localized: Destello penetrante
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101054
@@ -2453,7 +2453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101058
-    m_Localized: Sombra profunda
+    m_Localized: Sombra densa
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101059
@@ -2544,7 +2544,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101106
-    m_Localized: "V\xEDnculo"
+    m_Localized: "Uni\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101107
@@ -2751,7 +2751,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626027
-    m_Localized: Espinas
+    m_Localized: Arbusto espinoso
     m_Metadata:
       m_Items: []
   - m_Id: 20540429581164554
@@ -2891,7 +2891,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554380
-    m_Localized: "Expedici\xF3n"
+    m_Localized: "Exploraci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554382
@@ -2947,7 +2947,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10173380895973443
-    m_Localized: Ruinas de Lothern
+    m_Localized: Ruinas de Roderne
     m_Metadata:
       m_Items: []
   - m_Id: 10175616531308544
@@ -3162,11 +3162,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510769
-    m_Localized: Yacimiento de Dustium
+    m_Localized: Veta de Dustium
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510782
-    m_Localized: Fuente del descanso
+    m_Localized: uente del reposo
     m_Metadata:
       m_Items: []
   - m_Id: 10185974318899314
@@ -4596,7 +4596,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 26084960592846848
-    m_Localized: Asalto de caza
+    m_Localized: Asalto depredador
     m_Metadata:
       m_Items: []
   - m_Id: 26084960622206976
@@ -4664,7 +4664,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819998
-    m_Localized: Grabado antiguo
+    m_Localized: "Inscripci\xF3n antigua"
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819999
@@ -4700,7 +4700,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132820012
-    m_Localized: "Un extra\xF1o misterioso"
+    m_Localized: Forastero misterioso
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132820013
@@ -5503,7 +5503,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31275488488169475
-    m_Localized: Mover
+    m_Localized: Movimiento
     m_Metadata:
       m_Items: []
   - m_Id: 31275488488169478
@@ -5568,11 +5568,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31271136545447936
-    m_Localized: Carga
+    m_Localized: Embestida
     m_Metadata:
       m_Items: []
   - m_Id: 31271136545447937
-    m_Localized: "Instalaci\xF3n"
+    m_Localized: Colocar
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179202
@@ -5766,11 +5766,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373526
-    m_Localized: Continuar
+    m_Localized: Avanzar
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373527
-    m_Localized: 'Obtenido: {0}'
+    m_Localized: 'Obtener: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 31275309844373528
@@ -6006,7 +6006,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31924965792260096
-    m_Localized: Continuo
+    m_Localized: "Duraci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 31941125527019550
@@ -6811,7 +6811,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 33785562188193795
-    m_Localized: Un encuentro fortuito
+    m_Localized: Encuentro fortuito
     m_Metadata:
       m_Items: []
   - m_Id: 33785562188193796
@@ -7059,7 +7059,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 35203227603673088
-    m_Localized: Combinar
+    m_Localized: "\tFabricaci\xF3n\t"
     m_Metadata:
       m_Items: []
   - m_Id: 35203227649810432
