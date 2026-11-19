@@ -30,11 +30,11 @@ Mon_05,0,베스파,Common,55,0,25,30,Item_005,0.35,Range_19,S_Monster_11,S_Monst
 Mon_06,0,신더,Common,32,20,20,25,Item_006,0.35,Range_18,S_Monster_13,S_Monster_14,0,0,0
 Mon_07,0,드라우그,Common,64,0,30,35,Item_007,0.35,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0
 Mon_08,0,바로우,Common,58,0,30,35,Item_008,0.35,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,0,0
-Mon_09,0,루크,Elite,105,0,55,65,Item_009,0.3,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0
-Mon_10,0,녹턴,Elite,96,0,60,70,Item_010,0.3,0,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0
-Mon_11,0,모르트,Elite,88,0,50,60,Item_011,0.3,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0
-Mon_12_1,1,아라벨라,Boss,148,0,0,0,0,0,Range_19,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37
-Mon_12_2,2,각성 아라벨라,Boss,112,0,80,95,Item_012,0.7,Range_18,S_Monster_38,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40
+Mon_09,0,루크,Elite,80,0,55,65,Item_009,0.3,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0
+Mon_10,0,녹턴,Elite,76,0,60,70,Item_010,0.3,0,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0
+Mon_11,0,모르트,Elite,72,0,50,60,Item_011,0.3,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0
+Mon_12_1,1,아라벨라,Boss,108,0,0,0,0,0,Range_19,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37
+Mon_12_2,2,각성 아라벨라,Boss,82,0,80,95,Item_012,0.7,Range_18,S_Monster_38,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
@@ -774,7 +774,7 @@ Rune_52,기세,Char_01,E_Rune_Armor10_Smite,10,1,0,6,턴 종료 시 방어도가
 Rune_53,수호,Char_01,E_Rune_Turn1_Ward,1,1,0,9,첫 턴 시작 시 장막 {ValueRate1}을 획득한다.,Exclusive
 Rune_54,충만,Char_01,E_Overheal_To_Armor,1,1,0,12,생명력 초과 회복량만큼 방어도를 획득한다.,Exclusive
 Rune_55,격진,Char_01,E_Rune_Turn_Start_Lose_HP_Boost,1,1,0,15,턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,Exclusive
-Rune_56,쾌검,Char_02,E_Rune_Single_Target_Damage_Delta,1,1,0,3,공격 대상이 1명일 때 공격 수치가 {ValueRate1} 증가한다.,Exclusive
+Rune_56,쾌검,Char_02,E_Rune_Single_Target_Damage_Delta,1,1,0,3,적이 1명일 때 공격 수치가 {ValueRate1} 증가한다.,Exclusive
 Rune_57,연무,Char_02,E_Rune_Multi_Hit_Damage_Delta,1,3,0,6,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,Exclusive
 Rune_58,섬광,Char_02,E_Rune_First_Registered_Skill_Attack_Count,1,1,0,9,첫 번째로 예약한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,Exclusive
 Rune_59,극의,Char_02,E_Rune_Consecutive_Attack_Final_Pierce,1,1,0,12,마지막 공격 후 연속 예약한 공격 수만큼 관통 피해를 준다.,Exclusive
@@ -800,7 +800,7 @@ Rune_70,심판,Char_04,E_Rune_Vulnerable_Bonus_Percent,75,1,0,15,공격 시 취�
 ,,Char_06,,,,,,,Exclusive
 ,,Char_06,,,,,,,Exclusive
 Rune_01,불안정한 원천,All,E_Max_HP;E_Max_Cost,-3;1,1;1,60,0,최대 생명력이 {ValueRate1} 감소하지만 최대 마나가 {ValueRate2} 증가한다.,Common
-Rune_02,메마른 고동,All,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,80,0,최대 생명력이 {ValueRate1} 감소하지만 마나 재생량이 {ValueRate2} 증가한다.,Common
+Rune_02,메마른 고동,All,E_Max_HP;E_Cost_Recovery_Delta,d,1;1,80,0,최대 생명력이 {ValueRate1} 감소하지만 마나 재생량이 {ValueRate2} 증가한다.,Common
 Rune_03,굳어진 육신,All,E_Max_Cost;E_Max_HP,-1;4,1;1,65,0,최대 마나가 {ValueRate1} 감소하지만 최대 생명력이 {ValueRate2} 증가한다.,Common
 Rune_04,잃어버린 숨결,All,E_Max_HP;E_Battle_End_Heal,-15;3,1;1,105,0,최대 생명력이 {ValueRate1} 감소하지만 전투 종료 시 생명력을 {ValueRate2} 회복한다.,Common
 Rune_05,뒤틀린 격류,All,E_Max_Cost;E_Cost_Recovery_Delta,-3;2,1;1,145,0,최대 마나가 {ValueRate1} 감소하지만 마나 재생량이 {ValueRate2} 증가한다.,Common

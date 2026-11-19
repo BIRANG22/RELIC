@@ -899,6 +899,7 @@ public class BattleTurnExecutor : MonoBehaviour
         }
         finally
         {
+            ArabellaPhaseTransition.CancelPresentationLock();
             BattleConsecutiveActionPresentationContext.EndBattleExecution();
 
             // 중간 종료/예외가 발생해도 회복 팝업 대기 상태가 남지 않도록 해제합니다.

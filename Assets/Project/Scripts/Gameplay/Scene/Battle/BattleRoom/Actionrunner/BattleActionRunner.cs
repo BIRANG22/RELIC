@@ -876,8 +876,27 @@ public class BattleActionRunner
                     yield return RunSingleWithTimeout(routines[i + 1]);
                 else
                 {
-                    while (!followupCompleted)
+                    float followupElapsed = 0f;
+                    while (!ShouldStopOverlapFollowupWait(
+                               followupCompleted,
+                               followupElapsed,
+                               actionRoutineTimeout))
+                    {
+                        followupElapsed += Time.unscaledDeltaTime;
                         yield return null;
+                    }
+
+                    if (!followupCompleted)
+                    {
+                        Debug.LogError(
+                            $"[BattleActionRunner] Overlap Followup Timeout / " +
+                            $"Action:{routines[i + 1].Label} / " +
+                            $"RuntimeId:{routines[i + 1].MonsterCommand?.RuntimeId} / " +
+                            $"SkillId:{routines[i + 1].MonsterCommand?.SkillId} / " +
+                            $"Timeout:{actionRoutineTimeout:0.00}s");
+                        if (followupCoroutine != null && CoroutineHost.Instance != null)
+                            CoroutineHost.Instance.StopCoroutine(followupCoroutine);
+                    }
                     UntrackActionCoroutine(followupCoroutine);
                 }
 
@@ -909,12 +928,26 @@ public class BattleActionRunner
 
     private static IEnumerator RunEnumeratorAndComplete(IEnumerator routine, System.Action onComplete)
     {
-        if (routine != null)
+        try
         {
-            while (routine.MoveNext())
-                yield return routine.Current;
+            if (routine != null)
+            {
+                while (routine.MoveNext())
+                    yield return routine.Current;
+            }
         }
-        onComplete?.Invoke();
+        finally
+        {
+            onComplete?.Invoke();
+        }
+    }
+
+    public static bool ShouldStopOverlapFollowupWait(
+        bool completed,
+        float elapsed,
+        float timeout)
+    {
+        return completed || elapsed >= Mathf.Max(0.1f, timeout);
     }
 
     private static bool ShouldReturnCameraBetweenSequentialActions(

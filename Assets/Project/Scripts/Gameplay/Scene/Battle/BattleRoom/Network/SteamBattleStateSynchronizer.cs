@@ -882,7 +882,11 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                 timelineController.SetPendingPlayerInsertion(command.slotIndex, command.commandIndex);
 
             accepted = timelineController != null &&
-                timelineController.ConfirmPlayerCommandFromNetwork(command.slotIndex, playerCommand, true);
+                timelineController.ConfirmPlayerCommandFromNetwork(
+                    command.slotIndex,
+                    playerCommand,
+                    ignoreNetworkViewedSlotLock: true,
+                    clearLocalSelectionOnReject: false);
         }
         finally
         {

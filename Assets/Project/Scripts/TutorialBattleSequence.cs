@@ -36,8 +36,26 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public static void NotifyFinalTutorialCompoundUsed() => TutorialFocusGuideRunner.NotifyTutorial05CompoundUsed();
     public static bool CanUseBattleSkill(string skillId, string moveId, string firstSkillId) =>
         TutorialFocusGuideRunner.IsRunning ? TutorialFocusGuideRunner.AllowsSkill(skillId, moveId, firstSkillId) : !IsPresentationRunning;
-    public static bool IsShortcutAllowed(KeyCode key) => TutorialFocusGuideRunner.IsRunning
-        ? TutorialFocusGuideRunner.AllowsShortcut(key) : !IsPresentationRunning || key == KeyCode.Escape;
+    public static bool IsShortcutAllowed(KeyCode key) => IsBattleKeyboardInputAllowed(key);
+    public static bool IsBattleKeyboardInputAllowed(KeyCode key) =>
+        ResolveBattleKeyboardInputAllowed(
+            dialoguePresentationRunning,
+            TutorialFocusGuideRunner.IsRunning,
+            TutorialFocusGuideRunner.AllowsShortcut(key),
+            key);
+
+    public static bool ResolveBattleKeyboardInputAllowed(
+        bool dialogueRunning,
+        bool focusGuideRunning,
+        bool focusGuideAllowsKey,
+        KeyCode key)
+    {
+        if (key == KeyCode.Escape)
+            return true;
+        if (dialogueRunning)
+            return false;
+        return !focusGuideRunning || focusGuideAllowsKey;
+    }
     // Permit the battle room to initialise its default character before dialogue.
     // Player-driven selections remain blocked once the dialogue overlay begins.
     public static bool CanSelectTutorialCharacter(string characterId) => TutorialFocusGuideRunner.IsRunning

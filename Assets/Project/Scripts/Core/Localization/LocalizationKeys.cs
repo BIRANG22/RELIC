@@ -129,6 +129,8 @@ public static class LocalizationKeys
         public const string SkillChangeLocked = "warning.battle.skill_change_locked";
         public const string RelicChangeLocked = "warning.battle.relic_change_locked";
         public const string TimelineSelectionLocked = "warning.battle.timeline_selection_locked";
+        public const string SkillSlotBlocked = "battle.skill_slot_blocked";
+        public const string SkillSlotLimit = "battle.skill_slot_limit";
         public const string NextStage = "ui.battle.next_stage";
         public const string Return = "ui.battle.return";
     }

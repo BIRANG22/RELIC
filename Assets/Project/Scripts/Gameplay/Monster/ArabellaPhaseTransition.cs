@@ -22,6 +22,7 @@ public static class ArabellaPhaseTransition
 
     private static MonsterUnit pendingMonster;
     private static MonsterRuntimeData pendingPhaseTwo;
+    private static bool presentationActive;
 
     public static bool HasPendingTransition => pendingMonster != null && pendingPhaseTwo != null;
     public static string PendingMonsterRuntimeId =>
@@ -164,6 +165,17 @@ public static class ArabellaPhaseTransition
         NotifyPhaseTwoPresentationCompleted();
     }
 
+    public static void CancelPresentationLock()
+    {
+        if (presentationActive)
+        {
+            NotifyPhaseTwoPresentationCompleted();
+            return;
+        }
+
+        BattleBossCinematicInputGate.SetPhase(false);
+    }
+
     // MonsterPhaseCameraSequence가 없는 경우에도 클립 완료를 확인하기 위한 대체 경로.
     private static IEnumerator WaitForPhaseAnimationState(MonsterUnit monster, string stateName)
     {
@@ -225,12 +237,20 @@ public static class ArabellaPhaseTransition
 
     public static void NotifyPhaseTwoPresentationStarted()
     {
+        presentationActive = true;
         BattleBossCinematicInputGate.SetPhase(true);
         PhaseTwoPresentationStarted?.Invoke();
     }
 
     public static void NotifyPhaseTwoPresentationCompleted()
     {
+        if (!presentationActive)
+        {
+            BattleBossCinematicInputGate.SetPhase(false);
+            return;
+        }
+
+        presentationActive = false;
         BattleBossCinematicInputGate.SetPhase(false);
         PhaseTwoPresentationCompleted?.Invoke();
     }
