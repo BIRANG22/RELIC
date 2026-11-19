@@ -581,6 +581,13 @@ public class BattleTimelineController : MonoBehaviour
         if (IsTypingInputFieldSelected())
             return;
 
+        if (!TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha1) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha2) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha3) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha4) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha5))
+            return;
+
         if (turnExecutor == null)
             turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
 
@@ -601,6 +608,10 @@ public class BattleTimelineController : MonoBehaviour
             slotIndex = 4;
 
         if (slotIndex < 0)
+            return;
+
+        KeyCode selectedKey = (KeyCode)((int)KeyCode.Alpha1 + slotIndex);
+        if (!TutorialBattleSequence.IsBattleKeyboardInputAllowed(selectedKey))
             return;
 
         if (!TutorialFocusGuideRunner.AllowsSlot(slotIndex)) return;
@@ -625,9 +636,11 @@ public class BattleTimelineController : MonoBehaviour
 
         int direction = 0;
 
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.RightArrow) &&
+            TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.RightArrow))
             direction = 1;
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow) &&
+                 TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.LeftArrow))
             direction = -1;
 
         if (direction == 0)
@@ -3597,6 +3610,12 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    public void RejectPendingActionSelection(bool playSound = false)
+    {
+        CancelPendingActionSelection(playSound);
+        ClearPendingPlayerInsertion();
+    }
+
     public void CancelSkillReservationPreviewFromSkillList(CharacterRuntimeData runtimeData)
     {
         if (runtimeData != null &&
@@ -3675,7 +3694,7 @@ public class BattleTimelineController : MonoBehaviour
             if (!string.IsNullOrEmpty(blockReason))
             {
                 ShowBattleWarning(blockReason);
-                selectedSkill = null;
+                RejectPendingActionSelection();
                 return;
             }
         }
@@ -3684,14 +3703,14 @@ public class BattleTimelineController : MonoBehaviour
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotOccupiedByOtherCharacter));
             Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
-            selectedSkill = null;
+            RejectPendingActionSelection();
             return;
         }
 
         if (!canMergeMoveCommand && !CanAddPlayerCommandToSlot(activeSlotIndex))
         {
             ShowCombinedSlotCapacityWarning();
-            selectedSkill = null;
+            RejectPendingActionSelection();
             return;
         }
 
@@ -3701,7 +3720,7 @@ public class BattleTimelineController : MonoBehaviour
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterPositionMissing));
             Debug.LogWarning($"[BattleTimelineController] 캐릭터 위치를 찾을 수 없습니다: {selectedCharacter.CharacterId}");
-            selectedSkill = null;
+            RejectPendingActionSelection();
             return;
         }
 
@@ -3712,7 +3731,7 @@ public class BattleTimelineController : MonoBehaviour
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationControllerMissing));
             Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController가 없습니다.");
-            selectedSkill = null;
+            RejectPendingActionSelection();
             return;
         }
 
@@ -3753,7 +3772,8 @@ public class BattleTimelineController : MonoBehaviour
     public bool ConfirmPlayerCommandFromNetwork(
         int slotIndex,
         PlayerReservedCommand command,
-        bool ignoreNetworkViewedSlotLock)
+        bool ignoreNetworkViewedSlotLock,
+        bool clearLocalSelectionOnReject = true)
     {
         if (command == null)
         {
@@ -3804,12 +3824,18 @@ public class BattleTimelineController : MonoBehaviour
         if (!string.IsNullOrEmpty(equipmentBlockReason))
         {
             ShowBattleWarning(equipmentBlockReason);
+            if (clearLocalSelectionOnReject)
+                RejectPendingActionSelection();
             return false;
         }
 
         if (!hasExplicitInsertion &&
             !HasTrailingFacingFlip(slot, command) &&
-            TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
+            TryHandleMoveCommandMerge(
+                slot,
+                command,
+                clearLocalSelectionOnReject,
+                out bool mergeSucceeded))
         {
             if (mergeSucceeded)
             {
@@ -3825,6 +3851,8 @@ public class BattleTimelineController : MonoBehaviour
         if (!string.IsNullOrEmpty(blockReason))
         {
             ShowBattleWarning(blockReason);
+            if (clearLocalSelectionOnReject)
+                RejectPendingActionSelection();
             return false;
         }
 
@@ -3834,6 +3862,8 @@ public class BattleTimelineController : MonoBehaviour
                 ignoreNetworkViewedSlotLock))
         {
             ShowCombinedSlotCapacityWarning();
+            if (clearLocalSelectionOnReject)
+                RejectPendingActionSelection();
             return false;
         }
 
@@ -3845,6 +3875,8 @@ public class BattleTimelineController : MonoBehaviour
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationFailed));
             Debug.LogWarning("[BattleTimelineController] 예약 슬롯이 가득 찼습니다.");
+            if (clearLocalSelectionOnReject)
+                RejectPendingActionSelection();
             return false;
         }
 
@@ -3917,7 +3949,7 @@ public class BattleTimelineController : MonoBehaviour
             return string.Empty;
 
         if (BattleEquipmentEffectService.IsSlotBlockedByEquipment(runtime, slotIndex))
-            return GameLocalization.Get("battle.skill_slot_blocked");
+            return GameLocalization.Get(LocalizationKeys.Battle.SkillSlotBlocked);
 
         int maxSlotCount = BattleEquipmentEffectService.GetMaxRegistrableSlotCount(runtime);
 
@@ -3931,13 +3963,14 @@ public class BattleTimelineController : MonoBehaviour
             occupiedSlotCount++;
 
         return occupiedSlotCount > maxSlotCount
-            ? GameLocalization.Format("battle.skill_slot_limit", maxSlotCount)
+            ? GameLocalization.Format(LocalizationKeys.Battle.SkillSlotLimit, maxSlotCount)
             : string.Empty;
     }
 
     private bool TryHandleMoveCommandMerge(
         ReserveTurnSlotUI slot,
         PlayerReservedCommand command,
+        bool clearLocalSelectionOnReject,
         out bool mergeSucceeded)
     {
         mergeSucceeded = false;
@@ -3946,17 +3979,16 @@ public class BattleTimelineController : MonoBehaviour
             return false;
 
         PlayerReservedCommand existingMoveCommand =
-            FindMoveCommandInSlot(slot, command.CharacterId);
+            FindTrailingMoveCommandInSlot(slot, command.CharacterId);
 
         if (existingMoveCommand == null)
-            return false;
-
-        if (!IsSelfFlipMoveCommand(command))
             return false;
 
         if (!CanReserveMergedMoveCommand(existingMoveCommand, command, out string blockReason))
         {
             ShowBattleWarning(blockReason);
+            if (clearLocalSelectionOnReject)
+                RejectPendingActionSelection();
             return true;
         }
 
@@ -3972,6 +4004,39 @@ public class BattleTimelineController : MonoBehaviour
 
         mergeSucceeded = true;
         return true;
+    }
+
+    public static bool ShouldMergeConsecutiveMoveCommands(
+        bool previousIsMove,
+        string previousCharacterId,
+        bool nextIsMove,
+        string nextCharacterId,
+        bool hasExplicitInsertion,
+        bool hasInterveningCommand)
+    {
+        return previousIsMove && nextIsMove &&
+               !hasExplicitInsertion && !hasInterveningCommand &&
+               !string.IsNullOrWhiteSpace(previousCharacterId) &&
+               string.Equals(previousCharacterId, nextCharacterId, System.StringComparison.Ordinal);
+    }
+
+    private PlayerReservedCommand FindTrailingMoveCommandInSlot(
+        ReserveTurnSlotUI slot,
+        string characterId)
+    {
+        if (slot == null || slot.Commands == null || slot.Commands.Count <= 0)
+            return null;
+
+        PlayerReservedCommand trailing = slot.Commands[slot.Commands.Count - 1];
+        return ShouldMergeConsecutiveMoveCommands(
+            IsMoveCommand(trailing),
+            trailing?.CharacterId,
+            true,
+            characterId,
+            false,
+            false)
+            ? trailing
+            : null;
     }
 
     private static bool HasTrailingFacingFlip(
@@ -4034,7 +4099,7 @@ public class BattleTimelineController : MonoBehaviour
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
-        return FindMoveCommandInSlot(slot, runtime.CharacterId) != null;
+        return FindTrailingMoveCommandInSlot(slot, runtime.CharacterId) != null;
     }
 
     private bool CanReserveMergedMoveCommand(
