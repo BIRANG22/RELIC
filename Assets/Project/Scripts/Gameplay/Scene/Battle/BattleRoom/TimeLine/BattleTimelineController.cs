@@ -1211,7 +1211,8 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool ToggleMoveSkillSelection(
         CharacterRuntimeData runtimeData,
-        SkillMasterData moveSkillData)
+        SkillMasterData moveSkillData,
+        bool allowDeselect = true)
     {
         if (runtimeData == null || moveSkillData == null)
             return false;
@@ -1225,6 +1226,9 @@ public class BattleTimelineController : MonoBehaviour
 
         if (isSameCharacter && isSameSkill)
         {
+            if (!allowDeselect)
+                return true;
+
             CancelSkillReservationPreviewFromSkillList(runtimeData);
             return false;
         }

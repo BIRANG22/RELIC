@@ -897,6 +897,48 @@ public class BattleTimelineManualControlTests
         Assert.That(controller.HasPendingPlayerInsertion, Is.False);
     }
 
+    [Test]
+    public void TutorialMoveSelection_RepeatedClickKeepsSelectionWhenDeselectIsDisabled()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("TutorialMove", BattleDirection.Right);
+        SkillMasterData moveSkill = new()
+        {
+            SkillId = "TutorialMoveSkill",
+            Category = Category.Move
+        };
+        SetPrivate(controller, "selectedCharacter", runtime);
+        SetPrivate(controller, "selectedSkill", moveSkill);
+
+        bool remainsSelected = controller.ToggleMoveSkillSelection(
+            runtime,
+            moveSkill,
+            allowDeselect: false);
+
+        Assert.That(remainsSelected, Is.True);
+        Assert.That(controller.SelectedCharacter, Is.SameAs(runtime));
+        Assert.That(GetPrivate<SkillMasterData>(controller, "selectedSkill"), Is.SameAs(moveSkill));
+    }
+
+    [Test]
+    public void RegularMoveSelection_RepeatedClickStillCancelsSelection()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData runtime = Runtime("RegularMove", BattleDirection.Right);
+        SkillMasterData moveSkill = new()
+        {
+            SkillId = "RegularMoveSkill",
+            Category = Category.Move
+        };
+        SetPrivate(controller, "selectedCharacter", runtime);
+        SetPrivate(controller, "selectedSkill", moveSkill);
+
+        bool remainsSelected = controller.ToggleMoveSkillSelection(runtime, moveSkill);
+
+        Assert.That(remainsSelected, Is.False);
+        Assert.That(GetPrivate<SkillMasterData>(controller, "selectedSkill"), Is.Null);
+    }
+
     private BattleTimelineController CreateControllerWithSlots(int count, int activeSlotIndex)
     {
         controllerObject = new GameObject("TimelineControllerTest");
@@ -970,6 +1012,13 @@ public class BattleTimelineManualControlTests
         FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(field, Is.Not.Null, fieldName);
         field.SetValue(target, value);
+    }
+
+    private static T GetPrivate<T>(object target, string fieldName)
+    {
+        FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, fieldName);
+        return (T)field.GetValue(target);
     }
 
     private static Button CreateButton(Transform parent, string name)
