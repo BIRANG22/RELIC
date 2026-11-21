@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class GridEffectHoverTarget : MonoBehaviour
 {
     private const string FallbackColliderName = "TooltipHoverCollider";
+    private static readonly List<GridEffectHoverTarget> HoveredTargets = new();
+    private static ulong nextHoverOrder;
 
     [SerializeField] private string gridEffectId;
 
@@ -15,6 +18,7 @@ public class GridEffectHoverTarget : MonoBehaviour
     private BattleGridEffectController gridEffectController;
     private int gridIndex = -1;
     private int lastDisplayedDuration = int.MinValue;
+    private ulong hoverOrder;
 
     public static GridEffectHoverTarget Attach(
         GameObject target,
@@ -105,22 +109,27 @@ public class GridEffectHoverTarget : MonoBehaviour
 
         SetHovered(hovered);
 
-        if (isHovered && tooltipUI != null)
+        if (isHovered && GetPreferredHoveredTarget() == this)
         {
-            RefreshTooltipIfDurationChanged();
-            GetTooltipWorldSideAnchors(out Vector3 leftAnchor, out Vector3 rightAnchor);
-            tooltipUI.SetWorldSideAnchors(leftAnchor, rightAnchor, mainCamera);
+            EnsurePreferredTooltipVisible();
+
+            if (tooltipUI != null && tooltipUI.IsOwnedBy(this))
+            {
+                RefreshTooltipIfDurationChanged();
+                GetTooltipWorldSideAnchors(out Vector3 leftAnchor, out Vector3 rightAnchor);
+                tooltipUI.SetWorldSideAnchors(leftAnchor, rightAnchor, mainCamera);
+            }
         }
     }
 
     private void OnDisable()
     {
-        HideTooltip();
+        SetHovered(false);
     }
 
     private void OnDestroy()
     {
-        HideTooltip();
+        SetHovered(false);
     }
 
     private void SetHovered(bool hovered)
@@ -132,12 +141,60 @@ public class GridEffectHoverTarget : MonoBehaviour
 
         if (!isHovered)
         {
+            HoveredTargets.Remove(this);
+            hoverOrder = 0;
             HideTooltip();
+
+            GridEffectHoverTarget preferred = GetPreferredHoveredTarget();
+            if (preferred != null)
+                preferred.EnsurePreferredTooltipVisible();
+
             return;
         }
 
-        tooltipUI = GridEffectTooltipUI.GetOrCreate();
-        ShowTooltip();
+        HoveredTargets.Remove(this);
+        hoverOrder = ++nextHoverOrder;
+        HoveredTargets.Add(this);
+        EnsurePreferredTooltipVisible();
+    }
+
+    private void EnsurePreferredTooltipVisible()
+    {
+        if (!isHovered || GetPreferredHoveredTarget() != this ||
+            string.IsNullOrWhiteSpace(gridEffectId))
+        {
+            return;
+        }
+
+        if (tooltipUI == null)
+            tooltipUI = GridEffectTooltipUI.GetOrCreate();
+
+        if (tooltipUI != null && !tooltipUI.IsOwnedBy(this))
+            ShowTooltip();
+    }
+
+    private static GridEffectHoverTarget GetPreferredHoveredTarget()
+    {
+        GridEffectHoverTarget preferred = null;
+        ulong preferredOrder = 0;
+
+        for (int i = HoveredTargets.Count - 1; i >= 0; i--)
+        {
+            GridEffectHoverTarget candidate = HoveredTargets[i];
+            if (candidate == null || !candidate.isHovered)
+            {
+                HoveredTargets.RemoveAt(i);
+                continue;
+            }
+
+            if (preferred == null || candidate.hoverOrder > preferredOrder)
+            {
+                preferred = candidate;
+                preferredOrder = candidate.hoverOrder;
+            }
+        }
+
+        return preferred;
     }
 
     private void ShowTooltip()
@@ -207,8 +264,6 @@ public class GridEffectHoverTarget : MonoBehaviour
 
     private void HideTooltip()
     {
-        isHovered = false;
-
         if (tooltipUI != null)
             tooltipUI.Hide(this);
     }
@@ -236,20 +291,13 @@ public class GridEffectHoverTarget : MonoBehaviour
     /// </summary>
     private bool FindExistingCollider()
     {
-        if (hoverCollider != null && hoverCollider.enabled)
+        if (hoverCollider != null)
             return true;
 
-        hoverCollider = null;
-        BoxCollider2D[] colliders = GetComponentsInChildren<BoxCollider2D>(true);
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            BoxCollider2D candidate = colliders[i];
-            if (candidate == null || !candidate.enabled)
-                continue;
+        hoverCollider = GetComponent<BoxCollider2D>();
 
-            hoverCollider = candidate;
-            break;
-        }
+        if (hoverCollider == null)
+            hoverCollider = GetComponentInChildren<BoxCollider2D>(true);
 
         if (hoverCollider != null)
         {
@@ -261,13 +309,17 @@ public class GridEffectHoverTarget : MonoBehaviour
     }
 
     /// <summary>
-    /// Uses an enabled authored collider when available. Placement previews may instead
-    /// receive a dedicated fallback collider because their authored colliders are disabled.
+    /// Reuses an authored collider as a hover trigger, including colliders disabled by
+    /// placement preview interaction setup. Creates a fallback only when none exists.
     /// </summary>
     private void EnsureHoverCollider(Vector2? fallbackSize, bool warnWhenUnavailable)
     {
         if (FindExistingCollider())
+        {
+            hoverCollider.isTrigger = true;
+            hoverCollider.enabled = true;
             return;
+        }
 
         if (fallbackSize.HasValue &&
             fallbackSize.Value.x > 0f &&
