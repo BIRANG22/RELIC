@@ -390,6 +390,7 @@ public class BattleCharacter : MonoBehaviour
     private void OnMouseDown()
     {
         if (TutorialGuideController.IsModalOpen || BattleBossCinematicInputGate.IsBlocked) return;
+        if (!BattleWorldClickGate.CanProcessWorldClick()) return;
         // In Tutorial_03 order 9 only a direct world click on Kaya is allowed.
         if (TutorialFocusGuideRunner.IsTutorial03WorldSelectStep &&
             (RuntimeData == null || !TutorialBattleSequence.CanClickFinalTutorialWorldCharacter(RuntimeData.CharacterId)))

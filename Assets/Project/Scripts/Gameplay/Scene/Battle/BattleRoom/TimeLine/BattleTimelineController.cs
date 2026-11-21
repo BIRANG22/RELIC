@@ -334,7 +334,10 @@ public class BattleTimelineController : MonoBehaviour
 
         // MonsterInfo close takes priority over undoing a timeline reservation.
         if (BattleMonsterInfoCanvasUI.TryHandleRightClickIfOpen())
+        {
+            BattleFreezeDiagnostics.Log("Timeline.RightClickConsumedByMonsterInfo");
             return;
+        }
 
         if (playerSkillReservationController == null)
         {
@@ -1211,7 +1214,8 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool ToggleMoveSkillSelection(
         CharacterRuntimeData runtimeData,
-        SkillMasterData moveSkillData)
+        SkillMasterData moveSkillData,
+        bool allowDeselect = true)
     {
         if (runtimeData == null || moveSkillData == null)
             return false;
@@ -1225,6 +1229,9 @@ public class BattleTimelineController : MonoBehaviour
 
         if (isSameCharacter && isSameSkill)
         {
+            if (!allowDeselect)
+                return true;
+
             CancelSkillReservationPreviewFromSkillList(runtimeData);
             return false;
         }

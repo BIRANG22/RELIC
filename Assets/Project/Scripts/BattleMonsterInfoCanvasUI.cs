@@ -32,6 +32,7 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
             return false;
 
         lastClosedByRightClickFrame = Time.frameCount;
+        BattleFreezeDiagnostics.Log("MonsterInfo.InputConsumed", "input=RightClick");
         activeInstance.Close();
         return true;
     }
@@ -59,6 +60,7 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
             return false;
 
         lastClosedByEscapeFrame = Time.frameCount;
+        BattleFreezeDiagnostics.Log("MonsterInfo.InputConsumed", "input=Escape");
         activeInstance.Close();
         return true;
     }
@@ -100,8 +102,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
     [SerializeField] private string contentFallbackObjectName = "Content";
     [SerializeField] private string menuPanelObjectName = "MenuPanel";
 
-    private readonly List<MonsterInfoSkillItemUI> spawnedSkillItems = new();
-    private readonly List<MonsterInfoStatusItemUI> spawnedStatusItems = new();
+    private readonly ReusableComponentPool<MonsterInfoSkillItemUI> skillItemPool = new();
+    private readonly ReusableComponentPool<MonsterInfoStatusItemUI> statusItemPool = new();
 
     private MonsterUnit boundMonster;
     private MonsterRuntimeData boundRuntime;
@@ -208,9 +210,10 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         int statusSignature = CalculateStatusSignature(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
         if (statusSignature != lastStatusSignature)
         {
-            RebuildStatusEffects();
+            bool hierarchyGrew = RebuildStatusEffects();
             lastStatusSignature = statusSignature;
-            RefreshBlurReplica();
+            if (hierarchyGrew)
+                RefreshBlurReplica();
         }
     }
 
@@ -248,6 +251,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
         boundMonster = monster;
         boundRuntime = monster.RuntimeData;
+        BattleFreezeDiagnostics.Log("MonsterInfo.Show",
+            $"runtimeId={boundRuntime.RuntimeId};panelActive={IsPanelOpen()}");
 
         // 캐릭터 정보 패널처럼 선택과 동시에 카메라 이동 및 패널 표시를 시작합니다.
         // Camera movement is managed by the shared Character Selection Focus settings.
@@ -258,15 +263,16 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
         RefreshMonsterName();
         ConfigurePreview(boundRuntime.MonsterId);
-        RebuildSkills();
-        RebuildStatusEffects();
+        bool hierarchyGrew = RebuildSkills();
+        hierarchyGrew |= RebuildStatusEffects();
         lastStatusSignature = CalculateStatusSignature(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
 
         RestoreErosionVisual();
         if (monsterInfoPanel != null)
             monsterInfoPanel.SetActive(true);
         Canvas.ForceUpdateCanvases();
-        RefreshBlurReplica();
+        if (hierarchyGrew)
+            RefreshBlurReplica();
         StartPreviewAnimation();
         EnsureCanvasGroup();
         SetCanvasGroupVisibleImmediate();
@@ -277,6 +283,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         // 먼저 몬스터 선택과 패널을 닫은 뒤 이전 캐릭터 선택을 복원합니다.
         // 이벤트 처리 도중 즉시 캐릭터를 고르면 UI 갱신 순서에 따라 다시 해제될 수 있습니다.
         bool hadMonsterInfo = HasPanelContextActive();
+        BattleFreezeDiagnostics.Log("MonsterInfo.Close",
+            $"hadContext={hadMonsterInfo};panelActive={IsPanelOpen()};restoreScheduled={hadMonsterInfo && isActiveAndEnabled}");
         if (MonsterUnit.CurrentInfoSelectedMonster != null)
             MonsterUnit.ClearMonsterInfoSelection();
         else
@@ -288,14 +296,23 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
     private IEnumerator RestoreCharacterSelectionNextFrame()
     {
+        int scheduledFrame = Time.frameCount;
+        BattleFreezeDiagnostics.Log("MonsterInfo.RestoreScheduled",
+            $"scheduledFrame={scheduledFrame}");
         yield return null;
 
         // 이미 다른 몬스터를 열었다면 이전 캐릭터로 되돌리지 않습니다.
         if (MonsterUnit.CurrentInfoSelectedMonster != null)
+        {
+            BattleFreezeDiagnostics.Log("MonsterInfo.RestoreAborted",
+                $"scheduledFrame={scheduledFrame};reason=monster_reopened");
             yield break;
+        }
 
         BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(
             FindObjectsInactive.Exclude);
+        BattleFreezeDiagnostics.Log("MonsterInfo.RestoreExecute",
+            $"scheduledFrame={scheduledFrame};timelineFound={timeline != null};reservationInput={timeline != null && timeline.IsPlayerReservationInputActive}");
         if (timeline != null && timeline.IsPlayerReservationInputActive)
             timeline.RestoreLastSelectedCharacterAfterMonsterInfo();
     }
@@ -313,6 +330,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
     private void HidePanelOnly()
     {
+        BattleFreezeDiagnostics.Log("MonsterInfo.Hide",
+            $"panelActive={IsPanelOpen()};boundMonster={boundMonster != null}");
         StopRevealCoroutine();
         StopPreviewAnimation();
         ClearPreview();
@@ -348,9 +367,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         if (monsterInfoPanel != null)
             monsterInfoPanel.SetActive(true);
 
-        // 동적 스킬/상태 UI는 패널이 활성화된 뒤에만 블러 복제본에 정상 반영된다.
+        // 기존 풀 항목의 활성 상태와 바인딩 결과는 블러 동기화 경로에서 반영된다.
         Canvas.ForceUpdateCanvases();
-        RefreshBlurReplica();
 
         StartPreviewAnimation();
 
@@ -622,19 +640,22 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
     private void HandleLocaleChanged(Locale _)
     {
-        if (HasPanelContextActive() && boundRuntime != null)
-            RebuildSkills();
+        if (HasPanelContextActive() && boundRuntime != null && RebuildSkills())
+            RefreshBlurReplica();
     }
 
-    private void RebuildSkills()
+    private bool RebuildSkills()
     {
-        ClearSkillItems();
-
         if (boundRuntime == null || skillContent == null || monsterSkillPrefab == null)
-            return;
+        {
+            skillItemPool.DeactivateAll();
+            return false;
+        }
 
         List<string> skillIds = GetOrderedSkillIds(boundRuntime);
         DataManager dataManager = DataManager.Instance;
+        List<string> displaySkillIds = new();
+        List<MonsterSkillData> skills = new();
 
         for (int i = 0; i < skillIds.Count; i++)
         {
@@ -646,35 +667,44 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
             if (skillData == null)
                 continue;
 
-            MonsterInfoSkillItemUI item = Instantiate(monsterSkillPrefab, skillContent, false);
-            item.gameObject.name = $"MonsterSkill_{skillId}";
-            item.gameObject.SetActive(true);
-            item.Bind(skillData);
-            spawnedSkillItems.Add(item);
+            displaySkillIds.Add(skillId);
+            skills.Add(skillData);
         }
+
+        bool hierarchyGrew = skillItemPool.Prepare(skills.Count,
+            () => Instantiate(monsterSkillPrefab, skillContent, false));
+        for (int i = 0; i < skills.Count; i++)
+        {
+            MonsterInfoSkillItemUI item = skillItemPool[i];
+            item.gameObject.name = $"MonsterSkill_{displaySkillIds[i]}";
+            item.Bind(skills[i]);
+        }
+
+        return hierarchyGrew;
     }
 
-    private void RebuildStatusEffects()
+    private bool RebuildStatusEffects()
     {
-        ClearStatusItems();
-
         if (boundRuntime == null || statusContent == null || monsterStatusPrefab == null)
-            return;
+        {
+            statusItemPool.DeactivateAll();
+            return false;
+        }
 
         List<StatusEffectRuntimeData> mergedStatuses = BuildDisplayStatuses(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
+        mergedStatuses.RemoveAll(status => status == null || !status.IsValid());
+        bool hierarchyGrew = statusItemPool.Prepare(mergedStatuses.Count,
+            () => Instantiate(monsterStatusPrefab, statusContent, false));
 
         for (int i = 0; i < mergedStatuses.Count; i++)
         {
             StatusEffectRuntimeData statusData = mergedStatuses[i];
-            if (statusData == null || !statusData.IsValid())
-                continue;
-
-            MonsterInfoStatusItemUI item = Instantiate(monsterStatusPrefab, statusContent, false);
+            MonsterInfoStatusItemUI item = statusItemPool[i];
             item.gameObject.name = $"MonsterStatus_{statusData.EffectId}";
-            item.gameObject.SetActive(true);
             item.Bind(statusData);
-            spawnedStatusItems.Add(item);
         }
+
+        return hierarchyGrew;
     }
 
     private static List<string> GetOrderedSkillIds(MonsterRuntimeData runtime)
@@ -832,26 +862,12 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
     private void ClearSkillItems()
     {
-        for (int i = 0; i < spawnedSkillItems.Count; i++)
-        {
-            MonsterInfoSkillItemUI item = spawnedSkillItems[i];
-            if (item != null)
-                Destroy(item.gameObject);
-        }
-
-        spawnedSkillItems.Clear();
+        skillItemPool.DeactivateAll();
     }
 
     private void ClearStatusItems()
     {
-        for (int i = 0; i < spawnedStatusItems.Count; i++)
-        {
-            MonsterInfoStatusItemUI item = spawnedStatusItems[i];
-            if (item != null)
-                Destroy(item.gameObject);
-        }
-
-        spawnedStatusItems.Clear();
+        statusItemPool.DeactivateAll();
     }
 
     private void ResolveReferences()
@@ -963,5 +979,59 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         }
 
         return null;
+    }
+}
+
+public sealed class ReusableComponentPool<T> where T : Component
+{
+    private readonly List<T> items = new();
+
+    public T this[int index] => items[index];
+    public int Count => items.Count;
+
+    public bool Prepare(int requiredCount, Func<T> createItem)
+    {
+        if (createItem == null)
+            throw new ArgumentNullException(nameof(createItem));
+
+        requiredCount = Mathf.Max(0, requiredCount);
+        bool hierarchyGrew = false;
+
+        for (int i = 0; i < requiredCount; i++)
+        {
+            if (i >= items.Count || items[i] == null)
+            {
+                T item = createItem();
+                if (item == null)
+                    throw new InvalidOperationException("The component pool factory returned null.");
+
+                if (i < items.Count)
+                    items[i] = item;
+                else
+                    items.Add(item);
+
+                hierarchyGrew = true;
+            }
+
+            items[i].gameObject.SetActive(true);
+        }
+
+        DeactivateUnused(requiredCount);
+        return hierarchyGrew;
+    }
+
+    public void DeactivateUnused(int usedCount)
+    {
+        usedCount = Mathf.Clamp(usedCount, 0, items.Count);
+        for (int i = usedCount; i < items.Count; i++)
+        {
+            if (items[i] != null)
+                items[i].gameObject.SetActive(false);
+        }
+    }
+
+    public void DeactivateAll()
+    {
+        DeactivateUnused(0);
     }
 }

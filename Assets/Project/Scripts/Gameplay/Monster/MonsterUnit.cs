@@ -502,6 +502,7 @@ namespace Relic.Gameplay.Monster
         private void OnMouseDown()
         {
             if (TutorialGuideController.IsModalOpen || BattleBossCinematicInputGate.IsBlocked) return;
+            if (!BattleWorldClickGate.CanProcessWorldClick()) return;
             if (TutorialBattleSequence.CanClickFinalTutorialWorldMonster(this))
             {
                 if (lastTutorialWorldClickFrame == Time.frameCount) return;
@@ -754,8 +755,9 @@ namespace Relic.Gameplay.Monster
         {
             BattleTurnExecutor executor = UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(
                 FindObjectsInactive.Include);
-            return TutorialBattleSequence.CanClickTutorialMonster() ||
-                (executor != null && executor.CanAcceptPlayerInput);
+            return executor != null && BattleWorldClickGate.CanOpenMonsterInfo(
+                executor.CanAcceptPlayerInput,
+                TutorialBattleSequence.CanClickTutorialMonster());
         }
 
         private static bool IsBattleExecutionActive()

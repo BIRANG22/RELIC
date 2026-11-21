@@ -4410,8 +4410,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
             sourceButton != null ? sourceButton.GetComponent<BattleCharacterSkillHoverUI>() : null;
         clickedHover?.ShowClickSelectionFeedback();
 
+        bool selectionSucceeded = true;
         if (toggleMoveSelection)
-            battleTimelineController.ToggleMoveSkillSelection(boundRuntime, skillData);
+        {
+            selectionSucceeded = battleTimelineController.ToggleMoveSkillSelection(
+                boundRuntime,
+                skillData,
+                allowDeselect: !TutorialBattleSequence.IsPresentationRunning);
+        }
         else
         {
             battleTimelineController.SelectCharacter(boundRuntime);
@@ -4422,7 +4428,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 카메라 포커스가 기본 위치로 풀리지 않도록 다시 고정합니다.
         battleTimelineController.RefocusCurrentSelectedCharacterWhenInputReady();
 
-        if (toggleMoveSelection)
+        if (toggleMoveSelection && selectionSucceeded)
             BattleFirstTutorialController.NotifyMoveSelected();
         else if (sourceButton == skill01Button)
             BattleFirstTutorialController.NotifySkill01Selected();

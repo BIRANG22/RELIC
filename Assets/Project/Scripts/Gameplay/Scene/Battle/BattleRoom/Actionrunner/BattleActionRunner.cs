@@ -1011,6 +1011,8 @@ public class BattleActionRunner
                     $"[BattleActionRunner] Action Timeout / " +
                     $"Action:{actionRoutine.Label} / Timeout:{actionRoutineTimeout:0.00}s"
                 );
+                BattleFreezeDiagnostics.Log("BattleAction.Timeout",
+                    $"action={actionRoutine.Label};timeout={actionRoutineTimeout:0.00};elapsed={elapsed:0.000}");
 
                 if (runningCoroutine != null && CoroutineHost.Instance != null)
                     CoroutineHost.Instance.StopCoroutine(runningCoroutine);
