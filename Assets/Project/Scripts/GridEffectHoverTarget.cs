@@ -3,6 +3,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class GridEffectHoverTarget : MonoBehaviour
 {
+    private const string FallbackColliderName = "TooltipHoverCollider";
+
     [SerializeField] private string gridEffectId;
 
     private BoxCollider2D hoverCollider;
@@ -234,13 +236,20 @@ public class GridEffectHoverTarget : MonoBehaviour
     /// </summary>
     private bool FindExistingCollider()
     {
-        if (hoverCollider != null)
+        if (hoverCollider != null && hoverCollider.enabled)
             return true;
 
-        hoverCollider = GetComponent<BoxCollider2D>();
+        hoverCollider = null;
+        BoxCollider2D[] colliders = GetComponentsInChildren<BoxCollider2D>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            BoxCollider2D candidate = colliders[i];
+            if (candidate == null || !candidate.enabled)
+                continue;
 
-        if (hoverCollider == null)
-            hoverCollider = GetComponentInChildren<BoxCollider2D>(true);
+            hoverCollider = candidate;
+            break;
+        }
 
         if (hoverCollider != null)
         {
@@ -252,13 +261,30 @@ public class GridEffectHoverTarget : MonoBehaviour
     }
 
     /// <summary>
-    /// 호버 판정은 프리팹 또는 BattleWorldVfxRenderer가 Proxy에 복사한
-    /// BoxCollider2D만 사용합니다. GridEffectHoverTarget 자체에서는 임시 콜라이더를 만들지 않습니다.
+    /// Uses an enabled authored collider when available. Placement previews may instead
+    /// receive a dedicated fallback collider because their authored colliders are disabled.
     /// </summary>
     private void EnsureHoverCollider(Vector2? fallbackSize, bool warnWhenUnavailable)
     {
         if (FindExistingCollider())
             return;
+
+        if (fallbackSize.HasValue &&
+            fallbackSize.Value.x > 0f &&
+            fallbackSize.Value.y > 0f)
+        {
+            GameObject fallbackObject = new(FallbackColliderName);
+            fallbackObject.transform.SetParent(transform, false);
+
+            int ignoreRaycastLayer = LayerMask.NameToLayer("Ignore Raycast");
+            fallbackObject.layer = ignoreRaycastLayer >= 0 ? ignoreRaycastLayer : gameObject.layer;
+
+            hoverCollider = fallbackObject.AddComponent<BoxCollider2D>();
+            hoverCollider.size = fallbackSize.Value;
+            hoverCollider.isTrigger = true;
+            warnedMissingCollider = false;
+            return;
+        }
 
         if (!warnWhenUnavailable || warnedMissingCollider)
             return;
