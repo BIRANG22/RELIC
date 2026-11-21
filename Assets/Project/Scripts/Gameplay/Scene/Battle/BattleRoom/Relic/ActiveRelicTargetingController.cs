@@ -30,7 +30,11 @@ public class ActiveRelicTargetingController : MonoBehaviour
             return;
 
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+        {
+            BattleFreezeDiagnostics.Log("ActiveRelic.TargetingCancel",
+                $"escape={Input.GetKeyDown(KeyCode.Escape)};rightClick={Input.GetMouseButtonDown(1)};monsterInfoClosedThisFrame={BattleMonsterInfoCanvasUI.WasClosedByRightClickThisFrame}");
             CancelTargeting();
+        }
     }
 
     private void OnDisable()

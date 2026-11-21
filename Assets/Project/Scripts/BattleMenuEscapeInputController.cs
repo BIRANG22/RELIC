@@ -214,7 +214,10 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             // 모두 처리하여 같은 ESC 입력으로 MenuPanel까지 열리지 않게 합니다.
             if (BattleMonsterInfoCanvasUI.WasClosedByEscapeThisFrame ||
                 BattleMonsterInfoCanvasUI.TryHandleEscapeIfOpen())
+            {
+                BattleFreezeDiagnostics.Log("Menu.EscapeConsumedByMonsterInfo");
                 return;
+            }
 
             // 배틀 공용 캔버스와 방별 캔버스에 이 컨트롤러가 함께 있어도
             // 같은 ESC 입력으로 MenuButton이 두 번 토글되지 않도록 한 프레임에 한 번만 처리합니다.
@@ -303,6 +306,8 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         timeScaleBeforePause = Time.timeScale;
         Time.timeScale = pauseTimeScale;
         isPauseApplied = true;
+        BattleFreezeDiagnostics.Log("Menu.PauseApplied",
+            $"previousTimeScale={timeScaleBeforePause:0.000};pauseTimeScale={pauseTimeScale:0.000}");
     }
 
     private void ReleasePauseIfNeeded()
@@ -316,6 +321,8 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         Time.timeScale = resumeTimeScale;
         isPauseApplied = false;
+        BattleFreezeDiagnostics.Log("Menu.PauseReleased",
+            $"storedTimeScale={timeScaleBeforePause:0.000};resumeTimeScale={resumeTimeScale:0.000}");
     }
 
     private static bool IsStageEntryPositionPanelActive()
@@ -784,5 +791,46 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             return true;
 
         return selectedObject.GetComponent<InputField>() != null;
+    }
+}
+
+public static class BattleFreezeDiagnostics
+{
+    public static string FormatState(
+        string source,
+        int frame,
+        float unscaledTime,
+        float timeScale,
+        bool menuOpen,
+        bool executing,
+        bool canInput,
+        string monsterRuntimeId,
+        string detail)
+    {
+        return $"[BattleFreezeDiag] source={source ?? "<null>"};" +
+               $"frame={frame};unscaled={unscaledTime:0.000};timeScale={timeScale:0.000};" +
+               $"menuOpen={menuOpen};executing={executing};canInput={canInput};" +
+               $"monster={monsterRuntimeId ?? "<none>"};detail={detail ?? string.Empty}";
+    }
+
+    public static void Log(string source, string detail = "")
+    {
+        BattleTurnExecutor executor = Object.FindFirstObjectByType<BattleTurnExecutor>(
+            FindObjectsInactive.Include);
+        Relic.Gameplay.Monster.MonsterUnit monster =
+            Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster;
+
+        Debug.Log(FormatState(
+            source,
+            Time.frameCount,
+            Time.unscaledTime,
+            Time.timeScale,
+            UIPanelButton.IsMenuPanelOpen,
+            executor != null && executor.IsExecuting,
+            executor != null && executor.CanAcceptPlayerInput,
+            monster != null && monster.RuntimeData != null
+                ? monster.RuntimeData.RuntimeId
+                : "<none>",
+            detail));
     }
 }

@@ -439,6 +439,8 @@ public class BattleTurnExecutor : MonoBehaviour
 
         CaptureSelectedCharacterBeforeExecution();
 
+        BattleFreezeDiagnostics.Log("Battle.NetworkExecutionStart",
+            $"batchCount={batches.Count}");
         MonsterUnit.ClearMonsterInfoSelection();
         MonsterUnit.HideAllTemporaryHUDs();
 
@@ -497,6 +499,8 @@ public class BattleTurnExecutor : MonoBehaviour
 
         CaptureSelectedCharacterBeforeExecution();
 
+        BattleFreezeDiagnostics.Log("Battle.ExecutionStart",
+            $"selectedCharacter={timelineController.SelectedCharacter?.CharacterId ?? "<none>"}");
         MonsterUnit.ClearMonsterInfoSelection();
         MonsterUnit.HideAllTemporaryHUDs();
 
@@ -2298,5 +2302,31 @@ public class BattleTurnExecutor : MonoBehaviour
         }
 
         MonsterUnit.HideAllTemporaryHUDs();
+    }
+}
+
+/// <summary>
+/// 전투 행동 실행 중 전투방 월드 오브젝트의 클릭만 차단합니다.
+/// 호버와 UI 입력은 이 정책의 대상이 아닙니다.
+/// </summary>
+public static class BattleWorldClickGate
+{
+    public static bool CanProcessWorldClick()
+    {
+        BattleTurnExecutor executor = UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(
+            FindObjectsInactive.Include);
+        return CanProcessWorldClick(executor != null, executor != null && executor.IsExecuting);
+    }
+
+    public static bool CanProcessWorldClick(bool hasExecutor, bool isExecuting)
+    {
+        return !hasExecutor || !isExecuting;
+    }
+
+    public static bool CanOpenMonsterInfo(
+        bool canAcceptPlayerInput,
+        bool tutorialAllowsMonsterClick)
+    {
+        return canAcceptPlayerInput && tutorialAllowsMonsterClick;
     }
 }

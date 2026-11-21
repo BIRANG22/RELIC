@@ -33,6 +33,9 @@ public class BattleGridClickHandler : MonoBehaviour
 
     public void OnClickGrid()
     {
+        if (!BattleWorldClickGate.CanProcessWorldClick())
+            return;
+
         if (!isSkillTargetMode)
             return;
 
