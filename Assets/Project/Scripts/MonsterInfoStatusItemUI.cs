@@ -22,14 +22,14 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
     private void Awake()
     {
         ResolveReferences();
-        DisableFixedLocalizationWriters();
+        ProtectDynamicTexts();
     }
 
     private void OnEnable()
     {
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
-        DisableFixedLocalizationWriters();
+        ProtectDynamicTexts();
     }
 
     private void OnDisable()
@@ -44,24 +44,17 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
             Bind(boundStatus);
     }
 
-    private void DisableFixedLocalizationWriters()
+    private void ProtectDynamicTexts()
     {
-        DisableFixedWriter(nameText);
-        DisableFixedWriter(detailText);
-    }
-
-    private static void DisableFixedWriter(TMP_Text text)
-    {
-        if (text == null) return;
-        LocalizedTMPText writer = text.GetComponent<LocalizedTMPText>();
-        if (writer != null) writer.enabled = false;
+        LocalizedTMPText.ProtectDynamicOwnership(nameText);
+        LocalizedTMPText.ProtectDynamicOwnership(detailText);
     }
 
     public void Bind(StatusEffectRuntimeData statusData)
     {
         effectLinkTooltip?.ClearHover();
         ResolveReferences();
-        DisableFixedLocalizationWriters();
+        ProtectDynamicTexts();
         boundStatus = statusData;
 
         if (statusData == null || string.IsNullOrWhiteSpace(statusData.EffectId))
