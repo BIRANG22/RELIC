@@ -54,6 +54,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
         effectLinkTooltip?.ClearHover();
         ResolveReferences();
         ProtectDynamicTexts();
+        boundSkill = skillData;
 
         if (skillData == null)
         {
@@ -113,7 +114,9 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
     // Keep their existing localization components from replacing runtime values.
     private void ProtectDynamicTexts()
     {
+        ProtectDynamicText(nameText);
         ProtectDynamicText(detailText);
+        ProtectDynamicText(rangeText);
         ProtectDynamicText(typeText);
     }
 
@@ -122,16 +125,12 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
         if (text == null)
             return;
 
-        if (text.GetComponent<LocalizationIgnore>() == null)
-            text.gameObject.AddComponent<LocalizationIgnore>();
-
-        LocalizedTMPText localized = text.GetComponent<LocalizedTMPText>();
-        if (localized != null)
-            localized.enabled = false;
+        LocalizedTMPText.ProtectDynamicOwnership(text);
     }
 
     private void Clear()
     {
+        boundSkill = null;
         effectLinkTooltip?.ClearHover();
         if (skillIconImage != null)
             SetImage(skillIconImage, null);

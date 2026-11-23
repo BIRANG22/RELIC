@@ -10,6 +10,31 @@ using TMPro;
 public sealed class MonsterInfoNameAndPassiveActivationTests
 {
     [Test]
+    public void MonsterInfoPanel_ActivationWriterCannotOverwriteCurrentMonsterBinding()
+    {
+        GameObject panel = new GameObject("MonsterInfoPanel", typeof(RectTransform));
+        try
+        {
+            TMP_Text actionName = CreateDynamicText(panel.transform, "Name");
+            ActivationTextWriter writer = panel.AddComponent<ActivationTextWriter>();
+            writer.Target = actionName;
+            writer.Value = "이전 몬스터 행동";
+            panel.SetActive(false);
+
+            MonsterInfoPanelBindingOrder.ActivateThenBind(
+                panel,
+                () => actionName.text = "현재 몬스터 행동");
+
+            Assert.That(panel.activeSelf, Is.True);
+            Assert.That(actionName.text, Is.EqualTo("현재 몬스터 행동"));
+        }
+        finally
+        {
+            Object.DestroyImmediate(panel);
+        }
+    }
+
+    [Test]
     public void MonsterSkillEffectTooltip_AlignTopLeft_MatchesRequestedWorldPoint()
     {
         GameObject root = new GameObject("Tooltip", typeof(RectTransform));
@@ -154,6 +179,78 @@ public sealed class MonsterInfoNameAndPassiveActivationTests
 
             Assert.That(root.GetComponent<LocalizationIgnore>(), Is.Not.Null);
             Assert.That(staticWriter.enabled, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void MonsterSkillItem_BindProtectsEveryDynamicTextFromStaticLocalization()
+    {
+        GameObject root = new GameObject("MonsterSkillItem", typeof(RectTransform));
+        try
+        {
+            MonsterInfoSkillItemUI item = root.AddComponent<MonsterInfoSkillItemUI>();
+            TMP_Text name = CreateDynamicText(root.transform, "Name");
+            TMP_Text detail = CreateDynamicText(root.transform, "Detail");
+            TMP_Text range = CreateDynamicText(root.transform, "Range");
+            TMP_Text type = CreateDynamicText(root.transform, "TypeText");
+            SetSerializedReference(item, "nameText", name);
+            SetSerializedReference(item, "detailText", detail);
+            SetSerializedReference(item, "rangeText", range);
+            SetSerializedReference(item, "typeText", type);
+
+            item.Bind(null);
+
+            AssertDynamicOwnership(name);
+            AssertDynamicOwnership(detail);
+            AssertDynamicOwnership(range);
+            AssertDynamicOwnership(type);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void MonsterStatusItem_BindProtectsEveryDynamicTextFromStaticLocalization()
+    {
+        GameObject root = new GameObject("MonsterStatusItem", typeof(RectTransform));
+        try
+        {
+            MonsterInfoStatusItemUI item = root.AddComponent<MonsterInfoStatusItemUI>();
+            TMP_Text name = CreateDynamicText(root.transform, "Name");
+            TMP_Text detail = CreateDynamicText(root.transform, "Detail");
+            SetSerializedReference(item, "nameText", name);
+            SetSerializedReference(item, "detailText", detail);
+
+            item.Bind(null);
+
+            AssertDynamicOwnership(name);
+            AssertDynamicOwnership(detail);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void MonsterInfoCanvas_AwakeProtectsRuntimeMonsterNameFromStaticLocalization()
+    {
+        GameObject root = new GameObject("MonsterInfoCanvas", typeof(RectTransform));
+        try
+        {
+            GameObject panel = new GameObject("MonsterInfoPanel", typeof(RectTransform));
+            panel.transform.SetParent(root.transform, false);
+            TMP_Text monsterName = CreateDynamicText(panel.transform, "MonsterName");
+
+            root.AddComponent<BattleMonsterInfoCanvasUI>();
+
+            AssertDynamicOwnership(monsterName);
         }
         finally
         {
@@ -416,11 +513,47 @@ public sealed class MonsterInfoNameAndPassiveActivationTests
         Assert.That(property.objectReferenceValue, Is.Not.Null, propertyName);
     }
 
+    private static TMP_Text CreateDynamicText(Transform parent, string name)
+    {
+        GameObject child = new GameObject(name, typeof(RectTransform));
+        child.transform.SetParent(parent, false);
+        TMP_Text text = child.AddComponent<TextMeshProUGUI>();
+        child.AddComponent<LocalizedTMPText>();
+        return text;
+    }
+
+    private static void SetSerializedReference(Object target, string propertyName, Object value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        Assert.That(property, Is.Not.Null, propertyName);
+        property.objectReferenceValue = value;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void AssertDynamicOwnership(TMP_Text text)
+    {
+        Assert.That(text.GetComponent<LocalizationIgnore>(), Is.Not.Null, text.name);
+        Assert.That(text.GetComponent<LocalizedTMPText>().enabled, Is.False, text.name);
+    }
+
     private static T GetSerializedReference<T>(Object target, string propertyName)
         where T : Object
     {
         SerializedProperty property = new SerializedObject(target).FindProperty(propertyName);
         Assert.That(property, Is.Not.Null, propertyName);
         return property.objectReferenceValue as T;
+    }
+}
+
+public sealed class ActivationTextWriter : MonoBehaviour
+{
+    public TMP_Text Target;
+    public string Value;
+
+    private void OnEnable()
+    {
+        if (Target != null)
+            Target.text = Value;
     }
 }

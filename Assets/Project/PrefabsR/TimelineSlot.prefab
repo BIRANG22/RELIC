@@ -760,13 +760,13 @@ RectTransform:
   m_LocalScale: {x: 1.5, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6965344051011790778}
   - {fileID: 1792949117047651558}
+  - {fileID: 6965344051011790778}
   m_Father: {fileID: 1823635061237560869}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 40, y: 75}
+  m_AnchoredPosition: {x: 75, y: 115}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &405370756427229146
@@ -776,7 +776,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 698557081499309638}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
@@ -886,7 +886,7 @@ GameObject:
   - component: {fileID: 3602793909755426178}
   - component: {fileID: 7184352543149227150}
   m_Layer: 5
-  m_Name: Later_Icon
+  m_Name: OwnerIcon02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -909,7 +909,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 10, y: 0}
   m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3602793909755426178
@@ -2605,7 +2605,7 @@ GameObject:
   - component: {fileID: 3465548758782094951}
   - component: {fileID: 3601533670321363896}
   m_Layer: 5
-  m_Name: First_Icon
+  m_Name: OwnerIcon01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6142,6 +6142,9 @@ MonoBehaviour:
   autoBindButtonsInChildren: 1
   keyText: {fileID: 0}
   autoFindKeyText: 1
+  turnMarkTransform: {fileID: 0}
+  turnMarkNormalScale: {x: 1.5, y: 1}
+  turnMarkHoverScale: {x: 1.6, y: 1.1}
 --- !u!114 &2287657924530054331
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6159,6 +6162,13 @@ MonoBehaviour:
   firstIconImage: {fileID: 0}
   laterIconRootImage: {fileID: 0}
   laterIconImage: {fileID: 0}
+  ownerIconRootImages: []
+  ownerIconImages: []
+  ownerIconOverlapX: 10
+  queuedOwnerIconAlpha: 0.5
+  ownerIconFadeDuration: 0.24
+  ownerIconFadeSoftness: 0.12
+  ownerIconFadeShader: {fileID: 4800000, guid: 87bdb34fa7c44e51a1e6e98e043b214d, type: 3}
   playerIconRootImage: {fileID: 0}
   playerIconImage: {fileID: 6000936503827199965}
   enemyIconRootImage: {fileID: 0}

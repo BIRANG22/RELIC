@@ -16,6 +16,15 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     [SerializeField] private Image laterIconRootImage;
     [SerializeField] private Image laterIconImage;
 
+    [Header("Owner Icon Queue")]
+    [SerializeField] private Image[] ownerIconRootImages;
+    [SerializeField] private Image[] ownerIconImages;
+    [SerializeField, Min(0f)] private float ownerIconOverlapX = 10f;
+    [SerializeField, Range(0f, 1f)] private float queuedOwnerIconAlpha = 0.5f;
+    [SerializeField, Min(0.01f)] private float ownerIconFadeDuration = 0.24f;
+    [SerializeField, Range(0.001f, 0.5f)] private float ownerIconFadeSoftness = 0.12f;
+    [SerializeField] private Shader ownerIconFadeShader;
+
     [Header("Legacy Owner Icon References")]
     [SerializeField] private Image playerIconRootImage;
     [SerializeField] private Image playerIconImage;
@@ -78,6 +87,18 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     private BattleTimelinePreviewEntry laterOwnerEntry;
     private bool firstOwnerDeadState;
     private bool laterOwnerDeadState;
+    private sealed class OwnerIconQueueItem
+    {
+        public BattleTimelinePreviewEntry Entry;
+        public string OwnerKey;
+        public readonly List<int> OrderIndices = new();
+        public int LastOrderIndex => OrderIndices.Count > 0 ? OrderIndices[OrderIndices.Count - 1] : -1;
+    }
+
+    private readonly List<OwnerIconQueueItem> ownerIconEntries = new();
+    private readonly HashSet<int> consumedOwnerIconOrderIndices = new();
+    private Material[] ownerIconRootMaterials;
+    private Material[] ownerIconContentMaterials;
 
     private BattleTimelineBarUI owner;
     private int slotIndex;
@@ -122,11 +143,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     public void SetTurnMarkAlreadyPassed(bool passed)
     {
         turnMarkAlreadyPassed = passed;
-        if (passed)
-        {
-            if (firstIconRootImage != null) firstIconRootImage.gameObject.SetActive(false);
-            if (laterIconRootImage != null) laterIconRootImage.gameObject.SetActive(false);
-        }
     }
 
     public int SlotIndex => slotIndex;
@@ -157,6 +173,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     {
         EnsureTransformCache();
         AutoFindReferences();
+        EnsureOwnerIconQueue();
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
         ClearImmediate(); // Hide all pre-enabled skill templates before any timeline data arrives.
@@ -190,6 +207,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         transformCache.Clear();
 
         AutoFindReferences();
+        EnsureOwnerIconQueue();
         SetOrderContainersActive(true);
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
@@ -305,8 +323,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     {
         if (!visible)
         {
-            SetOwnerIconImage(firstIconRootImage, firstIconImage, null, false, Color.white);
-            SetOwnerIconImage(laterIconRootImage, laterIconImage, null, false, Color.white);
+            HideOwnerIconQueue();
             SetOwnerIconImage(playerIconRootImage, playerIconImage, null, false, playerReservedColor);
             SetOwnerIconImage(enemyIconRootImage, enemyIconImage, null, false, enemyReservedColor);
             ClearEnemyOwnerIconHudHoverTarget();
@@ -464,11 +481,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
             return;
         }
 
-        BattleTimelinePreviewEntry firstPlayerEntry = null;
-        BattleTimelinePreviewEntry firstMonsterEntry = null;
-        int firstPlayerIndex = int.MaxValue;
-        int firstMonsterIndex = int.MaxValue;
-
         int visibleIndex = 0;
         int maxOrderCount = 5;
 
@@ -492,17 +504,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
             bool ownerDead = IsEntryOwnerDead(entry);
             currentEntryOwnerDeadStates[entry.OrderIndex] = ownerDead;
             visibleIndex = entry.OrderIndex;
-
-            if (entry.IsMonster && firstMonsterEntry == null)
-            {
-                firstMonsterEntry = entry;
-                firstMonsterIndex = visibleIndex;
-            }
-            else if (entry.IsPlayer && firstPlayerEntry == null)
-            {
-                firstPlayerEntry = entry;
-                firstPlayerIndex = visibleIndex;
-            }
 
             Color reservedColor = entry.IsMonster ? enemyReservedColor : playerReservedColor;
 
@@ -529,30 +530,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
                 HideAllSizeRoots(i);
         }
 
-        BattleTimelinePreviewEntry firstEntry = null;
-        BattleTimelinePreviewEntry laterEntry = null;
-
-        if (firstPlayerEntry != null && firstMonsterEntry != null)
-        {
-            bool playerFirst = firstPlayerIndex < firstMonsterIndex;
-            firstEntry = playerFirst ? firstPlayerEntry : firstMonsterEntry;
-            laterEntry = playerFirst ? firstMonsterEntry : firstPlayerEntry;
-        }
-        else
-        {
-            firstEntry = firstPlayerEntry ?? firstMonsterEntry;
-        }
-
-        firstOwnerEntry = firstEntry;
-        laterOwnerEntry = laterEntry;
-        firstOwnerDeadState = IsEntryOwnerDead(firstEntry);
-        laterOwnerDeadState = IsEntryOwnerDead(laterEntry);
-
-        ApplyOwnerOrderIcon(firstIconRootImage, firstIconImage, firstEntry);
-        ApplyOwnerOrderIcon(laterIconRootImage, laterIconImage, laterEntry);
-
-        SetupOwnerIconInteractionTarget(firstIconImage, firstEntry);
-        SetupOwnerIconInteractionTarget(laterIconImage, laterEntry);
+        RefreshOwnerIconQueue();
         // Restore the empty size-1 template only where no command occupies the order.
         SetEmptyUseSkillSlotsVisible(emptyUseSkillSlotsVisible);
     }
@@ -603,6 +581,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         RestoreCancelledOrderRoots();
         pendingCancelledEntries = null;
         applyingCancelledRefresh = false;
+        consumedOwnerIconOrderIndices.Clear();
         ClearImmediate();
         // Clear resets skill templates, never the Order01~05 parent objects.
         SetOrderContainersActive(true);
@@ -619,8 +598,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         firstOwnerDeadState = false;
         laterOwnerDeadState = false;
 
-        SetOwnerIconImage(firstIconRootImage, firstIconImage, null, false, Color.white);
-        SetOwnerIconImage(laterIconRootImage, laterIconImage, null, false, Color.white);
+        HideOwnerIconQueue();
         SetOwnerIconImage(playerIconRootImage, playerIconImage, null, false, playerReservedColor);
         SetOwnerIconImage(enemyIconRootImage, enemyIconImage, null, false, enemyReservedColor);
         ClearEnemyOwnerIconHudHoverTarget();
@@ -1763,16 +1741,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         }
 
         if (firstIconRootImage == null)
-            firstIconRootImage = FindRootImage("First_Icon");
+            firstIconRootImage = FindRootImage("OwnerIcon01") ?? FindRootImage("First_Icon");
 
         if (firstIconImage == null)
-            firstIconImage = FindImage("First_Icon", "image");
+            firstIconImage = FindImage("OwnerIcon01", "image") ?? FindImage("First_Icon", "image");
 
         if (laterIconRootImage == null)
-            laterIconRootImage = FindRootImage("Later_Icon");
+            laterIconRootImage = FindRootImage("OwnerIcon02") ?? FindRootImage("Later_Icon");
 
         if (laterIconImage == null)
-            laterIconImage = FindImage("Later_Icon", "image");
+            laterIconImage = FindImage("OwnerIcon02", "image") ?? FindImage("Later_Icon", "image");
 
         if (playerIconRootImage == null)
             playerIconRootImage = FindRootImage("Player_Icon");
@@ -2282,6 +2260,326 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         }
     }
 
+    public static float ResolveOwnerIconAnchoredX(int queueIndex, float overlapX)
+    {
+        return Mathf.Max(0, queueIndex) * Mathf.Max(0f, overlapX);
+    }
+
+    public static float ResolveOwnerIconAlpha(int queueIndex, float queuedAlpha)
+    {
+        return queueIndex <= 0 ? 1f : Mathf.Clamp01(queuedAlpha);
+    }
+
+    public static bool ShouldHideOwnerIconsWhenTurnMarkPasses(bool isEmptySlot)
+    {
+        return isEmptySlot;
+    }
+
+    public static string[] ResolveConsecutiveOwnerIconGroups(
+        IReadOnlyList<string> ownerKeys,
+        int capacity)
+    {
+        if (ownerKeys == null || capacity <= 0)
+            return System.Array.Empty<string>();
+
+        List<string> groups = new();
+        string previous = null;
+        for (int i = 0; i < ownerKeys.Count && groups.Count < capacity; i++)
+        {
+            string ownerKey = ownerKeys[i];
+            if (string.IsNullOrEmpty(ownerKey) || ownerKey == previous)
+                continue;
+            groups.Add(ownerKey);
+            previous = ownerKey;
+        }
+        return groups.ToArray();
+    }
+
+    public static int[] ResolveOwnerIconOrderIndices(IReadOnlyList<int> orderIndices, int capacity)
+    {
+        if (orderIndices == null || capacity <= 0)
+            return System.Array.Empty<int>();
+
+        List<int> sorted = new();
+        for (int i = 0; i < orderIndices.Count; i++)
+        {
+            int orderIndex = orderIndices[i];
+            if (orderIndex < 0 || sorted.Contains(orderIndex))
+                continue;
+            sorted.Add(orderIndex);
+        }
+
+        sorted.Sort();
+        if (sorted.Count > capacity)
+            sorted.RemoveRange(capacity, sorted.Count - capacity);
+        return sorted.ToArray();
+    }
+
+    public static int[] ResolveRemainingOwnerIconOrderIndices(
+        IReadOnlyList<int> currentOrderIndices,
+        IReadOnlyList<int> executedOrderIndices)
+    {
+        if (currentOrderIndices == null)
+            return System.Array.Empty<int>();
+
+        HashSet<int> executed = new();
+        if (executedOrderIndices != null)
+            for (int i = 0; i < executedOrderIndices.Count; i++)
+                executed.Add(executedOrderIndices[i]);
+
+        List<int> remaining = new();
+        for (int i = 0; i < currentOrderIndices.Count; i++)
+            if (!executed.Contains(currentOrderIndices[i]))
+                remaining.Add(currentOrderIndices[i]);
+        return remaining.ToArray();
+    }
+
+    public IEnumerator PlayOwnerIconsAfterActionRoutine(IReadOnlyList<int> orderIndices)
+    {
+        EnsureOwnerIconQueue();
+        if (orderIndices == null || ownerIconEntries.Count == 0)
+            yield break;
+
+        HashSet<int> targets = new();
+        for (int i = 0; i < orderIndices.Count; i++)
+            targets.Add(orderIndices[i]);
+
+        List<int> fadingViewIndices = new();
+        for (int i = 0; i < ownerIconEntries.Count; i++)
+        {
+            OwnerIconQueueItem item = ownerIconEntries[i];
+            if (item != null && targets.Contains(item.LastOrderIndex))
+                fadingViewIndices.Add(i);
+        }
+
+        if (fadingViewIndices.Count == 0)
+            yield break;
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.01f, ownerIconFadeDuration);
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.Lerp(-ownerIconFadeSoftness, 1f + ownerIconFadeSoftness,
+                Mathf.Clamp01(elapsed / duration));
+            for (int i = 0; i < fadingViewIndices.Count; i++)
+                SetOwnerIconFadeProgress(fadingViewIndices[i], progress);
+            yield return null;
+        }
+
+        for (int i = 0; i < fadingViewIndices.Count; i++)
+        {
+            OwnerIconQueueItem item = ownerIconEntries[fadingViewIndices[i]];
+            for (int orderIndex = 0; orderIndex < item.OrderIndices.Count; orderIndex++)
+                consumedOwnerIconOrderIndices.Add(item.OrderIndices[orderIndex]);
+        }
+        RefreshOwnerIconQueue();
+    }
+
+    private void EnsureOwnerIconQueue()
+    {
+        const int capacity = 5;
+        if (ownerIconRootImages == null || ownerIconRootImages.Length != capacity)
+            ownerIconRootImages = new Image[capacity];
+        if (ownerIconImages == null || ownerIconImages.Length != capacity)
+            ownerIconImages = new Image[capacity];
+
+        ownerIconRootImages[0] ??= firstIconRootImage;
+        ownerIconImages[0] ??= firstIconImage;
+        ownerIconRootImages[1] ??= laterIconRootImage;
+        ownerIconImages[1] ??= laterIconImage;
+
+        Image cloneSource = ownerIconRootImages[1] != null
+            ? ownerIconRootImages[1]
+            : ownerIconRootImages[0];
+        for (int i = 0; i < capacity; i++)
+        {
+            string iconName = "OwnerIcon" + (i + 1).ToString("00");
+            bool created = false;
+            if (ownerIconRootImages[i] == null)
+            {
+                Transform found = FindChildRecursive(transform, iconName);
+                if (found != null)
+                    ownerIconRootImages[i] = found.GetComponent<Image>();
+            }
+            if (ownerIconRootImages[i] == null && cloneSource != null)
+            {
+                ownerIconRootImages[i] = Instantiate(cloneSource, cloneSource.transform.parent);
+                created = true;
+            }
+            if (ownerIconRootImages[i] == null)
+                continue;
+
+            ownerIconRootImages[i].name = iconName;
+            if (ownerIconImages[i] == null)
+            {
+                Transform content = FindChildRecursive(ownerIconRootImages[i].transform, "image");
+                if (content != null)
+                    ownerIconImages[i] = content.GetComponent<Image>();
+            }
+
+            if (created && ownerIconRootImages[0] != null)
+            {
+                Vector2 step = new(ownerIconOverlapX, 0f);
+                if (ownerIconRootImages[1] != null)
+                    step = ownerIconRootImages[1].rectTransform.anchoredPosition -
+                           ownerIconRootImages[0].rectTransform.anchoredPosition;
+                ownerIconRootImages[i].rectTransform.anchoredPosition =
+                    ownerIconRootImages[0].rectTransform.anchoredPosition + step * i;
+            }
+        }
+
+        firstIconRootImage = ownerIconRootImages[0];
+        firstIconImage = ownerIconImages[0];
+        laterIconRootImage = ownerIconRootImages[1];
+        laterIconImage = ownerIconImages[1];
+
+        for (int i = capacity - 1; i >= 0; i--)
+            if (ownerIconRootImages[i] != null)
+                ownerIconRootImages[i].transform.SetAsLastSibling();
+
+        EnsureOwnerIconFadeMaterials();
+    }
+
+    private void EnsureOwnerIconFadeMaterials()
+    {
+        int count = ownerIconRootImages != null ? ownerIconRootImages.Length : 0;
+        if (ownerIconRootMaterials != null && ownerIconRootMaterials.Length == count &&
+            (count == 0 || ownerIconRootMaterials[0] != null))
+            return;
+
+        ownerIconRootMaterials = new Material[count];
+        ownerIconContentMaterials = new Material[count];
+        Shader shader = ownerIconFadeShader != null
+            ? ownerIconFadeShader
+            : Shader.Find("UI/TimelineOwnerIconVerticalFade");
+        if (shader == null)
+            return;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (ownerIconRootImages[i] != null)
+            {
+                ownerIconRootMaterials[i] = new Material(shader) { name = "TimelineOwnerIconRoot (Runtime)" };
+                ownerIconRootImages[i].material = ownerIconRootMaterials[i];
+            }
+            if (ownerIconImages[i] != null)
+            {
+                ownerIconContentMaterials[i] = new Material(shader) { name = "TimelineOwnerIconContent (Runtime)" };
+                ownerIconImages[i].material = ownerIconContentMaterials[i];
+            }
+            SetOwnerIconFadeProgress(i, -ownerIconFadeSoftness);
+        }
+    }
+
+    private void RefreshOwnerIconQueue()
+    {
+        EnsureOwnerIconQueue();
+        ownerIconEntries.Clear();
+        for (int i = 0; i < currentEntries.Count && ownerIconEntries.Count < 5; i++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[i];
+            if (entry == null || consumedOwnerIconOrderIndices.Contains(entry.OrderIndex))
+                continue;
+
+            string ownerKey = ResolveOwnerIconKey(entry);
+            OwnerIconQueueItem previous = ownerIconEntries.Count > 0
+                ? ownerIconEntries[ownerIconEntries.Count - 1]
+                : null;
+            if (previous != null && previous.OwnerKey == ownerKey)
+            {
+                previous.OrderIndices.Add(entry.OrderIndex);
+                continue;
+            }
+
+            OwnerIconQueueItem item = new()
+            {
+                Entry = entry,
+                OwnerKey = ownerKey
+            };
+            item.OrderIndices.Add(entry.OrderIndex);
+            ownerIconEntries.Add(item);
+        }
+
+        for (int i = 0; i < ownerIconRootImages.Length; i++)
+        {
+            BattleTimelinePreviewEntry entry = i < ownerIconEntries.Count
+                ? ownerIconEntries[i].Entry
+                : null;
+            ApplyOwnerOrderIcon(ownerIconRootImages[i], ownerIconImages[i], entry);
+            SetOwnerIconFadeProgress(i, -ownerIconFadeSoftness);
+            SetOwnerIconQueueAlpha(i, ResolveOwnerIconAlpha(i, queuedOwnerIconAlpha));
+        }
+
+        firstOwnerEntry = ownerIconEntries.Count > 0 ? ownerIconEntries[0].Entry : null;
+        laterOwnerEntry = ownerIconEntries.Count > 1 ? ownerIconEntries[1].Entry : null;
+        firstOwnerDeadState = IsEntryOwnerDead(firstOwnerEntry);
+        laterOwnerDeadState = IsEntryOwnerDead(laterOwnerEntry);
+        SetupOwnerIconInteractionTarget(ownerIconImages.Length > 0 ? ownerIconImages[0] : null, firstOwnerEntry);
+    }
+
+    private static string ResolveOwnerIconKey(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null)
+            return string.Empty;
+        if (entry.IsMonster)
+            return "monster:" + entry.MonsterRuntimeId;
+        return "player:" + entry.OwnerId;
+    }
+
+    private void HideOwnerIconQueue()
+    {
+        EnsureOwnerIconQueue();
+        ownerIconEntries.Clear();
+        for (int i = 0; i < ownerIconRootImages.Length; i++)
+            SetOwnerIconImage(ownerIconRootImages[i], ownerIconImages[i], null, false, Color.white);
+    }
+
+    private void SetOwnerIconQueueAlpha(int index, float alpha)
+    {
+        if (ownerIconRootImages != null && index >= 0 && index < ownerIconRootImages.Length && ownerIconRootImages[index] != null)
+        {
+            Color color = ownerIconRootImages[index].color;
+            color.a = alpha;
+            ownerIconRootImages[index].color = color;
+        }
+        if (ownerIconImages != null && index >= 0 && index < ownerIconImages.Length && ownerIconImages[index] != null)
+        {
+            Color color = ownerIconImages[index].color;
+            color.a = alpha;
+            ownerIconImages[index].color = color;
+        }
+    }
+
+    private void SetOwnerIconFadeProgress(int index, float progress)
+    {
+        if (ownerIconRootMaterials != null && index >= 0 && index < ownerIconRootMaterials.Length && ownerIconRootMaterials[index] != null)
+        {
+            ownerIconRootMaterials[index].SetFloat("_FadeProgress", progress);
+            ownerIconRootMaterials[index].SetFloat("_FadeSoftness", ownerIconFadeSoftness);
+        }
+        if (ownerIconContentMaterials != null && index >= 0 && index < ownerIconContentMaterials.Length && ownerIconContentMaterials[index] != null)
+        {
+            ownerIconContentMaterials[index].SetFloat("_FadeProgress", progress);
+            ownerIconContentMaterials[index].SetFloat("_FadeSoftness", ownerIconFadeSoftness);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        DestroyOwnerIconMaterials(ownerIconRootMaterials);
+        DestroyOwnerIconMaterials(ownerIconContentMaterials);
+    }
+
+    private static void DestroyOwnerIconMaterials(Material[] materials)
+    {
+        if (materials == null)
+            return;
+        for (int i = 0; i < materials.Length; i++)
+            if (materials[i] != null)
+                Destroy(materials[i]);
+    }
+
     private void ApplyOwnerOrderIcon(Image rootImage, Image contentImage, BattleTimelinePreviewEntry entry)
     {
         if (entry == null)
@@ -2436,10 +2734,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         Color reservedColor)
     {
         bool show = visible && sprite != null;
-        if (turnMarkAlreadyPassed &&
-            (rootImage == firstIconRootImage || rootImage == laterIconRootImage))
-            show = false;
-
         if (rootImage != null)
         {
             rootImage.color = reservedColor;

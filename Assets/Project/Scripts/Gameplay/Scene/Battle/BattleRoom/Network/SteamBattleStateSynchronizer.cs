@@ -871,6 +871,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (!SteamLobbySessionState.IsMemberAllowedToControlCharacter(requester, command.characterId))
             return BattleNetworkRejectReason.NotCharacterOwner;
 
+        if (IsTimelineSlotReservedByOtherMember(command.slotIndex, requester))
+            return BattleNetworkRejectReason.SlotReservedByOtherMember;
+
         PlayerReservedCommand playerCommand = RebuildPlayerCommand(command);
         if (playerCommand == null)
             return BattleNetworkRejectReason.InvalidCommand;
@@ -920,6 +923,12 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return BattleNetworkRejectReason.NotCharacterOwner;
         }
 
+        if (IsTimelineSlotReservedByOtherMember(command.slotIndex, requester) ||
+            IsTimelineSlotReservedByOtherMember(command.destinationSlotIndex, requester))
+        {
+            return BattleNetworkRejectReason.SlotReservedByOtherMember;
+        }
+
         if (!string.Equals(
                 reservedCommand.ReservationId,
                 command.reservationId,
@@ -963,6 +972,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         {
             return BattleNetworkRejectReason.NotCharacterOwner;
         }
+
+        if (IsTimelineSlotReservedByOtherMember(command.slotIndex, requester))
+            return BattleNetworkRejectReason.SlotReservedByOtherMember;
 
         if (!string.Equals(
                 reservedCommand.ReservationId,
@@ -1729,6 +1741,16 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (!TryGetPlayerCommands(slotIndex, out IReadOnlyList<PlayerReservedCommand> commands))
             return false;
 
+        return !CanMemberEditTimelineSlot(requester, commands);
+    }
+
+    public static bool CanMemberEditTimelineSlot(
+        ulong requester,
+        IReadOnlyList<PlayerReservedCommand> commands)
+    {
+        if (commands == null)
+            return true;
+
         for (int i = 0; i < commands.Count; i++)
         {
             PlayerReservedCommand command = commands[i];
@@ -1739,11 +1761,11 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
                     requester,
                     command.CharacterId))
             {
-                return true;
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     private bool TryGetPlayerCommands(

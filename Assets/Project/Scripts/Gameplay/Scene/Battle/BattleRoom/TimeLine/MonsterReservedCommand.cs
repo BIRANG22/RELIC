@@ -129,6 +129,16 @@ public static class MonsterMovementFacingPresentationPolicy
     }
 }
 
+public static class MonsterSpecialPresentationFacingPolicy
+{
+    public static BattleDirection ResolveRestoredDirection(
+        BattleDirection directionBeforePresentation,
+        BattleDirection presentationDirection)
+    {
+        return directionBeforePresentation;
+    }
+}
+
 public static class MonsterMoveCollisionPolicy
 {
     public static bool ShouldApplyCrash(bool blockedByUnit, bool blockedByGridEffect, bool blockedByBoundary)

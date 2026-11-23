@@ -43,20 +43,6 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
     }
     public int RemainingCommandCapacity => Mathf.Max(0, MaxCommandCount - OccupiedOrderCount);
 
-    public CharacterRuntimeData ReservedCharacter
-    {
-        get
-        {
-            if (commands == null || commands.Count <= 0)
-                return null;
-
-            if (commands[0] == null)
-                return null;
-
-            return commands[0].UserRuntime;
-        }
-    }
-
     public void SetAutoBindButtonsInChildren(bool enabled)
     {
         autoBindButtonsInChildren = enabled;
@@ -156,7 +142,8 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
 
     public bool CanAddCommand(PlayerReservedCommand command)
     {
-        return command != null && (command.IsFacingFlipCommand || command.TimelineEntryCost > 0) &&
+        return command != null && command.UserRuntime != null &&
+               (command.IsFacingFlipCommand || command.TimelineEntryCost > 0) &&
                RemainingCommandCapacity >= command.TimelineEntryCost;
     }
 
@@ -165,16 +152,6 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
         if (command == null)
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
-            return false;
-        }
-
-        if (!CanAcceptCharacter(command.UserRuntime))
-        {
-            string reservedId = ReservedCharacter != null ? ReservedCharacter.CharacterId : "None";
-            string newId = command.UserRuntime != null ? command.UserRuntime.CharacterId : "None";
-
-            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotOccupiedByOtherCharacter));
-            Debug.LogWarning($"[ReserveTurnSlotUI] 이 슬롯은 이미 다른 캐릭터가 사용 중입니다. Reserved:{reservedId} / New:{newId}");
             return false;
         }
 
@@ -203,7 +180,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
 
     public bool InsertCommand(int index, PlayerReservedCommand command)
     {
-        if (command == null || !CanAcceptCharacter(command.UserRuntime) || !CanAddCommand(command))
+        if (command == null || !CanAddCommand(command))
             return false;
 
         commands.Insert(Mathf.Clamp(index, 0, commands.Count), command);
@@ -223,19 +200,6 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
     public void SetActiveSlot(bool active)
     {
         // 선택 표시는 BattleTimelineGroupUI에서 처리.
-    }
-
-    public bool CanAcceptCharacter(CharacterRuntimeData character)
-    {
-        if (character == null)
-            return false;
-
-        CharacterRuntimeData reservedCharacter = ReservedCharacter;
-
-        if (reservedCharacter == null)
-            return true;
-
-        return reservedCharacter.CharacterId == character.CharacterId;
     }
 
     public void OnClickSlot()

@@ -119,8 +119,13 @@ public class BattleActionBatchBuilder
         ActionInfo next = CreatePlayerActionInfo(command);
 
         EnsureBatchExists(batches, minBatchIndex);
+        int actorBatchIndex = FindLastPlayerActorBatchIndex(
+            batches,
+            next.ActorKey,
+            minBatchIndex);
+        int searchStartBatchIndex = Mathf.Max(minBatchIndex, actorBatchIndex);
 
-        for (int i = minBatchIndex; i < batches.Count; i++)
+        for (int i = searchStartBatchIndex; i < batches.Count; i++)
         {
             if (!CanUseBatchForTimelineSlot(batches[i], timelineSlotIndex))
                 continue;
@@ -138,6 +143,33 @@ public class BattleActionBatchBuilder
         newBatch.PlayerCommands.Add(command);
         batches.Add(newBatch);
         return batches.Count - 1;
+    }
+
+    private int FindLastPlayerActorBatchIndex(
+        List<BattleActionBatch> batches,
+        string actorKey,
+        int minBatchIndex)
+    {
+        if (batches == null || string.IsNullOrWhiteSpace(actorKey))
+            return minBatchIndex;
+
+        int result = minBatchIndex;
+
+        for (int batchIndex = minBatchIndex; batchIndex < batches.Count; batchIndex++)
+        {
+            BattleActionBatch batch = batches[batchIndex];
+            if (batch == null)
+                continue;
+
+            for (int commandIndex = 0; commandIndex < batch.PlayerCommands.Count; commandIndex++)
+            {
+                ActionInfo existing = CreatePlayerActionInfo(batch.PlayerCommands[commandIndex]);
+                if (existing.ActorKey == actorKey)
+                    result = batchIndex;
+            }
+        }
+
+        return result;
     }
 
     private int AddMonsterCommand(
@@ -257,6 +289,9 @@ public class BattleActionBatchBuilder
             if (Intersects(a.EffectTargetCells, b.CurrentCells))
                 return true;
 
+            if (Intersects(a.EffectTargetCells, b.MoveTargetCells))
+                return true;
+
             if (Intersects(a.EffectTargetCells, b.EffectTargetCells))
                 return true;
         }
@@ -264,6 +299,9 @@ public class BattleActionBatchBuilder
         if (b.IsEffect)
         {
             if (Intersects(b.EffectTargetCells, a.CurrentCells))
+                return true;
+
+            if (Intersects(b.EffectTargetCells, a.MoveTargetCells))
                 return true;
 
             if (Intersects(b.EffectTargetCells, a.EffectTargetCells))

@@ -19,19 +19,6 @@ public class BattleStatusEffectService
         MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
             FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
-        // 타임라인의 첫 행동을 기준으로 녹턴의 방향을 먼저 맞춥니다.
-        // 포털 연출이 시작되기 전에도 올바른 방향을 바라보도록 합니다.
-        BattleMonsterTurnPlanner nocturnPlanner = Object.FindFirstObjectByType<BattleMonsterTurnPlanner>(
-            FindObjectsInactive.Include);
-        if (nocturnPlanner != null)
-        {
-            foreach (MonsterUnit monster in monsters)
-            {
-                if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
-                    nocturnPlanner.ApplyNocturnFirstReservedActionFacing(monster);
-            }
-        }
-
         foreach (MonsterUnit monster in monsters)
         {
             if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
@@ -79,20 +66,6 @@ public class BattleStatusEffectService
         yield return PlayArabellaWebCreationRoutine(monsters);
         yield return PlayNocturnPortalPresentationsRoutine(monsters);
 
-        // 무료 턴 시작 연출이 모두 종료된 다음 실제 첫 예약 행동 방향으로 정렬합니다.
-        // 슬롯 1이 비어 있고 슬롯 2부터 이동하는 경우에도 올바르게 적용됩니다.
-        BattleMonsterTurnPlanner finalPlanner = Object.FindFirstObjectByType<BattleMonsterTurnPlanner>(
-            FindObjectsInactive.Include);
-        if (finalPlanner != null)
-        {
-            foreach (MonsterUnit monster in monsters)
-            {
-                if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
-                {
-                    finalPlanner.ApplyFirstReservedActionFacing(monster);
-                }
-            }
-        }
     }
 
     private const string ArabellaWebTraitId = "E_WebCreation";
@@ -209,20 +182,6 @@ public class BattleStatusEffectService
             // Idle 애니메이터가 스프라이트를 갱신할 프레임을 지난 뒤 방향을 적용합니다.
             yield return null;
 
-            // Restore the first reserved action facing after the web presentation.
-            // The web may face left even when the first reserved move goes right.
-            if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
-            {
-                BattleMonsterTurnPlanner reservedPlanner = Object.FindFirstObjectByType<BattleMonsterTurnPlanner>(
-                    FindObjectsInactive.Include);
-                if (reservedPlanner != null)
-                {
-                    // 거미줄 설치는 독립 연출이므로, 완료 시점에 예약된 첫 이동 방향을 다시 적용합니다.
-                    // 공용 판별이 종료되더라도 실제 예약 이동 방향을 먼저 적용합니다.
-                    reservedPlanner.ApplyFirstReservedActionFacing(monster);
-                }
-            }
-
             if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
                 continue;
 
@@ -241,16 +200,6 @@ public class BattleStatusEffectService
             if (BattleOccupancyService.TryGetCharacterAtGrid(chosen, out BattleCharacter affected))
                 gridEffects.ApplyToPlayer(chosen, affected);
 
-            // 예약 입력이 열리기 직전 보이는 방향도 실제 첫 이동 명령으로 고정합니다.
-            if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
-            {
-                BattleMonsterTurnPlanner planner = Object.FindFirstObjectByType<BattleMonsterTurnPlanner>(
-                    FindObjectsInactive.Include);
-                if (planner != null)
-                {
-                    planner.ApplyFirstReservedActionFacing(monster);
-                }
-            }
         }
     }
 
@@ -273,9 +222,12 @@ public class BattleStatusEffectService
             if (!planner.HasNocturnPortalReservation(runtimeId))
                 continue;
 
+            BattleDirection directionBeforePresentation = monster.RuntimeData.Direction;
+
             // 포털 설치 연출 중에는 이동할 포털을 바라봅니다.
-            // 공격 방향은 연출 후 첫 예약 행동 및 실행 시점에 다시 적용합니다.
+            // 연출 후에는 일반 예약 방향을 미리 적용하지 않고 연출 전 방향으로 복원합니다.
             planner.ApplyNocturnPortalPresentationFacing(monster);
+            BattleDirection presentationDirection = monster.RuntimeData.Direction;
 
             BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
             if (animator != null)
@@ -291,8 +243,10 @@ public class BattleStatusEffectService
                     if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
                     {
                         animator.PlayIdle();
-                        // 다음에 실행할 공격은 포털 방향과 다를 수 있습니다.
-                        planner.ApplyNocturnFirstReservedActionFacing(monster);
+                        planner.RestoreSpecialPresentationFacing(
+                            monster,
+                            directionBeforePresentation,
+                            presentationDirection);
                     }
                     continue;
                 }
@@ -302,7 +256,10 @@ public class BattleStatusEffectService
             if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
             {
                 planner.ShowNocturnPortalIndicatorsForRuntime(runtimeId);
-                planner.ApplyNocturnFirstReservedActionFacing(monster);
+                planner.RestoreSpecialPresentationFacing(
+                    monster,
+                    directionBeforePresentation,
+                    presentationDirection);
             }
         }
     }

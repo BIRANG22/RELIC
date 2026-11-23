@@ -10,6 +10,77 @@ public class BattleTimelineManualControlTests
     private GameObject[] slotObjects;
     private GameObject characterPanelObject;
 
+    [TestCase(0, 0f)]
+    [TestCase(1, 10f)]
+    [TestCase(4, 40f)]
+    public void OwnerIconQueue_UsesTenPixelOverlap(int queueIndex, float expectedX)
+    {
+        Assert.That(
+            BattleTimelineGroupUI.ResolveOwnerIconAnchoredX(queueIndex, 10f),
+            Is.EqualTo(expectedX).Within(0.0001f));
+    }
+
+    [TestCase(0, 1f)]
+    [TestCase(1, 0.5f)]
+    [TestCase(4, 0.5f)]
+    public void OwnerIconQueue_OnlyFrontIconIsOpaque(int queueIndex, float expectedAlpha)
+    {
+        Assert.That(
+            BattleTimelineGroupUI.ResolveOwnerIconAlpha(queueIndex, 0.5f),
+            Is.EqualTo(expectedAlpha).Within(0.0001f));
+    }
+
+    [Test]
+    public void OwnerIconQueue_LimitsVisibleEntriesToFiveInOrder()
+    {
+        int[] orderIndices = { 4, 1, 3, 0, 2, 7 };
+
+        int[] visible = BattleTimelineGroupUI.ResolveOwnerIconOrderIndices(orderIndices, 5);
+
+        Assert.That(visible, Is.EqualTo(new[] { 0, 1, 2, 3, 4 }));
+    }
+
+    [Test]
+    public void OwnerIconQueue_RemovesExecutedOrdersAndPromotesNext()
+    {
+        int[] remaining = BattleTimelineGroupUI.ResolveRemainingOwnerIconOrderIndices(
+            new[] { 0, 1, 2, 3 },
+            new[] { 0, 2 });
+
+        Assert.That(remaining, Is.EqualTo(new[] { 1, 3 }));
+        Assert.That(BattleTimelineGroupUI.ResolveOwnerIconAlpha(0, 0.5f), Is.EqualTo(1f));
+    }
+
+    [TestCase(false, false)]
+    [TestCase(true, true)]
+    public void OwnerIconQueue_TurnMarkOnlyHidesIconsForEmptySlot(bool isEmptySlot, bool expected)
+    {
+        Assert.That(
+            BattleTimelineGroupUI.ShouldHideOwnerIconsWhenTurnMarkPasses(isEmptySlot),
+            Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void OwnerIconQueue_CollapsesOnlyConsecutiveActionsFromSameOwner()
+    {
+        string[] owners = { "player:a", "player:a", "monster:x", "monster:x", "player:a" };
+
+        string[] groups = BattleTimelineGroupUI.ResolveConsecutiveOwnerIconGroups(owners, 5);
+
+        Assert.That(groups, Is.EqualTo(new[] { "player:a", "monster:x", "player:a" }));
+    }
+
+    [Test]
+    public void TimelineOrderIndex_AccumulatesMonsterEntryCosts()
+    {
+        int orderIndex = BattleTurnExecutor.ResolveSequentialTimelineOrderIndex(
+            0,
+            new[] { 2, 1, 3 },
+            2);
+
+        Assert.That(orderIndex, Is.EqualTo(3));
+    }
+
     [TestCase(false, false, false, 0f, 0f, 0f)]
     [TestCase(true, false, true, 0.1f, 0.2f, 0.9f)]
     [TestCase(true, true, true, 0.9f, 0.2f, 0.1f)]
@@ -77,6 +148,8 @@ public class BattleTimelineManualControlTests
     [TearDown]
     public void TearDown()
     {
+        SteamLobbySessionState.Clear();
+
         if (slotObjects != null)
         {
             foreach (GameObject slotObject in slotObjects)
@@ -609,7 +682,7 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
-    public void MoveReservationUndo_WhenOriginalSlotHasOtherCharacter_LeavesMoveUnchanged()
+    public void MoveReservationUndo_WhenOriginalSlotHasOtherCharacter_RestoresOriginalOrder()
     {
         BattleTimelineController controller = CreateControllerWithSlots(2, 0);
         CharacterRuntimeData movingRuntime = Runtime("MoveBlocked", BattleDirection.Right);
@@ -622,7 +695,26 @@ public class BattleTimelineManualControlTests
 
         controller.UndoLastPlayerReservation();
 
-        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { blocker }));
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { moving, blocker }));
+        Assert.That(Slot(1).Commands, Is.Empty);
+    }
+
+    [Test]
+    public void MoveReservationUndo_WhenOriginalSlotIsFull_LeavesMoveUnchanged()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(2, 0);
+        CharacterRuntimeData movingRuntime = Runtime("MoveFull", BattleDirection.Right);
+        CharacterRuntimeData blockerRuntime = Runtime("MoveFullBlocker", BattleDirection.Right);
+        PlayerReservedCommand moving = Attack(movingRuntime);
+        Assert.That(controller.ConfirmPlayerCommand(0, moving), Is.True);
+        Assert.That(controller.TryMovePlayerReservation(moving, 1, 0), Is.True);
+
+        for (int i = 0; i < ReserveTurnSlotUI.MaxCommandCount; i++)
+            Assert.That(Slot(0).AddCommand(Attack(blockerRuntime)), Is.True);
+
+        controller.UndoLastPlayerReservation();
+
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(ReserveTurnSlotUI.MaxCommandCount));
         Assert.That(Slot(1).Commands, Is.EqualTo(new[] { moving }));
     }
 
@@ -647,7 +739,22 @@ public class BattleTimelineManualControlTests
     }
 
     [Test]
-    public void MoveReservation_InvalidCharacterDestination_LeavesBothSlotsUnchanged()
+    public void ConfirmReservation_DifferentCharactersShareSameSlot()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData first = Runtime("FirstShared", BattleDirection.Right);
+        CharacterRuntimeData second = Runtime("SecondShared", BattleDirection.Left);
+        PlayerReservedCommand firstCommand = Attack(first);
+        PlayerReservedCommand secondCommand = Attack(second);
+
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, firstCommand), Is.True);
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, secondCommand), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { firstCommand, secondCommand }));
+    }
+
+    [Test]
+    public void MoveReservation_DifferentCharacterDestination_InsertsCommand()
     {
         BattleTimelineController controller = CreateControllerWithSlots(2, 0);
         CharacterRuntimeData first = Runtime("FirstDrag", BattleDirection.Right);
@@ -657,10 +764,97 @@ public class BattleTimelineManualControlTests
         Assert.That(Slot(0).AddCommand(moving), Is.True);
         Assert.That(Slot(1).AddCommand(occupied), Is.True);
 
-        Assert.That(controller.TryMovePlayerReservation(moving, 1, 0), Is.False);
+        Assert.That(controller.TryMovePlayerReservation(moving, 1, 0), Is.True);
 
-        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { moving }));
-        Assert.That(Slot(1).Commands, Is.EqualTo(new[] { occupied }));
+        Assert.That(Slot(0).Commands, Is.Empty);
+        Assert.That(Slot(1).Commands, Is.EqualTo(new[] { moving, occupied }));
+    }
+
+    [Test]
+    public void NetworkSnapshot_DifferentCharactersRestoreIntoSameSlot()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData first = Runtime("FirstSnapshot", BattleDirection.Right);
+        CharacterRuntimeData second = Runtime("SecondSnapshot", BattleDirection.Left);
+        PlayerReservedCommand firstCommand = Attack(first);
+        PlayerReservedCommand secondCommand = Attack(second);
+
+        Assert.That(controller.AddPlayerCommandFromNetworkSnapshot(0, firstCommand), Is.True);
+        Assert.That(controller.AddPlayerCommandFromNetworkSnapshot(0, secondCommand), Is.True);
+
+        Assert.That(Slot(0).Commands, Is.EqualTo(new[] { firstCommand, secondCommand }));
+    }
+
+    [Test]
+    public void DifferentCharacters_StillRespectSharedSlotCapacity()
+    {
+        BattleTimelineController controller = CreateControllerWithSlots(1, 0);
+        CharacterRuntimeData first = Runtime("FirstCapacity", BattleDirection.Right);
+        CharacterRuntimeData second = Runtime("SecondCapacity", BattleDirection.Left);
+
+        for (int i = 0; i < ReserveTurnSlotUI.MaxCommandCount; i++)
+        {
+            CharacterRuntimeData runtime = i % 2 == 0 ? first : second;
+            Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, Attack(runtime)), Is.True);
+        }
+
+        Assert.That(controller.ConfirmPlayerCommandFromNetwork(0, Attack(second)), Is.False);
+        Assert.That(Slot(0).Commands, Has.Count.EqualTo(ReserveTurnSlotUI.MaxCommandCount));
+    }
+
+    [Test]
+    public void Slot_RejectsCommandWithoutRuntime()
+    {
+        CreateControllerWithSlots(1, 0);
+        PlayerReservedCommand invalid = new(null, new SkillMasterData
+        {
+            SkillId = "MissingRuntime",
+            Category = Category.Core,
+            Entry = 1,
+            SkillType = SkillType.Attack
+        });
+
+        Assert.That(Slot(0).AddCommand(invalid), Is.False);
+        Assert.That(Slot(0).InsertCommand(0, invalid), Is.False);
+        Assert.That(Slot(0).Commands, Is.Empty);
+    }
+
+    [Test]
+    public void MultiplayerSlotPolicy_AllowsOnlyCommandsControlledByRequester()
+    {
+        const ulong host = 10UL;
+        const ulong guest = 20UL;
+        SteamLobbySessionState.SetLobby(1UL, host, host);
+        SteamLobbySessionState.SetPartySnapshot(new LobbyPartySnapshot(
+            host,
+            1L,
+            new[] { host, guest },
+            new[]
+            {
+                new LobbyPartySlotState(0, host, "HostA"),
+                new LobbyPartySlotState(1, host, "HostB"),
+                new LobbyPartySlotState(2, guest, "Guest")
+            }));
+
+        PlayerReservedCommand hostA = Attack(Runtime("HostA", BattleDirection.Right));
+        PlayerReservedCommand hostB = Attack(Runtime("HostB", BattleDirection.Right));
+        PlayerReservedCommand guestCommand = Attack(Runtime("Guest", BattleDirection.Left));
+
+        Assert.That(
+            SteamBattleStateSynchronizer.CanMemberEditTimelineSlot(
+                host,
+                new[] { hostA, hostB }),
+            Is.True);
+        Assert.That(
+            SteamBattleStateSynchronizer.CanMemberEditTimelineSlot(
+                host,
+                new[] { hostA, guestCommand }),
+            Is.False);
+        Assert.That(
+            SteamBattleStateSynchronizer.CanMemberEditTimelineSlot(
+                guest,
+                new[] { hostA }),
+            Is.False);
     }
 
     [Test]

@@ -212,8 +212,7 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         {
             bool hierarchyGrew = RebuildStatusEffects();
             lastStatusSignature = statusSignature;
-            if (hierarchyGrew)
-                RefreshBlurReplica();
+            RefreshBlurReplica(hierarchyGrew);
         }
     }
 
@@ -261,18 +260,18 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
             cameraController.FocusMonsterInfoForGridIndex(monster.transform, monster.MainGridIndex);
         StopRevealCoroutine();
 
-        RefreshMonsterName();
-        ConfigurePreview(boundRuntime.MonsterId);
-        bool hierarchyGrew = RebuildSkills();
-        hierarchyGrew |= RebuildStatusEffects();
-        lastStatusSignature = CalculateStatusSignature(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
-
         RestoreErosionVisual();
-        if (monsterInfoPanel != null)
-            monsterInfoPanel.SetActive(true);
+        bool hierarchyGrew = false;
+        MonsterInfoPanelBindingOrder.ActivateThenBind(monsterInfoPanel, () =>
+        {
+            RefreshMonsterName();
+            ConfigurePreview(boundRuntime.MonsterId);
+            hierarchyGrew = RebuildSkills();
+            hierarchyGrew |= RebuildStatusEffects();
+            lastStatusSignature = CalculateStatusSignature(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
+        });
         Canvas.ForceUpdateCanvases();
-        if (hierarchyGrew)
-            RefreshBlurReplica();
+        RefreshBlurReplica(hierarchyGrew);
         StartPreviewAnimation();
         EnsureCanvasGroup();
         SetCanvasGroupVisibleImmediate();
@@ -403,16 +402,17 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         revealCoroutine = null;
     }
     /// <summary>
-    /// MonsterInfoCanvas 아래에 런타임으로 생성된 Skill/Status UI가
-    /// 블러용 복제 hierarchy에도 반영되도록 복제본을 다시 만듭니다.
+    /// MonsterInfoCanvas의 Skill/Status 재바인딩 결과를 블러 복제본에 동기화합니다.
+    /// 새 풀 항목이 추가되어 hierarchy가 확장된 경우에만 복제 트리를 다시 만듭니다.
     /// </summary>
-    private void RefreshBlurReplica()
+    private void RefreshBlurReplica(bool hierarchyGrew)
     {
         if (!UIBlurBackgroundManager.HasInstance)
             return;
 
         UIBlurBackgroundManager manager = UIBlurBackgroundManager.Instance;
-        manager.InvalidateReplicaSource(gameObject);
+        if (hierarchyGrew)
+            manager.InvalidateReplicaSource(gameObject);
         manager.RefreshPresentation();
     }
 
@@ -640,8 +640,16 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
     private void HandleLocaleChanged(Locale _)
     {
-        if (HasPanelContextActive() && boundRuntime != null && RebuildSkills())
-            RefreshBlurReplica();
+        if (!HasPanelContextActive() || boundRuntime == null)
+            return;
+
+        RefreshMonsterName();
+        bool hierarchyGrew = RebuildSkills();
+        hierarchyGrew |= RebuildStatusEffects();
+        lastStatusSignature = CalculateStatusSignature(
+            boundRuntime.StatusEffects,
+            boundRuntime.CurrentShield);
+        RefreshBlurReplica(hierarchyGrew);
     }
 
     private bool RebuildSkills()
@@ -888,6 +896,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
                 monsterNameText = nameRoot.GetComponent<TMP_Text>() ?? nameRoot.GetComponentInChildren<TMP_Text>(true);
         }
 
+        LocalizedTMPText.ProtectDynamicOwnership(monsterNameText);
+
         if (backButton == null)
         {
             Transform backButtonRoot = FindChildRecursive(panelRoot, backButtonObjectName);
@@ -979,6 +989,17 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         }
 
         return null;
+    }
+}
+
+public static class MonsterInfoPanelBindingOrder
+{
+    public static void ActivateThenBind(GameObject panel, Action bindCurrentMonster)
+    {
+        if (panel != null)
+            panel.SetActive(true);
+
+        bindCurrentMonster?.Invoke();
     }
 }
 
