@@ -307,6 +307,19 @@ public class BattleTimelineBarUI : MonoBehaviour
             group.SetOwnerIconsVisible(false);
     }
 
+    public System.Collections.IEnumerator PlayOwnerIconsAfterActionRoutine(
+        int slotIndex,
+        IReadOnlyList<int> orderIndices)
+    {
+        EnsureTimelineGroups();
+        if (timelineGroups == null || slotIndex < 0 || slotIndex >= timelineGroups.Length)
+            yield break;
+
+        BattleTimelineGroupUI group = timelineGroups[slotIndex];
+        if (group != null)
+            yield return group.PlayOwnerIconsAfterActionRoutine(orderIndices);
+    }
+
     public void PlayPlayerReservationFeedback(int slotIndex, PlayerReservedCommand command)
     {
         if (timelineGroups == null || slotIndex < 0 || slotIndex >= timelineGroups.Length)

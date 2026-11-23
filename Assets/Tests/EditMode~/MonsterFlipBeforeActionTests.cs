@@ -119,49 +119,27 @@ public sealed class MonsterFlipBeforeActionTests
     }
 
     [Test]
-    public void InitialReservedFacing_ConsumesTimelineFlipAfterDirectionIsApplied()
+    public void FirstReservedAction_OppositeDirection_KeepsExecutionFlip()
     {
-        const string path =
-            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/TimeLine/BattleMonsterTurnPlanner.cs";
-        string source = File.ReadAllText(path);
-        int start = source.IndexOf(
-            "public bool ApplyFirstReservedActionFacing(MonsterUnit monster)",
-            StringComparison.Ordinal);
-        int end = source.IndexOf("public void ApplyNocturnFirstReservedActionFacing", start,
-            StringComparison.Ordinal);
-        string method = source.Substring(start, end - start);
+        BattleDirection projected = MonsterFlipBeforeActionPolicy.ResolveProjectedDirection(
+            BattleDirection.Right,
+            isMoveAction: false,
+            moveOffset: Vector2Int.zero,
+            hasForcedDirection: true,
+            forcedDirection: BattleDirection.Left,
+            out bool flipBeforeAction);
 
-        int applyRuntimeDirection = method.IndexOf(
-            "monster.RuntimeData.Direction = direction", StringComparison.Ordinal);
-        int consumeExecutionFlip = method.IndexOf(
-            "command.SetFlipBeforeAction(false)", StringComparison.Ordinal);
-        int consumeMovementFlip = method.IndexOf(
-            "command.SetShowMovementFacingTransition(false)", StringComparison.Ordinal);
-        int success = method.IndexOf("return true", applyRuntimeDirection,
-            StringComparison.Ordinal);
-
-        Assert.That(consumeExecutionFlip, Is.GreaterThan(applyRuntimeDirection));
-        Assert.That(consumeMovementFlip, Is.GreaterThan(consumeExecutionFlip));
-        Assert.That(consumeMovementFlip, Is.LessThan(success));
+        Assert.That(projected, Is.EqualTo(BattleDirection.Left));
+        Assert.That(flipBeforeAction, Is.True);
     }
 
     [Test]
-    public void InitialReservedFacing_RefreshesTimelineAfterFlipConsumption()
+    public void SpecialPresentation_RestoresDirectionFromBeforePresentation()
     {
-        const string path =
-            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/TimeLine/BattleMonsterTurnPlanner.cs";
-        string source = File.ReadAllText(path);
-        const string expectedSequence =
-            "ApplyAllFirstReservedActionFacings(monsterUnits);\r\n" +
-            "        timelineController.RefreshMonsterCommandPresentation();";
+        BattleDirection restored = MonsterSpecialPresentationFacingPolicy.ResolveRestoredDirection(
+            BattleDirection.Left,
+            BattleDirection.Right);
 
-        int first = source.IndexOf(expectedSequence, StringComparison.Ordinal);
-        int second = first >= 0
-            ? source.IndexOf(expectedSequence, first + expectedSequence.Length,
-                StringComparison.Ordinal)
-            : -1;
-
-        Assert.That(first, Is.GreaterThanOrEqualTo(0));
-        Assert.That(second, Is.GreaterThan(first));
+        Assert.That(restored, Is.EqualTo(BattleDirection.Left));
     }
 }

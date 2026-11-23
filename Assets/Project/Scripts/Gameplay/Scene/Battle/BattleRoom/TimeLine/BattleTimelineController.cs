@@ -818,8 +818,7 @@ public class BattleTimelineController : MonoBehaviour
 
         ReserveTurnSlotUI slot = reserveSlots[entry.SlotIndex];
         if (slot == null || slot.Commands == null ||
-            slot.IndexOfCommand(entry.Command) >= 0 ||
-            !slot.CanAcceptCharacter(entry.Command.UserRuntime))
+            slot.IndexOfCommand(entry.Command) >= 0)
         {
             return false;
         }
@@ -1783,7 +1782,8 @@ public class BattleTimelineController : MonoBehaviour
             : GetTurnMarkGrindPositionX(slotIndex);
 
         BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
-        if (activeBar != null)
+        if (activeBar != null &&
+            BattleTimelineGroupUI.ShouldHideOwnerIconsWhenTurnMarkPasses(isEmptySlot))
             activeBar.HideOwnerIconsForSlot(slotIndex);
 
         Coroutine turnMarkAnimation = null;
@@ -1913,6 +1913,11 @@ public class BattleTimelineController : MonoBehaviour
         if (orderIndices == null)
             yield break;
 
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        Coroutine ownerIconAnimation = activeBar != null
+            ? StartCoroutine(activeBar.PlayOwnerIconsAfterActionRoutine(slotIndex, orderIndices))
+            : null;
+
         for (int i = 0; i < orderIndices.Count; i++)
         {
             int orderIndex = orderIndices[i];
@@ -1946,6 +1951,9 @@ public class BattleTimelineController : MonoBehaviour
             else if (timelineSpriteAnimationController != null)
                 yield return MoveTimelineSlotToGrindPositionRoutine(slotIndex, endX, GetUseSkillGrindDuration());
         }
+
+        if (ownerIconAnimation != null)
+            yield return ownerIconAnimation;
     }
 
     // Move through unused orders after the last action in a slot has finished.
@@ -3706,14 +3714,6 @@ public class BattleTimelineController : MonoBehaviour
             }
         }
 
-        if (!slot.CanAcceptCharacter(selectedCharacter))
-        {
-            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotOccupiedByOtherCharacter));
-            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
-            RejectPendingActionSelection();
-            return;
-        }
-
         if (!canMergeMoveCommand && !CanAddPlayerCommandToSlot(activeSlotIndex))
         {
             ShowCombinedSlotCapacityWarning();
@@ -3820,13 +3820,6 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (!slot.CanAcceptCharacter(command.UserRuntime))
-        {
-            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotOccupiedByOtherCharacter));
-            Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
-            return false;
-        }
-
         string equipmentBlockReason = GetEquipmentReservationBlockReason(command, slotIndex);
         if (!string.IsNullOrEmpty(equipmentBlockReason))
         {
@@ -3916,7 +3909,6 @@ public class BattleTimelineController : MonoBehaviour
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
         if (slot == null ||
-            !slot.CanAcceptCharacter(command.UserRuntime) ||
             !slot.CanAddCommand(command) ||
             !CanAddPlayerCommandToSlot(
                 slotIndex,
@@ -4393,7 +4385,6 @@ public class BattleTimelineController : MonoBehaviour
         ReserveTurnSlotUI slot = reserveSlots[entry.SlotIndex];
         if (slot == null || slot.Commands == null ||
             slot.IndexOfCommand(entry.Command) >= 0 ||
-            !slot.CanAcceptCharacter(entry.Command.UserRuntime) ||
             !string.IsNullOrEmpty(GetEquipmentReservationBlockReason(entry.Command, entry.SlotIndex)) ||
             !CanAddPlayerCommandToSlot(entry.SlotIndex, entry.Command.TimelineEntryCost) ||
             !slot.InsertCommand(entry.OrderIndex, entry.Command))
@@ -5958,8 +5949,7 @@ public class BattleTimelineController : MonoBehaviour
         }
         else
         {
-            if (!destinationSlot.CanAcceptCharacter(command.UserRuntime) ||
-                !destinationSlot.CanAddCommand(command) ||
+            if (!destinationSlot.CanAddCommand(command) ||
                 !CanAddPlayerCommandToSlot(
                     destinationSlotIndex,
                     command.TimelineEntryCost,

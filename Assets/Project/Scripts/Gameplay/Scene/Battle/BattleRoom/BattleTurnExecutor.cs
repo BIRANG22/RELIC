@@ -1989,7 +1989,10 @@ public class BattleTurnExecutor : MonoBehaviour
         }
 
         if (monsterCommands != null)
-            orderIndex += monsterCommands.Count;
+        {
+            for (int i = 0; i < monsterCommands.Count; i++)
+                orderIndex += Mathf.Max(1, monsterCommands[i]?.TimelineEntryCost ?? 1);
+        }
 
         if (playerCommands != null)
         {
@@ -2039,10 +2042,25 @@ public class BattleTurnExecutor : MonoBehaviour
         for (int i = 0; i < monsterCommands.Count; i++)
         {
             if (ReferenceEquals(monsterCommands[i], targetCommand))
-                return orderIndex + i;
+                return orderIndex;
+
+            orderIndex += Mathf.Max(1, monsterCommands[i]?.TimelineEntryCost ?? 1);
         }
 
         return -1;
+    }
+
+    public static int ResolveSequentialTimelineOrderIndex(
+        int startingOrderIndex,
+        IReadOnlyList<int> entryCosts,
+        int targetIndex)
+    {
+        int orderIndex = Mathf.Max(0, startingOrderIndex);
+        if (entryCosts == null || targetIndex < 0 || targetIndex >= entryCosts.Count)
+            return -1;
+        for (int i = 0; i < targetIndex; i++)
+            orderIndex += Mathf.Max(1, entryCosts[i]);
+        return orderIndex;
     }
 
     private static bool IsExecutablePlayerCommand(PlayerReservedCommand command)
