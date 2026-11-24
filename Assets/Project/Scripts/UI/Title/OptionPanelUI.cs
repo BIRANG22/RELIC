@@ -3,55 +3,71 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 public class OptionPanelUI : MonoBehaviour
 {
     private const string SoundContentName = "SoundContent";
-    private const string LanguageContentName = "LanguageContent";
     private const string ResolutionContentName = "ResolutionContent";
-    private const string WindowedToggleName = "WindowedToggle";
-    private const string BorderlessToggleName = "BorderlessToggle";
-    private const string FullscreenToggleName = "FullscreenToggle";
 
     private const string WindowedLabelKey = "ui.option.display_mode.windowed";
     private const string BorderlessLabelKey = "ui.option.display_mode.borderless";
     private const string FullscreenLabelKey = "ui.option.display_mode.fullscreen";
     private const string ControlContentName = "ControlContent";
-    private const string TutorialToggle1Name = "TutorialToggle1";
-    private const string TutorialToggle2Name = "TutorialToggle2";
+
+    [Header("Tab Buttons")]
+    [SerializeField] private Button gameButton;
+    [SerializeField] private Button graphicButton;
+    [SerializeField] private Button audioButton;
+    [SerializeField] private Button controlButton;
 
     [Header("Contents")]
+    [SerializeField] private GameObject gameContent;
     [SerializeField] private GameObject soundContent;
-    [SerializeField] private GameObject languageContent;
     [SerializeField] private GameObject resolutionContent;
     [SerializeField] private GameObject controlContent;
 
     [Header("Resolution")]
-    [SerializeField] private TMP_Dropdown resolutionDropdown;
+    [SerializeField] private Button resolutionPreviousButton;
+    [SerializeField] private Button resolutionNextButton;
+    [SerializeField] private TMP_Text resolutionValueText;
     [Tooltip("Font database for resolution numbers. Assign the existing LocaleFontDatabase asset if it is outside Resources.")]
     [SerializeField] private LocaleFontDatabase resolutionFontDatabase;
-    [SerializeField] private Toggle windowedToggle;
-    [SerializeField] private Toggle borderlessToggle;
-    [SerializeField] private Toggle fullscreenToggle;
+
+    [Header("Display Mode Arrows")]
+    [SerializeField] private Button displayModePreviousButton;
+    [SerializeField] private Button displayModeNextButton;
+    [SerializeField] private TMP_Text displayModeValueText;
+    [SerializeField] private bool useLocalizedDisplayModeNames = true;
+    [SerializeField] private string windowedName = "창화면";
+    [SerializeField] private string borderlessName = "테두리 없는 화면";
+    [SerializeField] private string fullscreenName = "전체화면";
 
     [Header("Battle Presentation Speed")]
+    [SerializeField] private Button battlePresentationSpeedPreviousButton;
+    [SerializeField] private Button battlePresentationSpeedNextButton;
     [SerializeField] private TextMeshProUGUI battlePresentationSpeedLabel;
 
     [Header("Tutorial")]
-    [SerializeField] private Toggle tutorialToggle;
-    [SerializeField] private Toggle tutorialPreviewToggle;
+    [SerializeField] private Button tutorialPreviousButton;
+    [SerializeField] private Button tutorialNextButton;
+    [SerializeField] private TMP_Text tutorialValueText;
+    [SerializeField] private string tutorialYesKey = "common.yes";
+    [SerializeField] private string tutorialNoKey = "common.no";
 
-    [Header("Resolution Template Sorting")]
-    [SerializeField] private int resolutionDropdownSortingOrderOffset = 50;
-
-    [Header("Language Template Sorting")]
-    [SerializeField] private int languageDropdownSortingOrderOffset = 50;
+    [Header("Language Arrows")]
+    [SerializeField] private Button languagePreviousButton;
+    [SerializeField] private Button languageNextButton;
+    [SerializeField] private TMP_Text languageValueText;
+    private const string LanguagePreferenceKey = "OptionPanelUI.LanguageCode";
+    private bool languageReady;
+    private int languageInitVersion;
 
     [Header("Save Toast")]
     [SerializeField] private float saveToastDuration = 1.4f;
     [SerializeField] private int saveToastSortingOrder = 32100;
 
-    private bool isResolutionDropdownReady;
 
 #if UNITY_EDITOR
     private void OnValidate()
@@ -78,78 +94,85 @@ public class OptionPanelUI : MonoBehaviour
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
 
         AutoFindReferences();
-        SetupLanguageDropdown();
-        SetupResolutionDropdown();
-        SetupDisplayModeToggles();
+        BindArrowSelectors();
+        LocalizationSettings.SelectedLocaleChanged -= OnSelectedLanguageChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnSelectedLanguageChanged;
+        InitializeLanguageSelector();
+        RefreshResolutionLabel();
         RefreshDisplayModeLabels();
         RefreshOptionHeadingLabels();
         RefreshOptionHeadingLabelsWhenReady();
-        SetupTutorialToggle();
-        ShowAllContents();
+        BindTabButtons();
+        RestoreActiveTab();
+        SyncTutorialToggleFromSettings();
         RefreshBattlePresentationSpeedLabel();
     }
 
     private void OnDisable()
     {
+        RestoreTabColors();
+        languageInitVersion++;
+        languageReady = false;
+        LocalizationSettings.SelectedLocaleChanged -= OnSelectedLanguageChanged;
+        UnbindTabButtons();
+        UnbindArrowSelectors();
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
     }
 
     private void OnDestroy()
     {
-        if (resolutionDropdown != null)
-            resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
-
-        if (windowedToggle != null)
-            windowedToggle.onValueChanged.RemoveListener(OnWindowedToggleChanged);
-
-        if (borderlessToggle != null)
-            borderlessToggle.onValueChanged.RemoveListener(OnBorderlessToggleChanged);
-
-        if (fullscreenToggle != null)
-            fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
-
-
-        if (tutorialToggle != null)
-            tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
-
-        if (tutorialPreviewToggle != null)
-            tutorialPreviewToggle.onValueChanged.RemoveListener(OnTutorialPreviewToggleChanged);
-
+        UnbindArrowSelectors();
+        UnbindTabButtons();
     }
 
-    private void ShowAllContents()
+    private void BindTabButtons()
     {
-        SetContentActive(soundContent, true);
-        SetContentActive(languageContent, true);
-        SetContentActive(resolutionContent, true);
-        SetContentActive(controlContent, true);
+        UnbindTabButtons();
+        Transform buttons = transform.Find("Buttons");
+        if (buttons == null)
+            buttons = FindChildByName(transform, "Buttons");
 
+        if (gameButton == null) gameButton = FindTabButton(buttons, "Game");
+        if (graphicButton == null) graphicButton = FindTabButton(buttons, "Graphic");
+        if (audioButton == null) audioButton = FindTabButton(buttons, "Audio");
+        if (controlButton == null) controlButton = FindTabButton(buttons, "Control");
+
+        if (gameButton != null) gameButton.onClick.AddListener(ShowGame);
+        if (graphicButton != null) graphicButton.onClick.AddListener(ShowResolution);
+        if (audioButton != null) audioButton.onClick.AddListener(ShowSound);
+        if (controlButton != null) controlButton.onClick.AddListener(ShowControl);
+    }
+
+    private void UnbindTabButtons()
+    {
+        if (gameButton != null) gameButton.onClick.RemoveListener(ShowGame);
+        if (graphicButton != null) graphicButton.onClick.RemoveListener(ShowResolution);
+        if (audioButton != null) audioButton.onClick.RemoveListener(ShowSound);
+        if (controlButton != null) controlButton.onClick.RemoveListener(ShowControl);
+    }
+
+    private static Button FindTabButton(Transform root, string name)
+    {
+        Transform child = FindChildByName(root, name);
+        return child != null ? child.GetComponent<Button>() : null;
+    }
+
+    public void ShowGame()
+    {
+        ShowSingleContent(gameContent);
         SyncTutorialToggleFromSettings();
+        RefreshLanguageLabel();
     }
 
-    public void ShowSound()
-    {
-        ShowSingleContent(soundContent);
-    }
-
-    public void ShowLanguage()
-    {
-        ShowSingleContent(languageContent);
-    }
-
+    public void ShowSound() => ShowSingleContent(soundContent);
+    public void ShowLanguage() => ShowGame();
     public void ShowResolution()
     {
         ShowSingleContent(resolutionContent);
-
-        if (resolutionDropdown != null)
-            StartCoroutine(ShowResolutionDropdownNextFrame());
+        RefreshDisplayModeLabels();
+        RefreshResolutionLabel();
     }
-
-    public void ShowControl()
-    {
-        ShowSingleContent(controlContent);
-        SyncTutorialToggleFromSettings();
-    }
+    public void ShowControl() => ShowSingleContent(controlContent);
 
     public void SaveProgress()
     {
@@ -176,21 +199,25 @@ public class OptionPanelUI : MonoBehaviour
     /// Option 프리팹의 전투 배속 버튼 UnityEvent에서 호출됩니다.
     /// 전투 연출용 로컬 속도만 다음 단계로 순환합니다.
     /// </summary>
-    public void CycleBattlePresentationSpeed()
+    public void CycleBattlePresentationSpeed() => NextBattlePresentationSpeed();
+    public void PreviousBattlePresentationSpeed() => ChangeBattlePresentationSpeed(-1);
+    public void NextBattlePresentationSpeed() => ChangeBattlePresentationSpeed(1);
+
+    private void ChangeBattlePresentationSpeed(int direction)
     {
-        int nextIndex = (BattlePresentationSpeedSettings.CurrentIndex + 1)
-            % BattlePresentationSpeedSettings.OptionCount;
-        BattlePresentationSpeedSettings.SetSelectedIndex(nextIndex);
+        int count = BattlePresentationSpeedSettings.OptionCount;
+        if (count <= 0) return;
+        int index = (BattlePresentationSpeedSettings.CurrentIndex + direction + count) % count;
+        BattlePresentationSpeedSettings.SetSelectedIndex(index);
         RefreshBattlePresentationSpeedLabel();
     }
 
     private void AutoFindReferences()
     {
+        if (gameContent == null)
+            gameContent = FindChildGameObject("GameContent");
         if (soundContent == null)
             soundContent = FindChildGameObject(SoundContentName);
-
-        if (languageContent == null)
-            languageContent = FindChildGameObject(LanguageContentName);
 
         if (resolutionContent == null)
             resolutionContent = FindChildGameObject(ResolutionContentName);
@@ -200,148 +227,261 @@ public class OptionPanelUI : MonoBehaviour
 
     }
 
-    private void SetupLanguageDropdown()
+    private async void InitializeLanguageSelector()
     {
-        TMP_Dropdown contentDropdown = languageContent != null
-            ? languageContent.GetComponentInChildren<TMP_Dropdown>(true)
-            : null;
-
-        DirectTemplateDropdown.Attach(contentDropdown)
-            ?.Configure(languageDropdownSortingOrderOffset);
+        int version = ++languageInitVersion;
+        languageReady = false;
+        SetLanguageButtonsInteractable(false);
+        try
+        {
+            await LocalizationSettings.InitializationOperation.Task;
+            if (!this || !isActiveAndEnabled || version != languageInitVersion) return;
+            languageReady = true;
+            string savedCode = PlayerPrefs.GetString(LanguagePreferenceKey, string.Empty);
+            if (!string.IsNullOrEmpty(savedCode))
+            {
+                Locale saved = LocalizationSettings.AvailableLocales.GetLocale(new LocaleIdentifier(savedCode));
+                if (saved != null && LocalizationSettings.SelectedLocale != saved)
+                    LocalizationSettings.SelectedLocale = saved;
+            }
+            RefreshLanguageLabel();
+        }
+        catch (System.Exception e)
+        {
+            if (this && version == languageInitVersion)
+                Debug.LogWarning("[OptionPanelUI] Language initialization failed: " + e.Message, this);
+        }
     }
 
-    private void SetupResolutionDropdown()
+    public void PreviousLanguage() => CycleLanguage(-1);
+    public void NextLanguage() => CycleLanguage(1);
+
+    private void CycleLanguage(int direction)
     {
-        TMP_Dropdown contentDropdown = resolutionContent != null
-            ? resolutionContent.GetComponentInChildren<TMP_Dropdown>(true)
-            : null;
+        if (!languageReady) return;
+        var locales = LocalizationSettings.AvailableLocales.Locales;
+        if (locales == null || locales.Count < 2) return;
+        int index = -1;
+        for (int i = 0; i < locales.Count; i++)
+            if (locales[i] == LocalizationSettings.SelectedLocale) { index = i; break; }
+        int next = index < 0 ? (direction < 0 ? locales.Count - 1 : 0)
+            : (index + direction + locales.Count) % locales.Count;
+        Locale selected = locales[next];
+        if (selected == null) return;
+        LocalizationSettings.SelectedLocale = selected;
+        PlayerPrefs.SetString(LanguagePreferenceKey, selected.Identifier.Code);
+        PlayerPrefs.Save();
+        RefreshLanguageLabel();
+    }
 
-        if (contentDropdown != null && resolutionDropdown != contentDropdown)
+    private void OnSelectedLanguageChanged(Locale locale)
+    {
+        if (languageReady && locale != null)
         {
-            if (resolutionDropdown != null)
-                resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
-
-            resolutionDropdown = contentDropdown;
+            PlayerPrefs.SetString(LanguagePreferenceKey, locale.Identifier.Code);
+            PlayerPrefs.Save();
         }
+        RefreshLanguageLabel();
+    }
 
-        if (resolutionDropdown == null)
-            return;
+    private void SetLanguageButtonsInteractable(bool value)
+    {
+        if (languagePreviousButton != null) languagePreviousButton.interactable = value;
+        if (languageNextButton != null) languageNextButton.interactable = value;
+    }
 
-        isResolutionDropdownReady = false;
+    private void RefreshLanguageLabel()
+    {
+        if (!languageReady) return;
+        var locales = LocalizationSettings.AvailableLocales.Locales;
+        SetLanguageButtonsInteractable(locales != null && locales.Count > 1);
+        if (languageValueText == null) return;
+        Locale locale = LocalizationSettings.SelectedLocale;
+        LocalizedTMPText.ProtectDynamicOwnership(languageValueText);
+        languageValueText.text = locale == null ? string.Empty : GetLanguageDisplayName(locale);
+        LocaleTMPFontGuard.Prepare(languageValueText);
+        languageValueText.ForceMeshUpdate();
+    }
 
-        resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
-        resolutionDropdown.ClearOptions();
+    private static string GetLanguageDisplayName(Locale locale)
+    {
+        switch (locale.Identifier.Code.ToLowerInvariant())
+        {
+            case "ko": case "ko-kr": return "한국어";
+            case "en": case "en-us": case "en-gb": return "English";
+            case "ja": case "ja-jp": return "日本語";
+            case "zh-hans": case "zh-cn": return "简体中文";
+            case "zh-hant": case "zh-tw": case "zh-hk": return "繁體中文";
+            case "es": case "es-es": return "Español";
+            default: return locale.LocaleName;
+        }
+    }
 
+    public void PreviousResolution() => CycleResolution(-1);
+    public void NextResolution() => CycleResolution(1);
+
+    private void CycleResolution(int direction)
+    {
         List<string> labels = ResolutionManager.GetSupportedResolutionLabels();
-        var options = new List<TMP_Dropdown.OptionData>(labels.Count);
-
-        for (int i = 0; i < labels.Count; i++)
-            options.Add(new TMP_Dropdown.OptionData(labels[i]));
-
-        resolutionDropdown.AddOptions(options);
-        resolutionDropdown.SetValueWithoutNotify(ResolutionManager.CurrentResolutionIndex);
-        resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
-        DirectTemplateDropdown resolutionController = DirectTemplateDropdown.Attach(resolutionDropdown);
-        if (resolutionController != null)
-        {
-            resolutionController.Configure(resolutionDropdownSortingOrderOffset);
-            LocaleFontDatabase fontDatabase = resolutionFontDatabase != null
-                ? resolutionFontDatabase
-                : LocaleFontDatabaseProvider.LoadDefault();
-            resolutionController.ConfigureCommonNumberFont(fontDatabase);
-        }
-
-        isResolutionDropdownReady = true;
+        if (labels == null || labels.Count == 0) return;
+        int index = Mathf.Clamp(ResolutionManager.CurrentResolutionIndex, 0, labels.Count - 1);
+        int next = (index + direction + labels.Count) % labels.Count;
+        if (next != index)
+            ResolutionManager.ApplyResolution(next, true);
+        RefreshResolutionLabel();
     }
 
-    private void SetupDisplayModeToggles()
+    private void RefreshResolutionLabel()
     {
-        if (resolutionContent == null)
-            return;
+        List<string> labels = ResolutionManager.GetSupportedResolutionLabels();
+        int count = labels != null ? labels.Count : 0;
+        if (resolutionPreviousButton != null) resolutionPreviousButton.interactable = count > 1;
+        if (resolutionNextButton != null) resolutionNextButton.interactable = count > 1;
+        if (resolutionValueText == null) return;
+        LocalizedTMPText.ProtectDynamicOwnership(resolutionValueText);
+        resolutionValueText.text = count > 0
+            ? labels[Mathf.Clamp(ResolutionManager.CurrentResolutionIndex, 0, count - 1)]
+            : string.Empty;
+        LocaleTMPFontGuard.Prepare(resolutionValueText);
+        LocaleFontDatabase fontDatabase = resolutionFontDatabase != null
+            ? resolutionFontDatabase : LocaleFontDatabaseProvider.LoadDefault();
+        if (fontDatabase != null && fontDatabase.CommonNumberFont != null)
+            resolutionValueText.font = fontDatabase.CommonNumberFont;
+        resolutionValueText.ForceMeshUpdate();
+    }
 
-        if (windowedToggle == null)
+    private void BindArrowSelectors()
+    {
+        UnbindArrowSelectors();
+        Transform language = FindChildByName(gameContent != null ? gameContent.transform : transform, "LanguageSelector");
+        if (languagePreviousButton == null) languagePreviousButton = FindTabButton(language, "LeftButton");
+        if (languageNextButton == null) languageNextButton = FindTabButton(language, "RightButton");
+        if (languageValueText == null) languageValueText = FindSelectorText(language);
+        if (languagePreviousButton != null) languagePreviousButton.onClick.AddListener(PreviousLanguage);
+        if (languageNextButton != null && languageNextButton != languagePreviousButton) languageNextButton.onClick.AddListener(NextLanguage);
+        Transform speed = FindChildByName(transform, "BattleSpeedSelector");
+        if (battlePresentationSpeedPreviousButton == null) battlePresentationSpeedPreviousButton = FindTabButton(speed, "LeftButton");
+        if (battlePresentationSpeedNextButton == null) battlePresentationSpeedNextButton = FindTabButton(speed, "RightButton");
+        if (speed != null)
         {
-            Transform toggleTransform = FindChildByName(resolutionContent.transform, WindowedToggleName);
-            if (toggleTransform != null)
-                windowedToggle = toggleTransform.GetComponent<Toggle>();
+            TextMeshProUGUI value = FindSelectorText(speed) as TextMeshProUGUI;
+            if (value != null && (battlePresentationSpeedLabel == null || !battlePresentationSpeedLabel.transform.IsChildOf(speed)))
+                battlePresentationSpeedLabel = value;
         }
+        if (battlePresentationSpeedPreviousButton != null) battlePresentationSpeedPreviousButton.onClick.AddListener(PreviousBattlePresentationSpeed);
+        if (battlePresentationSpeedNextButton != null && battlePresentationSpeedNextButton != battlePresentationSpeedPreviousButton) battlePresentationSpeedNextButton.onClick.AddListener(NextBattlePresentationSpeed);
+        Transform resolution = FindChildByName(resolutionContent != null ? resolutionContent.transform : transform, "ResolutionSelector");
+        if (resolutionPreviousButton == null) resolutionPreviousButton = FindTabButton(resolution, "LeftButton");
+        if (resolutionNextButton == null) resolutionNextButton = FindTabButton(resolution, "RightButton");
+        if (resolutionValueText == null) resolutionValueText = FindSelectorText(resolution);
+        if (resolutionPreviousButton != null) resolutionPreviousButton.onClick.AddListener(PreviousResolution);
+        if (resolutionNextButton != null) resolutionNextButton.onClick.AddListener(NextResolution);
+        Transform mode = FindChildByName(transform, "DisplayModeSelector");
+        Transform tutorial = FindChildByName(transform, "TutorialSelector");
+        if (displayModePreviousButton == null) displayModePreviousButton = FindTabButton(mode, "LeftButton");
+        if (displayModeNextButton == null) displayModeNextButton = FindTabButton(mode, "RightButton");
+        if (displayModeValueText == null) displayModeValueText = FindSelectorText(mode);
+        if (tutorialPreviousButton == null) tutorialPreviousButton = FindTabButton(tutorial, "LeftButton");
+        if (tutorialNextButton == null) tutorialNextButton = FindTabButton(tutorial, "RightButton");
+        if (tutorialValueText == null) tutorialValueText = FindSelectorText(tutorial);
+        if (displayModePreviousButton != null) displayModePreviousButton.onClick.AddListener(PreviousDisplayMode);
+        if (displayModeNextButton != null) displayModeNextButton.onClick.AddListener(NextDisplayMode);
+        if (tutorialPreviousButton != null) tutorialPreviousButton.onClick.AddListener(CycleTutorial);
+        if (tutorialNextButton != null && tutorialNextButton != tutorialPreviousButton) tutorialNextButton.onClick.AddListener(CycleTutorial);
+    }
 
-        if (borderlessToggle == null)
-        {
-            Transform toggleTransform = FindChildByName(resolutionContent.transform, BorderlessToggleName);
-            if (toggleTransform != null)
-                borderlessToggle = toggleTransform.GetComponent<Toggle>();
-        }
+    private static TMP_Text FindSelectorText(Transform root)
+    {
+        Transform child = FindChildByName(root, "ValueText");
+        return child != null ? child.GetComponent<TMP_Text>() : null;
+    }
 
-        if (fullscreenToggle == null)
-        {
-            Transform toggleTransform = FindChildByName(resolutionContent.transform, FullscreenToggleName);
-            if (toggleTransform != null)
-                fullscreenToggle = toggleTransform.GetComponent<Toggle>();
-        }
+    private void UnbindArrowSelectors()
+    {
+        if (languagePreviousButton != null) languagePreviousButton.onClick.RemoveListener(PreviousLanguage);
+        if (languageNextButton != null) languageNextButton.onClick.RemoveListener(NextLanguage);
+        if (battlePresentationSpeedPreviousButton != null) battlePresentationSpeedPreviousButton.onClick.RemoveListener(PreviousBattlePresentationSpeed);
+        if (battlePresentationSpeedNextButton != null) battlePresentationSpeedNextButton.onClick.RemoveListener(NextBattlePresentationSpeed);
+        if (resolutionPreviousButton != null) resolutionPreviousButton.onClick.RemoveListener(PreviousResolution);
+        if (resolutionNextButton != null) resolutionNextButton.onClick.RemoveListener(NextResolution);
+        if (displayModePreviousButton != null) displayModePreviousButton.onClick.RemoveListener(PreviousDisplayMode);
+        if (displayModeNextButton != null) displayModeNextButton.onClick.RemoveListener(NextDisplayMode);
+        if (tutorialPreviousButton != null) tutorialPreviousButton.onClick.RemoveListener(CycleTutorial);
+        if (tutorialNextButton != null) tutorialNextButton.onClick.RemoveListener(CycleTutorial);
+    }
 
-        ConfigureDisplayModeToggleGroup();
+    private static readonly ResolutionManager.DisplayMode[] DisplayModes =
+    {
+        ResolutionManager.DisplayMode.Windowed,
+        ResolutionManager.DisplayMode.BorderlessFullscreen,
+        ResolutionManager.DisplayMode.ExclusiveFullscreen
+    };
 
-        if (windowedToggle != null)
-        {
-            windowedToggle.onValueChanged.RemoveListener(OnWindowedToggleChanged);
-            windowedToggle.SetIsOnWithoutNotify(ResolutionManager.CurrentDisplayMode == ResolutionManager.DisplayMode.Windowed);
-            windowedToggle.onValueChanged.AddListener(OnWindowedToggleChanged);
-        }
+    public void PreviousDisplayMode() => CycleDisplayMode(-1);
+    public void NextDisplayMode() => CycleDisplayMode(1);
 
-        if (borderlessToggle != null)
-        {
-            borderlessToggle.onValueChanged.RemoveListener(OnBorderlessToggleChanged);
-            borderlessToggle.SetIsOnWithoutNotify(ResolutionManager.CurrentDisplayMode == ResolutionManager.DisplayMode.BorderlessFullscreen);
-            borderlessToggle.onValueChanged.AddListener(OnBorderlessToggleChanged);
-        }
-
-        if (fullscreenToggle != null)
-        {
-            fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
-            fullscreenToggle.SetIsOnWithoutNotify(ResolutionManager.CurrentDisplayMode == ResolutionManager.DisplayMode.ExclusiveFullscreen);
-            fullscreenToggle.onValueChanged.AddListener(OnFullscreenToggleChanged);
-        }
-
+    private void CycleDisplayMode(int direction)
+    {
+        int index = System.Array.IndexOf(DisplayModes, ResolutionManager.CurrentDisplayMode);
+        if (index < 0) index = 0;
+        index = (index + direction + DisplayModes.Length) % DisplayModes.Length;
+        ResolutionManager.SetDisplayMode(DisplayModes[index], true);
         RefreshDisplayModeLabels();
+        RefreshResolutionLabel();
+    }
+
+    public void CycleTutorial()
+    {
+        TutorialSettings.SetShouldPlayTutorial(!TutorialSettings.ShouldPlayTutorial);
+        SyncTutorialToggleFromSettings();
     }
 
     private void RefreshDisplayModeLabels()
     {
-        SetDisplayModeToggleLabel(windowedToggle, WindowedLabelKey, "창화면");
-        SetDisplayModeToggleLabel(borderlessToggle, BorderlessLabelKey, "테두리없는화면");
-        SetDisplayModeToggleLabel(fullscreenToggle, FullscreenLabelKey, "전체화면");
+        switch (ResolutionManager.CurrentDisplayMode)
+        {
+            case ResolutionManager.DisplayMode.BorderlessFullscreen:
+                SetDisplayModeName(BorderlessLabelKey, borderlessName);
+                break;
+            case ResolutionManager.DisplayMode.ExclusiveFullscreen:
+                SetDisplayModeName(FullscreenLabelKey, fullscreenName);
+                break;
+            default:
+                SetDisplayModeName(WindowedLabelKey, windowedName);
+                break;
+        }
     }
 
-    private static void SetDisplayModeToggleLabel(Toggle toggle, string localizationKey, string koreanFallback)
+    private void SetDisplayModeName(string key, string name)
     {
-        if (toggle == null)
+        if (useLocalizedDisplayModeNames)
+        {
+            SetSelectorLabel(displayModeValueText, key, name);
             return;
+        }
+        if (displayModeValueText == null) return;
+        LocalizedTMPText.ProtectDynamicOwnership(displayModeValueText);
+        displayModeValueText.text = name;
+        LocaleTMPFontGuard.Prepare(displayModeValueText);
+        displayModeValueText.ForceMeshUpdate();
+    }
 
-        TMP_Text label = toggle.GetComponentInChildren<TMP_Text>(true);
-        if (label == null)
-            return;
-
-        if (label.GetComponent<LocalizationIgnore>() == null)
-            label.gameObject.AddComponent<LocalizationIgnore>();
-
-        LocalizedTMPText localizedTmp = label.GetComponent<LocalizedTMPText>();
-        if (localizedTmp != null)
-            localizedTmp.enabled = false;
-
-        UnityEngine.Localization.Components.LocalizeStringEvent localizeStringEvent =
-            label.GetComponent<UnityEngine.Localization.Components.LocalizeStringEvent>();
-        if (localizeStringEvent != null)
-            localizeStringEvent.enabled = false;
-
-        label.text = GameLocalization.Get(localizationKey, koreanFallback);
+    private static void SetSelectorLabel(TMP_Text label, string key, string fallback)
+    {
+        if (label == null) return;
+        LocalizedTMPText.ProtectDynamicOwnership(label);
+        string value = GameLocalization.Get(key, fallback);
+        label.text = string.IsNullOrWhiteSpace(value) || value == key || value == "Untranslated" || value == "미번역" || value == "未翻译" || value == "未翻訳" || value == "Sin traducir" ? fallback : value;
         LocaleTMPFontGuard.Prepare(label);
         label.ForceMeshUpdate();
     }
 
     private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
     {
+        RefreshLanguageLabel();
         RefreshDisplayModeLabels();
+        RefreshResolutionLabel();
+        SyncTutorialToggleFromSettings();
         RefreshOptionHeadingLabels();
     }
 
@@ -361,33 +501,8 @@ public class OptionPanelUI : MonoBehaviour
         SetOptionHeading("TutorialText", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
         // The instantiated Option prefab uses Back/Name/TutorialLabel.
         SetOptionHeading("TutorialLabel", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
-        SetTutorialToggleHeading();
     }
 
-    private void SetTutorialToggleHeading()
-    {
-        Transform toggleRoot = FindChildByName(transform, TutorialToggle1Name);
-        if (toggleRoot == null)
-            return;
-
-        TMP_Text[] texts = toggleRoot.GetComponentsInChildren<TMP_Text>(true);
-        foreach (TMP_Text label in texts)
-        {
-            if (label == null)
-                continue;
-            string current = label.text != null ? label.text.Trim() : string.Empty;
-            if (current != "튜토리얼" && current != "Untranslated" &&
-                current != "미번역" && current != "未翻訳" &&
-                current != "未翻译" && current != "Sin traducir")
-                continue;
-            LocalizedTMPText.ProtectDynamicOwnership(label);
-            string value = GameLocalization.Get("ui.tutorialpanel.titletext.74198686", "튜토리얼");
-            label.text = string.IsNullOrWhiteSpace(value) ||
-                value == "Untranslated" || value == "未翻訳" ||
-                value == "未翻译" || value == "Sin traducir" || value == "미번역"
-                ? "튜토리얼" : value;
-        }
-    }
 
     private void SetOptionHeading(string objectName, string key, string koreanSource)
     {
@@ -429,138 +544,19 @@ public class OptionPanelUI : MonoBehaviour
         }
 
         if (this && isActiveAndEnabled)
+        {
             RefreshOptionHeadingLabels();
-    }
-
-
-
-    private void ConfigureDisplayModeToggleGroup()
-    {
-        ToggleGroup group = null;
-
-        if (windowedToggle != null)
-            group = windowedToggle.group;
-        if (group == null && borderlessToggle != null)
-            group = borderlessToggle.group;
-        if (group == null && fullscreenToggle != null)
-            group = fullscreenToggle.group;
-
-        if (group == null)
-        {
-            group = resolutionContent.GetComponent<ToggleGroup>();
-            if (group == null)
-                group = resolutionContent.AddComponent<ToggleGroup>();
-        }
-
-        group.allowSwitchOff = false;
-
-        if (windowedToggle != null)
-            windowedToggle.group = group;
-        if (borderlessToggle != null)
-            borderlessToggle.group = group;
-        if (fullscreenToggle != null)
-            fullscreenToggle.group = group;
-    }
-
-
-    private void SetupTutorialToggle()
-    {
-        if (controlContent == null)
-            controlContent = FindChildGameObject(ControlContentName);
-
-        if (controlContent != null)
-        {
-            if (tutorialToggle == null)
-            {
-                Transform tutorialToggleTransform = FindChildByName(controlContent.transform, TutorialToggle1Name);
-                if (tutorialToggleTransform != null)
-                    tutorialToggle = tutorialToggleTransform.GetComponent<Toggle>();
-            }
-
-            if (tutorialPreviewToggle == null)
-            {
-                Transform tutorialPreviewTransform = FindChildByName(controlContent.transform, TutorialToggle2Name);
-                if (tutorialPreviewTransform != null)
-                    tutorialPreviewToggle = tutorialPreviewTransform.GetComponent<Toggle>();
-            }
-        }
-
-        // TutorialToggle2는 ControlContent 외부에 배치된 프리팹 구조도 허용합니다.
-        // 자동 탐색에 실패하더라도 기능 자체는 선택적으로 비활성화하고 경고는 출력하지 않습니다.
-        if (tutorialPreviewToggle == null)
-        {
-            Transform tutorialPreviewTransform = FindChildByName(transform, TutorialToggle2Name);
-            if (tutorialPreviewTransform != null)
-                tutorialPreviewToggle = tutorialPreviewTransform.GetComponent<Toggle>();
-        }
-
-        if (tutorialToggle == null)
-        {
-            Debug.LogWarning(
-                "[OptionPanelUI] TutorialToggle1 is not assigned in the Option prefab.",
-                this);
-        }
-        else
-        {
-            tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
-            tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldPlayTutorial);
-            tutorialToggle.onValueChanged.AddListener(OnTutorialToggleChanged);
-        }
-
-        // 기존 TutorialToggle2(튜토리얼 즉시 보기)는 더 이상 사용하지 않습니다.
-        if (tutorialPreviewToggle != null)
-        {
-            tutorialPreviewToggle.onValueChanged.RemoveListener(OnTutorialPreviewToggleChanged);
-            tutorialPreviewToggle.SetIsOnWithoutNotify(false);
-            tutorialPreviewToggle.gameObject.SetActive(false);
+            RefreshDisplayModeLabels();
+            RefreshResolutionLabel();
+            SyncTutorialToggleFromSettings();
         }
     }
 
-
-    private void OnTutorialToggleChanged(bool shouldShowTutorial)
-    {
-        TutorialSettings.SetShouldPlayTutorial(shouldShowTutorial);
-    }
-
-    private void OnTutorialPreviewToggleChanged(bool isOn)
-    {
-        // 기존 튜토리얼 패널 즉시 보기 기능은 사용하지 않습니다.
-        if (tutorialPreviewToggle != null)
-            tutorialPreviewToggle.SetIsOnWithoutNotify(false);
-    }
 
     private void SyncTutorialToggleFromSettings()
     {
-        if (tutorialToggle == null)
-            return;
-
-        tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldPlayTutorial);
-    }
-
-    private void OnResolutionChanged(int index)
-    {
-        if (!isResolutionDropdownReady)
-            return;
-
-        ResolutionManager.ApplyResolution(index, true);
-    }
-
-    private void OnWindowedToggleChanged(bool isOn)
-    {
-        if (isOn)
-            ResolutionManager.SetDisplayMode(ResolutionManager.DisplayMode.Windowed, true);
-    }
-
-    private void OnBorderlessToggleChanged(bool isOn)
-    {
-        if (isOn)
-            ResolutionManager.SetDisplayMode(ResolutionManager.DisplayMode.BorderlessFullscreen, true);
-    }
-
-    private void OnFullscreenToggleChanged(bool isOn)
-    {
-        if (isOn)
-            ResolutionManager.SetDisplayMode(ResolutionManager.DisplayMode.ExclusiveFullscreen, true);
+        bool enabled = TutorialSettings.ShouldPlayTutorial;
+        SetSelectorLabel(tutorialValueText, enabled ? tutorialYesKey : tutorialNoKey, enabled ? "예" : "아니오");
     }
 
     private void RefreshBattlePresentationSpeedLabel()
@@ -573,33 +569,77 @@ public class OptionPanelUI : MonoBehaviour
         }
 
         if (battlePresentationSpeedLabel != null)
+        {
+            LocalizedTMPText.ProtectDynamicOwnership(battlePresentationSpeedLabel);
             battlePresentationSpeedLabel.text = $"{BattlePresentationSpeedSettings.CurrentDisplayMultiplier:0.0}X";
+        }
         else
             Debug.LogWarning("[BattlePresentationSpeed] Speed label reference is missing.", this);
     }
 
 
-    private IEnumerator ShowResolutionDropdownNextFrame()
+    private void RestoreActiveTab()
     {
-        yield return null;
+        // activeSelf preserves the tab state even while the option panel is closed.
+        if (gameContent != null && gameContent.activeSelf) ShowGame();
+        else if (resolutionContent != null && resolutionContent.activeSelf) ShowResolution();
+        else if (soundContent != null && soundContent.activeSelf) ShowSound();
+        else if (controlContent != null && controlContent.activeSelf) ShowControl();
+        else if (gameContent != null) ShowGame();
+        else if (resolutionContent != null) ShowResolution();
+        else if (soundContent != null) ShowSound();
+        else if (controlContent != null) ShowControl();
+    }
 
-        if (resolutionDropdown == null || !resolutionDropdown.gameObject.activeInHierarchy)
-            yield break;
+    private readonly Dictionary<Button, ColorBlock> originalTabColors = new Dictionary<Button, ColorBlock>();
 
-        resolutionDropdown.Show();
+    private void SelectTabForContent(GameObject content)
+    {
+        ApplyTabColor(gameButton, content == gameContent);
+        ApplyTabColor(graphicButton, content == resolutionContent);
+        ApplyTabColor(audioButton, content == soundContent);
+        ApplyTabColor(controlButton, content == controlContent);
+    }
+
+    private void ApplyTabColor(Button button, bool active)
+    {
+        if (button == null) return;
+        if (!originalTabColors.TryGetValue(button, out ColorBlock original))
+        {
+            original = button.colors;
+            originalTabColors.Add(button, original);
+        }
+
+        ColorBlock colors = original;
+        // The active tab stays selected visually regardless of EventSystem focus.
+        // Inactive tabs must not show the selected tint just because they have focus.
+        colors.selectedColor = active ? original.selectedColor : original.normalColor;
+        if (active)
+        {
+            colors.normalColor = original.selectedColor;
+            colors.highlightedColor = original.selectedColor;
+            colors.pressedColor = original.selectedColor;
+        }
+        button.colors = colors;
+    }
+
+    private void RestoreTabColors()
+    {
+        foreach (var entry in originalTabColors)
+            if (entry.Key != null) entry.Key.colors = entry.Value;
+        originalTabColors.Clear();
     }
 
     private void ShowSingleContent(GameObject activeContent)
     {
-        AutoFindReferences();
-        SetupLanguageDropdown();
-        SetupResolutionDropdown();
-        SetupDisplayModeToggles();
-        SetupTutorialToggle();
-        SetContentActive(soundContent, soundContent == activeContent);
-        SetContentActive(languageContent, languageContent == activeContent);
+        if (activeContent == null)
+            return;
+
+        SetContentActive(gameContent, gameContent == activeContent);
         SetContentActive(resolutionContent, resolutionContent == activeContent);
+        SetContentActive(soundContent, soundContent == activeContent);
         SetContentActive(controlContent, controlContent == activeContent);
+        SelectTabForContent(activeContent);
     }
 
     private GameObject FindChildGameObject(string childName)
