@@ -23,7 +23,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     [Header("Skill Select Panels")]
     [SerializeField] private GameObject[] skillIconSelectPanels = new GameObject[SetupSkillSlotCount];
-    [SerializeField, HideInInspector, Min(0.01f)] private float skillSelectPanelMoveDuration = 0.2f;
+    private readonly Image[] mainSkillImages = new Image[SetupSkillSlotCount];
 
     [Header("Skill Select Button Count")]
     [SerializeField] private bool autoBindSkillIconButtons = true;
@@ -101,7 +101,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private SkillSlotButton currentSelectedSlot;
     private int openedSkillSelectPanelIndex = -1;
-    private Coroutine[] skillSelectPanelMoveCoroutines = new Coroutine[SetupSkillSlotCount];
 
     private bool skillSelectPanelAllowed = true;
     private CanvasGroup skillTooltipCanvasGroup;
@@ -130,10 +129,10 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         BindSkillIconButtonsIfNeeded();
+        BindMainSkillImages();
         InitSkillIconButtons();
         BindSkillTooltipIfNeeded();
         HideSkillTooltipImmediate();
-        SetAllDirectSkillPanelsVisible();
     }
 
     public void SetSettingController(Setting controller)
@@ -150,10 +149,10 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         BindSkillIconButtonsIfNeeded();
+        BindMainSkillImages();
         InitSkillIconButtons();
         BindSkillTooltipIfNeeded();
         HideSkillTooltipImmediate();
-        SetAllDirectSkillPanelsVisible();
 
         if (currentMasterData != null && currentRuntimeData != null)
             RefreshAllDirectSkillButtons();
@@ -171,6 +170,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         HideSkillTooltipImmediate();
     }
+
 
     private void OnLocaleChanged(Locale _)
     {
@@ -245,8 +245,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         {
             if (i >= SetupSkillSlotCount)
             {
-                if (skillIconSelectPanels[i] != null)
-                    skillIconSelectPanels[i].SetActive(false);
 
                 continue;
             }
@@ -794,10 +792,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     public bool CanPreviewSkillIconHover => false;
 
     public void SetSkillSelectPanelEnabledForTab(bool enabled)
-    {
-        skillSelectPanelAllowed = true;
-        SetAllDirectSkillPanelsVisible();
-    }
+    { skillSelectPanelAllowed = enabled; }
 
     public void SetSkillSelectPanelVisible(bool visible)
     {
@@ -806,8 +801,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void SetSkillSelectPanelVisible(bool visible, bool immediate)
     {
-        SetAllDirectSkillPanelsVisible();
-        openedSkillSelectPanelIndex = -1;
+        // Selection panels remain in their Inspector-configured state. No slide, fade, or active-state changes.
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -863,8 +857,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (IsDirectSelectionLayout)
         {
             RefreshAllDirectSkillButtons();
-            SetAllDirectSkillPanelsVisible();
-        }
+            }
         else
         {
             ClearSkillIconButtons();
@@ -882,8 +875,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (IsDirectSelectionLayout)
         {
             RefreshAllDirectSkillButtons();
-            SetAllDirectSkillPanelsVisible();
-        }
+            }
         else if (currentSelectedSlot != null)
         {
             OpenSkillSelectPanel(currentSelectedSlot);
@@ -991,45 +983,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     public void OpenSkillSelectPanel(SkillSlotButton slotButton)
     {
-        if (slotButton == null)
-        {
-            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillSlotNotConnected));
-            return;
-        }
-
-        if (currentRuntimeData == null || currentMasterData == null)
-        {
-            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
-            return;
-        }
-
+        if (slotButton == null) return;
         if (!skillSelectPanelAllowed)
         {
             OpenSkillSettingFromPreview(slotButton);
             return;
         }
-
-        int slotIndex = slotButton.SlotIndex;
-
-        if (slotIndex < 0 || slotIndex >= SetupSkillSlotCount)
-            return;
-
-        // 이미 열려 있는 같은 스킬 버튼을 다시 누르면 선택 패널을 닫는다.
-        if (openedSkillSelectPanelIndex == slotIndex)
-        {
-            SetSelectedSkillSlot(null);
-            SetSkillSelectPanelVisible(false);
-            return;
-        }
-
-        SetSelectedSkillSlot(slotButton);
-        ShowSkillInfo(slotButton.EquippedSkill);
-
-        List<SkillMasterData> candidates = GetSkillCandidates(slotIndex);
-        RefreshSkillIconButtons(candidates, slotIndex);
-
-        // 다른 패널은 X 230으로 복귀하고 선택한 패널만 X -15로 이동한다.
-        SetSkillSelectPanelVisible(true);
+        // Main slots no longer toggle selection panels.
     }
 
     public void OpenDefaultSkillSlot()
@@ -1037,7 +997,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (IsDirectSelectionLayout)
         {
             RefreshAllDirectSkillButtons();
-            SetAllDirectSkillPanelsVisible();
             return;
         }
         if (skillSlotButtons == null ||
@@ -1281,6 +1240,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (slotIndex < 0 || slotIndex >= SetupSkillSlotCount)
             return;
 
+
         int requiredLevel = GetRequiredLevelForSkill(skill, slotIndex);
         if (currentRuntimeData.Level < requiredLevel)
         {
@@ -1293,11 +1253,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         string previousSkillId = GetRuntimeSkillId(slotIndex);
         if (!ShouldPlaySkillChange(previousSkillId, skill.SkillId))
+        {
+            RefreshDirectSkillSelection(slotIndex);
+            RefreshMainSkillIcon(slotIndex);
             return;
+        }
 
         SetRuntimeSkillId(slotIndex, skill.SkillId);
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
         RefreshDirectSkillSelection(slotIndex);
+        RefreshMainSkillIcon(slotIndex);
         AudioManager.Instance?.PlaySfx(skillChangeSfxId);
     }
 
@@ -1361,6 +1326,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                     string.Equals(data.SkillId, equippedId, StringComparison.OrdinalIgnoreCase);
                 buttons[i]?.SetEquippedSelected(selected);
             }
+            RefreshMainSkillIcon(slotIndex);
         }
 
         if (appliedDefaultSkill && currentRuntimeData != null && DataManager.Instance != null)
@@ -1377,16 +1343,46 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         }
     }
 
-    private void SetAllDirectSkillPanelsVisible()
+    private void BindMainSkillImages()
     {
-        if (skillIconSelectPanels == null)
-            return;
-
-        for (int i = 0; i < Mathf.Min(skillIconSelectPanels.Length, SetupSkillSlotCount); i++)
+        Transform area = FindChildByName(transform, "Skill_Area");
+        if (area == null) area = FindChildByName(transform.root, "Skill_Area");
+        for (int i = 0; i < SetupSkillSlotCount; i++)
         {
-            if (skillIconSelectPanels[i] != null)
-                skillIconSelectPanels[i].SetActive(true);
+            GameObject panel = skillIconSelectPanels != null && i < skillIconSelectPanels.Length ? skillIconSelectPanels[i] : null;
+            Transform slot = panel != null ? panel.transform.parent : null;
+            if (slot == null || slot.name != "Skill" + (i + 1))
+                slot = area != null ? area.Find("Skill" + (i + 1)) : slot;
+            Transform icon = slot != null ? slot.Find("IconImg") : null;
+            mainSkillImages[i] = icon != null ? icon.GetComponent<Image>() : null;
         }
+    }
+
+
+
+
+
+    private void RefreshMainSkillIcon(int index)
+    {
+        Image target = mainSkillImages[index];
+        if (target == null) return;
+        string equipped = GetRuntimeSkillId(index);
+        Sprite sprite = null;
+        foreach (SkillIconButton candidate in GetSkillIconButtons(index))
+        {
+            if (candidate == null || candidate.CurrentSkillData == null ||
+                !string.Equals(candidate.CurrentSkillData.SkillId, equipped, StringComparison.OrdinalIgnoreCase)) continue;
+            Transform icon = FindChildByName(candidate.transform, "IconImg");
+            if (icon == null) icon = FindChildByName(candidate.transform, "Icon");
+            if (icon == null) icon = FindChildByName(candidate.transform, "IconImage");
+            if (icon == null) icon = FindChildByName(candidate.transform, "SkillIcon");
+            Image image = icon != null ? icon.GetComponent<Image>() : null;
+            if (image == null) image = candidate.GetComponent<Image>();
+            if (image != null) sprite = image.sprite;
+            break;
+        }
+        target.sprite = sprite;
+        target.enabled = sprite != null;
     }
 
     public void ShowSkillInfo(SkillMasterData skill)
@@ -2065,6 +2061,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     public void SelectSkill(SkillMasterData skill)
     {
+        if (IsDirectSelectionLayout)
+        {
+            for (int i = 0; i < SetupSkillSlotCount; i++)
+            {
+                if (!IsSkillValidForCurrentCharacterSlot(skill, i)) continue;
+                SelectSkillDirect(i, skill);
+                break;
+            }
+            return;
+        }
         if (currentSelectedSlot == null)
         {
             ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectSkillSlotFirst));
@@ -2113,7 +2119,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private IEnumerator RestoreSelectedSkillInfoAfterPanelClose(SkillMasterData selectedSkill)
     {
-        float waitTime = Mathf.Max(0f, skillSelectPanelMoveDuration) + 0.02f;
+        float waitTime = 0.02f;
 
         if (waitTime > 0f)
             yield return new WaitForSecondsRealtime(waitTime);
@@ -2220,6 +2226,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         }
 
         ClearSkillIconButtons();
+        for (int i = 0; i < SetupSkillSlotCount; i++) RefreshMainSkillIcon(i);
         ClearSkillInfo();
         SetSelectedSkillSlot(null);
         SetSkillSelectPanelVisible(false);
@@ -2247,9 +2254,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 buttons[i].SetSkillData(null, false, 0);
                 buttons[i].SetEquippedSelected(false);
             }
+            RefreshMainSkillIcon(panelIndex);
         }
 
-        SetAllDirectSkillPanelsVisible();
     }
 
     public void ClearForEmptyCharacter()
