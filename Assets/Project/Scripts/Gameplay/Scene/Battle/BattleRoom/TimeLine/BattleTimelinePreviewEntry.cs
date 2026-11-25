@@ -82,6 +82,30 @@ public class BattleTimelinePreviewEntry
         }
     }
 
+    public float SkillIconRotationZ
+    {
+        get
+        {
+            if (!IsMonster ||
+                MonsterCommand == null ||
+                MonsterSkillData == null ||
+                MonsterSkillData.TimelineNotation != TimelineActionType.Move)
+            {
+                return 0f;
+            }
+
+            Vector2Int moveOffset = MonsterCommand.MoveOffset;
+            int directionX = System.Math.Sign(moveOffset.x);
+            int directionY = System.Math.Sign(moveOffset.y);
+
+            if (directionX == 0 && directionY == 0)
+                return 0f;
+
+            float counterClockwiseAngle = Mathf.Atan2(directionY, directionX) * Mathf.Rad2Deg;
+            return Mathf.Repeat(-counterClockwiseAngle, 360f);
+        }
+    }
+
     public string SkillName
     {
         get

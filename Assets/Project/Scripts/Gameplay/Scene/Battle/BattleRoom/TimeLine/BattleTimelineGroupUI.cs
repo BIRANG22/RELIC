@@ -513,6 +513,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
                 useSkillImage = ResolveEntrySizeImage(visibleIndex, entry.OccupiedOrders, useSkillImage);
                 SetSkillImage(useSkillImage, entry.SkillIcon, true, reservedColor);
+                ApplySkillIconRotation(useSkillImage, entry.SkillIconRotationZ);
                 ApplySkillReservationColor(useSkillImage, entry, ownerDead);
                 SetSkillValueTextForEntry(visibleIndex, entry.OccupiedOrders, entry.SkillValueText);
 
@@ -2774,6 +2775,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         image.color = Color.white;
         image.enabled = show;
         image.raycastTarget = show;
+    }
+
+    private static void ApplySkillIconRotation(Image image, float rotationZ)
+    {
+        if (image == null)
+            return;
+
+        Vector3 localEulerAngles = image.rectTransform.localEulerAngles;
+        localEulerAngles.z = rotationZ;
+        image.rectTransform.localEulerAngles = localEulerAngles;
     }
 
     private void ShowEmptyUseSkillSlot(GameObject useSkillRoot)
