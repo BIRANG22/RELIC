@@ -60,6 +60,20 @@ namespace Relic.Gameplay.Data
             return icon != null;
         }
 
+        public bool TryGetProfilePrefab(string characterId, out GameObject profilePrefab)
+        {
+            profilePrefab = null;
+
+            if (map == null)
+                Initialize();
+
+            if (string.IsNullOrWhiteSpace(characterId) || !map.TryGetValue(characterId.Trim(), out var entry))
+                return false;
+
+            profilePrefab = entry.ProfilePrefab;
+            return profilePrefab != null;
+        }
+
         public bool TryGetPortrait(string characterId, out Sprite portrait)
         {
             portrait = null;
@@ -258,6 +272,9 @@ namespace Relic.Gameplay.Data
         public Sprite[] LobbyIdleFrames = new Sprite[6];
         [Tooltip("Info_Panel에서 파티 선택 상태일 때 반복 재생하는 Battle Idle 프레임입니다.")]
         public Sprite[] LobbyBattleIdleFrames = new Sprite[6];
+
+        [Header("Character Profile")]
+        public GameObject ProfilePrefab;
 
         public Sprite Mark;
         public Sprite Mark2;

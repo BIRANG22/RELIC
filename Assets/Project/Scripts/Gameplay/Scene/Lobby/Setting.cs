@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,6 +8,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
 
 public class Setting : MonoBehaviour
 {
@@ -16,8 +18,20 @@ public class Setting : MonoBehaviour
     [SerializeField] private TMP_Text characterInfoText;
 
     [Header("Character Profile")]
-    [Tooltip("CharacterSettingPanel/Profile_Area/Profile/Profile_Image. 비어 있으면 이름으로 자동 탐색합니다.")]
-    [SerializeField] private Image characterProfileImage;
+    private GameObject characterProfileInstance;
+    private RectTransform characterProfileRoot;
+    private CanvasGroup characterProfileFadeGroup;
+    private float characterProfileFadeAlpha = 1f;
+    [SerializeField, Min(0.01f)] private float profileSpriteUnitsToUI = 100f;
+    [SerializeField, Min(0.25f)] private float profileRenderResolutionScale = 1f;
+    [SerializeField] private Vector2 profileRenderOffset = Vector2.zero;
+    [SerializeField] private int profileRendererIndex = -1;
+    [SerializeField] private Vector3 profilePrefabPosition = Vector3.zero;
+    [SerializeField] private Vector3 profilePrefabScale = Vector3.one;
+    private Transform profilePrefabTransformRoot;
+    private bool profilePrefabUsesRenderTexture;
+    private GameObject currentProfilePrefab;
+    private string profileCharacterId;
 
     [Header("Character Info Panel")]
     [SerializeField] private CharacterInfoPanel characterInfoPanel;
@@ -132,7 +146,6 @@ public class Setting : MonoBehaviour
     {
         BindCharacterInfoTextIfNeeded();
         ProtectDynamicCharacterInfoText();
-        BindCharacterProfileImageIfNeeded();
         BindInfoAreaIfNeeded();
         BindSkillSettingPanelIfNeeded();
         BindProfileGradtionIfNeeded();
@@ -244,6 +257,21 @@ public class Setting : MonoBehaviour
         ShowAllSettingAreasStatic();
     }
 
+    private void LateUpdate()
+    {
+        ApplyProfilePrefabTransform();
+    }
+
+    private void ApplyProfilePrefabTransform()
+    {
+        if (profilePrefabTransformRoot == null)
+            return;
+        profilePrefabTransformRoot.localPosition = profilePrefabUsesRenderTexture
+            ? profilePrefabPosition
+            : profilePrefabPosition * Mathf.Max(0.01f, profileSpriteUnitsToUI);
+        profilePrefabTransformRoot.localScale = profilePrefabScale;
+    }
+
     private void Update()
     {
         HandleTestLevelCheatKeys();
@@ -337,7 +365,7 @@ public class Setting : MonoBehaviour
             for (int i = 0; i < parent.childCount; i++)
             {
                 Transform sibling = parent.GetChild(i);
-                if (sibling == current)
+                if (sibling == current || sibling == characterProfileRoot)
                     continue;
 
                 AddCharacterSettingFadeTarget(sibling);
@@ -384,6 +412,7 @@ public class Setting : MonoBehaviour
         characterSettingCanvasGroup.alpha = 1f;
         characterSettingCanvasGroup.interactable = false;
         characterSettingCanvasGroup.blocksRaycasts = false;
+        SetCharacterProfileFadeAlpha(0f);
 
         for (int i = 0; i < characterSettingFadeTargets.Count; i++)
         {
@@ -423,6 +452,7 @@ public class Setting : MonoBehaviour
         if (characterSettingFadeTargets.Count == 0)
             BuildCharacterSettingFadeTargets();
 
+        float profileStartAlpha = characterProfileFadeAlpha;
         float[] startAlphas = new float[characterSettingFadeTargets.Count];
         for (int i = 0; i < characterSettingFadeTargets.Count; i++)
             startAlphas[i] = characterSettingFadeTargets[i] != null ? characterSettingFadeTargets[i].alpha : targetAlpha;
@@ -440,6 +470,7 @@ public class Setting : MonoBehaviour
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
+                SetCharacterProfileFadeAlpha(Mathf.Lerp(profileStartAlpha, targetAlpha, t));
 
                 for (int i = 0; i < characterSettingFadeTargets.Count; i++)
                 {
@@ -462,8 +493,16 @@ public class Setting : MonoBehaviour
         }
     }
 
+    private void SetCharacterProfileFadeAlpha(float alpha)
+    {
+        characterProfileFadeAlpha = alpha;
+        if (characterProfileFadeGroup != null)
+            characterProfileFadeGroup.alpha = alpha;
+    }
+
     private void SetCharacterSettingFadeTargetAlpha(float alpha)
     {
+        SetCharacterProfileFadeAlpha(alpha);
         for (int i = 0; i < characterSettingFadeTargets.Count; i++)
         {
             CanvasGroup group = characterSettingFadeTargets[i];
@@ -557,6 +596,7 @@ public class Setting : MonoBehaviour
 
     private void OnDestroy()
     {
+        ClearCharacterProfilePrefab();
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged -= RefreshCharacterInfo;
 
@@ -912,7 +952,6 @@ public class Setting : MonoBehaviour
     {
         BindCharacterInfoTextIfNeeded();
         ProtectDynamicCharacterInfoText();
-        BindCharacterProfileImageIfNeeded();
 
         if (currentMasterData == null || currentRuntimeData == null)
         {
@@ -930,7 +969,7 @@ public class Setting : MonoBehaviour
         if (characterInfoPanel != null)
             characterInfoPanel.SetCharacter(currentMasterData, currentRuntimeData);
 
-        RefreshCharacterProfileImage();
+        RefreshCharacterProfilePrefab();
         RefreshCharacterLevelInfo();
     }
 
@@ -953,12 +992,7 @@ public class Setting : MonoBehaviour
         if (characterInfoPanel != null)
             characterInfoPanel.Clear();
 
-        BindCharacterProfileImageIfNeeded();
-        if (characterProfileImage != null)
-        {
-            characterProfileImage.sprite = null;
-            characterProfileImage.enabled = false;
-        }
+        ClearCharacterProfilePrefab();
 
         StopLevelNumberChangeCoroutine();
         hasDisplayedLevelValues = false;
@@ -1456,36 +1490,94 @@ public class Setting : MonoBehaviour
         skillSettingPanelScript.SetSettingController(this);
     }
 
-    private void BindCharacterProfileImageIfNeeded()
+    private void RefreshCharacterProfilePrefab()
     {
-        if (characterProfileImage != null)
+        CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
+        if (iconDatabase == null || string.IsNullOrWhiteSpace(currentCharacterId) ||
+            !iconDatabase.TryGetProfilePrefab(currentCharacterId, out var prefab))
+        {
+            ClearCharacterProfilePrefab();
+            return;
+        }
+
+        RectTransform parent = transform.Find("Profile_Area/Profile") as RectTransform;
+        if (parent == null)
+        {
+            ClearCharacterProfilePrefab();
+            Debug.LogWarning("[Setting] Profile_Area/Profile RectTransform not found.", this);
+            return;
+        }
+
+        if (characterProfileInstance != null && currentProfilePrefab == prefab &&
+            profileCharacterId == currentCharacterId && characterProfileRoot != null &&
+            characterProfileRoot.parent == parent)
             return;
 
-        Image[] images = GetComponentsInChildren<Image>(true);
-        for (int i = 0; i < images.Length; i++)
+        ClearCharacterProfilePrefab();
+        var root = new GameObject(prefab.name + " (Profile)", typeof(RectTransform), typeof(CanvasGroup));
+        characterProfileRoot = root.GetComponent<RectTransform>();
+        characterProfileRoot.SetParent(parent, false);
+        characterProfileRoot.anchorMin = Vector2.zero;
+        characterProfileRoot.anchorMax = Vector2.one;
+        characterProfileRoot.pivot = parent.pivot;
+        characterProfileRoot.offsetMin = Vector2.zero;
+        characterProfileRoot.offsetMax = Vector2.zero;
+        characterProfileRoot.localRotation = Quaternion.identity;
+        characterProfileRoot.localScale = Vector3.one;
+        Transform gradtion = parent.Find("Gradtion");
+        if (gradtion != null)
+            characterProfileRoot.SetSiblingIndex(gradtion.GetSiblingIndex());
+        characterProfileFadeGroup = root.GetComponent<CanvasGroup>();
+        characterProfileFadeGroup.interactable = false;
+        characterProfileFadeGroup.blocksRaycasts = false;
+        characterProfileFadeGroup.alpha = characterProfileFadeAlpha;
+
+        currentProfilePrefab = prefab;
+        profileCharacterId = currentCharacterId;
+        if (prefab.GetComponentInChildren<SpriteRenderer>(true) != null ||
+            prefab.GetComponentInChildren<MeshRenderer>(true) != null ||
+            prefab.GetComponentInChildren<SkinnedMeshRenderer>(true) != null)
         {
-            Image candidate = images[i];
-            if (candidate != null && candidate.name == "Profile_Image")
-            {
-                characterProfileImage = candidate;
-                return;
-            }
+            var preview = root.AddComponent<SettingProfileRenderTexture>();
+            characterProfileInstance = preview.Initialize(prefab, characterProfileRoot,
+                profileSpriteUnitsToUI, profileRenderResolutionScale,
+                profileRenderOffset, profileRendererIndex, profilePrefabPosition, profilePrefabScale);
+            profilePrefabTransformRoot = preview.PrefabTransformRoot;
+            profilePrefabUsesRenderTexture = true;
+        }
+        else
+        {
+            var content = new GameObject("__ProfilePrefabTransform", typeof(RectTransform));
+            var contentRect = content.GetComponent<RectTransform>();
+            contentRect.SetParent(characterProfileRoot, false);
+            contentRect.anchorMin = Vector2.zero;
+            contentRect.anchorMax = Vector2.one;
+            contentRect.pivot = characterProfileRoot.pivot;
+            contentRect.offsetMin = contentRect.offsetMax = Vector2.zero;
+            profilePrefabTransformRoot = contentRect;
+            profilePrefabUsesRenderTexture = false;
+            ApplyProfilePrefabTransform();
+            characterProfileInstance = Instantiate(prefab, contentRect, false);
+            foreach (var canvas in characterProfileInstance.GetComponentsInChildren<Canvas>(true))
+                canvas.overrideSorting = false;
+            characterProfileInstance.SetActive(true);
         }
     }
 
-    private void RefreshCharacterProfileImage()
+    private void ClearCharacterProfilePrefab()
     {
-        BindCharacterProfileImageIfNeeded();
-        if (characterProfileImage == null)
-            return;
-
-        Sprite profileSprite = null;
-        CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
-        if (iconDatabase != null && !string.IsNullOrWhiteSpace(currentCharacterId))
-            iconDatabase.TryGetIcon(currentCharacterId, out profileSprite);
-
-        characterProfileImage.sprite = profileSprite;
-        characterProfileImage.enabled = profileSprite != null;
+        if (characterProfileRoot != null)
+        {
+            characterProfileRoot.gameObject.SetActive(false);
+            Destroy(characterProfileRoot.gameObject);
+        }
+        profilePrefabTransformRoot = null;
+        profilePrefabUsesRenderTexture = false;
+        characterProfileRoot = null;
+        characterProfileFadeGroup = null;
+        characterProfileInstance = null;
+        currentProfilePrefab = null;
+        profileCharacterId = null;
     }
 
     private void BindCharacterInfoTextIfNeeded()
@@ -1613,5 +1705,163 @@ public sealed class SettingTabPointerSoundRelay : MonoBehaviour, IPointerDownHan
             return;
 
         owner?.HandleTabButtonPointerDown(targetTabValue);
+    }
+}
+
+
+// Renders actual skinned sprite geometry rather than copying undeformed sprites.
+public sealed class SettingProfileRenderTexture : MonoBehaviour
+{
+    private GameObject stage;
+    private Camera previewCamera;
+    private RenderTexture texture;
+    private RawImage image;
+    private RectTransform root;
+    private float unitsToUI;
+    private float resolutionScale;
+    private Vector2 offset;
+    private Vector3 origin;
+
+    public Transform PrefabTransformRoot { get; private set; }
+
+    public GameObject Initialize(GameObject prefab, RectTransform target,
+        float units, float resolution, Vector2 renderOffset, int rendererIndex,
+        Vector3 prefabPosition, Vector3 prefabScale)
+    {
+        root = target;
+        unitsToUI = Mathf.Max(0.01f, units);
+        resolutionScale = Mathf.Max(0.25f, resolution);
+        offset = renderOffset;
+        stage = new GameObject("__ProfileRenderStage");
+        stage.SetActive(false);
+        origin = new Vector3(10000f, 10000f, 0f);
+        stage.transform.position = origin;
+        var content = new GameObject("__ProfilePrefabTransform");
+        PrefabTransformRoot = content.transform;
+        PrefabTransformRoot.SetParent(stage.transform, false);
+        PrefabTransformRoot.localPosition = prefabPosition;
+        PrefabTransformRoot.localScale = prefabScale;
+        var instance = Instantiate(prefab, PrefabTransformRoot, false);
+        foreach (var child in instance.GetComponentsInChildren<Transform>(true))
+            child.gameObject.layer = 0; // Default GameObject Layer
+        foreach (var animator in instance.GetComponentsInChildren<Animator>(true))
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        foreach (var renderer in instance.GetComponentsInChildren<Renderer>(true))
+            renderer.forceRenderingOff = false;
+        ConfigureDefaultSorting(instance);
+        instance.SetActive(true);
+
+        var cameraObject = new GameObject("ProfileCamera", typeof(Camera));
+        cameraObject.transform.SetParent(stage.transform, false);
+        previewCamera = cameraObject.GetComponent<Camera>();
+        previewCamera.orthographic = true;
+        previewCamera.clearFlags = CameraClearFlags.SolidColor;
+        previewCamera.backgroundColor = Color.clear;
+        previewCamera.cullingMask = 1 << 0; // Default GameObject Layer
+        previewCamera.nearClipPlane = 0.01f;
+        previewCamera.farClipPlane = 200f;
+        previewCamera.allowHDR = false;
+        previewCamera.allowMSAA = false;
+        previewCamera.useOcclusionCulling = false;
+        previewCamera.depth = -100f;
+        var cameraData = previewCamera.GetUniversalAdditionalCameraData();
+        cameraData.SetRenderer(rendererIndex);
+        cameraData.renderPostProcessing = false;
+
+        var visual = new GameObject("__ProfileCanvasVisuals", typeof(RectTransform), typeof(RawImage));
+        visual.transform.SetParent(root, false);
+        image = visual.GetComponent<RawImage>();
+        image.raycastTarget = false;
+        var rect = image.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        rect.localScale = Vector3.one;
+        UpdateTarget();
+        stage.SetActive(isActiveAndEnabled);
+        return instance;
+    }
+
+    private void ConfigureDefaultSorting(GameObject instance)
+    {
+        int sortingId = SortingLayer.NameToID("Default");
+        // Preserve the relative ordering of the original sorting layers and orders.
+        var renderers = instance.GetComponentsInChildren<SpriteRenderer>(true);
+        var groups = instance.GetComponentsInChildren<SortingGroup>(true);
+        var keys = new SortedSet<long>();
+        foreach (var r in renderers) keys.Add(SortKey(r.sortingLayerID, r.sortingOrder));
+        foreach (var g in groups) keys.Add(SortKey(g.sortingLayerID, g.sortingOrder));
+        var orders = new Dictionary<long, int>();
+        int order = -keys.Count / 2;
+        foreach (long key in keys) orders[key] = order++;
+        foreach (var r in renderers)
+        {
+            r.sortingOrder = orders[SortKey(r.sortingLayerID, r.sortingOrder)];
+            r.sortingLayerID = sortingId;
+        }
+        foreach (var g in groups)
+        {
+            g.sortingOrder = orders[SortKey(g.sortingLayerID, g.sortingOrder)];
+            g.sortingLayerID = sortingId;
+        }
+    }
+
+    private static long SortKey(int layerId, int order)
+    {
+        return ((long)SortingLayer.GetLayerValueFromID(layerId) << 32) + order;
+    }
+
+    private void LateUpdate() => UpdateTarget();
+
+    private void UpdateTarget()
+    {
+        if (root == null || previewCamera == null || image == null)
+            return;
+        float w = Mathf.Max(1f, root.rect.width);
+        float h = Mathf.Max(1f, root.rect.height);
+        int width = Mathf.Clamp(Mathf.CeilToInt(w * resolutionScale), 1, 4096);
+        int height = Mathf.Clamp(Mathf.CeilToInt(h * resolutionScale), 1, 4096);
+        if (texture == null || texture.width != width || texture.height != height)
+        {
+            ReleaseTexture();
+            texture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+            texture.name = "CharacterProfileRT";
+            texture.Create();
+            previewCamera.targetTexture = texture;
+            image.texture = texture;
+        }
+        previewCamera.aspect = w / h;
+        previewCamera.orthographicSize = h / (2f * unitsToUI);
+        Vector2 center = new Vector2((0.5f - root.pivot.x) * w,
+            (0.5f - root.pivot.y) * h) / unitsToUI + offset;
+        previewCamera.transform.position = origin + new Vector3(center.x, center.y, -20f);
+        previewCamera.transform.rotation = Quaternion.identity;
+    }
+
+    private void OnEnable()
+    {
+        if (stage != null) stage.SetActive(true);
+    }
+    private void OnDisable()
+    {
+        if (stage != null) stage.SetActive(false);
+    }
+    private void ReleaseTexture()
+    {
+        if (previewCamera != null) previewCamera.targetTexture = null;
+        if (image != null) image.texture = null;
+        if (texture == null) return;
+        texture.Release();
+        Destroy(texture);
+        texture = null;
+    }
+    private void OnDestroy()
+    {
+        ReleaseTexture();
+        if (stage != null)
+        {
+            stage.SetActive(false);
+            Destroy(stage);
+        }
     }
 }
