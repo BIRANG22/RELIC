@@ -36,6 +36,7 @@ MonoBehaviour:
     - {fileID: -1562714137, guid: 06047bad176be134a85e627c67ba203f, type: 3}
     - {fileID: -57624480, guid: 06047bad176be134a85e627c67ba203f, type: 3}
     - {fileID: -1286811136, guid: 06047bad176be134a85e627c67ba203f, type: 3}
+    ProfilePrefab: {fileID: 1537779598541543804, guid: 7787512a9732ca14da3b69b70df8bd00, type: 3}
     Mark: {fileID: 21300000, guid: 80d22705c1ab33f4cbbfc2adf849d6cf, type: 3}
     Mark2: {fileID: 0}
   - CharacterId: Char_02
@@ -61,6 +62,7 @@ MonoBehaviour:
     - {fileID: -1027459411, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
     - {fileID: -714880145, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
     - {fileID: -485692280, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
+    ProfilePrefab: {fileID: 580821249305318256, guid: 4a069704edffd2d4392079be4369fa4d, type: 3}
     Mark: {fileID: 21300000, guid: 3d1cfdd4679cdd545a7e1541a076736e, type: 3}
     Mark2: {fileID: 0}
   - CharacterId: Char_03
@@ -86,6 +88,7 @@ MonoBehaviour:
     - {fileID: 1096792409, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
     - {fileID: -27641316, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
     - {fileID: 951186159, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
+    ProfilePrefab: {fileID: 2014469434693484797, guid: 3fb1feea14360f748a0cdfddfad64ef8, type: 3}
     Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}
     Mark2: {fileID: 0}
   - CharacterId: Char_04
@@ -111,6 +114,7 @@ MonoBehaviour:
     - {fileID: 229587353, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
     - {fileID: -1916269015, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
     - {fileID: -1456362603, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
+    ProfilePrefab: {fileID: 8282892635831140106, guid: d03dc8cfc00f48f44afb94e495f076d4, type: 3}
     Mark: {fileID: 21300000, guid: 7f0c862d16fc9d04ebf2bc3a94a25113, type: 3}
     Mark2: {fileID: 0}
   - CharacterId: Char_05
@@ -126,6 +130,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
     LobbyBattleIdleFrames:
     - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
+    ProfilePrefab: {fileID: 0}
     Mark: {fileID: 21300000, guid: e5b52c8f86f9f0946b7dda0a6b662055, type: 3}
     Mark2: {fileID: 0}
   - CharacterId: Char_06
@@ -141,5 +146,6 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
     LobbyBattleIdleFrames:
     - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
+    ProfilePrefab: {fileID: 0}
     Mark: {fileID: 21300000, guid: e5b52c8f86f9f0946b7dda0a6b662055, type: 3}
     Mark2: {fileID: 0}
