@@ -365,11 +365,11 @@ public class BattleTurnExecutor : MonoBehaviour
         if (!enableSpaceEndTurnInput)
             return;
 
-        if (!Input.GetKeyDown(KeyCode.Space))
+        if (!Input.GetKeyDown(BattleKeyboardShortcutBindings.EndTurn))
             return;
 
         // 튜토리얼 진행 중에는 턴 종료 단계(29번)에서만 Space 입력을 허용합니다.
-        if (!TutorialBattleSequence.IsShortcutAllowed(KeyCode.Space))
+        if (!TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.EndTurn))
             return;
 
         if (IsTypingInputFieldSelected())
@@ -378,7 +378,17 @@ public class BattleTurnExecutor : MonoBehaviour
         if (!CanAcceptPlayerInput)
             return;
 
-        ExecuteTurn();
+        StartCoroutine(ExecuteKeyboardTurnAfterInputFrame());
+    }
+
+    private IEnumerator ExecuteKeyboardTurnAfterInputFrame()
+    {
+        // 동일 키에 배정된 이동/스킬 입력이 같은 프레임에 먼저 예약될 수 있게 합니다.
+        yield return new WaitForEndOfFrame();
+        if (!TutorialGuideController.IsModalOpen &&
+            !UIPanelButton.IsMenuPanelOpen &&
+            CanAcceptPlayerInput)
+            ExecuteTurn();
     }
 
     public void SetNetworkExecutionLocked(bool locked)

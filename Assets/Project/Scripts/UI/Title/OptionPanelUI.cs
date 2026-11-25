@@ -68,6 +68,12 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private float saveToastDuration = 1.4f;
     [SerializeField] private int saveToastSortingOrder = 32100;
 
+    private readonly Dictionary<BattleShortcutAction, Button> shortcutButtons = new Dictionary<BattleShortcutAction, Button>();
+    private readonly Dictionary<BattleShortcutAction, TMP_Text> shortcutKeyTexts = new Dictionary<BattleShortcutAction, TMP_Text>();
+    private readonly Dictionary<BattleShortcutAction, TMP_Text> shortcutNameTexts = new Dictionary<BattleShortcutAction, TMP_Text>();
+    private TMP_Text shortcutResetText;
+    private BattleShortcutAction? capturingShortcut;
+
 
 #if UNITY_EDITOR
     private void OnValidate()
@@ -94,6 +100,7 @@ public class OptionPanelUI : MonoBehaviour
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
 
         AutoFindReferences();
+        EnsureControlContent();
         BindArrowSelectors();
         LocalizationSettings.SelectedLocaleChanged -= OnSelectedLanguageChanged;
         LocalizationSettings.SelectedLocaleChanged += OnSelectedLanguageChanged;
@@ -106,6 +113,10 @@ public class OptionPanelUI : MonoBehaviour
         RestoreActiveTab();
         SyncTutorialToggleFromSettings();
         RefreshBattlePresentationSpeedLabel();
+        RefreshTabLabels();
+        RefreshShortcutRows();
+        BattleKeyboardShortcutBindings.Changed -= OnShortcutChanged;
+        BattleKeyboardShortcutBindings.Changed += OnShortcutChanged;
     }
 
     private void OnDisable()
@@ -117,6 +128,8 @@ public class OptionPanelUI : MonoBehaviour
         UnbindTabButtons();
         UnbindArrowSelectors();
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        BattleKeyboardShortcutBindings.Changed -= OnShortcutChanged;
+        capturingShortcut = null;
     }
 
     private void OnDestroy()
@@ -173,6 +186,30 @@ public class OptionPanelUI : MonoBehaviour
         RefreshResolutionLabel();
     }
     public void ShowControl() => ShowSingleContent(controlContent);
+
+    private void Update()
+    {
+        if (!capturingShortcut.HasValue)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            capturingShortcut = null;
+            RefreshShortcutRows();
+            return;
+        }
+
+        foreach (KeyCode key in System.Enum.GetValues(typeof(KeyCode)))
+        {
+            if (key == KeyCode.None || (int)key >= (int)KeyCode.Mouse0 || !Input.GetKeyDown(key))
+                continue;
+
+            BattleKeyboardShortcutBindings.Set(capturingShortcut.Value, key);
+            capturingShortcut = null;
+            RefreshShortcutRows();
+            return;
+        }
+    }
 
     public void SaveProgress()
     {
@@ -292,14 +329,13 @@ public class OptionPanelUI : MonoBehaviour
 
     private void RefreshLanguageLabel()
     {
-        if (!languageReady) return;
         var locales = LocalizationSettings.AvailableLocales.Locales;
-        SetLanguageButtonsInteractable(locales != null && locales.Count > 1);
+        SetLanguageButtonsInteractable(languageReady && locales != null && locales.Count > 1);
         if (languageValueText == null) return;
         Locale locale = LocalizationSettings.SelectedLocale;
         LocalizedTMPText.ProtectDynamicOwnership(languageValueText);
         languageValueText.text = locale == null ? string.Empty : GetLanguageDisplayName(locale);
-        LocaleTMPFontGuard.Prepare(languageValueText);
+        PrepareOptionLocalizedText(languageValueText);
         languageValueText.ForceMeshUpdate();
     }
 
@@ -462,7 +498,7 @@ public class OptionPanelUI : MonoBehaviour
         if (displayModeValueText == null) return;
         LocalizedTMPText.ProtectDynamicOwnership(displayModeValueText);
         displayModeValueText.text = name;
-        LocaleTMPFontGuard.Prepare(displayModeValueText);
+        PrepareOptionLocalizedText(displayModeValueText);
         displayModeValueText.ForceMeshUpdate();
     }
 
@@ -472,7 +508,7 @@ public class OptionPanelUI : MonoBehaviour
         LocalizedTMPText.ProtectDynamicOwnership(label);
         string value = GameLocalization.Get(key, fallback);
         label.text = string.IsNullOrWhiteSpace(value) || value == key || value == "Untranslated" || value == "미번역" || value == "未翻译" || value == "未翻訳" || value == "Sin traducir" ? fallback : value;
-        LocaleTMPFontGuard.Prepare(label);
+        PrepareOptionLocalizedText(label);
         label.ForceMeshUpdate();
     }
 
@@ -483,6 +519,8 @@ public class OptionPanelUI : MonoBehaviour
         RefreshResolutionLabel();
         SyncTutorialToggleFromSettings();
         RefreshOptionHeadingLabels();
+        RefreshTabLabels();
+        RefreshShortcutRows();
     }
 
     // Option prefab header labels may retain an old missing key (and display "Untranslated").
@@ -522,7 +560,7 @@ public class OptionPanelUI : MonoBehaviour
             translation == "未翻译" || translation == "未翻訳" || translation == "Sin traducir")
             translation = koreanSource;
         label.text = translation;
-        LocaleTMPFontGuard.Prepare(label);
+        PrepareOptionLocalizedText(label);
         label.ForceMeshUpdate();
     }
 
@@ -549,7 +587,216 @@ public class OptionPanelUI : MonoBehaviour
             RefreshDisplayModeLabels();
             RefreshResolutionLabel();
             SyncTutorialToggleFromSettings();
+            RefreshTabLabels();
+            RefreshShortcutRows();
         }
+    }
+
+    private void EnsureControlContent()
+    {
+        if (controlContent == null)
+        {
+            Transform parent = gameContent != null ? gameContent.transform.parent : transform;
+            var root = new GameObject(ControlContentName, typeof(RectTransform));
+            root.transform.SetParent(parent, false);
+            RectTransform rect = root.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            controlContent = root;
+        }
+
+        if (shortcutButtons.Count > 0)
+            return;
+
+        TMP_Text fontSource = controlButton != null ? controlButton.GetComponentInChildren<TMP_Text>(true) : null;
+        BattleShortcutAction[] actions = (BattleShortcutAction[])System.Enum.GetValues(typeof(BattleShortcutAction));
+        for (int i = 0; i < actions.Length; i++)
+        {
+            BattleShortcutAction action = actions[i];
+            int column = i / 6;
+            int row = i % 6;
+
+            var nameObject = new GameObject(action + "Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+            nameObject.transform.SetParent(controlContent.transform, false);
+            RectTransform nameRect = nameObject.GetComponent<RectTransform>();
+            nameRect.anchorMin = nameRect.anchorMax = new Vector2(0.5f, 1f);
+            nameRect.pivot = new Vector2(0f, 1f);
+            nameRect.anchoredPosition = new Vector2(-650f + column * 430f, -105f - row * 78f);
+            nameRect.sizeDelta = new Vector2(210f, 56f);
+            TextMeshProUGUI nameText = nameObject.GetComponent<TextMeshProUGUI>();
+            CopyTextStyle(fontSource, nameText, 24f);
+            nameText.alignment = TextAlignmentOptions.MidlineLeft;
+            shortcutNameTexts[action] = nameText;
+
+            var buttonObject = new GameObject(action + "KeyButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(controlContent.transform, false);
+            RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
+            buttonRect.anchorMin = buttonRect.anchorMax = new Vector2(0.5f, 1f);
+            buttonRect.pivot = new Vector2(0f, 1f);
+            buttonRect.anchoredPosition = new Vector2(-435f + column * 430f, -105f - row * 78f);
+            buttonRect.sizeDelta = new Vector2(130f, 56f);
+            Image image = buttonObject.GetComponent<Image>();
+            image.color = new Color(0.15f, 0.15f, 0.18f, 0.95f);
+            Button button = buttonObject.GetComponent<Button>();
+            BattleShortcutAction capturedAction = action;
+            button.onClick.AddListener(() => BeginShortcutCapture(capturedAction));
+            shortcutButtons[action] = button;
+
+            var keyObject = new GameObject("KeyText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+            keyObject.transform.SetParent(buttonObject.transform, false);
+            RectTransform keyRect = keyObject.GetComponent<RectTransform>();
+            keyRect.anchorMin = Vector2.zero;
+            keyRect.anchorMax = Vector2.one;
+            keyRect.offsetMin = keyRect.offsetMax = Vector2.zero;
+            TextMeshProUGUI keyText = keyObject.GetComponent<TextMeshProUGUI>();
+            CopyTextStyle(fontSource, keyText, 24f);
+            keyText.alignment = TextAlignmentOptions.Center;
+            shortcutKeyTexts[action] = keyText;
+        }
+
+        var resetObject = new GameObject("ResetShortcuts", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        resetObject.transform.SetParent(controlContent.transform, false);
+        RectTransform resetRect = resetObject.GetComponent<RectTransform>();
+        resetRect.anchorMin = resetRect.anchorMax = new Vector2(0.5f, 0f);
+        resetRect.pivot = new Vector2(0.5f, 0f);
+        resetRect.anchoredPosition = new Vector2(0f, 25f);
+        resetRect.sizeDelta = new Vector2(260f, 58f);
+        resetObject.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.18f, 0.95f);
+        resetObject.GetComponent<Button>().onClick.AddListener(BattleKeyboardShortcutBindings.ResetAll);
+        shortcutResetText = CreateChildText(resetObject.transform, fontSource, "ResetText", 25f);
+    }
+
+    private static TMP_Text CreateChildText(Transform parent, TMP_Text source, string name, float size)
+    {
+        var textObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(parent, false);
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+        CopyTextStyle(source, text, size);
+        text.alignment = TextAlignmentOptions.Center;
+        return text;
+    }
+
+    private static void CopyTextStyle(TMP_Text source, TMP_Text target, float size)
+    {
+        if (source != null)
+        {
+            target.font = source.font;
+            target.fontSharedMaterial = source.fontSharedMaterial;
+            target.color = source.color;
+        }
+        else target.color = Color.white;
+        target.fontSize = size;
+        target.raycastTarget = false;
+        LocaleTMPFontGuard.Prepare(target);
+    }
+
+    private void BeginShortcutCapture(BattleShortcutAction action)
+    {
+        capturingShortcut = action;
+        RefreshShortcutRows();
+    }
+
+    private void OnShortcutChanged(BattleShortcutAction _) => RefreshShortcutRows();
+
+    private void RefreshShortcutRows()
+    {
+        if (shortcutResetText != null)
+        {
+            shortcutResetText.text = LocalizedOptionText("기본값으로 초기화", "Reset to defaults", "デフォルトに戻す", "恢复默认", "恢復預設", "Restablecer");
+            PrepareOptionLocalizedText(shortcutResetText);
+        }
+
+        foreach (BattleShortcutAction action in System.Enum.GetValues(typeof(BattleShortcutAction)))
+        {
+            if (shortcutNameTexts.TryGetValue(action, out TMP_Text nameText))
+            {
+                nameText.text = GetShortcutActionName(action);
+                PrepareOptionLocalizedText(nameText);
+            }
+            if (!shortcutKeyTexts.TryGetValue(action, out TMP_Text keyText))
+                continue;
+
+            bool duplicate = BattleKeyboardShortcutBindings.IsDuplicate(action);
+            keyText.text = capturingShortcut == action
+                ? LocalizedOptionText("키 입력...", "Press a key...", "キーを入力...", "按下按键...", "按下按鍵...", "Pulsa una tecla...")
+                : BattleKeyboardShortcutBindings.GetDisplayName(action);
+            if (capturingShortcut == action)
+                PrepareOptionLocalizedText(keyText);
+            else
+                LocaleTMPFontGuard.Prepare(keyText);
+            keyText.color = duplicate ? new Color(1f, 0.22f, 0.22f) : Color.white;
+            if (shortcutButtons.TryGetValue(action, out Button button))
+                button.GetComponent<Image>().color = duplicate
+                    ? new Color(0.48f, 0.05f, 0.05f, 0.98f)
+                    : new Color(0.15f, 0.15f, 0.18f, 0.95f);
+        }
+    }
+
+    private void RefreshTabLabels()
+    {
+        SetButtonText(gameButton, LocalizedOptionText("게임", "Game", "ゲーム", "游戏", "遊戲", "Juego"));
+        SetButtonText(graphicButton, LocalizedOptionText("그래픽", "Graphics", "グラフィック", "图形", "圖形", "Gráficos"));
+        SetButtonText(audioButton, LocalizedOptionText("오디오", "Audio", "オーディオ", "音频", "音訊", "Audio"));
+        SetButtonText(controlButton, LocalizedOptionText("조작", "Controls", "操作", "控制", "控制", "Controles"));
+    }
+
+    private static void SetButtonText(Button button, string value)
+    {
+        if (button == null) return;
+        TMP_Text text = button.GetComponentInChildren<TMP_Text>(true);
+        if (text == null) return;
+        LocalizedTMPText.ProtectDynamicOwnership(text);
+        text.text = value;
+        PrepareOptionLocalizedText(text);
+    }
+
+    private static string GetShortcutActionName(BattleShortcutAction action)
+    {
+        switch (action)
+        {
+            case BattleShortcutAction.Move: return LocalizedOptionText("이동", "Move", "移動", "移动", "移動", "Mover");
+            case BattleShortcutAction.Flip: return LocalizedOptionText("뒤집기", "Flip", "反転", "翻转", "翻轉", "Voltear");
+            case BattleShortcutAction.Compound: return LocalizedOptionText("조합", "Combine", "合成", "合成", "合成", "Combinar");
+            case BattleShortcutAction.Undo: return LocalizedOptionText("실행 취소", "Undo", "元に戻す", "撤销", "復原", "Deshacer");
+            case BattleShortcutAction.Redo: return LocalizedOptionText("다시 실행", "Redo", "やり直す", "重做", "重做", "Rehacer");
+            case BattleShortcutAction.Skill01: return LocalizedOptionText("스킬 1", "Skill 1", "スキル 1", "技能 1", "技能 1", "Habilidad 1");
+            case BattleShortcutAction.Skill02: return LocalizedOptionText("스킬 2", "Skill 2", "スキル 2", "技能 2", "技能 2", "Habilidad 2");
+            case BattleShortcutAction.Skill03: return LocalizedOptionText("스킬 3", "Skill 3", "スキル 3", "技能 3", "技能 3", "Habilidad 3");
+            case BattleShortcutAction.Skill04: return LocalizedOptionText("스킬 4", "Skill 4", "スキル 4", "技能 4", "技能 4", "Habilidad 4");
+            case BattleShortcutAction.CharacterCycle: return LocalizedOptionText("캐릭터 순환", "Cycle character", "キャラ切替", "切换角色", "切換角色", "Cambiar personaje");
+            case BattleShortcutAction.TimelineSlot01: return LocalizedOptionText("타임라인 1", "Timeline 1", "タイムライン 1", "时间轴 1", "時間軸 1", "Cronología 1");
+            case BattleShortcutAction.TimelineSlot02: return LocalizedOptionText("타임라인 2", "Timeline 2", "タイムライン 2", "时间轴 2", "時間軸 2", "Cronología 2");
+            case BattleShortcutAction.TimelineSlot03: return LocalizedOptionText("타임라인 3", "Timeline 3", "タイムライン 3", "时间轴 3", "時間軸 3", "Cronología 3");
+            case BattleShortcutAction.TimelineSlot04: return LocalizedOptionText("타임라인 4", "Timeline 4", "タイムライン 4", "时间轴 4", "時間軸 4", "Cronología 4");
+            case BattleShortcutAction.TimelineSlot05: return LocalizedOptionText("타임라인 5", "Timeline 5", "タイムライン 5", "时间轴 5", "時間軸 5", "Cronología 5");
+            default: return LocalizedOptionText("턴 실행", "Execute turn", "ターン実行", "执行回合", "執行回合", "Ejecutar turno");
+        }
+    }
+
+    private static void PrepareOptionLocalizedText(TMP_Text text)
+    {
+        if (text == null) return;
+        Locale locale = LocalizationSettings.SelectedLocale;
+        if (locale != null)
+            LocaleTMPFontGuard.PrepareLocalized(text, locale);
+    }
+
+    private static string LocalizedOptionText(string ko, string en, string ja, string zhHans, string zhHant, string es)
+    {
+        Locale locale = LocalizationSettings.SelectedLocale;
+        string code = locale == null ? "ko" : locale.Identifier.Code.ToLowerInvariant();
+        if (code.StartsWith("en")) return en;
+        if (code.StartsWith("ja")) return ja;
+        if (code.Contains("hant") || code == "zh-tw" || code == "zh-hk") return zhHant;
+        if (code.StartsWith("zh")) return zhHans;
+        if (code.StartsWith("es")) return es;
+        return ko;
     }
 
 

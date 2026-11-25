@@ -79,9 +79,23 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
         BindButtons();
     }
 
+    private void OnEnable()
+    {
+        BattleKeyboardShortcutBindings.Changed -= HandleShortcutChanged;
+        BattleKeyboardShortcutBindings.Changed += HandleShortcutChanged;
+        RefreshKeyText();
+    }
+
     private void OnDisable()
     {
+        BattleKeyboardShortcutBindings.Changed -= HandleShortcutChanged;
         SetTurnMarkHovered(false);
+    }
+
+    private void HandleShortcutChanged(BattleShortcutAction action)
+    {
+        if (action >= BattleShortcutAction.TimelineSlot01 && action <= BattleShortcutAction.TimelineSlot05)
+            RefreshKeyText();
     }
 
     private void ResolveKeyText()
@@ -114,7 +128,10 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler, IPointerEn
 
         if (keyText != null)
         {
-            keyText.text = keyTextVisible ? (slotIndex + 1).ToString() : string.Empty;
+            keyText.text = keyTextVisible
+                ? BattleKeyboardShortcutBindings.GetDisplayName(
+                    (BattleShortcutAction)((int)BattleShortcutAction.TimelineSlot01 + slotIndex))
+                : string.Empty;
         }
     }
 

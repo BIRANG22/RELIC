@@ -584,11 +584,11 @@ public class BattleTimelineController : MonoBehaviour
         if (IsTypingInputFieldSelected())
             return;
 
-        if (!TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha1) &&
-            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha2) &&
-            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha3) &&
-            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha4) &&
-            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(KeyCode.Alpha5))
+        if (!TutorialBattleSequence.IsBattleKeyboardInputAllowed(BattleKeyboardShortcutBindings.TimelineSlot01) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(BattleKeyboardShortcutBindings.TimelineSlot02) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(BattleKeyboardShortcutBindings.TimelineSlot03) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(BattleKeyboardShortcutBindings.TimelineSlot04) &&
+            !TutorialBattleSequence.IsBattleKeyboardInputAllowed(BattleKeyboardShortcutBindings.TimelineSlot05))
             return;
 
         if (turnExecutor == null)
@@ -597,28 +597,19 @@ public class BattleTimelineController : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
-        int slotIndex = -1;
-
-        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
-            slotIndex = 0;
-        else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
-            slotIndex = 1;
-        else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
-            slotIndex = 2;
-        else if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
-            slotIndex = 3;
-        else if (Input.GetKeyDown(KeyCode.Alpha5) || Input.GetKeyDown(KeyCode.Keypad5))
-            slotIndex = 4;
-
-        if (slotIndex < 0)
-            return;
-
-        KeyCode selectedKey = (KeyCode)((int)KeyCode.Alpha1 + slotIndex);
-        if (!TutorialBattleSequence.IsBattleKeyboardInputAllowed(selectedKey))
-            return;
-
-        if (!TutorialFocusGuideRunner.AllowsSlot(slotIndex)) return;
-        OnTimelineSlotClicked(slotIndex);
+        for (int i = 0; i < 5; i++)
+        {
+            KeyCode configured = BattleKeyboardShortcutBindings.GetTimelineSlot(i);
+            KeyCode keypad = (KeyCode)((int)KeyCode.Keypad1 + i);
+            KeyCode alpha = (KeyCode)((int)KeyCode.Alpha1 + i);
+            if (!Input.GetKeyDown(configured) && (configured != alpha || !Input.GetKeyDown(keypad)))
+                continue;
+            if (!TutorialBattleSequence.IsBattleKeyboardInputAllowed(configured))
+                continue;
+            if (!TutorialFocusGuideRunner.AllowsSlot(i))
+                continue;
+            OnTimelineSlotClicked(i);
+        }
     }
 
     private void HandleKeyboardSlotMoveInput()
@@ -671,7 +662,6 @@ public class BattleTimelineController : MonoBehaviour
             TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Undo))
         {
             UndoLastPlayerReservation();
-            return;
         }
 
         if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Redo) &&
