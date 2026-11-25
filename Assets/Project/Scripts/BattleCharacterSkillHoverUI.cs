@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// BattleCharacterPanel의 스킬 버튼 호버/선택 시각 효과를 적용합니다.
-/// 호버 시에는 Skill_Background 색상을 변경하고, Skill_Background2는 그리드 선택 중인 스킬에만 표시합니다.
+/// Back 색상은 버튼 사용 가능 여부에 따라 변경하며, Skill_Background2의 선택 효과는 유지합니다.
 /// </summary>
 public enum BattleCharacterSkillLineFeedbackMode
 {
@@ -23,8 +23,10 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     [SerializeField] private RectTransform scaleTarget;
     [SerializeField] private Image lineImage;
 
-    [Header("Hover Color")]
-    [SerializeField] private Color hoverNormalBackgroundColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+    [Header("Back Color")]
+    [SerializeField] private Image backImage;
+    [SerializeField] private Color interactableBackColor = new Color32(0x16, 0x19, 0x1C, 0xFF);
+    [SerializeField] private Color nonInteractableBackColor = new Color32(0x10, 0x12, 0x14, 0xFF);
 
     [Header("Selection Line")]
     [SerializeField] private Color normalLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
@@ -62,8 +64,6 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private float directionClickFeedbackUntil = -1f;
     private float skillLineClickFeedbackUntil = -1f;
     private PlayerSkillReservationController reservationController;
-    private Color normalBackgroundOriginalColor = Color.white;
-    private bool normalBackgroundColorCaptured;
     private BattleTimelineController battleTimelineController;
     private SkillMasterData skillData;
     private CharacterRuntimeData previewRuntime;
@@ -95,6 +95,11 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
 
         if (isSelected)
             ApplyBreathingAlpha();
+    }
+
+    private void LateUpdate()
+    {
+        ApplyBackColor();
     }
 
     private void OnDisable()
@@ -136,7 +141,6 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         skillInfoExitHandler = onSkillHoverExited;
 
         scaleCaptured = false;
-        normalBackgroundColorCaptured = false;
         ResolveReferences();
         CaptureNormalScale();
         ResetVisual(true);
@@ -146,7 +150,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     public void SetSkillRangePreview(SkillMasterData previewSkillData)
     {
         skillData = previewSkillData;
-        CaptureCurrentNormalBackgroundColor();
+        ApplyBackColor();
 
         if (skillData == null && isPointerOver)
         {
@@ -271,7 +275,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
 
         isPointerOver = true;
         EnsureNormalBackgroundVisible();
-        ApplyNormalBackgroundHoverColor();
+        ApplyBackColor();
 
         ApplyHighlightVisual();
         ApplySelectionLineVisual();
@@ -284,7 +288,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     {
         isPointerOver = false;
         ClearSkillRangePreview();
-        RestoreNormalBackgroundColor();
+        ApplyBackColor();
         ApplyHighlightVisual();
         ApplySelectionLineVisual();
         ApplyScale(false);
@@ -295,7 +299,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     {
         isPointerOver = false;
         EnsureNormalBackgroundVisible();
-        RestoreNormalBackgroundColor();
+        ApplyBackColor();
 
         if (hoverBackgroundImage != null)
             hoverBackgroundImage.gameObject.SetActive(false);
@@ -501,7 +505,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private bool IsInteractable()
     {
         Button button = GetComponent<Button>();
-        return button == null || button.interactable;
+        return button == null || button.IsInteractable();
     }
 
     private void ResolveReferences()
@@ -510,10 +514,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
             scaleTarget = GetComponent<RectTransform>();
 
         if (!autoFindReferences)
-        {
-            CaptureNormalBackgroundColor();
             return;
-        }
 
         Transform[] children = GetComponentsInChildren<Transform>(true);
 
@@ -530,50 +531,24 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
             if (hoverBackgroundImage == null && child.name == hoverBackgroundObjectName)
                 hoverBackgroundImage = child.GetComponent<Image>();
 
+            if (backImage == null && child.name == "Back")
+                backImage = child.GetComponent<Image>();
+
             if (lineImage == null && child.name == "Line")
                 lineImage = child.GetComponent<Image>();
         }
 
-        CaptureNormalBackgroundColor();
     }
 
-    private void CaptureNormalBackgroundColor()
+    private void ApplyBackColor()
     {
-        if (normalBackgroundColorCaptured || normalBackgroundImage == null)
+        Image target = backImage != null ? backImage : normalBackgroundImage;
+        if (target == null)
             return;
 
-        normalBackgroundOriginalColor = normalBackgroundImage.color;
-        normalBackgroundColorCaptured = true;
-    }
-
-    private void CaptureCurrentNormalBackgroundColor()
-    {
-        if (normalBackgroundImage == null)
-            return;
-
-        normalBackgroundOriginalColor = normalBackgroundImage.color;
-        normalBackgroundColorCaptured = true;
-    }
-
-    private void ApplyNormalBackgroundHoverColor()
-    {
-        if (normalBackgroundImage == null)
-            return;
-
-        CaptureNormalBackgroundColor();
-
-        Color color = hoverNormalBackgroundColor;
-        color.a = normalBackgroundOriginalColor.a;
-        normalBackgroundImage.color = color;
-    }
-
-    private void RestoreNormalBackgroundColor()
-    {
-        if (normalBackgroundImage == null)
-            return;
-
-        CaptureNormalBackgroundColor();
-        normalBackgroundImage.color = normalBackgroundOriginalColor;
+        Color color = IsInteractable() ? interactableBackColor : nonInteractableBackColor;
+        if (target.color != color)
+            target.color = color;
     }
 
     private void CaptureNormalScale()
