@@ -269,17 +269,16 @@ public class EventRoomController : MonoBehaviour
             waitingForEvent06ShopClose || pendingEvent06ShopOpen)
             return;
 
-        int index = Input.GetKeyDown(KeyCode.Alpha1) ? 0 :
-                    Input.GetKeyDown(KeyCode.Alpha2) ? 1 :
-                    Input.GetKeyDown(KeyCode.Alpha3) ? 2 : -1;
-        if (index < 0)
-            return;
-
         EnsureChoiceSlots();
-        if (choiceSlots == null || index >= choiceSlots.Length)
+        if (choiceSlots == null)
             return;
 
-        choiceSlots[index]?.InvokeShortcut();
+        int count = Mathf.Min(3, choiceSlots.Length);
+        for (int index = 0; index < count; index++)
+        {
+            if (Input.GetKeyDown(BattleKeyboardShortcutBindings.GetTimelineSlot(index)))
+                choiceSlots[index]?.InvokeShortcut();
+        }
     }
 
     public void SetEventId(string eventId)

@@ -5,24 +5,117 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
+
+public enum BattleShortcutAction
+{
+    Move, Flip, Compound, Undo, Redo, Skill01, Skill02, Skill03, Skill04,
+    CharacterCycle, TimelineSlot01, TimelineSlot02, TimelineSlot03, TimelineSlot04, TimelineSlot05, EndTurn
+}
 
 public static class BattleKeyboardShortcutBindings
 {
-    public const KeyCode Move = KeyCode.F;
-    public const KeyCode Flip = KeyCode.D;
-    public const KeyCode Compound = KeyCode.C;
-    public const KeyCode Undo = KeyCode.Z;
-    public const KeyCode Redo = KeyCode.X;
+    private const string PreferencePrefix = "BattleShortcut.";
+    private static readonly Dictionary<BattleShortcutAction, KeyCode> Defaults =
+        new Dictionary<BattleShortcutAction, KeyCode>
+        {
+            { BattleShortcutAction.Move, KeyCode.F },
+            { BattleShortcutAction.Flip, KeyCode.D },
+            { BattleShortcutAction.Compound, KeyCode.C },
+            { BattleShortcutAction.Undo, KeyCode.Z },
+            { BattleShortcutAction.Redo, KeyCode.X },
+            { BattleShortcutAction.Skill01, KeyCode.Q },
+            { BattleShortcutAction.Skill02, KeyCode.W },
+            { BattleShortcutAction.Skill03, KeyCode.E },
+            { BattleShortcutAction.Skill04, KeyCode.R },
+            { BattleShortcutAction.CharacterCycle, KeyCode.Tab },
+            { BattleShortcutAction.TimelineSlot01, KeyCode.Alpha1 },
+            { BattleShortcutAction.TimelineSlot02, KeyCode.Alpha2 },
+            { BattleShortcutAction.TimelineSlot03, KeyCode.Alpha3 },
+            { BattleShortcutAction.TimelineSlot04, KeyCode.Alpha4 },
+            { BattleShortcutAction.TimelineSlot05, KeyCode.Alpha5 },
+            { BattleShortcutAction.EndTurn, KeyCode.Space }
+        };
 
-    public const KeyCode Skill01 = KeyCode.Q;
-    public const KeyCode Skill02 = KeyCode.W;
-    public const KeyCode Skill03 = KeyCode.E;
-    public const KeyCode Skill04 = KeyCode.R;
+    public static event System.Action<BattleShortcutAction> Changed;
+    public static KeyCode Move => Get(BattleShortcutAction.Move);
+    public static KeyCode Flip => Get(BattleShortcutAction.Flip);
+    public static KeyCode Compound => Get(BattleShortcutAction.Compound);
+    public static KeyCode Undo => Get(BattleShortcutAction.Undo);
+    public static KeyCode Redo => Get(BattleShortcutAction.Redo);
+    public static KeyCode Skill01 => Get(BattleShortcutAction.Skill01);
+    public static KeyCode Skill02 => Get(BattleShortcutAction.Skill02);
+    public static KeyCode Skill03 => Get(BattleShortcutAction.Skill03);
+    public static KeyCode Skill04 => Get(BattleShortcutAction.Skill04);
+    public static KeyCode CharacterCycle => Get(BattleShortcutAction.CharacterCycle);
+    public static KeyCode TimelineSlot01 => Get(BattleShortcutAction.TimelineSlot01);
+    public static KeyCode TimelineSlot02 => Get(BattleShortcutAction.TimelineSlot02);
+    public static KeyCode TimelineSlot03 => Get(BattleShortcutAction.TimelineSlot03);
+    public static KeyCode TimelineSlot04 => Get(BattleShortcutAction.TimelineSlot04);
+    public static KeyCode TimelineSlot05 => Get(BattleShortcutAction.TimelineSlot05);
+    public static KeyCode EndTurn => Get(BattleShortcutAction.EndTurn);
+
+    public static KeyCode GetTimelineSlot(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex > 4) return KeyCode.None;
+        return Get((BattleShortcutAction)((int)BattleShortcutAction.TimelineSlot01 + slotIndex));
+    }
+
+    public static KeyCode Get(BattleShortcutAction action)
+    {
+        int stored = PlayerPrefs.GetInt(GetPreferenceKey(action), (int)GetDefault(action));
+        return System.Enum.IsDefined(typeof(KeyCode), stored) ? (KeyCode)stored : GetDefault(action);
+    }
+
+    public static KeyCode GetDefault(BattleShortcutAction action) => Defaults[action];
+
+    public static void Set(BattleShortcutAction action, KeyCode key)
+    {
+        if (key == KeyCode.None) return;
+        PlayerPrefs.SetInt(GetPreferenceKey(action), (int)key);
+        PlayerPrefs.Save();
+        Changed?.Invoke(action);
+    }
+
+    public static void ResetAll()
+    {
+        foreach (BattleShortcutAction action in System.Enum.GetValues(typeof(BattleShortcutAction)))
+            PlayerPrefs.DeleteKey(GetPreferenceKey(action));
+        PlayerPrefs.Save();
+        foreach (BattleShortcutAction action in System.Enum.GetValues(typeof(BattleShortcutAction)))
+            Changed?.Invoke(action);
+    }
+
+    public static bool IsDuplicate(BattleShortcutAction action)
+    {
+        KeyCode key = Get(action);
+        foreach (BattleShortcutAction candidate in System.Enum.GetValues(typeof(BattleShortcutAction)))
+            if (candidate != action && Get(candidate) == key) return true;
+        return false;
+    }
+
+    public static string GetDisplayName(BattleShortcutAction action) => FormatKey(Get(action));
+    public static string FormatKey(KeyCode key)
+    {
+        if (key >= KeyCode.Alpha0 && key <= KeyCode.Alpha9) return ((int)key - (int)KeyCode.Alpha0).ToString();
+        if (key >= KeyCode.Keypad0 && key <= KeyCode.Keypad9) return "Num " + ((int)key - (int)KeyCode.Keypad0);
+        switch (key)
+        {
+            case KeyCode.LeftControl: return "L Ctrl";
+            case KeyCode.RightControl: return "R Ctrl";
+            case KeyCode.LeftShift: return "L Shift";
+            case KeyCode.RightShift: return "R Shift";
+            case KeyCode.LeftAlt: return "L Alt";
+            case KeyCode.RightAlt: return "R Alt";
+            case KeyCode.Return: return "Enter";
+            default: return key.ToString();
+        }
+    }
+
+    public static string GetPreferenceKey(BattleShortcutAction action) => PreferencePrefix + action;
 }
-
 /// <summary>
 /// BattleCharacterPanel의 Char01~03 상시 정보, Char_Select 선택, Active 영역과 패널/BattleSlot 이동을 관리합니다.
 /// Char_Select는 HUDPortraitImage / HUDSelectedPortraitImage를 사용하며 선택 상태에서는 1.25 스케일을 유지합니다.
@@ -39,6 +132,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private static readonly Color32 PartyKarmaOffColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     private static readonly Color32 HistoryButtonDisabledColor = new Color32(0x55, 0x55, 0x55, 0xFF);
     private readonly Dictionary<Graphic, Color> historyButtonOriginalColors = new();
+    private readonly Dictionary<TMP_Text, BattleShortcutAction> shortcutKeyLabels = new();
+    private readonly List<int> pressedSkillSlots = new(4);
+    private readonly List<Button> pressedSkillButtons = new(4);
     private BattleTimelineController subscribedHistoryController;
 
     private sealed class PartySlotView
@@ -608,12 +704,16 @@ public class BattleCharacterPanelUI : MonoBehaviour
         SkillDetailNumericLinkHandler.DetailedModeChanged += HandleSkillDetailsDetailedModeChanged;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= HandleLocaleTableReady;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady += HandleLocaleTableReady;
+        BattleKeyboardShortcutBindings.Changed -= HandleShortcutBindingChanged;
+        BattleKeyboardShortcutBindings.Changed += HandleShortcutBindingChanged;
 
         ResolvePartyReferences();
         RefreshPartyFromRuntimeStore();
         RefreshPartySelectPortraits(battleTimelineController != null ? battleTimelineController.SelectedCharacter : null);
         ApplyCurrentBattlePhasePositionImmediate();
         BindReservationHistoryButtons();
+        ResolveShortcutKeyLabels();
+        RefreshShortcutKeyLabels();
     }
 
     private void OnDestroy()
@@ -703,10 +803,46 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleMapIntroText.IntroCompleted -= HandleBattleMapIntroCompleted;
         SkillDetailNumericLinkHandler.DetailedModeChanged -= HandleSkillDetailsDetailedModeChanged;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= HandleLocaleTableReady;
+        BattleKeyboardShortcutBindings.Changed -= HandleShortcutBindingChanged;
 
         StopNumberChangeCoroutine();
         StopPanelMoveCoroutine();
         hasDisplayedStats = false;
+    }
+
+    private void HandleShortcutBindingChanged(BattleShortcutAction _) => RefreshShortcutKeyLabels();
+
+    private void ResolveShortcutKeyLabels()
+    {
+        if (shortcutKeyLabels.Count > 0)
+            return;
+
+        TMP_Text[] texts = FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (TMP_Text text in texts)
+        {
+            if (text == null || text.gameObject.scene != gameObject.scene || text.name != "KeyText")
+                continue;
+
+            string value = text.text == null ? string.Empty : text.text.Trim();
+            foreach (BattleShortcutAction action in System.Enum.GetValues(typeof(BattleShortcutAction)))
+            {
+                if (!string.Equals(value, BattleKeyboardShortcutBindings.FormatKey(BattleKeyboardShortcutBindings.GetDefault(action)), StringComparison.OrdinalIgnoreCase))
+                    continue;
+                shortcutKeyLabels[text] = action;
+                break;
+            }
+        }
+    }
+
+    private void RefreshShortcutKeyLabels()
+    {
+        foreach (KeyValuePair<TMP_Text, BattleShortcutAction> pair in shortcutKeyLabels)
+        {
+            if (pair.Key == null) continue;
+            LocalizedTMPText.ProtectDynamicOwnership(pair.Key);
+            pair.Key.text = BattleKeyboardShortcutBindings.GetDisplayName(pair.Value);
+            pair.Key.ForceMeshUpdate();
+        }
     }
 
     private void HandleBattleExecutionStarted()
@@ -2801,31 +2937,26 @@ public class BattleCharacterPanelUI : MonoBehaviour
             if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Move) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Move))
             {
                 OnMoveButtonClicked();
-                return;
             }
             if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Skill01) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill01))
             {
                 StartKeyboardSkillWithRangePreview(0, skill01Button);
-                return;
             }
             // Sheet-driven tutorial steps decide whether the Flip shortcut is allowed.
             // IsFinalTutorialRunning is a retired compatibility flag and is always false.
             if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Flip) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Flip))
             {
                 OnFlipButtonClicked();
-                return;
             }
             if (TutorialFocusGuideRunner.IsRunning)
             {
                 if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Compound) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Compound))
                 {
                     OnItemButtonClicked();
-                    return;
                 }
                 if (TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.Skill04) && Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill04))
                 {
                     StartKeyboardSkillWithRangePreview(3, skill04Button);
-                    return;
                 }
             }
             return;
@@ -2836,13 +2967,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
             if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Move) && BattleFirstTutorialController.CanSelectMove)
             {
                 OnMoveButtonClicked();
-                return;
             }
 
             if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill01) && BattleFirstTutorialController.CanSelectSkill01)
             {
                 StartKeyboardSkillWithRangePreview(0, skill01Button);
-                return;
             }
 
             return;
@@ -2851,48 +2980,49 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Move))
         {
             OnMoveButtonClicked();
-            return;
         }
 
         if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Flip))
         {
             OnFlipButtonClicked();
-            return;
         }
 
         if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Compound))
         {
             OnItemButtonClicked();
-            return;
         }
 
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill01))
-        {
-            StartKeyboardSkillWithRangePreview(0, skill01Button);
-            return;
-        }
-
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill02))
-        {
-            StartKeyboardSkillWithRangePreview(1, skill02Button);
-            return;
-        }
-
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill03))
-        {
-            StartKeyboardSkillWithRangePreview(2, skill03Button);
-            return;
-        }
-
-        if (Input.GetKeyDown(BattleKeyboardShortcutBindings.Skill04))
-        {
-            StartKeyboardSkillWithRangePreview(3, skill04Button);
-            return;
-        }
+        pressedSkillSlots.Clear();
+        pressedSkillButtons.Clear();
+        CollectPressedSkill(BattleKeyboardShortcutBindings.Skill01, 0, skill01Button, pressedSkillSlots, pressedSkillButtons);
+        CollectPressedSkill(BattleKeyboardShortcutBindings.Skill02, 1, skill02Button, pressedSkillSlots, pressedSkillButtons);
+        CollectPressedSkill(BattleKeyboardShortcutBindings.Skill03, 2, skill03Button, pressedSkillSlots, pressedSkillButtons);
+        CollectPressedSkill(BattleKeyboardShortcutBindings.Skill04, 3, skill04Button, pressedSkillSlots, pressedSkillButtons);
+        if (pressedSkillSlots.Count > 0)
+            StartKeyboardSkillsWithRangePreview(pressedSkillSlots.ToArray(), pressedSkillButtons.ToArray());
 
     }
 
     private void StartKeyboardSkillWithRangePreview(int displaySlotIndex, Button sourceButton)
+    {
+        StartKeyboardSkillsWithRangePreview(
+            new[] { displaySlotIndex },
+            new[] { sourceButton });
+    }
+
+    private static void CollectPressedSkill(
+        KeyCode key,
+        int displaySlotIndex,
+        Button sourceButton,
+        List<int> slots,
+        List<Button> buttons)
+    {
+        if (!Input.GetKeyDown(key)) return;
+        slots.Add(displaySlotIndex);
+        buttons.Add(sourceButton);
+    }
+
+    private void StartKeyboardSkillsWithRangePreview(int[] displaySlotIndices, Button[] sourceButtons)
     {
         if (keyboardSkillRangePreviewCoroutine != null)
         {
@@ -2903,32 +3033,37 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         keyboardSkillRangePreviewCoroutine = StartCoroutine(
-            PlayKeyboardSkillRangePreviewAndUse(displaySlotIndex, sourceButton));
+            PlayKeyboardSkillRangePreviewAndUse(displaySlotIndices, sourceButtons));
     }
 
-    private IEnumerator PlayKeyboardSkillRangePreviewAndUse(int displaySlotIndex, Button sourceButton)
+    private IEnumerator PlayKeyboardSkillRangePreviewAndUse(int[] displaySlotIndices, Button[] sourceButtons)
     {
-        string skillId = GetSkillIdForDisplaySlot(displaySlotIndex);
-        SkillMasterData skillData = ResolveSkillData(skillId);
-
-        EnsureBattleTimelineController();
-
-        if (boundRuntime != null && skillData != null && battleTimelineController != null)
+        for (int i = 0; i < displaySlotIndices.Length; i++)
         {
-            battleTimelineController.ShowSkillHoverRangePreview(boundRuntime, skillData);
+            int displaySlotIndex = displaySlotIndices[i];
+            Button sourceButton = i < sourceButtons.Length ? sourceButtons[i] : null;
+            string skillId = GetSkillIdForDisplaySlot(displaySlotIndex);
+            SkillMasterData skillData = ResolveSkillData(skillId);
 
-            float duration = Mathf.Max(0f, keyboardSkillRangePreviewDuration);
-            if (duration > 0f)
-                yield return new WaitForSecondsRealtime(duration);
-            else
-                yield return null;
+            EnsureBattleTimelineController();
+
+            if (boundRuntime != null && skillData != null && battleTimelineController != null)
+            {
+                battleTimelineController.ShowSkillHoverRangePreview(boundRuntime, skillData);
+
+                float duration = Mathf.Max(0f, keyboardSkillRangePreviewDuration);
+                if (duration > 0f)
+                    yield return new WaitForSecondsRealtime(duration);
+                else
+                    yield return null;
+            }
+
+            UseSkillSlot(displaySlotIndex, sourceButton);
+
+            // Selection 타입 스킬은 ClearSkillHoverRangePreview 내부에서 실제 선택 범위를 복원합니다.
+            // Direction/Direct 타입은 등록이 끝났으므로 키보드용 임시 범위만 사라집니다.
+            battleTimelineController?.ClearSkillHoverRangePreview();
         }
-
-        UseSkillSlot(displaySlotIndex, sourceButton);
-
-        // Selection 타입 스킬은 ClearSkillHoverRangePreview 내부에서 실제 선택 범위를 복원합니다.
-        // Direction/Direct 타입은 등록이 끝났으므로 키보드용 임시 범위만 사라집니다.
-        battleTimelineController?.ClearSkillHoverRangePreview();
         keyboardSkillRangePreviewCoroutine = null;
     }
 

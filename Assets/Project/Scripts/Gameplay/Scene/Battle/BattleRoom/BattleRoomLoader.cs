@@ -156,14 +156,15 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         HandleCharacterCycleInput();
+        HandleCharacterNumberSelectInput();
     }
 
     private void HandleCharacterCycleInput()
     {
         if (TutorialGuideController.IsModalOpen) return;
-        if (!TutorialBattleSequence.IsShortcutAllowed(KeyCode.Tab))
+        if (!TutorialBattleSequence.IsShortcutAllowed(BattleKeyboardShortcutBindings.CharacterCycle))
             return;
-        if (!Input.GetKeyDown(KeyCode.Tab))
+        if (!Input.GetKeyDown(BattleKeyboardShortcutBindings.CharacterCycle))
             return;
 
         if (IsTypingInputFieldSelected())
@@ -218,26 +219,16 @@ public class BattleRoomLoader : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
-        int characterIndex = GetPressedCharacterNumberIndex();
-
-        if (characterIndex < 0)
-            return;
-
-        SelectPlayerCharacterByNumberIndex(characterIndex);
+        if (IsTimelineShortcutPressed(0, KeyCode.Keypad1)) SelectPlayerCharacterByNumberIndex(0);
+        if (IsTimelineShortcutPressed(1, KeyCode.Keypad2)) SelectPlayerCharacterByNumberIndex(1);
+        if (IsTimelineShortcutPressed(2, KeyCode.Keypad3)) SelectPlayerCharacterByNumberIndex(2);
     }
 
-    private int GetPressedCharacterNumberIndex()
+    private static bool IsTimelineShortcutPressed(int slotIndex, KeyCode legacyKeypadKey)
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
-            return 0;
-
-        if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
-            return 1;
-
-        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
-            return 2;
-
-        return -1;
+        KeyCode configured = BattleKeyboardShortcutBindings.GetTimelineSlot(slotIndex);
+        return Input.GetKeyDown(configured) ||
+               (configured == (KeyCode)((int)KeyCode.Alpha1 + slotIndex) && Input.GetKeyDown(legacyKeypadKey));
     }
 
     public bool SelectFirstAlivePlayerCharacterIfNeeded()

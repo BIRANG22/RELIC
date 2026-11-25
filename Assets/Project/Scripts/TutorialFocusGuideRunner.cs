@@ -946,14 +946,14 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
         {
             int order = Active.step?.Order ?? -1;
             return order == 11 ? key == BattleKeyboardShortcutBindings.Move :
-                   order == 13 ? key == KeyCode.Alpha2 :
+                   order == 13 ? key == BattleKeyboardShortcutBindings.TimelineSlot02 :
                    order == 14 ? key == BattleKeyboardShortcutBindings.Flip :
                    order == 15 ? key == BattleKeyboardShortcutBindings.Skill01 :
-                   order == 18 ? key == KeyCode.Alpha3 :
+                   order == 18 ? key == BattleKeyboardShortcutBindings.TimelineSlot03 :
                    order == 19 ? key == BattleKeyboardShortcutBindings.Move :
-                   order == 21 ? key == KeyCode.Alpha5 :
+                   order == 21 ? key == BattleKeyboardShortcutBindings.TimelineSlot05 :
                    (order == 22 || order == 23) ? key == BattleKeyboardShortcutBindings.Skill01 :
-                   order == 24 && key == KeyCode.Space;
+                   order == 24 && key == BattleKeyboardShortcutBindings.EndTurn;
         }
         switch (Active.step?.Order ?? -1)
         {
@@ -961,9 +961,9 @@ public sealed class TutorialFocusGuideRunner : MonoBehaviour
             case 7:
             case 10:
             case 11: return key == BattleKeyboardShortcutBindings.Skill01;
-            case 8: return key == KeyCode.Alpha2;
-            case 9: return key == KeyCode.Tab;
-            case 12: return key == KeyCode.Space;
+            case 8: return key == BattleKeyboardShortcutBindings.TimelineSlot02;
+            case 9: return key == BattleKeyboardShortcutBindings.CharacterCycle;
+            case 12: return key == BattleKeyboardShortcutBindings.EndTurn;
             default: return false;
         }
     }
