@@ -6679,6 +6679,10 @@ MonoBehaviour:
     m_Key: tutorial.battle_guide.05
     m_Metadata:
       m_Items: []
+  - m_Id: 35203227649810433
+    m_Key: ui.record.tab.monster
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

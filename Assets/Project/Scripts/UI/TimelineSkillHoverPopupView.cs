@@ -16,7 +16,6 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
     [SerializeField] private bool autoSizeToName = true;
     [SerializeField] private Vector2 textPadding = new Vector2(36f, 16f);
     [SerializeField, Min(0f)] private float contentSpacing = 8f;
-    [SerializeField, Min(0f)] private float rangeIconWidth = 40f;
     [SerializeField] private float minWidth = 80f;
     [SerializeField] private float minHeight = 40f;
     [SerializeField] private float maxWidth = 0f;
@@ -47,11 +46,6 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
     public void Set(string skillName, string effectDescription)
     {
-        Set(skillName, effectDescription, null);
-    }
-
-    public void Set(string skillName, string effectDescription, Sprite rangeIcon)
-    {
         if (!gameObject.activeSelf)
             gameObject.SetActive(true);
 
@@ -74,11 +68,10 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
             descriptionText.gameObject.SetActive(showDescription);
         }
 
-        bool showRangeIcon = rangeIcon != null;
         if (rangeIconImage != null)
         {
-            rangeIconImage.sprite = rangeIcon;
-            rangeIconImage.gameObject.SetActive(showRangeIcon);
+            rangeIconImage.sprite = null;
+            rangeIconImage.gameObject.SetActive(false);
         }
 
         RefreshSize();
@@ -86,7 +79,7 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
     public void Set(string skillName)
     {
-        Set(skillName, string.Empty, null);
+        Set(skillName, string.Empty);
     }
 
     private void RefreshSize()
@@ -114,12 +107,10 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
             ? descriptionText.GetPreferredValues(descriptionText.text ?? string.Empty)
             : Vector2.zero;
         bool hasDescription = descriptionSize.sqrMagnitude > 0f;
-        bool hasRangeIcon = rangeIconImage != null && rangeIconImage.gameObject.activeSelf;
 
         float textWidth = Mathf.Max(preferredSize.x, descriptionSize.x);
-        float iconSpace = hasRangeIcon ? rangeIconWidth + contentSpacing : 0f;
         float descriptionSpace = hasDescription ? contentSpacing + descriptionSize.y : 0f;
-        float targetWidth = Mathf.Max(minWidth, textWidth + iconSpace + Mathf.Max(0f, textPadding.x));
+        float targetWidth = Mathf.Max(minWidth, textWidth + Mathf.Max(0f, textPadding.x));
         float targetHeight = Mathf.Max(minHeight, preferredSize.y + descriptionSpace + Mathf.Max(0f, textPadding.y));
 
         if (maxWidth > 0f)

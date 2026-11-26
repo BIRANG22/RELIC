@@ -170,10 +170,8 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager)
         {
             int priority = 0;
-            // Reserve the leap target. Physical landing movement must be handled
-            // separately in the action executor.
-            BattleCharacter nearest = FindNearestPlayer(unit, gridManager);
-            int leapGrid = IsAlivePlayer(nearest) ? nearest.CurrentGridIndex : -1;
+            // Reserve a safe empty landing around a character, never the character's cell.
+            int leapGrid = ArabellaLeapLandingResolver.Resolve(unit, gridManager);
             if (leapGrid >= 0 && unit.MainGridIndex >= 0)
             {
                 Vector2Int from = gridManager.IndexToCoord(unit.MainGridIndex);

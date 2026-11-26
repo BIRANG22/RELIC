@@ -45,7 +45,7 @@ public class LanguageButtonController : MonoBehaviour
             if (locale.Identifier.Code == localeCode)
             {
                 LocalizationSettings.SelectedLocale = locale;
-                PlayerPrefs.SetString("SelectedLanguage", localeCode);
+                PlayerPrefs.SetString(GameLocalization.SelectedLanguagePreferenceKey, localeCode);
                 PlayerPrefs.Save();
                 yield break;
             }

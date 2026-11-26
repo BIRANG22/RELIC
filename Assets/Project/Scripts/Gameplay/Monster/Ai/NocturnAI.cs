@@ -201,7 +201,7 @@ namespace Relic.Gameplay.Monster
                     gridManager, out Vector2Int offset, out int destination,
                     out BattleDirection attackDirection, out _, true))
             {
-                // 끌어당긴 대상에게 이동할 수 없으면 다른 대상의 후방도 확인한다.
+                // 끌어오기 이후의 이동 후보가 없으면 다른 대상도 확인한다.
                 if (!TryFindAlternatePortalAfterPull(monsterUnit, gridManager,
                         direction, out offset, out destination, out attackDirection))
                     return false;
@@ -233,15 +233,13 @@ namespace Relic.Gameplay.Monster
                 BattleCharacter candidate = candidates[(start + i) % candidates.Count];
                 if (predicted.ContainsKey(candidate.CurrentGridIndex))
                     continue;
-                if (!TryGetBehindGrid(candidate, gridManager,
-                        out Vector2Int behind, out BattleDirection direction))
+                Vector2Int targetCoord = gridManager.IndexToCoord(candidate.CurrentGridIndex);
+                if (!TryGetPortalLanding(monsterUnit, targetCoord, candidate.RuntimeData.Direction,
+                        gridManager, predicted, out Vector2Int landing, out BattleDirection direction))
                     continue;
-                int index = gridManager.CoordToIndex(behind);
-                if (!IsPortalDestinationAvailableAfterPull(
-                        monsterUnit, candidate, predicted, index))
-                    continue;
-                moveOffset = behind - origin;
-                destinationGridIndex = index;
+
+                moveOffset = landing - origin;
+                destinationGridIndex = gridManager.CoordToIndex(landing);
                 attackDirection = direction;
                 return true;
             }
@@ -1576,11 +1574,8 @@ namespace Relic.Gameplay.Monster
 
             Dictionary<int, int> predictedPositions = PredictPullPositions(
                 monsterUnit, monsterUnit.MainGridIndex, gridManager, pullDirection);
-            if (!predictedPositions.TryGetValue(
-                    pullTarget.CurrentGridIndex, out int predictedPulledTargetGridIndex))
+            if (!predictedPositions.ContainsKey(pullTarget.CurrentGridIndex))
                 return false;
-            Vector2Int predictedPulledTargetCoord =
-                gridManager.IndexToCoord(predictedPulledTargetGridIndex);
 
             MonsterSkillData portalSkillData =
                 DataManager.Instance?.MonsterSkillDatabase?.Get(PortalSkillId);
@@ -1605,66 +1600,27 @@ namespace Relic.Gameplay.Monster
             BattleCharacter[] players = FindPlayers();
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             int farthestDistance = int.MinValue;
-            List<Vector2Int> farthestBehindCoords = new();
-            List<int> farthestBehindGridIndices = new();
-            List<BattleDirection> farthestAttackDirections = new();
+            List<(Vector2Int Landing, BattleDirection Direction)> farthestLandings = new();
 
             for (int i = 0; i < players.Length; i++)
             {
                 BattleCharacter candidate = players[i];
 
                 if (!IsAlivePlayer(candidate) || candidate.CurrentGridIndex < 0 ||
-                    (otherCharacterOnly && candidate == pullTarget))
+                    (otherCharacterOnly && candidate.CharacterId == pullTarget.CharacterId))
                     continue;
 
-                int predictedCandidateIndex = predictedPositions.TryGetValue(
+                int candidateGridIndex = predictedPositions.TryGetValue(
                     candidate.CurrentGridIndex, out int nextCandidateIndex)
                     ? nextCandidateIndex : candidate.CurrentGridIndex;
-                Vector2Int candidateCoord = gridManager.IndexToCoord(predictedCandidateIndex);
-                int candidateGridIndex = gridManager.CoordToIndex(candidateCoord);
-
                 if (!portalRangeSet.Contains(candidateGridIndex))
                     continue;
 
-                bool hasBehindGrid;
-                Vector2Int behindCoord;
-                BattleDirection candidateAttackDirection;
-
-                if (candidate == pullTarget)
-                {
-                    // 그림자 소용돌이는 E_Strike가 먼저 적중한 뒤 E_Grab이 실행됩니다.
-                    // 따라서 당겨진 대상은 현재 방향이 아니라, 피격 후 녹턴을 바라보는 방향으로 바뀐 상태입니다.
-                    bool predictedFacesRight = pullDirection == BattleDirection.Left;
-                    hasBehindGrid = TryGetBehindGridAtCoordByFacing(
-                        candidateCoord,
-                        predictedFacesRight,
-                        gridManager,
-                        out behindCoord,
-                        out candidateAttackDirection);
-                }
-                else
-                {
-                    hasBehindGrid = TryGetBehindGridAtCoord(
-                        candidate,
-                        candidateCoord,
-                        gridManager,
-                        out behindCoord,
-                        out candidateAttackDirection);
-                }
-
-                if (!hasBehindGrid)
+                Vector2Int candidateCoord = gridManager.IndexToCoord(candidateGridIndex);
+                if (!TryGetPortalLanding(monsterUnit, candidateCoord, candidate.RuntimeData.Direction,
+                        gridManager, predictedPositions, out Vector2Int landing,
+                        out BattleDirection candidateAttackDirection))
                     continue;
-
-                int behindGridIndex = gridManager.CoordToIndex(behindCoord);
-
-                if (!IsPortalDestinationAvailableAfterPull(
-                        monsterUnit,
-                        pullTarget,
-                        predictedPositions,
-                        behindGridIndex))
-                {
-                    continue;
-                }
 
                 int distance = Mathf.Abs(candidateCoord.x - monsterCoord.x) +
                                Mathf.Abs(candidateCoord.y - monsterCoord.y);
@@ -1672,55 +1628,22 @@ namespace Relic.Gameplay.Monster
                 if (distance > farthestDistance)
                 {
                     farthestDistance = distance;
-                    farthestBehindCoords.Clear();
-                    farthestBehindGridIndices.Clear();
-                    farthestAttackDirections.Clear();
+                    farthestLandings.Clear();
                 }
 
                 if (distance == farthestDistance)
-                {
-                    farthestBehindCoords.Add(behindCoord);
-                    farthestBehindGridIndices.Add(behindGridIndex);
-                    farthestAttackDirections.Add(candidateAttackDirection);
-                }
+                    farthestLandings.Add((landing, candidateAttackDirection));
             }
 
-            if (farthestBehindCoords.Count <= 0)
+            if (farthestLandings.Count <= 0)
                 return false;
 
-            int selectedIndex = BattleRandom.Range(0, farthestBehindCoords.Count);
-            Vector2Int selectedBehindCoord = farthestBehindCoords[selectedIndex];
-            moveOffset = selectedBehindCoord - monsterCoord;
-            destinationGridIndex = farthestBehindGridIndices[selectedIndex];
-            attackDirection = farthestAttackDirections[selectedIndex];
-
-            // 당기기 이후 후방이 1칸 거리라도 포털 이동을 사용합니다.
-            useRegularMove = false;
+            int selectedIndex = BattleRandom.Range(0, farthestLandings.Count);
+            var selectedLanding = farthestLandings[selectedIndex];
+            moveOffset = selectedLanding.Landing - monsterCoord;
+            destinationGridIndex = gridManager.CoordToIndex(selectedLanding.Landing);
+            attackDirection = selectedLanding.Direction;
             return true;
-        }
-
-        private bool IsPortalDestinationAvailableAfterPull(
-            MonsterUnit monsterUnit,
-            BattleCharacter pullTarget,
-            Dictionary<int, int> predictedPositions,
-            int destinationGridIndex)
-        {
-            if (monsterUnit == null || pullTarget == null || destinationGridIndex < 0 ||
-                predictedPositions == null)
-                return false;
-
-            if (destinationGridIndex == monsterUnit.MainGridIndex ||
-                IsGridEffectBlocked(destinationGridIndex) ||
-                predictedPositions.ContainsValue(destinationGridIndex))
-                return false;
-
-            // 실제로 당겨져 비워질 칸만 예외로 인정합니다.
-            // 다른 캐릭터가 당겨져 목적지를 차지한다면 포털 후보에서 제외합니다.
-            if (predictedPositions.ContainsKey(destinationGridIndex))
-                return true;
-
-            return !BattleOccupancyService.IsOccupiedByAnyUnit(
-                destinationGridIndex, null, monsterUnit);
         }
 
         private bool TryFindPortalTarget(
@@ -1743,177 +1666,68 @@ namespace Relic.Gameplay.Monster
                 return false;
 
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            List<BattleCharacter> validTargets = new();
-            List<Vector2Int> validBehindCoords = new();
-            List<int> validBehindGridIndices = new();
-            List<BattleDirection> validAttackDirections = new();
+            int farthestDistance = int.MinValue;
+            List<(BattleCharacter Target, Vector2Int Landing, BattleDirection Direction)> farthestLandings = new();
 
             for (int i = 0; i < candidates.Count; i++)
             {
                 BattleCharacter candidate = candidates[i];
-
-                if (!TryGetBehindGrid(
-                        candidate,
-                        gridManager,
-                        out Vector2Int behindCoord,
-                        out BattleDirection direction))
-                {
-                    continue;
-                }
-
-                int behindGridIndex = gridManager.CoordToIndex(behindCoord);
-
-                if (!IsPortalDestinationAvailable(monsterUnit, behindGridIndex))
+                if (!IsAlivePlayer(candidate) || candidate.CurrentGridIndex < 0)
                     continue;
 
-                validTargets.Add(candidate);
-                validBehindCoords.Add(behindCoord);
-                validBehindGridIndices.Add(behindGridIndex);
-                validAttackDirections.Add(direction);
-            }
+                Vector2Int targetCoord = gridManager.IndexToCoord(candidate.CurrentGridIndex);
+                if (!TryGetPortalLanding(monsterUnit, targetCoord, candidate.RuntimeData.Direction,
+                        gridManager, null, out Vector2Int landing, out BattleDirection direction))
+                    continue;
 
-            if (validTargets.Count <= 0)
-                return false;
-
-            // 그림자걸음은 범위 안에서 녹턴으로부터 가장 먼 대상의 후방을 우선합니다.
-            // 같은 최장 거리에 여러 대상이 있으면 그 대상들 사이에서만 무작위 선택합니다.
-            int farthestDistance = int.MinValue;
-            List<int> farthestIndices = new();
-
-            for (int i = 0; i < validTargets.Count; i++)
-            {
-                Vector2Int targetCoord = gridManager.IndexToCoord(validTargets[i].CurrentGridIndex);
                 int distance = Mathf.Abs(targetCoord.x - monsterCoord.x) +
                                Mathf.Abs(targetCoord.y - monsterCoord.y);
-
                 if (distance > farthestDistance)
                 {
                     farthestDistance = distance;
-                    farthestIndices.Clear();
-                    farthestIndices.Add(i);
+                    farthestLandings.Clear();
                 }
-                else if (distance == farthestDistance)
-                {
-                    farthestIndices.Add(i);
-                }
+
+                if (distance == farthestDistance)
+                    farthestLandings.Add((candidate, landing, direction));
             }
 
-            int selectedIndex = farthestIndices[BattleRandom.Range(0, farthestIndices.Count)];
-            selectedTarget = validTargets[selectedIndex];
-            moveOffset = validBehindCoords[selectedIndex] - monsterCoord;
-            destinationGridIndex = validBehindGridIndices[selectedIndex];
-            attackDirection = validAttackDirections[selectedIndex];
+            if (farthestLandings.Count == 0)
+                return false;
 
-            // 이동 거리에 상관없이 그림자걸음 포털로 이동합니다.
-            useRegularMove = false;
+            int selectedIndex = BattleRandom.Range(0, farthestLandings.Count);
+            var selectedLanding = farthestLandings[selectedIndex];
+            selectedTarget = selectedLanding.Target;
+            moveOffset = selectedLanding.Landing - monsterCoord;
+            destinationGridIndex = gridManager.CoordToIndex(selectedLanding.Landing);
+            attackDirection = selectedLanding.Direction;
             return true;
         }
 
-        private bool TryGetBehindGrid(
-            BattleCharacter target,
-            GridManager gridManager,
-            out Vector2Int behindCoord,
-            out BattleDirection attackDirection)
+        private bool TryGetPortalLanding(
+            MonsterUnit monsterUnit, Vector2Int targetCoord, BattleDirection targetDirection,
+            GridManager gridManager, Dictionary<int, int> predictedPositions,
+            out Vector2Int landing, out BattleDirection attackDirection)
         {
-            behindCoord = Vector2Int.zero;
-            attackDirection = BattleDirection.Right;
-
-            if (target == null || target.CurrentGridIndex < 0 || gridManager == null)
-                return false;
-
-            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
-
-            return TryGetBehindGridAtCoord(
-                target,
-                targetCoord,
-                gridManager,
-                out behindCoord,
-                out attackDirection);
-        }
-
-        private bool TryGetBehindGridAtCoord(
-            BattleCharacter target,
-            Vector2Int targetCoord,
-            GridManager gridManager,
-            out Vector2Int behindCoord,
-            out BattleDirection attackDirection)
-        {
-            behindCoord = Vector2Int.zero;
-            attackDirection = BattleDirection.Right;
-
-            if (target == null || gridManager == null)
-                return false;
-
-            BattleUnitFacing facing = ResolveTargetFacing(target);
-            bool targetFacesRight = facing != null
-                ? facing.IsFacingRight
-                : target.RuntimeData == null ||
-                  target.RuntimeData.Direction == BattleDirection.Right;
-
-            return TryGetBehindGridAtCoordByFacing(
-                targetCoord,
-                targetFacesRight,
-                gridManager,
-                out behindCoord,
-                out attackDirection);
-        }
-
-        private bool TryGetBehindGridAtCoordByFacing(
-            Vector2Int targetCoord,
-            bool targetFacesRight,
-            GridManager gridManager,
-            out Vector2Int behindCoord,
-            out BattleDirection attackDirection)
-        {
-            behindCoord = targetCoord +
-                (targetFacesRight ? Vector2Int.left : Vector2Int.right);
-            attackDirection = targetFacesRight
-                ? BattleDirection.Right
-                : BattleDirection.Left;
-
-            return gridManager != null && gridManager.IsValidCoord(behindCoord);
-        }
-
-
-        private static BattleUnitFacing ResolveTargetFacing(BattleCharacter target)
-        {
-            if (target == null)
-                return null;
-
-            // 프리팹 구조에 따라 방향 컴포넌트가 본체, 자식 또는 부모에 있을 수 있습니다.
-            // 실제 화면 방향을 우선 사용해야 포탈 목적지가 캐릭터의 앞쪽으로 뒤집히지 않습니다.
-            BattleUnitFacing facing = target.GetComponent<BattleUnitFacing>();
-
-            if (facing == null)
-                facing = target.GetComponentInChildren<BattleUnitFacing>(true);
-
-            if (facing == null)
-                facing = target.GetComponentInParent<BattleUnitFacing>();
-
-            return facing;
+            return NocturnPortalLandingPolicy.TrySelect(
+                targetCoord, targetDirection,
+                coord => gridManager.IsValidCoord(coord) &&
+                         IsPortalDestinationAvailable(monsterUnit, gridManager.CoordToIndex(coord),
+                             predictedPositions),
+                out landing, out attackDirection);
         }
 
         private bool IsPortalDestinationAvailable(
-            MonsterUnit monsterUnit,
-            int destinationGridIndex)
+            MonsterUnit monsterUnit, int destinationGridIndex, Dictionary<int, int> predictedPositions)
         {
-            if (monsterUnit == null || destinationGridIndex < 0)
+            if (destinationGridIndex == monsterUnit.MainGridIndex ||
+                IsGridEffectBlocked(destinationGridIndex) ||
+                BattleOccupancyService.IsOccupiedByMonster(destinationGridIndex, monsterUnit))
                 return false;
 
-            // 이미 서 있는 칸은 포탈 목적지로 사용하지 않습니다.
-            // 자기 자신은 점유 검사에서 제외되므로 이 검사가 없으면 제자리 포탈이 예약될 수 있습니다.
-            if (destinationGridIndex == monsterUnit.MainGridIndex)
-                return false;
-
-            if (BattleOccupancyService.IsOccupiedByAnyUnit(
-                    destinationGridIndex,
-                    null,
-                    monsterUnit))
-            {
-                return false;
-            }
-
-            return !IsGridEffectBlocked(destinationGridIndex);
+            return !NocturnPortalLandingPolicy.IsCharacterOccupied(
+                destinationGridIndex, predictedPositions,
+                index => BattleOccupancyService.IsOccupiedByCharacter(index));
         }
 
         private bool IsGridEffectBlocked(int gridIndex)

@@ -91,6 +91,19 @@ namespace Relic.Gameplay.Data
             return Register(monsterId, player?.DiscoveredMonsterIds);
         }
 
+        public static bool MergeMonsterDiscoveries(PlayerRuntimeData player, IEnumerable<string> monsterIds)
+        {
+            if (player == null || monsterIds == null)
+                return false;
+
+            player.DiscoveredMonsterIds ??= new List<string>();
+            bool addedAny = false;
+            foreach (string monsterId in monsterIds)
+                addedAny |= Register(monsterId, player.DiscoveredMonsterIds);
+
+            return addedAny;
+        }
+
         public static bool IsMonsterDiscovered(DataManager dataManager, string monsterId)
         {
             return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredMonsterIds, monsterId);

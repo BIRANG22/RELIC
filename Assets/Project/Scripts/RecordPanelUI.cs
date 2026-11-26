@@ -215,12 +215,6 @@ public sealed class RecordPanelUI : MonoBehaviour
         compoundTabButton ??= FindTabButton("Compound");
         monsterTabButton ??= FindTabButton("Monster");
         monsterTabButton ??= FindTabButton("Item");
-        if (monsterTabButton != null)
-        {
-            monsterTabButton.gameObject.name = "Monster";
-            TMP_Text label = monsterTabButton.GetComponentInChildren<TMP_Text>(true);
-            if (label != null) label.text = "Monster";
-        }
         Button obsoleteEffectButton = FindTabButton("Effect");
         if (obsoleteEffectButton != null) obsoleteEffectButton.gameObject.SetActive(false);
         if (skillNumberText == null)

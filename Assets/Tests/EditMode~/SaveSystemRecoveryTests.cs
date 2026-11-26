@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using Relic.Gameplay.Data;
 
 public sealed class SaveSystemRecoveryTests
 {
@@ -89,5 +91,46 @@ public sealed class SaveSystemRecoveryTests
 
         Assert.That(SaveSystem.TryWriteJsonAtomically(target, "new", out _), Is.False);
         Assert.That(File.ReadAllText(target), Is.EqualTo("old"));
+    }
+
+    [Test]
+    public void MonsterDiscoveries_RestoreFromSeparateFileWithoutChangingSavedCheckpoint()
+    {
+        string checkpointPath = Path.Combine(tempDirectory, "save.json");
+        const string checkpointJson = "{\"Version\":1,\"Resume\":{\"NodeIndex\":4},\"Characters\":[{\"CurrentHP\":17}]}";
+        File.WriteAllText(checkpointPath, checkpointJson);
+        string discoveriesPath = Path.Combine(tempDirectory, "monsters.json");
+
+        Assert.That(SaveSystem.TryWriteMonsterDiscoveries(discoveriesPath, new[] { " Mon_01 ", "Mon_02" }, out Exception firstError), Is.True, firstError?.ToString());
+        Assert.That(SaveSystem.TryWriteMonsterDiscoveries(discoveriesPath, new[] { "Mon_02", "Mon_03", " " }, out Exception secondError), Is.True, secondError?.ToString());
+
+        var player = new PlayerRuntimeData
+        {
+            Level = 3,
+            DiscoveredMonsterIds = new List<string> { "Mon_Legacy", "Mon_02" },
+            DiscoveredSkillIds = new List<string> { "Skill_01" }
+        };
+        SaveSystem.RestoreMonsterDiscoveries(discoveriesPath, player);
+        SaveSystem.RestoreMonsterDiscoveries(discoveriesPath, player);
+
+        Assert.That(player.DiscoveredMonsterIds, Is.EqualTo(new[] { "Mon_Legacy", "Mon_02", "Mon_01", "Mon_03" }));
+        Assert.That(player.DiscoveredSkillIds, Is.EqualTo(new[] { "Skill_01" }));
+        Assert.That(player.Level, Is.EqualTo(3));
+        Assert.That(File.ReadAllText(checkpointPath), Is.EqualTo(checkpointJson));
+    }
+
+    [Test]
+    public void MonsterDiscoveries_RestoreFromBackupWithoutProgressSave()
+    {
+        string discoveriesPath = Path.Combine(tempDirectory, "monsters.json");
+        Assert.That(SaveSystem.TryWriteMonsterDiscoveries(discoveriesPath, new[] { "Mon_01" }, out _), Is.True);
+        Assert.That(SaveSystem.TryWriteMonsterDiscoveries(discoveriesPath, new[] { "Mon_02" }, out _), Is.True);
+        File.WriteAllText(discoveriesPath, "corrupt");
+
+        var player = new PlayerRuntimeData { DiscoveredMonsterIds = null };
+        SaveSystem.RestoreMonsterDiscoveries(discoveriesPath, player);
+
+        Assert.That(player.DiscoveredMonsterIds, Is.EqualTo(new[] { "Mon_01" }));
+        Assert.That(File.ReadAllText(discoveriesPath), Is.EqualTo(File.ReadAllText(discoveriesPath + ".bak")));
     }
 }

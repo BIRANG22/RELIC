@@ -105,27 +105,17 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
             return;
         }
 
-        Show(entry.SkillName, entry.SkillTooltipDescription, entry.SkillRangeIcon, hoveredIconRect, owner);
+        Show(entry.SkillName, entry.SkillEffectDescription.Trim(), hoveredIconRect, owner);
     }
 
     public void Show(string skillName, string effectDescription, RectTransform hoveredIconRect)
     {
-        Show(skillName, effectDescription, null, hoveredIconRect, null);
+        Show(skillName, effectDescription, hoveredIconRect, null);
     }
 
-    public void Show(
+    private void Show(
         string skillName,
         string effectDescription,
-        Sprite rangeIcon,
-        RectTransform hoveredIconRect)
-    {
-        Show(skillName, effectDescription, rangeIcon, hoveredIconRect, null);
-    }
-
-    public void Show(
-        string skillName,
-        string effectDescription,
-        Sprite rangeIcon,
         RectTransform hoveredIconRect,
         Object owner)
     {
@@ -152,7 +142,7 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
         currentOwner = owner;
         currentHoveredIconRect = hoveredIconRect;
 
-        item.Set(skillName, effectDescription, rangeIcon);
+        item.Set(skillName, effectDescription);
         SetVisible(true);
 
         if (moveToHoveredIcon)

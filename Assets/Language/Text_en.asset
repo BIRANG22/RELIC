@@ -6976,6 +6976,10 @@ MonoBehaviour:
     m_Localized: Consumables
     m_Metadata:
       m_Items: []
+  - m_Id: 35203227649810433
+    m_Localized: Monster
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

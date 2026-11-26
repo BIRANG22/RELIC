@@ -1,6 +1,5 @@
 using Relic.Gameplay.Data;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 public class BattleTimelinePreviewEntry
@@ -67,17 +66,6 @@ public class BattleTimelinePreviewEntry
 
             if (IsPlayer && PlayerSkillData != null)
                 return GetSkillIcon(PlayerSkillData.SkillId);
-
-            return null;
-        }
-    }
-
-    public Sprite SkillRangeIcon
-    {
-        get
-        {
-            if (IsMonster && MonsterSkillData != null)
-                return GetSkillRangeIcon(MonsterSkillData.RangeId);
 
             return null;
         }
@@ -161,84 +149,6 @@ public class BattleTimelinePreviewEntry
 
             return "";
         }
-    }
-
-    public string SkillTooltipDescription
-    {
-        get
-        {
-            string actionType = IsPlayer && PlayerCommand != null && PlayerCommand.IsFacingFlipCommand
-                ? GameLocalization.Get("battle.action.flip.name", "전환")
-                : IsPlayer && PlayerSkillData != null
-                    ? PlayerSkillData.TimelineNotation.ToString()
-                    : IsMonster && MonsterSkillData != null
-                        ? MonsterSkillData.TimelineNotation.ToString()
-                        : string.Empty;
-
-            int cost = IsPlayer ? GetPlayerPayAmount() : 0;
-            string resourceName = IsPlayer ? GetPlayerResourceDisplayName() : string.Empty;
-            int rangeCount = IsPlayer && PlayerCommand != null
-                ? PlayerCommand.RangeGridIndices?.Count ?? 0
-                : IsMonster && MonsterCommand != null
-                    ? MonsterCommand.RangeGridIndices?.Count ?? 0
-                    : 0;
-            int targetCount = IsPlayer && PlayerCommand != null
-                ? PlayerCommand.TargetGridIndices?.Count ?? 0
-                : IsMonster && MonsterCommand != null
-                    ? MonsterCommand.TargetGridIndices?.Count ?? 0
-                    : 0;
-
-            return BuildTooltipDescription(
-                SkillEffectDescription,
-                actionType,
-                cost,
-                resourceName,
-                rangeCount,
-                targetCount);
-        }
-    }
-
-    public static string BuildTooltipDescription(
-        string effectDescription,
-        string actionType,
-        int cost,
-        string resourceName,
-        int rangeCount,
-        int targetCount)
-    {
-        StringBuilder builder = new();
-        if (!string.IsNullOrWhiteSpace(actionType))
-            builder.Append(GameLocalization.Get("battle.timeline.tooltip.action_type", "행동"))
-                .Append(": ").Append(actionType);
-
-        if (cost > 0)
-        {
-            if (builder.Length > 0) builder.AppendLine();
-            builder.Append(GameLocalization.Get("battle.timeline.tooltip.cost", "비용"))
-                .Append(": ").Append(cost);
-            if (!string.IsNullOrWhiteSpace(resourceName))
-                builder.Append(' ').Append(resourceName);
-        }
-
-        if (rangeCount > 0 || targetCount > 0)
-        {
-            if (builder.Length > 0) builder.AppendLine();
-            builder.Append(GameLocalization.Get("battle.timeline.tooltip.range", "범위"))
-                .Append(": ").Append(Mathf.Max(0, rangeCount))
-                .Append(GameLocalization.Get("battle.timeline.tooltip.grid_suffix", "칸"))
-                .Append(" / ")
-                .Append(GameLocalization.Get("battle.timeline.tooltip.target", "대상"))
-                .Append(": ").Append(Mathf.Max(0, targetCount))
-                .Append(GameLocalization.Get("battle.timeline.tooltip.grid_suffix", "칸"));
-        }
-
-        if (!string.IsNullOrWhiteSpace(effectDescription))
-        {
-            if (builder.Length > 0) builder.AppendLine();
-            builder.Append(effectDescription.Trim());
-        }
-
-        return builder.ToString();
     }
 
     public string SkillValueText
@@ -458,51 +368,10 @@ public class BattleTimelinePreviewEntry
         }
     }
 
-    private int GetPlayerPayAmount()
-    {
-        if (PlayerCommand == null || PlayerSkillData == null)
-            return 0;
-
-        switch (PlayerSkillData.ReferenceResource)
-        {
-            case ReferenceResource.HP:
-                return PlayerCommand.HPCost;
-
-            case ReferenceResource.Cost:
-            case ReferenceResource.MovePoint:
-                return PlayerCommand.Cost;
-
-            case ReferenceResource.UniqueResource:
-                return PlayerCommand.ResourceCost;
-
-            default:
-                return 0;
-        }
-    }
-
-    private string GetPlayerResourceDisplayName()
-    {
-        if (PlayerSkillData == null)
-            return string.Empty;
-
-        return PlayerSkillData.ReferenceResource switch
-        {
-            ReferenceResource.HP => GameLocalization.Get("common.hp", "HP"),
-            ReferenceResource.Cost => GameLocalization.Get("common.cost", "코스트"),
-            ReferenceResource.MovePoint => GameLocalization.Get("common.move", "이동력"),
-            ReferenceResource.UniqueResource => GameLocalization.Get("resource.karma", "카르마"),
-            _ => string.Empty
-        };
-    }
-
     private string FormatPlayerSkillEffectDescription(string description)
     {
         if (string.IsNullOrWhiteSpace(description))
             return "";
-
-        int payAmount = PlayerCommand != null
-            ? GetPlayerPayAmount()
-            : PlayerSkillData.ResourceCostValue;
 
         return BattlePlayerSkillPreviewCalculator.FormatDescription(
             PlayerSkillData,
@@ -595,21 +464,6 @@ public class BattleTimelinePreviewEntry
             return null;
 
         if (DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId, out Sprite icon))
-            return icon;
-
-        return null;
-    }
-
-    private static Sprite GetSkillRangeIcon(string rangeId)
-    {
-        if (string.IsNullOrWhiteSpace(rangeId))
-            return null;
-
-        if (DataManager.Instance == null ||
-            DataManager.Instance.SkillRangeIconDatabase == null)
-            return null;
-
-        if (DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(rangeId, out Sprite icon))
             return icon;
 
         return null;

@@ -8,6 +8,7 @@ using UnityEngine.Localization.Settings;
 public static class GameLocalization
 {
     public const string TableName = "Text";
+    public const string SelectedLanguagePreferenceKey = "SelectedLanguage";
 
     public static string BuildDataKey(string category, string stableId, string field)
     {

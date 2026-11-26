@@ -60,7 +60,6 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private Button languagePreviousButton;
     [SerializeField] private Button languageNextButton;
     [SerializeField] private TMP_Text languageValueText;
-    private const string LanguagePreferenceKey = "OptionPanelUI.LanguageCode";
     private bool languageReady;
     private int languageInitVersion;
 
@@ -274,13 +273,6 @@ public class OptionPanelUI : MonoBehaviour
             await LocalizationSettings.InitializationOperation.Task;
             if (!this || !isActiveAndEnabled || version != languageInitVersion) return;
             languageReady = true;
-            string savedCode = PlayerPrefs.GetString(LanguagePreferenceKey, string.Empty);
-            if (!string.IsNullOrEmpty(savedCode))
-            {
-                Locale saved = LocalizationSettings.AvailableLocales.GetLocale(new LocaleIdentifier(savedCode));
-                if (saved != null && LocalizationSettings.SelectedLocale != saved)
-                    LocalizationSettings.SelectedLocale = saved;
-            }
             RefreshLanguageLabel();
         }
         catch (System.Exception e)
@@ -306,20 +298,12 @@ public class OptionPanelUI : MonoBehaviour
         Locale selected = locales[next];
         if (selected == null) return;
         LocalizationSettings.SelectedLocale = selected;
-        PlayerPrefs.SetString(LanguagePreferenceKey, selected.Identifier.Code);
+        PlayerPrefs.SetString(GameLocalization.SelectedLanguagePreferenceKey, selected.Identifier.Code);
         PlayerPrefs.Save();
         RefreshLanguageLabel();
     }
 
-    private void OnSelectedLanguageChanged(Locale locale)
-    {
-        if (languageReady && locale != null)
-        {
-            PlayerPrefs.SetString(LanguagePreferenceKey, locale.Identifier.Code);
-            PlayerPrefs.Save();
-        }
-        RefreshLanguageLabel();
-    }
+    private void OnSelectedLanguageChanged(Locale _) => RefreshLanguageLabel();
 
     private void SetLanguageButtonsInteractable(bool value)
     {
@@ -329,11 +313,10 @@ public class OptionPanelUI : MonoBehaviour
 
     private void RefreshLanguageLabel()
     {
-        var locales = LocalizationSettings.AvailableLocales.Locales;
-        SetLanguageButtonsInteractable(languageReady && locales != null && locales.Count > 1);
+        if (!languageReady) return;
+        SetLanguageButtonsInteractable(LocalizationSettings.AvailableLocales.Locales?.Count > 1);
         if (languageValueText == null) return;
         Locale locale = LocalizationSettings.SelectedLocale;
-        LocalizedTMPText.ProtectDynamicOwnership(languageValueText);
         languageValueText.text = locale == null ? string.Empty : GetLanguageDisplayName(locale);
         PrepareOptionLocalizedText(languageValueText);
         languageValueText.ForceMeshUpdate();
@@ -389,10 +372,12 @@ public class OptionPanelUI : MonoBehaviour
     private void BindArrowSelectors()
     {
         UnbindArrowSelectors();
-        Transform language = FindChildByName(gameContent != null ? gameContent.transform : transform, "LanguageSelector");
+        Transform gameRoot = gameContent != null ? gameContent.transform : transform;
+        Transform language = FindChildByName(gameRoot, "LanguageContent") ?? FindChildByName(gameRoot, "LanguageSelector");
         if (languagePreviousButton == null) languagePreviousButton = FindTabButton(language, "LeftButton");
         if (languageNextButton == null) languageNextButton = FindTabButton(language, "RightButton");
         if (languageValueText == null) languageValueText = FindSelectorText(language);
+        LocalizedTMPText.ProtectDynamicOwnership(languageValueText);
         if (languagePreviousButton != null) languagePreviousButton.onClick.AddListener(PreviousLanguage);
         if (languageNextButton != null && languageNextButton != languagePreviousButton) languageNextButton.onClick.AddListener(NextLanguage);
         Transform speed = FindChildByName(transform, "BattleSpeedSelector");
