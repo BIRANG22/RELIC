@@ -138,6 +138,107 @@ public sealed class ActiveRelicService
         return availability;
     }
 
+    public ActiveRelicAvailability GetConsumableAvailability(
+        CharacterRuntimeData runtime,
+        string itemId)
+    {
+        ActiveRelicAvailability availability = new()
+        {
+            RelicId = itemId?.Trim() ?? string.Empty,
+            CanUse = false,
+            Message = "Consumable is unavailable.",
+            MaxUses = 1,
+            RemainingUses = 1
+        };
+        if (runtime == null || runtime.IsDead)
+        {
+            availability.Message = "Living actor is required.";
+            return availability;
+        }
+        if (compoundDatabase == null ||
+            !compoundDatabase.TryGet(availability.RelicId, out CompoundData compound) ||
+            compound == null)
+        {
+            availability.Message = "Compound data is missing.";
+            return availability;
+        }
+        availability.RelicData = compound;
+        availability.EffectId = ActiveRelicEffectResolver.ResolveEffectId(compound);
+        availability.TargetMode = ActiveRelicEffectResolver.ResolveTargetMode(availability.EffectId);
+        if (!ActiveRelicEffectResolver.IsActiveRelic(compound) ||
+            availability.TargetMode == ActiveRelicTargetMode.None ||
+            string.IsNullOrWhiteSpace(availability.EffectId))
+        {
+            availability.Message = "Consumable effect is not supported.";
+            return availability;
+        }
+        availability.CanUse = true;
+        availability.Message = string.Empty;
+        return availability;
+    }
+
+    public ActiveRelicUseResult TryUseConsumableImmediate(
+        CharacterRuntimeData runtime,
+        string itemId)
+    {
+        ActiveRelicAvailability availability = GetConsumableAvailability(runtime, itemId);
+        if (!availability.CanUse)
+            return ActiveRelicUseResult.Fail(availability, availability.Message);
+        if (availability.TargetMode != ActiveRelicTargetMode.Self)
+            return ActiveRelicUseResult.Fail(availability, "Consumable requires a target.");
+        if (!TryApplyImmediateSelfEffect(runtime, availability, out string message))
+            return ActiveRelicUseResult.Fail(availability, message);
+        RefreshBattleHud();
+        return ActiveRelicUseResult.Success(availability, false);
+    }
+
+    public ActiveRelicUseResult TryUseConsumableTarget(
+        CharacterRuntimeData runtime,
+        string itemId,
+        int gridIndex,
+        GridManager gridManager,
+        BattleGridEffectController gridEffectController)
+    {
+        ActiveRelicAvailability availability = GetConsumableAvailability(runtime, itemId);
+        if (!availability.CanUse)
+            return ActiveRelicUseResult.Fail(availability, availability.Message);
+        if (!availability.RequiresTarget)
+            return ActiveRelicUseResult.Fail(availability, "Consumable does not require a target.");
+
+        string message;
+        bool succeeded;
+        switch (availability.EffectId)
+        {
+            case ActiveRelicEffectIds.MoveToGrid:
+                succeeded = TryMoveToGrid(runtime, gridIndex, gridManager, gridEffectController, out message);
+                break;
+            case ActiveRelicEffectIds.SwapAlly:
+                succeeded = TrySwapWithAlly(runtime, gridIndex, gridManager, out message);
+                break;
+            case ActiveRelicEffectIds.Fatigue:
+                succeeded = TryApplyTargetOutgoingDamageReduction(availability.RelicData, gridIndex, gridManager, out message);
+                break;
+            case ActiveRelicEffectIds.RemoveGridEffect:
+                succeeded = TryRemoveGridEffect(gridIndex, gridManager, gridEffectController, out message);
+                break;
+            case ActiveRelicEffectIds.SpawnGridEffect:
+            case ActiveRelicEffectIds.SpawnPoisonGridEffect:
+            case ActiveRelicEffectIds.SpawnThornGridEffect:
+            case ActiveRelicEffectIds.SpawnObstacleGridEffect:
+            case ActiveRelicEffectIds.SpawnDummyGridEffect:
+            case ActiveRelicEffectIds.SpawnExplosiveDollGridEffect:
+                succeeded = TrySpawnGridEffect(availability.RelicData, gridIndex, gridManager, gridEffectController, out message);
+                break;
+            default:
+                succeeded = FailUnsupported(out message);
+                break;
+        }
+        if (!succeeded)
+            return ActiveRelicUseResult.Fail(availability, message);
+        RefreshBattleHud();
+        return ActiveRelicUseResult.Success(availability, false);
+    }
+
     public ActiveRelicUseResult TryUseImmediate(CharacterRuntimeData runtime)
     {
         ActiveRelicAvailability availability = GetAvailability(runtime);
@@ -407,7 +508,8 @@ public sealed class ActiveRelicService
                     int maxKarma = ResolveMaxUniqueResource(runtime);
                     int recoverAmount = Mathf.Max(0, GetRelicValue(availability.RelicData, 3));
                     int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, recoverAmount);
-                    int previousResource = Mathf.Max(0, runtime.CurrentResource);
+                    bool isKarma = UniqueResourceRuntimeUtility.IsKarma(runtime);
+                    int previousResource = KarmaFixedPoint.GetDisplayFloor(runtime, isKarma);
 
                     BattleEquipmentEffectService.ApplyUniqueResourceGainSideEffects(
                         runtime,
@@ -415,7 +517,7 @@ public sealed class ActiveRelicService
                         previousResource,
                         maxKarma);
 
-                    runtime.CurrentResource = Mathf.Min(maxKarma, previousResource + finalAmount);
+                    KarmaFixedPoint.AddDisplayUnits(runtime, finalAmount, maxKarma, isKarma);
                     return true;
                 }
 
@@ -557,7 +659,7 @@ public sealed class ActiveRelicService
         if (masterData != null)
             return Mathf.Max(0, masterData.MaxResource);
 
-        return Mathf.Max(0, runtime.CurrentResource);
+        return UniqueResourceRuntimeUtility.GetDisplayCurrent(runtime);
     }
 
     private static int GetRelicValue(RelicData relic, int fallback)

@@ -203,19 +203,18 @@ public static class BattleEquipmentEffectService
 
         int maxResource = masterData != null
             ? Mathf.Max(0, masterData.MaxResource)
-            : Mathf.Max(0, runtime.CurrentResource);
+            : UniqueResourceRuntimeUtility.GetDisplayCurrent(runtime);
         int explorationStartResource = ConsumeExplorationStartUniqueResource(runtime);
         if (explorationStartResource > 0)
         {
-            int previousResource = Mathf.Max(0, runtime.CurrentResource);
+            int previousResource = UniqueResourceRuntimeUtility.GetDisplayCurrent(runtime);
             ApplyUniqueResourceGainSideEffects(
                 runtime, explorationStartResource, previousResource, maxResource);
-            runtime.CurrentResource = Mathf.Clamp(
-                previousResource + explorationStartResource, 0, maxResource);
+            UniqueResourceRuntimeUtility.AddDisplay(runtime, explorationStartResource, maxResource);
         }
 
         int battleStartResource = GetBattleStartUniqueResource(runtime, masterData);
-        runtime.CurrentResource = Mathf.Clamp(Mathf.Max(runtime.CurrentResource, battleStartResource), 0, maxResource);
+        UniqueResourceRuntimeUtility.SetAtLeastDisplay(runtime, battleStartResource, maxResource);
         runtime.CurrentMoveLevel = Mathf.Max(0, GetEffectiveMoveValue(runtime, masterData));
         SyncMoveSkillForMoveValue(runtime);
         runtime.ClearReservedCosts();
@@ -2023,7 +2022,7 @@ public static class BattleEquipmentEffectService
         if (maxResource <= 0)
             return;
 
-        int previousResource = Mathf.Max(0, runtime.CurrentResource);
+        int previousResource = UniqueResourceRuntimeUtility.GetDisplayCurrent(runtime);
         int modifiedAmount = Mathf.Max(0, ModifyUniqueResourceGain(runtime, amount));
 
         ApplyUniqueResourceGainSideEffects(
@@ -2032,12 +2031,9 @@ public static class BattleEquipmentEffectService
             previousResource,
             maxResource);
 
-        runtime.CurrentResource = Mathf.Clamp(
-            previousResource + modifiedAmount,
-            0,
-            maxResource);
+        UniqueResourceRuntimeUtility.AddDisplay(runtime, modifiedAmount, maxResource);
 
-        if (runtime.CurrentResource == previousResource)
+        if (UniqueResourceRuntimeUtility.GetDisplayCurrent(runtime) == previousResource)
             return;
 
         PlayerHUDSlot[] hudSlots = Object.FindObjectsByType<PlayerHUDSlot>(
@@ -2114,7 +2110,7 @@ public static class BattleEquipmentEffectService
         if (threshold <= 0)
             return false;
 
-        if (runtime.CurrentResource < threshold)
+        if (UniqueResourceRuntimeUtility.GetDisplayCurrent(runtime) < threshold)
             return true;
 
         if (entry.EffectId == UniqueResource3TurnStartArmorEffectId)
@@ -3200,7 +3196,7 @@ public static class BattleEquipmentEffectService
             return false;
         }
 
-        return runtime.CurrentResource >= masterData.MaxResource;
+        return UniqueResourceRuntimeUtility.IsAtMax(runtime, masterData.MaxResource);
     }
 
     private static bool IsCharacter(CharacterRuntimeData runtime, string characterId)

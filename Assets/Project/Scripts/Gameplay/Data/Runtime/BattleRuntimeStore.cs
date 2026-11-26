@@ -12,6 +12,7 @@ namespace Relic.Gameplay.Data
         public void Set(BattleRuntimeData data)
         {
             currentRun = data;
+            PartyConsumableRuntime.NormalizeBattle(currentRun);
         }
 
         public BattleRuntimeData Get()
@@ -44,6 +45,7 @@ namespace Relic.Gameplay.Data
             currentRun.LobbyLoadoutSnapshots ??= new List<BattleLobbyLoadoutSnapshotData>();
             currentRun.SelectedErosionDifficultyIds ??= new List<string>();
             CultureTankBattleStartEffectService.Normalize(currentRun);
+            PartyConsumableRuntime.NormalizeBattle(currentRun);
 
             return currentRun;
         }

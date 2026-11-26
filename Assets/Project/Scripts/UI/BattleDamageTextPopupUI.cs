@@ -36,9 +36,9 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [SerializeField, Min(0f)] private float screenEdgePadding = 12f;
 
     [Header("Popup Timing")]
-    [Tooltip("HUD°¡ ¸ÕÀú º¸ÀÎ µÚ ÆË¾÷ÀÌ ½ÃÀÛµÇ±â±îÁöÀÇ Áö¿¬ ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("HUDê°€ ë¨¼ì € ë³´ì¸ ë’¤ íŒì—…ì´ ì‹œì‘ë˜ê¸°ê¹Œì§€ì˜ ì§€ì—° ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float popupStartDelay = 0.12f;
-    [Tooltip("Ä«¸£¸¶/¸¶³ª/Ã¼·Â È¸º¹ ÆË¾÷À» ¼øÂ÷ Ç¥½ÃÇÒ ¶§ ´ÙÀ½ ÆË¾÷ÀÌ ½ÃÀÛµÇ´Â °£°İÀÔ´Ï´Ù.")]
+    [Tooltip("ì¹´ë¥´ë§ˆ/ë§ˆë‚˜/ì²´ë ¥ íšŒë³µ íŒì—…ì„ ìˆœì°¨ í‘œì‹œí•  ë•Œ ë‹¤ìŒ íŒì—…ì´ ì‹œì‘ë˜ëŠ” ê°„ê²©ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float recoveryPopupInterval = 0.3f;
 
     [Header("Popup Movement")]
@@ -58,13 +58,13 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [SerializeField] private float endScale = 0.68f;
 
     [Header("Recovery Icons")]
-    [Tooltip("Ã¼·Â È¸º¹ ¼ıÀÚ ¾Õ¿¡ Ç¥½ÃÇÒ ¾ÆÀÌÄÜÀÔ´Ï´Ù.")]
+    [Tooltip("ì²´ë ¥ íšŒë³µ ìˆ«ì ì•ì— í‘œì‹œí•  ì•„ì´ì½˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Sprite healthRecoveryIcon;
-    [Tooltip("¸¶³ª È¸º¹ ¼ıÀÚ ¾Õ¿¡ Ç¥½ÃÇÒ ¾ÆÀÌÄÜÀÔ´Ï´Ù.")]
+    [Tooltip("ë§ˆë‚˜ íšŒë³µ ìˆ«ì ì•ì— í‘œì‹œí•  ì•„ì´ì½˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Sprite costRecoveryIcon;
-    [Tooltip("Ä«¸£¸¶ È¸º¹ ¼ıÀÚ ¾Õ¿¡ Ç¥½ÃÇÒ ¾ÆÀÌÄÜÀÔ´Ï´Ù.")]
+    [Tooltip("ì¹´ë¥´ë§ˆ íšŒë³µ ìˆ«ì ì•ì— í‘œì‹œí•  ì•„ì´ì½˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Sprite uniqueResourceIcon;
-    [Tooltip("¹æ¾îµµ È¹µæ ¼ıÀÚ ¾Õ¿¡ Ç¥½ÃÇÒ ¾ÆÀÌÄÜÀÔ´Ï´Ù.")]
+    [Tooltip("ë°©ì–´ë„ íšë“ ìˆ«ì ì•ì— í‘œì‹œí•  ì•„ì´ì½˜ì…ë‹ˆë‹¤.")]
     [SerializeField] private Sprite armorGainIcon;
     [SerializeField] private Vector2 recoveryIconSize = new Vector2(52f, 52f);
     [SerializeField] private float recoveryPrefixSpacing = 2f;
@@ -217,7 +217,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.hp", "»ı¸í·Â") + " +" + value, PopupType.HealthRecovery, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.hp", "ìƒëª…ë ¥") + " +" + value, PopupType.HealthRecovery, fontSize);
     }
 
     // Rest room: use the character prefab origin rather than collider/renderer bounds.
@@ -251,7 +251,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         // Do not follow collider bounds while animating; the position is fixed
         // at the character prefab's authored origin plus the configured offset.
         popup.ShowCustomTextPopup(null, Vector2.zero, canvasPosition,
-            GameLocalization.Get("common.hp", "»ı¸í·Â") + " +" + value, PopupType.HealthRecovery, fontSize);
+            GameLocalization.Get("common.hp", "ìƒëª…ë ¥") + " +" + value, PopupType.HealthRecovery, fontSize);
     }
 
     public static void ShowEventHealthLoss(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -264,7 +264,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.hp", "»ı¸í·Â") + " -" + value, PopupType.Damage, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.hp", "ìƒëª…ë ¥") + " -" + value, PopupType.Damage, fontSize);
     }
 
     public static void ShowEventManaRegenGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -277,7 +277,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.recovery", "¸¶³ªÀç»ı·®") + " +" + value, PopupType.CostRecovery, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.recovery", "ë§ˆë‚˜ì¬ìƒëŸ‰") + " +" + value, PopupType.CostRecovery, fontSize);
     }
 
     public static void ShowEventMaxHealthGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -290,15 +290,15 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, GameLocalization.Get("data.effect.e_max_hp.name", "ÃÖ´ë HP") + " +" + value, PopupType.HealthRecovery, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("data.effect.e_max_hp.name", "ìµœëŒ€ HP") + " +" + value, PopupType.HealthRecovery, fontSize);
     }
 
     private static string GetLocalizedMaxManaLabel()
     {
-        string mana = GameLocalization.Get("common.mana", "¸¶³ª");
+        string mana = GameLocalization.Get("common.mana", "ë§ˆë‚˜");
         string localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
         return string.Equals(localeCode, "ko", System.StringComparison.OrdinalIgnoreCase)
-            ? "ÃÖ´ë " + mana : "Max " + mana;
+            ? "ìµœëŒ€ " + mana : "Max " + mana;
     }
 
     public static void ShowEventMaxManaGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -316,9 +316,18 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
     public static void ShowUniqueResource(Transform target, string resourceName, int value)
     {
-        // resourceNameÀº ±âÁ¸ È£ÃâºÎ È£È¯À» À§ÇØ À¯ÁöÇÕ´Ï´Ù.
-        // ÀüÅõ ÆË¾÷¿¡´Â ¸íÄªÀ» ¾²Áö ¾Ê°í ¾ÆÀÌÄÜ + "+¼ıÀÚ"¸¸ Ç¥½ÃÇÕ´Ï´Ù.
+        // resourceNameì€ ê¸°ì¡´ í˜¸ì¶œë¶€ í˜¸í™˜ì„ ìœ„í•´ ìœ ì§€í•©ë‹ˆë‹¤.
+        // ì „íˆ¬ íŒì—…ì—ëŠ” ëª…ì¹­ì„ ì“°ì§€ ì•Šê³  ì•„ì´ì½˜ + "+ìˆ«ì"ë§Œ í‘œì‹œí•©ë‹ˆë‹¤.
         ShowTyped(target, value, PopupType.UniqueResource);
+    }
+
+    public static void ShowUniqueResource(Transform target, string resourceName, float value)
+    {
+        if (target == null || value <= 0f) return;
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null) return;
+        popup.UseBattleCanvas();
+        popup.ShowCustomTextInternal(target, "+" + value.ToString("0.#"), PopupType.UniqueResource, -1f);
     }
 
     private static void ShowTyped(Transform target, int value, PopupType popupType)
@@ -470,8 +479,8 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             RecoveryPopupRequest first = recoveryPopupQueue[0];
             recoveryPopupQueue.RemoveAt(0);
 
-            // ÅÏ Á¾·á ½Ã Ä«¸£¸¶¿Í ¸¶³ª´Â ÀÚ¿ø Á¾·ùº°·Î ¸ğµç Ä³¸¯ÅÍ¿¡°Ô µ¿½Ã¿¡ Ç¥½ÃÇÕ´Ï´Ù.
-            // Ã¼·Â È¸º¹Àº ±âÁ¸Ã³·³ °³º° ÆË¾÷À¸·Î Ã³¸®ÇÕ´Ï´Ù.
+            // í„´ ì¢…ë£Œ ì‹œ ì¹´ë¥´ë§ˆì™€ ë§ˆë‚˜ëŠ” ìì› ì¢…ë¥˜ë³„ë¡œ ëª¨ë“  ìºë¦­í„°ì—ê²Œ ë™ì‹œì— í‘œì‹œí•©ë‹ˆë‹¤.
+            // ì²´ë ¥ íšŒë³µì€ ê¸°ì¡´ì²˜ëŸ¼ ê°œë³„ íŒì—…ìœ¼ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
             List<RecoveryPopupRequest> batch = new() { first };
             if (first != null &&
                 (first.PopupType == PopupType.UniqueResource || first.PopupType == PopupType.CostRecovery))
@@ -495,7 +504,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             if (popupStartDelay > 0f)
                 yield return new WaitForSecondsRealtime(popupStartDelay);
 
-            // °°Àº ¹èÄ¡ÀÇ ÆË¾÷Àº °°Àº ÇÁ·¹ÀÓ¿¡ »ı¼ºµÇ¾î µ¿½Ã¿¡ µîÀåÇÕ´Ï´Ù.
+            // ê°™ì€ ë°°ì¹˜ì˜ íŒì—…ì€ ê°™ì€ í”„ë ˆì„ì— ìƒì„±ë˜ì–´ ë™ì‹œì— ë“±ì¥í•©ë‹ˆë‹¤.
             for (int i = 0; i < batch.Count; i++)
             {
                 RecoveryPopupRequest request = batch[i];

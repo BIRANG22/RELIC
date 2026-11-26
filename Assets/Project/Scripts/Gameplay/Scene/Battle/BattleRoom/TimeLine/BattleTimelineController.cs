@@ -6043,7 +6043,7 @@ public class BattleTimelineController : MonoBehaviour
 
             if ((hp > 0 && hp >= runtime.CurrentHP) ||
                 cost > runtime.CurrentCost ||
-                resource > runtime.CurrentResource ||
+                resource > SkillCostCalculator.GetCurrentResource(runtime, ReferenceResource.UniqueResource) ||
                 shield > runtime.CurrentShield)
             {
                 return false;

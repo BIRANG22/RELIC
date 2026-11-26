@@ -21,6 +21,8 @@ namespace Relic.Gameplay.Data
         public List<string> SkillInventoryIds = new();
         public List<string> BagItemIds = new();
         public List<string> StoredCompoundIds = new();
+        public string[] EquippedConsumableIds = new string[4];
+        public int ConsumableSchemaVersion;
         public List<string> SelectedErosionDifficultyIds = new();
         public List<LobbyCharacterLoadoutData> CharacterLoadouts = new();
         public List<LobbySkillUpgradeRecordData> CharacterSkillUpgrades = new();

@@ -11,6 +11,6 @@ public class UniqueRecoveryEffect : BattleEffectBase
         CharacterMasterData master = DataManager.Instance?.CharacterDatabase?.Get(target.RuntimeData.CharacterId);
         int max = master != null ? Mathf.Max(0, master.MaxResource) : int.MaxValue;
         int value = BattleEffectUtility.GetRepeatedValue(context);
-        target.RuntimeData.CurrentResource = Mathf.Min(max, target.RuntimeData.CurrentResource + value);
+        UniqueResourceRuntimeUtility.AddDisplay(target.RuntimeData, value, max);
     }
 }

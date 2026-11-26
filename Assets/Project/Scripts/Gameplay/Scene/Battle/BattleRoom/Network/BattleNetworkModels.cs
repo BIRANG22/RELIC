@@ -15,7 +15,8 @@ public enum BattleNetworkCommandType
     UnequipSkill = 9,
     MovePlayerCommand = 10,
     UndoPlayerReservation = 11,
-    RedoPlayerReservation = 12
+    RedoPlayerReservation = 12,
+    UseConsumable = 13
 }
 
 public enum BattleNetworkRejectReason

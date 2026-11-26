@@ -6,6 +6,7 @@ public sealed class SkillExecutionResult
 {
     public string CasterCharacterId;
     public string SkillId;
+    public bool WasValidExecution;
     public int AttemptedHitCount { get; private set; }
     public int SuccessfulHitCount { get; private set; }
     public int DistinctHitTargetCount => distinctHitTargetIds.Count;

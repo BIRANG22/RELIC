@@ -181,6 +181,20 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         return true;
     }
 
+    public static bool TryHandleConsumableUse(UseConsumableCommand command, out bool accepted)
+    {
+        accepted = false;
+        if (Instance == null || !Instance.IsNetworkBattleActive || command == null)
+            return false;
+
+#if STEAMWORKS_NET
+        accepted = Instance.RequestConsumableUse(command);
+        return true;
+#else
+        return false;
+#endif
+    }
+
     public static bool TryHandleTimelineSlotClicked(
         BattleTimelineController controller,
         int slotIndex)
@@ -438,6 +452,23 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         command.characterId = characterId ?? string.Empty;
         command.slotIndex = equippedSkillIndex;
         return SendOrApplyCommand(command, false);
+#else
+        return false;
+#endif
+    }
+
+    private bool RequestConsumableUse(UseConsumableCommand request)
+    {
+#if STEAMWORKS_NET
+        if (request == null || !CanLocalPlayerControlCharacter(request.ActorCharacterId))
+            return false;
+
+        BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.UseConsumable);
+        command.slotIndex = request.SlotIndex;
+        command.characterId = request.ActorCharacterId ?? string.Empty;
+        command.itemId = request.ItemId ?? string.Empty;
+        command.selectedGridIndex = request.TargetGridIndex;
+        return SendOrApplyCommand(command, true);
 #else
         return false;
 #endif
@@ -824,6 +855,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             BattleNetworkCommandType.UnequipRelic => ApplyHostEquipmentCommand(requester, command),
             BattleNetworkCommandType.EquipSkill => ApplyHostEquipmentCommand(requester, command),
             BattleNetworkCommandType.UnequipSkill => ApplyHostEquipmentCommand(requester, command),
+            BattleNetworkCommandType.UseConsumable => ApplyHostConsumableCommand(requester, command),
             _ => BattleNetworkRejectReason.InvalidCommand
         };
 
@@ -1036,6 +1068,71 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         RefreshRuntimeViews();
         return BattleNetworkRejectReason.None;
+    }
+
+    private BattleNetworkRejectReason ApplyHostConsumableCommand(
+        ulong requester,
+        BattleNetworkCommand command)
+    {
+        if (!SteamLobbySessionState.IsMemberAllowedToControlCharacter(requester, command.characterId))
+            return BattleNetworkRejectReason.NotCharacterOwner;
+        if (turnExecutor == null || !turnExecutor.CanAcceptPlayerInput || DataManager.Instance == null)
+            return BattleNetworkRejectReason.RejectedByService;
+        if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                command.characterId,
+                out CharacterRuntimeData actor) || actor == null)
+            return BattleNetworkRejectReason.InvalidCommand;
+
+        BattleRuntimeData battle = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
+        if (battle == null || DataManager.Instance.CompoundDatabase == null)
+            return BattleNetworkRejectReason.RejectedByService;
+
+        ActiveRelicService effectService = new(DataManager.Instance.CompoundDatabase);
+        ActiveRelicAvailability availability = effectService.GetConsumableAvailability(actor, command.itemId);
+        UseConsumableCommand request = new()
+        {
+            RequestId = command.requestId,
+            ActorCharacterId = command.characterId,
+            SlotIndex = command.slotIndex,
+            ItemId = command.itemId,
+            TargetGridIndex = command.selectedGridIndex
+        };
+
+        UseConsumableResult result = BattleConsumableService.TryUse(
+            battle,
+            request,
+            actor,
+            true,
+            () => ApplyConsumableEffect(effectService, availability, actor, request));
+        if (!result.Succeeded)
+            return BattleNetworkRejectReason.RejectedByService;
+
+        RefreshRuntimeViews();
+        return BattleNetworkRejectReason.None;
+    }
+
+    private static bool ApplyConsumableEffect(
+        ActiveRelicService effectService,
+        ActiveRelicAvailability availability,
+        CharacterRuntimeData actor,
+        UseConsumableCommand command)
+    {
+        if (availability == null || !availability.CanUse)
+            return false;
+        if (!availability.RequiresTarget)
+            return effectService.TryUseConsumableImmediate(actor, command.ItemId).Succeeded;
+        if (command.TargetGridIndex < 0)
+            return false;
+
+        GridManager gridManager = UnityEngine.Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+        BattleGridEffectController gridEffectController =
+            UnityEngine.Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+        return effectService.TryUseConsumableTarget(
+            actor,
+            command.ItemId,
+            command.TargetGridIndex,
+            gridManager,
+            gridEffectController).Succeeded;
     }
 
     private bool ApplyEquipmentCommand(BattleNetworkCommand command)

@@ -9,11 +9,12 @@ namespace Relic.Gameplay.Data
         public int Exp = 0;
         public int TotalExp = 0;
 
-        // µµ°¨¿¡¼­ ÇÑ ¹øÀÌ¶óµµ È¹µæÇÑ ÄÜÅÙÃ÷¸¦ ¿µ±¸ÀûÀ¸·Î ±â¾ïÇÕ´Ï´Ù.
+        // ë„ê°ì—ì„œ í•œ ë²ˆì´ë¼ë„ íšë“í•œ ì½˜í…ì¸ ë¥¼ ì˜êµ¬ì ìœ¼ë¡œ ê¸°ì–µí•©ë‹ˆë‹¤.
         public List<string> DiscoveredSkillIds = new();
         public List<string> DiscoveredRuneIds = new();
         public List<string> DiscoveredRelicIds = new();
         public List<string> DiscoveredCompoundIds = new();
         public List<string> DiscoveredItemIds = new();
+        public List<string> DiscoveredMonsterIds = new();
     }
 }

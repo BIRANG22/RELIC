@@ -42,6 +42,7 @@ public sealed class LobbyBattleRuntimeTransferService
             CultureTankResearchService.CopyPendingBattleStartEffects(lobby);
         battle.SelectedErosionDifficultyIds = CopyIds(lobby.SelectedErosionDifficultyIds);
         battle.ErosionPartyStartEffectsApplied = false;
+        PartyConsumableRuntime.CopyToBattle(lobby, battle);
 
         if (characters != null && lobby.CharacterLoadouts != null)
         {
@@ -80,6 +81,9 @@ public sealed class LobbyBattleRuntimeTransferService
         lobby.OwnedRelicIds.Clear();
         lobby.SkillInventoryIds.Clear();
         lobby.PendingCultureTankBattleStartEffects.Clear();
+        PartyConsumableRuntime.NormalizeLobby(lobby);
+        for (int i = 0; i < PartyConsumableRuntime.SlotCount; i++)
+            lobby.EquippedConsumableIds[i] = null;
         ClearLobbyEquippedRelics(lobby.CharacterLoadouts);
     }
 

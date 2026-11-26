@@ -12,7 +12,7 @@ public static class SkillCostCalculator
         {
             ReferenceResource.HP => caster.CurrentHP,
             ReferenceResource.Cost => caster.CurrentCost,
-            ReferenceResource.UniqueResource => caster.CurrentResource,
+            ReferenceResource.UniqueResource => KarmaFixedPoint.GetDisplayFloor(caster, UniqueResourceRuntimeUtility.IsKarma(caster)),
             ReferenceResource.MovePoint => caster.CurrentCost,
             _ => 0
         };
