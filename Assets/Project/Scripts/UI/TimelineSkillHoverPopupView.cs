@@ -8,11 +8,15 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
     [Header("References")]
     [SerializeField] private Image backgroundImage;
     [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private Image rangeIconImage;
     [SerializeField] private RectTransform popupRect;
 
     [Header("Auto Size")]
     [SerializeField] private bool autoSizeToName = true;
     [SerializeField] private Vector2 textPadding = new Vector2(36f, 16f);
+    [SerializeField, Min(0f)] private float contentSpacing = 8f;
+    [SerializeField, Min(0f)] private float rangeIconWidth = 40f;
     [SerializeField] private float minWidth = 80f;
     [SerializeField] private float minHeight = 40f;
     [SerializeField] private float maxWidth = 0f;
@@ -36,22 +40,17 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
     private void OnValidate()
     {
-        // OnValidate/Awake 단계에서는 RectTransform 크기를 변경하지 않습니다.
-        // 팝업 크기는 실제 스킬 이름이 설정되는 Set()에서만 갱신합니다.
+        // Do not resize RectTransforms during OnValidate or Awake.
+        // Resize only after Set supplies the displayed action content.
         AutoBindReferences();
     }
 
     public void Set(string skillName, string effectDescription)
     {
-        Set(skillName);
+        Set(skillName, effectDescription, null);
     }
 
     public void Set(string skillName, string effectDescription, Sprite rangeIcon)
-    {
-        Set(skillName);
-    }
-
-    public void Set(string skillName)
     {
         if (!gameObject.activeSelf)
             gameObject.SetActive(true);
@@ -61,9 +60,33 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
         ApplyFontAsset();
 
         if (nameText != null)
-            nameText.text = string.IsNullOrWhiteSpace(skillName) ? emptyNameText : skillName;
+        {
+            string displayName = string.IsNullOrWhiteSpace(skillName) ? emptyNameText : skillName;
+            nameText.text = descriptionText == null && !string.IsNullOrWhiteSpace(effectDescription)
+                ? $"{displayName}\n{effectDescription}"
+                : displayName;
+        }
+
+        bool showDescription = !string.IsNullOrWhiteSpace(effectDescription);
+        if (descriptionText != null)
+        {
+            descriptionText.text = showDescription ? effectDescription : string.Empty;
+            descriptionText.gameObject.SetActive(showDescription);
+        }
+
+        bool showRangeIcon = rangeIcon != null;
+        if (rangeIconImage != null)
+        {
+            rangeIconImage.sprite = rangeIcon;
+            rangeIconImage.gameObject.SetActive(showRangeIcon);
+        }
 
         RefreshSize();
+    }
+
+    public void Set(string skillName)
+    {
+        Set(skillName, string.Empty, null);
     }
 
     private void RefreshSize()
@@ -79,12 +102,25 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
         LocaleTMPFontGuard.Prepare(nameText);
         nameText.ForceMeshUpdate();
+        if (descriptionText != null && descriptionText.gameObject.activeSelf)
+        {
+            LocaleTMPFontGuard.Prepare(descriptionText);
+            descriptionText.ForceMeshUpdate();
+        }
 
         string displayText = nameText.text ?? string.Empty;
         Vector2 preferredSize = nameText.GetPreferredValues(displayText);
+        Vector2 descriptionSize = descriptionText != null && descriptionText.gameObject.activeSelf
+            ? descriptionText.GetPreferredValues(descriptionText.text ?? string.Empty)
+            : Vector2.zero;
+        bool hasDescription = descriptionSize.sqrMagnitude > 0f;
+        bool hasRangeIcon = rangeIconImage != null && rangeIconImage.gameObject.activeSelf;
 
-        float targetWidth = Mathf.Max(minWidth, preferredSize.x + Mathf.Max(0f, textPadding.x));
-        float targetHeight = Mathf.Max(minHeight, preferredSize.y + Mathf.Max(0f, textPadding.y));
+        float textWidth = Mathf.Max(preferredSize.x, descriptionSize.x);
+        float iconSpace = hasRangeIcon ? rangeIconWidth + contentSpacing : 0f;
+        float descriptionSpace = hasDescription ? contentSpacing + descriptionSize.y : 0f;
+        float targetWidth = Mathf.Max(minWidth, textWidth + iconSpace + Mathf.Max(0f, textPadding.x));
+        float targetHeight = Mathf.Max(minHeight, preferredSize.y + descriptionSpace + Mathf.Max(0f, textPadding.y));
 
         if (maxWidth > 0f)
             targetWidth = Mathf.Min(targetWidth, maxWidth);
@@ -99,6 +135,12 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
             nameRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, preferredSize.y);
         }
 
+        if (descriptionText != null && descriptionText.gameObject.activeSelf && IsFixedAnchor(descriptionText.rectTransform))
+        {
+            descriptionText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, descriptionSize.x);
+            descriptionText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, descriptionSize.y);
+        }
+
         if (!resizeBackgrounds)
             return;
 
@@ -110,7 +152,7 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
             if (backgroundRect == null)
                 continue;
 
-            // Stretch 앵커는 부모 크기를 자동으로 따라가므로 별도 크기 지정이 필요 없습니다.
+            // Stretch anchors already follow the parent size.
             if (!IsFixedAnchor(backgroundRect))
                 continue;
 
@@ -135,6 +177,9 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
         if (nameText != null)
             nameText.font = textFontAsset;
+
+        if (descriptionText != null)
+            descriptionText.font = textFontAsset;
     }
 
     private void AutoBindReferences()
@@ -159,6 +204,15 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
 
         if (nameText == null)
             nameText = FindText("Name");
+
+        if (descriptionText == null)
+            descriptionText = FindText("DescriptionText");
+
+        if (descriptionText == null)
+            descriptionText = FindText("Description");
+
+        if (rangeIconImage == null)
+            rangeIconImage = FindImage("RangeIcon");
 
         CacheBackgroundRects();
     }
