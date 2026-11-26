@@ -58,6 +58,29 @@ public sealed class PartyConsumableRuntimeTests
     }
 
     [Test]
+    public void MigrateCharacterCompounds_DoesNotDuplicateSameSavedLoadoutItem()
+    {
+        LobbyRuntimeData lobby = new()
+        {
+            CharacterLoadouts = new List<LobbyCharacterLoadoutData>
+            {
+                new()
+                {
+                    CharacterId = "Char_01",
+                    EquippedRelicIds = new[] { "Compound_01" }
+                }
+            }
+        };
+        CharacterRuntimeData character = CharacterWithCompound("Char_01", "Compound_01");
+
+        PartyConsumableRuntime.MigrateCharacterCompounds(lobby, new[] { character });
+
+        Assert.That(lobby.EquippedConsumableIds,
+            Is.EqualTo(new[] { "Compound_01", null, null, null }));
+        Assert.That(character.EquippedRelicIds[0], Is.Null.Or.Empty);
+    }
+
+    [Test]
     public void CopyToBattle_ResetsAllFourUsageFlags()
     {
         LobbyRuntimeData lobby = new()

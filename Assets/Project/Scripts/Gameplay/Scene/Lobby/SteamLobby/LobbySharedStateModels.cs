@@ -7,7 +7,9 @@ public enum LobbySharedStateCommandType
     EquipRelic,
     UnequipRelic,
     EquipSkill,
-    UnequipSkill
+    UnequipSkill,
+    EquipConsumable,
+    UnequipConsumable
 }
 
 public enum LobbySharedStateCommandRejectReason

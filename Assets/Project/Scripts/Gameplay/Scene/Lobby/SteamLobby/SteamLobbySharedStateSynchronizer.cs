@@ -223,6 +223,27 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
             string.Empty);
     }
 
+    public bool RequestEquipConsumable(
+        string characterId,
+        int slotIndex,
+        string itemId)
+    {
+        return RequestEquipmentCommand(
+            LobbySharedStateCommandType.EquipConsumable,
+            characterId,
+            slotIndex,
+            itemId);
+    }
+
+    public bool RequestUnequipConsumable(string characterId, int slotIndex)
+    {
+        return RequestEquipmentCommand(
+            LobbySharedStateCommandType.UnequipConsumable,
+            characterId,
+            slotIndex,
+            string.Empty);
+    }
+
     private void SubscribePartyStateApplied()
     {
         SteamLobbyPartySynchronizer partySynchronizer =
@@ -661,6 +682,12 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
                 ResolveSkill).UnequipSkillFromSlot(
                     command.CharacterId,
                     command.SlotIndex),
+
+            LobbySharedStateCommandType.EquipConsumable =>
+                PartyConsumableRuntime.TryEquip(lobby, command.SlotIndex, command.ItemId),
+
+            LobbySharedStateCommandType.UnequipConsumable =>
+                PartyConsumableRuntime.TryUnequip(lobby, command.SlotIndex),
 
             _ => false
         };

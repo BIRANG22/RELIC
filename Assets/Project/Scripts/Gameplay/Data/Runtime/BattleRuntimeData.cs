@@ -179,6 +179,8 @@ namespace Relic.Gameplay.Data
             global::SaveSystem.Instance?.ClearBattleRoomResumeState();
 
             BattleRuntimeData currentBattleRuntime = dataManager.BattleRuntimeStore?.Get();
+            LobbyRuntimeData lobbyRuntime = dataManager.LobbyRuntimeStore?.GetOrCreate();
+            PartyConsumableRuntime.ReturnUnusedToLobby(currentBattleRuntime, lobbyRuntime);
 
             Dictionary<string, BattleLobbyLoadoutSnapshotData> snapshots =
                 BuildSnapshotMap(currentBattleRuntime);
@@ -191,7 +193,6 @@ namespace Relic.Gameplay.Data
 
             // 전투 포기 후에는 로비에 남아 있는 전투용 장비 정보도 반드시 비웁니다.
             // 캐릭터 런타임만 비우면 로비 재진입 시 CharacterLoadouts가 장비를 다시 복원할 수 있습니다.
-            LobbyRuntimeData lobbyRuntime = dataManager.LobbyRuntimeStore?.GetOrCreate();
             if (lobbyRuntime != null)
             {
                 ClearLobbyEquippedRelics(lobbyRuntime.CharacterLoadouts);

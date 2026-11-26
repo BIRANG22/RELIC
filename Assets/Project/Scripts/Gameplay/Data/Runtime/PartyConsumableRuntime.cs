@@ -72,6 +72,7 @@ namespace Relic.Gameplay.Data
 
         public static void MigrateCharacterCompounds(LobbyRuntimeData lobby, IEnumerable<CharacterRuntimeData> characters)
         {
+            HashSet<string> migratedLoadoutCharacterIds = CaptureLegacyLoadoutCharacterIds(lobby);
             NormalizeLobby(lobby);
             if (lobby == null || characters == null) return;
             foreach (CharacterRuntimeData character in characters)
@@ -79,9 +80,28 @@ namespace Relic.Gameplay.Data
                 if (character?.EquippedRelicIds == null || character.EquippedRelicIds.Length <= 0) continue;
                 string itemId = NormalizeId(character.EquippedRelicIds[0]);
                 character.EquippedRelicIds[0] = null;
-                AddMigratedItem(lobby, itemId);
+                if (!migratedLoadoutCharacterIds.Contains(NormalizeId(character.CharacterId)))
+                    AddMigratedItem(lobby, itemId);
             }
             lobby.ConsumableSchemaVersion = CurrentSchemaVersion;
+        }
+
+        private static HashSet<string> CaptureLegacyLoadoutCharacterIds(LobbyRuntimeData lobby)
+        {
+            HashSet<string> result = new(StringComparer.Ordinal);
+            if (lobby == null || lobby.ConsumableSchemaVersion >= CurrentSchemaVersion ||
+                lobby.CharacterLoadouts == null)
+                return result;
+            for (int i = 0; i < lobby.CharacterLoadouts.Count; i++)
+            {
+                LobbyCharacterLoadoutData loadout = lobby.CharacterLoadouts[i];
+                if (loadout?.EquippedRelicIds == null || loadout.EquippedRelicIds.Length == 0 ||
+                    string.IsNullOrWhiteSpace(loadout.EquippedRelicIds[0]))
+                    continue;
+                string characterId = NormalizeId(loadout.CharacterId);
+                if (!string.IsNullOrEmpty(characterId)) result.Add(characterId);
+            }
+            return result;
         }
 
         public static void CopyToBattle(LobbyRuntimeData lobby, BattleRuntimeData battle)

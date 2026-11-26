@@ -14,6 +14,7 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
     }
 
     [SerializeField] private SlotView[] slots = new SlotView[PartyConsumableRuntime.SlotCount];
+    [SerializeField] private Transform slotRoot;
     [SerializeField] private ActiveRelicTargetingController targetingController;
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
@@ -28,6 +29,9 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
 
     private void Awake()
     {
+        targetingController ??= FindFirstObjectByType<ActiveRelicTargetingController>(FindObjectsInactive.Include);
+        turnExecutor ??= FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        AutoBindSlots();
         BindButtons();
         Refresh();
     }
@@ -41,6 +45,7 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
 
     public void Refresh()
     {
+        AutoBindSlots();
         BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
         if (battle != null) PartyConsumableRuntime.NormalizeBattle(battle);
         bool reservationPhase = turnExecutor == null || turnExecutor.CanAcceptPlayerInput;
@@ -66,6 +71,29 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
             if (view.Button != null)
                 view.Button.interactable = reservationPhase && actor != null && !actor.IsDead &&
                                            !used && !string.IsNullOrWhiteSpace(itemId);
+        }
+    }
+
+    private void AutoBindSlots()
+    {
+        slotRoot ??= transform;
+        if (slots == null || slots.Length != PartyConsumableRuntime.SlotCount)
+            slots = new SlotView[PartyConsumableRuntime.SlotCount];
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            slots[i] ??= new SlotView();
+            Transform root = slotRoot.Find($"ConsumableSlot{i + 1:00}");
+            if (root == null) continue;
+            Transform legacyLabel = root.Find("Compound");
+            if (legacyLabel != null) legacyLabel.gameObject.SetActive(false);
+            Transform legacyKey = root.Find("Key");
+            if (legacyKey != null) legacyKey.gameObject.SetActive(false);
+            slots[i].Button ??= root.GetComponent<Button>();
+            Transform icon = root.Find("Icon");
+            slots[i].Icon ??= icon != null ? icon.GetComponent<Image>() : null;
+            Transform used = root.Find("UsedOverlay");
+            slots[i].UsedOverlay ??= used != null ? used.gameObject : null;
         }
     }
 

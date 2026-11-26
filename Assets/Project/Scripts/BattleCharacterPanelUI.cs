@@ -281,6 +281,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Tooltip("액티브 유물의 대상 선택을 처리하는 컨트롤러입니다.")]
     [SerializeField] private ActiveRelicTargetingController activeRelicTargetingController;
+    [SerializeField] private BattleConsumablePanelUI consumablePanel;
 
     [Tooltip("플레이어 입력 가능 여부를 확인하는 전투 실행 컨트롤러입니다.")]
     [SerializeField] private BattleTurnExecutor turnExecutor;
@@ -3159,6 +3160,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         StopNumberChangeCoroutine();
         hasDisplayedStats = false;
         boundRuntime = runtimeData;
+        consumablePanel ??= GetComponentInChildren<BattleConsumablePanelUI>(true);
+        consumablePanel?.BindActor(runtimeData);
         boundMaster = null;
         displayedSkillInfoData = null;
         lastPreviewTimelineSlotIndex = battleTimelineController != null
@@ -3205,7 +3208,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             RefreshPartySlot(i);
         RefreshSkillList();
         RefreshMoveButton();
-        RefreshItemButton();
+        consumablePanel?.BindActor(boundRuntime);
         CaptureRuntimeDisplayState();
         RefreshHoveredSkillTooltip();
     }

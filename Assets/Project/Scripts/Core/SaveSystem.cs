@@ -1143,6 +1143,10 @@ public class SaveSystem : Singleton<SaveSystem>
 
         for (int i = 0; i < saveData.Characters.Count; i++)
             NormalizeCharacter(saveData.Characters[i]);
+
+        PartyConsumableRuntime.MigrateCharacterCompounds(
+            saveData.Lobby,
+            saveData.Characters);
     }
 
     private static void NormalizeMap(MapRuntimeData map, string activeSceneName)
@@ -1176,6 +1180,7 @@ public class SaveSystem : Singleton<SaveSystem>
         battle.AcquiredSkillIds ??= new List<string>();
         battle.CharacterStatistics ??= new List<BattleRunCharacterStatisticsData>();
         battle.LobbyLoadoutSnapshots ??= new List<BattleLobbyLoadoutSnapshotData>();
+        PartyConsumableRuntime.NormalizeBattle(battle);
         CultureTankBattleStartEffectService.Normalize(battle);
 
         for (int i = 0; i < battle.LobbyLoadoutSnapshots.Count; i++)
