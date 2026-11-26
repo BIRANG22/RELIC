@@ -2018,6 +2018,11 @@ public class BattleActionRunner
                 yield break;
             }
 
+            // A memory is valid once its living caster actually reaches execution.
+            // Target interaction is an outcome (miss/empty range/zero impact), not a
+            // cancellation. Commands skipped before this point remain invalid.
+            command.MarkValidExecution();
+
             // Consume once after the attack action, including misses and zero damage.
             // Keep the status through the action so all hits use the same lifesteal effect.
             attackActionStarted = command.SkillData != null &&

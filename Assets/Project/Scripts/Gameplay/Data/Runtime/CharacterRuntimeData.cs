@@ -28,6 +28,7 @@ namespace Relic.Gameplay.Data
         [FormerlySerializedAs("CurrentStamina")]
         public int CurrentCost;
         public int CurrentResource;
+        public int UniqueResourceUnitVersion;
         public int CurrentMoveLevel;
         public int CurrentShield;
 
@@ -77,7 +78,7 @@ namespace Relic.Gameplay.Data
         public bool IsDead => CurrentHP <= 0;
         public int PreviewHP => Mathf.Max(0, CurrentHP - ReservedHPCost);
         public int PreviewCost => Mathf.Max(0, CurrentCost - ReservedCost);
-        public int PreviewResource => Mathf.Max(0, CurrentResource - ReservedResourceCost);
+        public int PreviewResource => KarmaFixedPoint.GetPreviewDisplayFloor(this, UniqueResourceRuntimeUtility.IsKarma(this));
         public int PreviewShield => Mathf.Max(0, CurrentShield - ReservedShieldCost);
 
         public void SetLastMoveOffset(Vector2Int offset)
@@ -126,7 +127,7 @@ namespace Relic.Gameplay.Data
             if (IsDead)
                 return false;
 
-            return cost <= 0 || CurrentResource - ReservedResourceCost >= cost;
+            return cost <= 0 || KarmaFixedPoint.CanPayDisplayUnits(this, cost, UniqueResourceRuntimeUtility.IsKarma(this));
         }
 
         public bool CanReserveShield(int cost)
@@ -149,7 +150,8 @@ namespace Relic.Gameplay.Data
 
         public void AddReservedResource(int cost)
         {
-            ReservedResourceCost = Mathf.Clamp(ReservedResourceCost + Mathf.Max(0, cost), 0, CurrentResource);
+            int available = KarmaFixedPoint.GetDisplayFloor(this, UniqueResourceRuntimeUtility.IsKarma(this));
+            ReservedResourceCost = Mathf.Clamp(ReservedResourceCost + Mathf.Max(0, cost), 0, available);
         }
 
         public void AddReservedShield(int cost)
@@ -207,7 +209,8 @@ namespace Relic.Gameplay.Data
         {
             CurrentHP = PreviewHP;
             CurrentCost = PreviewCost;
-            CurrentResource = PreviewResource;
+            KarmaFixedPoint.SpendDisplayUnits(this, ReservedResourceCost, UniqueResourceRuntimeUtility.IsKarma(this));
+            ReservedResourceCost = 0;
             CurrentShield = PreviewShield;
 
             ClearReservedCosts();

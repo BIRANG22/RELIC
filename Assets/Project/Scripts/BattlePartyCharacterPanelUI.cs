@@ -308,11 +308,14 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
         if (slot.CostFill != null)
             slot.CostFill.fillAmount = maxCost > 0 ? Mathf.Clamp01((float)runtime.PreviewCost / maxCost) : 0f;
 
+        bool isKarma = UniqueResourceRuntimeUtility.IsKarma(runtime);
         int karma = Mathf.Clamp(runtime.PreviewResource, 0, 5);
+        bool hasHalf = KarmaFixedPoint.PreviewHasHalf(runtime, isKarma);
         for (int i = 0; i < slot.Karma.Length; i++)
         {
             if (slot.Karma[i] != null)
-                slot.Karma[i].color = i < karma ? KarmaOnColor : KarmaOffColor;
+                slot.Karma[i].color = i < karma ? KarmaOnColor :
+                    i == karma && hasHalf ? Color.Lerp(KarmaOffColor, KarmaOnColor, 0.5f) : KarmaOffColor;
         }
 
         for (int i = 0; i < slot.Runes.Length; i++)
@@ -401,6 +404,7 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
             hash = hash * 31 + runtime.PreviewHP;
             hash = hash * 31 + runtime.PreviewCost;
             hash = hash * 31 + runtime.PreviewResource;
+            hash = hash * 31 + runtime.CurrentResource;
             hash = hash * 31 + BattleCharacterPanelUI.ResolvePartyMaxHP(runtime);
             hash = hash * 31 + BattleCharacterPanelUI.ResolvePartyMaxCost(runtime);
             hash = hash * 31 + (runtime.PassiveSkillId ?? string.Empty).GetHashCode();

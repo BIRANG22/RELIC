@@ -105,7 +105,7 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
             return;
         }
 
-        Show(entry.SkillName, entry.SkillEffectDescription, entry.SkillRangeIcon, hoveredIconRect, owner);
+        Show(entry.SkillName, entry.SkillTooltipDescription, entry.SkillRangeIcon, hoveredIconRect, owner);
     }
 
     public void Show(string skillName, string effectDescription, RectTransform hoveredIconRect)
@@ -140,7 +140,7 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
         TimelineSkillHoverPopupView item = GetOrCreateItem();
         if (item == null)
         {
-            Debug.LogWarning("[TimelineSkillHoverPopupUI] Item Prefab이 연결되지 않았고, 사용할 팝업 View도 찾지 못했습니다.");
+            Debug.LogWarning("[TimelineSkillHoverPopupUI] No item prefab or existing popup view was found.");
             return;
         }
 
@@ -152,7 +152,7 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
         currentOwner = owner;
         currentHoveredIconRect = hoveredIconRect;
 
-        item.Set(skillName);
+        item.Set(skillName, effectDescription, rangeIcon);
         SetVisible(true);
 
         if (moveToHoveredIcon)

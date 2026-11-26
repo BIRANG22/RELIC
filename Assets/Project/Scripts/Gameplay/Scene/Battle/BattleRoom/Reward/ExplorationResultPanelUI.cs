@@ -1723,6 +1723,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         }
 
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        PartyConsumableRuntime.ReturnUnusedToLobby(
+            DataManager.Instance.BattleRuntimeStore?.Get(),
+            lobby);
         // Tutorial rewards are real exploration rewards: preserve collected
         // materials and red Dustium for the standard lobby settlement/conversion.
         // This also prevents the tutorial from silently discarding acquired loot.

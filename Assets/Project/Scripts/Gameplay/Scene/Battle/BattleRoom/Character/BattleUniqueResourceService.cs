@@ -3,68 +3,56 @@ using UnityEngine;
 
 public class BattleUniqueResourceService
 {
-    private const int TurnEndResourceGainAmount = 1;
-
-    public void RecoverAllAlivePlayersAtTurnEnd()
+    public void RecoverAllAlivePlayersAtTurnEnd(TurnEndKarmaPolicy policy)
     {
-        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
-            FindObjectsInactive.Exclude,
-            FindObjectsSortMode.None
-        );
+        if (policy == null)
+            return;
 
-        for (int i = 0; i < characters.Length; i++)
+        CharacterRuntimeStore runtimeStore = DataManager.Instance?.CharacterRuntimeStore;
+        if (runtimeStore == null)
         {
-            BattleCharacter character = characters[i];
-
-            if (character == null ||
-                character.RuntimeData == null ||
-                character.RuntimeData.IsDead)
-            {
-                continue;
-            }
-
-            ApplyUniqueResourceGainNow(character.RuntimeData, TurnEndResourceGainAmount);
+            policy.Clear();
+            return;
         }
-        BattleEffectInfoFeed.ShowPartyKarmaRecovery(TurnEndResourceGainAmount);
+
+        foreach (System.Collections.Generic.KeyValuePair<string, int> gain in policy.GetRecordedGains())
+        {
+            if (!runtimeStore.TryGet(gain.Key, out CharacterRuntimeData runtime) ||
+                runtime == null)
+                continue;
+            if (runtime.IsDead)
+                continue;
+
+            ApplyKarmaGainNow(runtime, gain.Value);
+        }
+        policy.Clear();
     }
 
-    private int ApplyUniqueResourceGainNow(CharacterRuntimeData runtime, int amount)
+    private int ApplyKarmaGainNow(CharacterRuntimeData runtime, int halfUnits)
     {
-        if (runtime == null || amount <= 0)
-            return 0;
-
-        CharacterMasterData masterData = GetMasterData(runtime.CharacterId);
-
-        int maxResource = masterData != null
-            ? Mathf.Max(0, masterData.MaxResource)
-            : 999;
-
-        int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, amount);
-        int previousResource = runtime.CurrentResource;
-
+        if (runtime == null || halfUnits <= 0) return 0;
+        CharacterMasterData master = GetMasterData(runtime.CharacterId);
+        if (master == null || master.ResourceType != ResourceType.None) return 0;
+        KarmaFixedPoint.EnsureMigrated(runtime, true);
+        int previousInternal = runtime.CurrentResource;
+        int equipmentDelta = BattleEquipmentEffectService.ModifyUniqueResourceGain(runtime, 1) - 1;
+        int requestedInternal = halfUnits + KarmaFixedPoint.ToInternal(equipmentDelta, true);
+        int gainedInternal = KarmaFixedPoint.AddHalfUnits(runtime, requestedInternal, master.MaxResource, true);
         BattleEquipmentEffectService.ApplyUniqueResourceGainSideEffects(
-            runtime,
-            finalAmount,
-            previousResource,
-            maxResource);
-
-        runtime.CurrentResource = Mathf.Min(maxResource, runtime.CurrentResource + finalAmount);
-
-        int gainedAmount = Mathf.Max(0, runtime.CurrentResource - previousResource);
-        if (gainedAmount <= 0)
-            return 0;
-
+            runtime, Mathf.CeilToInt(requestedInternal / 2f), previousInternal / 2, master.MaxResource);
+        if (gainedInternal <= 0) return 0;
         RefreshPlayerHUDs();
-        ShowUniqueResourcePopup(runtime, masterData, gainedAmount);
-
-        Debug.Log($"[UniqueResource] TurnEnd / {runtime.CharacterId} +{gainedAmount} / {runtime.CurrentResource}/{maxResource}");
-        return gainedAmount;
+        ShowUniqueResourcePopup(runtime, master, gainedInternal / 2f);
+        Debug.Log(
+            $"[Karma] TurnEnd / {runtime.CharacterId} +{gainedInternal / 2f:0.#} / " +
+            $"{KarmaFixedPoint.GetDisplayValue(runtime, true):0.#}/{master.MaxResource}");
+        return gainedInternal;
     }
 
     private void ShowUniqueResourcePopup(
         CharacterRuntimeData runtime,
         CharacterMasterData masterData,
-        int gainedAmount)
+        float gainedAmount)
     {
         if (runtime == null || masterData == null || gainedAmount <= 0)
             return;
@@ -78,7 +66,8 @@ public class BattleUniqueResourceService
         {
             BattleCharacter character = characters[i];
 
-            if (character == null || character.RuntimeData != runtime)
+            if (character == null || character.RuntimeData == null ||
+                character.RuntimeData.CharacterId != runtime.CharacterId)
                 continue;
 
             BattleDamageTextPopupUI.ShowUniqueResource(

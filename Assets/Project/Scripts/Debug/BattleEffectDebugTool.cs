@@ -298,7 +298,9 @@ public static class BattleEffectDebugTool
         if (runtime == null)
             return;
 
-        runtime.CurrentResource = Mathf.Clamp(resource, 0, Mathf.Max(0, maxResource));
+        bool isKarma = UniqueResourceRuntimeUtility.IsKarma(runtime);
+        runtime.CurrentResource = KarmaFixedPoint.ToInternal(Mathf.Clamp(resource, 0, Mathf.Max(0, maxResource)), isKarma);
+        runtime.UniqueResourceUnitVersion = isKarma ? KarmaFixedPoint.CurrentVersion : runtime.UniqueResourceUnitVersion;
     }
 
     public static void SetFullResources(CharacterRuntimeData runtime)
@@ -321,7 +323,7 @@ public static class BattleEffectDebugTool
                 out CharacterMasterData masterData) ||
             masterData == null)
         {
-            return Mathf.Max(0, runtime != null ? runtime.CurrentResource : 0);
+            return runtime != null ? UniqueResourceRuntimeUtility.GetDisplayCurrent(runtime) : 0;
         }
 
         return Mathf.Max(0, masterData.MaxResource);

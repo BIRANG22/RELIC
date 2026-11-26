@@ -97,6 +97,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
     private readonly List<OwnerIconQueueItem> ownerIconEntries = new();
     private readonly HashSet<int> consumedOwnerIconOrderIndices = new();
+    private string hoveredOwnerIconKey = string.Empty;
+    private int hoveredOwnerIconOrderIndex = -1;
     private Material[] ownerIconRootMaterials;
     private Material[] ownerIconContentMaterials;
 
@@ -2271,6 +2273,89 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         return queueIndex <= 0 ? 1f : Mathf.Clamp01(queuedAlpha);
     }
 
+    public static float ResolveOwnerIconAlpha(int queueIndex, int hoveredIndex, float queuedAlpha)
+    {
+        return hoveredIndex >= 0
+            ? (queueIndex == hoveredIndex ? 1f : Mathf.Clamp01(queuedAlpha))
+            : ResolveOwnerIconAlpha(queueIndex, queuedAlpha);
+    }
+
+    public static int[] ResolveOwnerIconDrawOrder(int queueCount, int hoveredIndex)
+    {
+        if (queueCount <= 0)
+            return System.Array.Empty<int>();
+
+        int clampedHoveredIndex = hoveredIndex >= 0 && hoveredIndex < queueCount
+            ? hoveredIndex
+            : -1;
+        List<int> order = new(queueCount);
+        for (int i = queueCount - 1; i >= 0; i--)
+        {
+            if (i != clampedHoveredIndex)
+                order.Add(i);
+        }
+        if (clampedHoveredIndex >= 0)
+            order.Add(clampedHoveredIndex);
+        return order.ToArray();
+    }
+
+    public static int ResolveHoveredOwnerIconIndex(
+        IReadOnlyList<string> ownerKeys,
+        IReadOnlyList<IReadOnlyList<int>> orderIndexGroups,
+        string hoveredOwnerKey,
+        int hoveredOrderIndex)
+    {
+        if (ownerKeys == null || string.IsNullOrEmpty(hoveredOwnerKey))
+            return -1;
+
+        int fallback = -1;
+        for (int i = 0; i < ownerKeys.Count; i++)
+        {
+            if (ownerKeys[i] != hoveredOwnerKey)
+                continue;
+
+            if (fallback < 0)
+                fallback = i;
+
+            if (orderIndexGroups != null && i < orderIndexGroups.Count && orderIndexGroups[i] != null)
+            {
+                IReadOnlyList<int> group = orderIndexGroups[i];
+                for (int orderIndex = 0; orderIndex < group.Count; orderIndex++)
+                {
+                    if (group[orderIndex] == hoveredOrderIndex)
+                        return i;
+                }
+            }
+        }
+
+        return fallback;
+    }
+
+    public void SetHoveredOwner(BattleTimelinePreviewEntry entry)
+    {
+        string ownerKey = ResolveOwnerIconKey(entry);
+        if (string.IsNullOrEmpty(ownerKey))
+            return;
+
+        hoveredOwnerIconKey = ownerKey;
+        hoveredOwnerIconOrderIndex = entry.OrderIndex;
+        ApplyOwnerIconHoverPresentation();
+    }
+
+    public void ClearHoveredOwner(BattleTimelinePreviewEntry entry)
+    {
+        if (string.IsNullOrEmpty(hoveredOwnerIconKey))
+            return;
+
+        string ownerKey = ResolveOwnerIconKey(entry);
+        if (!string.IsNullOrEmpty(ownerKey) && ownerKey != hoveredOwnerIconKey)
+            return;
+
+        hoveredOwnerIconKey = string.Empty;
+        hoveredOwnerIconOrderIndex = -1;
+        ApplyOwnerIconHoverPresentation();
+    }
+
     public static bool ShouldHideOwnerIconsWhenTurnMarkPasses(bool isEmptySlot)
     {
         return isEmptySlot;
@@ -2337,6 +2422,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
 
     public IEnumerator PlayOwnerIconsAfterActionRoutine(IReadOnlyList<int> orderIndices)
     {
+        DisableExecutedOrderHoverTargets(orderIndices);
         EnsureOwnerIconQueue();
         if (orderIndices == null || ownerIconEntries.Count == 0)
             yield break;
@@ -2375,6 +2461,36 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
                 consumedOwnerIconOrderIndices.Add(item.OrderIndices[orderIndex]);
         }
         RefreshOwnerIconQueue();
+    }
+
+    private void DisableExecutedOrderHoverTargets(IReadOnlyList<int> orderIndices)
+    {
+        if (orderIndices == null)
+            return;
+
+        for (int i = 0; i < orderIndices.Count; i++)
+        {
+            int orderIndex = orderIndices[i];
+            if (orderIndex < 0 || orderIndex >= currentEntries.Count)
+                continue;
+
+            BattleTimelinePreviewEntry entry = currentEntries[orderIndex];
+            if (entry == null)
+                continue;
+
+            Transform sizeRoot = FindSizeRoot(orderIndex, Mathf.Clamp(entry.OccupiedOrders, 1, 3));
+            Image skillImage = sizeRoot != null ? FindUseSkillImage(sizeRoot) : null;
+            if (skillImage == null && useSkillIconImages != null && orderIndex < useSkillIconImages.Length)
+                skillImage = useSkillIconImages[orderIndex];
+
+            ClearSkillHoverTarget(skillImage);
+            GameObject hoverObject = GetSkillHoverObject(skillImage);
+            Image hoverImage = hoverObject != null ? hoverObject.GetComponent<Image>() : null;
+            if (hoverImage != null)
+                hoverImage.raycastTarget = false;
+            if (skillImage != null)
+                skillImage.raycastTarget = false;
+        }
     }
 
     private void EnsureOwnerIconQueue()
@@ -2509,7 +2625,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
                 : null;
             ApplyOwnerOrderIcon(ownerIconRootImages[i], ownerIconImages[i], entry);
             SetOwnerIconFadeProgress(i, -ownerIconFadeSoftness);
-            SetOwnerIconQueueAlpha(i, ResolveOwnerIconAlpha(i, queuedOwnerIconAlpha));
         }
 
         firstOwnerEntry = ownerIconEntries.Count > 0 ? ownerIconEntries[0].Entry : null;
@@ -2517,6 +2632,48 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
         firstOwnerDeadState = IsEntryOwnerDead(firstOwnerEntry);
         laterOwnerDeadState = IsEntryOwnerDead(laterOwnerEntry);
         SetupOwnerIconInteractionTarget(ownerIconImages.Length > 0 ? ownerIconImages[0] : null, firstOwnerEntry);
+        ApplyOwnerIconHoverPresentation();
+    }
+
+    private void ApplyOwnerIconHoverPresentation()
+    {
+        EnsureOwnerIconQueue();
+
+        int hoveredIndex = -1;
+        if (!string.IsNullOrEmpty(hoveredOwnerIconKey))
+        {
+            List<string> ownerKeys = new(ownerIconEntries.Count);
+            List<IReadOnlyList<int>> orderIndexGroups = new(ownerIconEntries.Count);
+            for (int i = 0; i < ownerIconEntries.Count; i++)
+            {
+                OwnerIconQueueItem item = ownerIconEntries[i];
+                ownerKeys.Add(item != null ? item.OwnerKey : string.Empty);
+                orderIndexGroups.Add(item != null ? item.OrderIndices : null);
+            }
+            hoveredIndex = ResolveHoveredOwnerIconIndex(
+                ownerKeys,
+                orderIndexGroups,
+                hoveredOwnerIconKey,
+                hoveredOwnerIconOrderIndex);
+        }
+
+        if (hoveredIndex < 0)
+        {
+            hoveredOwnerIconKey = string.Empty;
+            hoveredOwnerIconOrderIndex = -1;
+        }
+
+        int count = ownerIconRootImages != null ? ownerIconRootImages.Length : 0;
+        int[] drawOrder = ResolveOwnerIconDrawOrder(count, hoveredIndex);
+        for (int i = 0; i < drawOrder.Length; i++)
+        {
+            int index = drawOrder[i];
+            if (ownerIconRootImages[index] != null)
+                ownerIconRootImages[index].transform.SetAsLastSibling();
+        }
+
+        for (int i = 0; i < count; i++)
+            SetOwnerIconQueueAlpha(i, ResolveOwnerIconAlpha(i, hoveredIndex, queuedOwnerIconAlpha));
     }
 
     private static string ResolveOwnerIconKey(BattleTimelinePreviewEntry entry)
@@ -2531,6 +2688,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler, IDropH
     private void HideOwnerIconQueue()
     {
         EnsureOwnerIconQueue();
+        hoveredOwnerIconKey = string.Empty;
+        hoveredOwnerIconOrderIndex = -1;
         ownerIconEntries.Clear();
         for (int i = 0; i < ownerIconRootImages.Length; i++)
             SetOwnerIconImage(ownerIconRootImages[i], ownerIconImages[i], null, false, Color.white);

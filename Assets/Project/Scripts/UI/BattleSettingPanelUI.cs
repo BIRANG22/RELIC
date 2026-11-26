@@ -81,6 +81,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
         public int MaxCost;
         public int CostRecovery;
         public int CurrentResource;
+        public bool HasHalfResource;
         public string PassiveSkillId;
         public string UniqueSkillId;
         public readonly string[] MemorySkillIds = new string[3];
@@ -428,7 +429,8 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             CurrentCost = Mathf.Max(0, runtime.CurrentCost),
             MaxCost = BattleCharacterPanelUI.ResolvePartyMaxCost(runtime),
             CostRecovery = runtime.TotalCostRecovery,
-            CurrentResource = Mathf.Clamp(runtime.CurrentResource, 0, 5),
+            CurrentResource = Mathf.Clamp(KarmaFixedPoint.GetDisplayFloor(runtime, UniqueResourceRuntimeUtility.IsKarma(runtime)), 0, 5),
+            HasHalfResource = KarmaFixedPoint.HasHalf(runtime, UniqueResourceRuntimeUtility.IsKarma(runtime)),
             PassiveSkillId = runtime.PassiveSkillId,
             UniqueSkillId = runtime.UniqueSkillId,
             ActiveRelicId = GetAt(runtime.EquippedRelicIds, 0)
@@ -1275,7 +1277,8 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             view.RegenValue.text = snapshot.CostRecovery.ToString();
         for (int i = 0; i < view.Karma.Length; i++)
             if (view.Karma[i] != null)
-                view.Karma[i].color = i < snapshot.CurrentResource ? KarmaOnColor : KarmaOffColor;
+                view.Karma[i].color = i < snapshot.CurrentResource ? KarmaOnColor :
+                    i == snapshot.CurrentResource && snapshot.HasHalfResource ? Color.Lerp(KarmaOffColor, KarmaOnColor, 0.5f) : KarmaOffColor;
 
         ApplySkill(view.Passive, snapshot.PassiveSkillId, manager);
         ApplySkill(view.Ultimate, snapshot.UniqueSkillId, manager);
@@ -1335,6 +1338,7 @@ public sealed class BattleSettingPanelUI : MonoBehaviour
             hash = hash * 31 + snapshot.MaxCost;
             hash = hash * 31 + snapshot.CostRecovery;
             hash = hash * 31 + snapshot.CurrentResource;
+            hash = hash * 31 + (snapshot.HasHalfResource ? 1 : 0);
             hash = hash * 31 + (snapshot.PassiveSkillId ?? string.Empty).GetHashCode();
             hash = hash * 31 + (snapshot.UniqueSkillId ?? string.Empty).GetHashCode();
             hash = hash * 31 + (snapshot.ActiveRelicId ?? string.Empty).GetHashCode();

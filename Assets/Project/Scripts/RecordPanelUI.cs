@@ -13,7 +13,7 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class RecordPanelUI : MonoBehaviour
 {
-    private enum RecordTab { Skill, Fragment, Relic, Compound, Item, Effect }
+    private enum RecordTab { Skill, Fragment, Relic, Compound, Monster }
 
     [Header("Shared Record Layout")]
     [SerializeField] private RectTransform recordGridContent;
@@ -25,8 +25,7 @@ public sealed class RecordPanelUI : MonoBehaviour
     [SerializeField] private Button fragmentTabButton;
     [SerializeField] private Button relicTabButton;
     [SerializeField] private Button compoundTabButton;
-    [SerializeField] private Button itemTabButton;
-    [SerializeField] private Button effectTabButton;
+    [SerializeField] private Button monsterTabButton;
 
     [Header("Record Number")]
     [SerializeField] private TMP_Text skillNumberText;
@@ -48,6 +47,7 @@ public sealed class RecordPanelUI : MonoBehaviour
     private readonly List<RecordIconSlotUI> createdSlots = new();
     private readonly HashSet<RecordIconSlotUI> clickableInfoSlots = new();
     private readonly Dictionary<Button, ColorBlock> originalButtonColors = new();
+    private readonly Dictionary<RecordIconSlotUI, string> monsterIdsBySlot = new();
     [Header("Name Tooltip")]
     [SerializeField] private RectTransform nameTooltip;
     [SerializeField] private TMP_Text nameTooltipText;
@@ -118,8 +118,7 @@ public sealed class RecordPanelUI : MonoBehaviour
     public void ShowFragmentTab() => ShowTab(RecordTab.Fragment);
     public void ShowRelicTab() => ShowTab(RecordTab.Relic);
     public void ShowCompoundTab() => ShowTab(RecordTab.Compound);
-    public void ShowItemTab() => ShowTab(RecordTab.Item);
-    public void ShowEffectTab() => ShowTab(RecordTab.Effect);
+    public void ShowMonsterTab() => ShowTab(RecordTab.Monster);
 
     public void OpenInfo()
     {
@@ -214,8 +213,16 @@ public sealed class RecordPanelUI : MonoBehaviour
         fragmentTabButton ??= FindTabButton("Fragment");
         relicTabButton ??= FindTabButton("Relic");
         compoundTabButton ??= FindTabButton("Compound");
-        itemTabButton ??= FindTabButton("Item");
-        effectTabButton ??= FindTabButton("Effect");
+        monsterTabButton ??= FindTabButton("Monster");
+        monsterTabButton ??= FindTabButton("Item");
+        if (monsterTabButton != null)
+        {
+            monsterTabButton.gameObject.name = "Monster";
+            TMP_Text label = monsterTabButton.GetComponentInChildren<TMP_Text>(true);
+            if (label != null) label.text = "Monster";
+        }
+        Button obsoleteEffectButton = FindTabButton("Effect");
+        if (obsoleteEffectButton != null) obsoleteEffectButton.gameObject.SetActive(false);
         if (skillNumberText == null)
         {
             Transform number = transform.Find("SkillNumber");
@@ -246,8 +253,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         BindButton(fragmentTabButton, ShowFragmentTab);
         BindButton(relicTabButton, ShowRelicTab);
         BindButton(compoundTabButton, ShowCompoundTab);
-        BindButton(itemTabButton, ShowItemTab);
-        BindButton(effectTabButton, ShowEffectTab);
+        BindButton(monsterTabButton, ShowMonsterTab);
     }
 
     private static void BindButton(Button button, UnityEngine.Events.UnityAction action)
@@ -270,8 +276,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         yield return fragmentTabButton;
         yield return relicTabButton;
         yield return compoundTabButton;
-        yield return itemTabButton;
-        yield return effectTabButton;
+        yield return monsterTabButton;
     }
 
     private void ShowTab(RecordTab tab)
@@ -350,34 +355,16 @@ public sealed class RecordPanelUI : MonoBehaviour
                         AddSlot(icon, GameDataLocalization.CompoundName(compound), debugRevealAll || RecordDiscoveryService.IsCompoundDiscovered(data, compound.CompoundId), compound.Rarity);
                     }
                 break;
-            case RecordTab.Item:
-                if (data.ItemDatabase != null)
-                    foreach (ItemData item in data.ItemDatabase.GetAll().Where(x => x != null).OrderBy(x => GetRecordRarityOrder(x.Rarity))
-                        .ThenBy(x => x.ItemId, StringComparer.OrdinalIgnoreCase))
+            case RecordTab.Monster:
+                if (data.MonsterDatabase != null)
+                    foreach (MonsterMasterData monster in data.MonsterDatabase.GetAll().Values.Where(x => x != null)
+                        .OrderBy(x => x.Name).ThenBy(x => x.MonsterId, StringComparer.OrdinalIgnoreCase))
                     {
                         Sprite icon = null;
-                        if (data.ItemIconDatabase != null) data.ItemIconDatabase.TryGetIcon(item.ItemId, out icon);
-                        AddSlot(icon, RecordDisplayNameResolver.ItemName(item), debugRevealAll || RecordDiscoveryService.IsItemDiscovered(data, item.ItemId), item.Rarity);
-                    }
-                break;
-            case RecordTab.Effect:
-                if (data.EffectDatabase != null)
-                    foreach (EffectMasterData effect in data.EffectDatabase.All.Values.Where(x => x != null && x.Mark == 1)
-                        .OrderBy(x => x.EffectType).ThenBy(x => x.EffectId, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Sprite icon = null;
-                        if (data.StatusEffectIconDatabase != null)
-                            data.StatusEffectIconDatabase.TryGetIcon(effect.EffectId, out icon);
-                        Color? effectBackColor = null;
-                        if (data.StatusEffectIconDatabase != null &&
-                            (effect.EffectType == EffectType.Beneficial || effect.EffectType == EffectType.Harmful ||
-                             string.Equals(effect.EffectId, "E_Spider_Web", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            // Share the same buff/debuff palette used by status effect tooltips.
-                            effectBackColor = data.StatusEffectIconDatabase.GetIconColor(
-                                effect.EffectId, data.EffectDatabase, false);
-                        }
-                        AddSlot(icon, GameDataLocalization.EffectName(effect), true, null, effectBackColor);
+                        data.MonsterIconDatabase?.TryGetIcon(monster.MonsterId, out icon);
+                        bool discovered = debugRevealAll || RecordDiscoveryService.IsMonsterDiscovered(data, monster.MonsterId);
+                        RecordIconSlotUI slot = AddSlot(icon, string.IsNullOrWhiteSpace(monster.Name) ? monster.MonsterId : monster.Name, discovered);
+                        if (discovered && slot != null) monsterIdsBySlot[slot] = monster.MonsterId;
                     }
                 break;
         }
@@ -438,20 +425,14 @@ public sealed class RecordPanelUI : MonoBehaviour
                         if (RecordDiscoveryService.IsCompoundDiscovered(data, compound.CompoundId)) discovered++;
                     }
                 break;
-            case RecordTab.Item:
-                if (data.ItemDatabase != null)
-                    foreach (ItemData item in data.ItemDatabase.GetAll())
+            case RecordTab.Monster:
+                if (data.MonsterDatabase != null)
+                    foreach (MonsterMasterData monster in data.MonsterDatabase.GetAll().Values)
                     {
-                        if (item == null) continue;
+                        if (monster == null) continue;
                         total++;
-                        if (RecordDiscoveryService.IsItemDiscovered(data, item.ItemId)) discovered++;
+                        if (RecordDiscoveryService.IsMonsterDiscovered(data, monster.MonsterId)) discovered++;
                     }
-                break;
-            case RecordTab.Effect:
-                if (data.EffectDatabase != null)
-                    total = data.EffectDatabase.All.Values.Count(effect => effect != null && effect.Mark == 1);
-                // Effect discovery is not tracked separately yet; all marked entries are public.
-                discovered = total;
                 break;
         }
 
@@ -460,7 +441,7 @@ public sealed class RecordPanelUI : MonoBehaviour
 
     private void RefreshSelectedButton()
     {
-        Button[] buttons = { skillTabButton, fragmentTabButton, relicTabButton, compoundTabButton, itemTabButton, effectTabButton };
+        Button[] buttons = { skillTabButton, fragmentTabButton, relicTabButton, compoundTabButton, monsterTabButton };
         int selectedIndex = (int)currentTab;
         for (int i = 0; i < buttons.Length; i++)
         {
@@ -493,7 +474,20 @@ public sealed class RecordPanelUI : MonoBehaviour
     {
         // Undiscovered entries have no detail data and must not open Info.
         if (slot == null || !clickableInfoSlots.Contains(slot)) return;
+        if (monsterIdsBySlot.TryGetValue(slot, out string monsterId))
+            BindMonsterInfo(monsterId);
         OpenInfoForSlot(slot);
+    }
+
+    private void BindMonsterInfo(string monsterId)
+    {
+        DataManager data = DataManager.Instance;
+        if (infoPanel == null || data == null || !data.MonsterDatabase.TryGet(monsterId, out MonsterMasterData monster)) return;
+        TMP_Text text = infoPanel.GetComponentInChildren<TMP_Text>(true);
+        if (text == null) return;
+        IEnumerable<MonsterPatternInfoData> patterns = data.MonsterPatternInfoDatabase.GetByMonsterId(monsterId);
+        string patternText = string.Join("\n\n", patterns.Select(p => $"[{p.Order}] {p.SkillInfo}\n{p.Description}"));
+        text.text = $"{monster.Name}\n\n{patternText}";
     }
 
     private void HideNameTooltip()
@@ -549,13 +543,14 @@ public sealed class RecordPanelUI : MonoBehaviour
     {
         HideInfo();
         clickableInfoSlots.Clear();
+        monsterIdsBySlot.Clear();
         HideNameTooltip();
         foreach (RecordIconSlotUI slot in createdSlots)
             if (slot != null) Destroy(slot.gameObject);
         createdSlots.Clear();
     }
 
-    private void AddSlot(Sprite icon, string displayName, bool discovered, string rarity = null, Color? backColor = null)
+    private RecordIconSlotUI AddSlot(Sprite icon, string displayName, bool discovered, string rarity = null, Color? backColor = null)
     {
         RecordIconSlotUI slot = Instantiate(iconSlotPrefab, recordGridContent, false);
         slot.gameObject.SetActive(true);
@@ -569,6 +564,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         else if (!string.IsNullOrWhiteSpace(rarity))
             slot.SetBackColor(GetRarityDisplayColor(rarity));
         createdSlots.Add(slot);
+        return slot;
     }
 
     private RecordIconSlotUI CreateRuntimeIconTemplate()

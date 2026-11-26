@@ -20,6 +20,8 @@ public class ActiveRelicTargetingController : MonoBehaviour
     private string pendingGridEffectId;
     private GameObject gridEffectPreview;
     private int gridEffectPreviewIndex = -1;
+    private BattleRuntimeData pendingConsumableBattle;
+    private UseConsumableCommand pendingConsumableCommand;
 
     public bool IsTargeting => isTargeting;
 
@@ -55,6 +57,22 @@ public class ActiveRelicTargetingController : MonoBehaviour
             onTargetingSucceeded = succeededCallback;
 
         return started;
+    }
+
+    public bool BeginConsumableTargeting(
+        ActiveRelicService activeRelicService,
+        BattleRuntimeData battle,
+        UseConsumableCommand command,
+        CharacterRuntimeData runtime,
+        ActiveRelicAvailability availability,
+        Action succeededCallback = null)
+    {
+        bool started = BeginTargetingInternal(activeRelicService, runtime, availability);
+        if (!started) return false;
+        pendingConsumableBattle = battle;
+        pendingConsumableCommand = command;
+        onTargetingSucceeded = succeededCallback;
+        return true;
     }
 
     private bool BeginTargetingInternal(
@@ -125,6 +143,8 @@ public class ActiveRelicTargetingController : MonoBehaviour
         pendingRuntime = null;
         pendingAvailability = null;
         pendingGridEffectId = null;
+        pendingConsumableBattle = null;
+        pendingConsumableCommand = null;
     }
 
     private void HandleCellHovered(GridCell cell)
@@ -184,11 +204,45 @@ public class ActiveRelicTargetingController : MonoBehaviour
         if (!isTargeting || cell == null || service == null)
             return;
 
-        ActiveRelicUseResult result = service.TryUseTarget(
-            pendingRuntime,
-            cell.Index,
-            gridManager,
-            gridEffectController);
+        ActiveRelicUseResult result;
+        if (pendingConsumableCommand != null)
+        {
+            pendingConsumableCommand.TargetGridIndex = cell.Index;
+            if (SteamBattleStateSynchronizer.TryHandleConsumableUse(
+                    pendingConsumableCommand,
+                    out bool networkAccepted))
+            {
+                result = networkAccepted
+                    ? ActiveRelicUseResult.Success(pendingAvailability, false)
+                    : ActiveRelicUseResult.Fail(pendingAvailability, "소모품 사용 요청이 거부되었습니다.");
+            }
+            else
+            {
+            ActiveRelicUseResult effectResult = null;
+            UseConsumableResult useResult = BattleConsumableService.TryUse(
+                pendingConsumableBattle,
+                pendingConsumableCommand,
+                pendingRuntime,
+                true,
+                () => (effectResult = service.TryUseConsumableTarget(
+                    pendingRuntime,
+                    pendingConsumableCommand.ItemId,
+                    cell.Index,
+                    gridManager,
+                    gridEffectController)).Succeeded);
+            result = effectResult ?? (useResult.Succeeded
+                ? ActiveRelicUseResult.Success(pendingAvailability, false)
+                : ActiveRelicUseResult.Fail(pendingAvailability, useResult.RejectReason.ToString()));
+            }
+        }
+        else
+        {
+            result = service.TryUseTarget(
+                pendingRuntime,
+                cell.Index,
+                gridManager,
+                gridEffectController);
+        }
 
         if (result.Succeeded)
         {

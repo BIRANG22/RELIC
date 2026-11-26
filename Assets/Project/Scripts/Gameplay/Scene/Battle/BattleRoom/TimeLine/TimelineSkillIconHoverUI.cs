@@ -13,6 +13,8 @@ public class TimelineSkillIconHoverUI : MonoBehaviour, IPointerEnterHandler, IPo
 
     private PlayerReservedCommand command;
     private BattleTimelinePreviewEntry entry;
+    private BattleTimelinePreviewEntry hoveredEntry;
+    private BattleTimelineGroupUI timelineGroup;
     private RectTransform rectTransform;
 
     private void Awake()
@@ -50,6 +52,13 @@ public class TimelineSkillIconHoverUI : MonoBehaviour, IPointerEnterHandler, IPo
 
         if (hoverPopup != null)
             hoverPopup.Show(entry, rectTransform, this);
+
+        if (entry != null)
+        {
+            timelineGroup ??= GetComponentInParent<BattleTimelineGroupUI>();
+            hoveredEntry = entry;
+            timelineGroup?.SetHoveredOwner(entry);
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -76,6 +85,14 @@ public class TimelineSkillIconHoverUI : MonoBehaviour, IPointerEnterHandler, IPo
 
         if (hoverPopup != null)
             hoverPopup.Hide(this);
+
+        if (timelineGroup == null)
+            timelineGroup = GetComponentInParent<BattleTimelineGroupUI>();
+
+        if (hoveredEntry != null)
+            timelineGroup?.ClearHoveredOwner(hoveredEntry);
+
+        hoveredEntry = null;
     }
 
     private void FindReferencesIfNeeded()

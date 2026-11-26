@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Relic.Gameplay.Data
 {
     /// <summary>
-    /// µµ°¨ÀÇ ¿µ±¸ È¹µæ ÀÌ·ÂÀ» °ü¸®ÇÕ´Ï´Ù.
-    /// Å½»ç Áß ¼Ò¸ğÇÏ°Å³ª Æ÷±âÇØµµ PlayerRuntimeData¿¡ ±â·ÏµÈ È¹µæ ÀÌ·ÂÀº À¯ÁöµË´Ï´Ù.
+    /// ë„ê°ì˜ ì˜êµ¬ íšë“ ì´ë ¥ì„ ê´€ë¦¬í•©ë‹ˆë‹¤.
+    /// íƒì‚¬ ì¤‘ ì†Œëª¨í•˜ê±°ë‚˜ í¬ê¸°í•´ë„ PlayerRuntimeDataì— ê¸°ë¡ëœ íšë“ ì´ë ¥ì€ ìœ ì§€ë©ë‹ˆë‹¤.
     /// </summary>
     public static class RecordDiscoveryService
     {
@@ -20,12 +20,14 @@ namespace Relic.Gameplay.Data
             player.DiscoveredRelicIds ??= new List<string>();
             player.DiscoveredCompoundIds ??= new List<string>();
             player.DiscoveredItemIds ??= new List<string>();
+            player.DiscoveredMonsterIds ??= new List<string>();
 
             NormalizeIds(player.DiscoveredSkillIds);
             NormalizeIds(player.DiscoveredRuneIds);
             NormalizeIds(player.DiscoveredRelicIds);
             NormalizeIds(player.DiscoveredCompoundIds);
             NormalizeIds(player.DiscoveredItemIds);
+            NormalizeIds(player.DiscoveredMonsterIds);
         }
 
         public static bool RegisterSkill(DataManager dataManager, string skillId)
@@ -83,10 +85,21 @@ namespace Relic.Gameplay.Data
             return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredItemIds, itemId);
         }
 
+        public static bool RegisterMonster(DataManager dataManager, string monsterId)
+        {
+            PlayerRuntimeData player = PreparePlayer(dataManager);
+            return Register(monsterId, player?.DiscoveredMonsterIds);
+        }
+
+        public static bool IsMonsterDiscovered(DataManager dataManager, string monsterId)
+        {
+            return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredMonsterIds, monsterId);
+        }
+
         /// <summary>
-        /// ±âÁ¸ ¼¼ÀÌºê¿Í ÇöÀç º¸À¯/ÀåÂø »óÅÂ¸¦ µµ°¨ ÀÌ·ÂÀ¸·Î º¸Á¤ÇÕ´Ï´Ù.
-        /// ±âº» Áö±Ş Ä³¸¯ÅÍÀÇ ±âº» ±â¾ïÀº ·±Å¸ÀÓ Ä³¸¯ÅÍ°¡ ¾ÆÁ÷ »ı¼ºµÇÁö ¾Ê¾Ò´õ¶óµµ Ã³À½ºÎÅÍ °ø°³ÇÕ´Ï´Ù.
-        /// Àü¿ë ÆÄÆíÀº Ä³¸¯ÅÍ ¸¶½ºÅÍ µ¥ÀÌÅÍ¸¸À¸·Î ÀÚµ¿ µî·ÏÇÏÁö ¾Ê°í, ½ÇÁ¦ ÀåÂøµÈ ÆÄÆí¸¸ µî·ÏÇÕ´Ï´Ù.
+        /// ê¸°ì¡´ ì„¸ì´ë¸Œì™€ í˜„ì¬ ë³´ìœ /ì¥ì°© ìƒíƒœë¥¼ ë„ê° ì´ë ¥ìœ¼ë¡œ ë³´ì •í•©ë‹ˆë‹¤.
+        /// ê¸°ë³¸ ì§€ê¸‰ ìºë¦­í„°ì˜ ê¸°ë³¸ ê¸°ì–µì€ ëŸ°íƒ€ì„ ìºë¦­í„°ê°€ ì•„ì§ ìƒì„±ë˜ì§€ ì•Šì•˜ë”ë¼ë„ ì²˜ìŒë¶€í„° ê³µê°œí•©ë‹ˆë‹¤.
+        /// ì „ìš© íŒŒí¸ì€ ìºë¦­í„° ë§ˆìŠ¤í„° ë°ì´í„°ë§Œìœ¼ë¡œ ìë™ ë“±ë¡í•˜ì§€ ì•Šê³ , ì‹¤ì œ ì¥ì°©ëœ íŒŒí¸ë§Œ ë“±ë¡í•©ë‹ˆë‹¤.
         /// </summary>
         public static void BackfillFromCurrentState(DataManager dataManager)
         {
@@ -115,7 +128,7 @@ namespace Relic.Gameplay.Data
                 if (master == null || !master.IsDefaultProvided)
                     continue;
 
-                // ·±Å¸ÀÓ µ¥ÀÌÅÍ°¡ ¾ÆÁ÷ ¾ø¾îµµ ±âº» Áö±Ş Ä³¸¯ÅÍ´Â 1·¹º§ ÇØ±İ ±â¾ïÀ» µµ°¨¿¡ °ø°³ÇÕ´Ï´Ù.
+                // ëŸ°íƒ€ì„ ë°ì´í„°ê°€ ì•„ì§ ì—†ì–´ë„ ê¸°ë³¸ ì§€ê¸‰ ìºë¦­í„°ëŠ” 1ë ˆë²¨ í•´ê¸ˆ ê¸°ì–µì„ ë„ê°ì— ê³µê°œí•©ë‹ˆë‹¤.
                 RegisterUnlockedMemorySkills(dataManager, master, 1);
                 RegisterSkill(dataManager, master.CommonSkill1);
             }
@@ -135,7 +148,7 @@ namespace Relic.Gameplay.Data
                 if (character == null)
                     continue;
 
-                // Àá°Ü ÀÖ´Â Ä³¸¯ÅÍÀÇ ±â¾ï/ÆÄÆí/À¯¹°Àº µµ°¨¿¡ ÀÚµ¿ µî·ÏÇÏÁö ¾Ê½À´Ï´Ù.
+                // ì ê²¨ ìˆëŠ” ìºë¦­í„°ì˜ ê¸°ì–µ/íŒŒí¸/ìœ ë¬¼ì€ ë„ê°ì— ìë™ ë“±ë¡í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
                 if (!character.IsUnlocked)
                     continue;
 
@@ -145,8 +158,8 @@ namespace Relic.Gameplay.Data
                 RegisterSkill(dataManager, character.AbilitySkillId);
                 RegisterIds(character.EquippedSkillIds, id => RegisterSkill(dataManager, id));
 
-                // ÆÄÆíÀº Ä³¸¯ÅÍ ¸¶½ºÅÍ¿¡ Á¸ÀçÇÑ´Ù´Â ÀÌÀ¯¸¸À¸·Î µî·ÏÇÏÁö ¾Ê½À´Ï´Ù.
-                // ½ÇÁ¦ ÀåÂøÇÑ ÆÄÆí¸¸ µµ°¨ È¹µæ ÀÌ·ÂÀ¸·Î µî·ÏÇÕ´Ï´Ù.
+                // íŒŒí¸ì€ ìºë¦­í„° ë§ˆìŠ¤í„°ì— ì¡´ì¬í•œë‹¤ëŠ” ì´ìœ ë§Œìœ¼ë¡œ ë“±ë¡í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+                // ì‹¤ì œ ì¥ì°©í•œ íŒŒí¸ë§Œ ë„ê° íšë“ ì´ë ¥ìœ¼ë¡œ ë“±ë¡í•©ë‹ˆë‹¤.
                 RegisterIds(character.EquippedRuneIds, id => RegisterRune(dataManager, id));
 
                 if (character.EquippedRelicIds != null)
@@ -169,7 +182,7 @@ namespace Relic.Gameplay.Data
                     continue;
                 }
 
-                // Ä³¸¯ÅÍÀÇ ÇöÀç ·¹º§¿¡¼­ ½ÇÁ¦·Î ÇØ±İµÈ ±â¾ïÀ» µµ°¨ È¹µæ ÀÌ·Â¿¡ ¹İ¿µÇÕ´Ï´Ù.
+                // ìºë¦­í„°ì˜ í˜„ì¬ ë ˆë²¨ì—ì„œ ì‹¤ì œë¡œ í•´ê¸ˆëœ ê¸°ì–µì„ ë„ê° íšë“ ì´ë ¥ì— ë°˜ì˜í•©ë‹ˆë‹¤.
                 RegisterUnlockedMemorySkills(dataManager, master, Mathf.Max(1, character.Level));
                 RegisterSkill(dataManager, master.CommonSkill1);
             }

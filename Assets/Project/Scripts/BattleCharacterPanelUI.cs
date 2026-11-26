@@ -281,6 +281,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Tooltip("액티브 유물의 대상 선택을 처리하는 컨트롤러입니다.")]
     [SerializeField] private ActiveRelicTargetingController activeRelicTargetingController;
+    [SerializeField] private BattleConsumablePanelUI consumablePanel;
 
     [Tooltip("플레이어 입력 가능 여부를 확인하는 전투 실행 컨트롤러입니다.")]
     [SerializeField] private BattleTurnExecutor turnExecutor;
@@ -1548,11 +1549,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (slot.CostValue != null)
             slot.CostValue.text = $"{currentCost}/{maxCost}";
 
+        bool isKarma = UniqueResourceRuntimeUtility.IsKarma(runtime);
         int karma = Mathf.Clamp(runtime.PreviewResource, 0, 5);
+        bool hasHalf = KarmaFixedPoint.PreviewHasHalf(runtime, isKarma);
         for (int i = 0; i < slot.Karma.Length; i++)
         {
             if (slot.Karma[i] != null)
-                slot.Karma[i].color = i < karma ? PartyKarmaOnColor : PartyKarmaOffColor;
+                slot.Karma[i].color = i < karma ? PartyKarmaOnColor :
+                    i == karma && hasHalf ? Color.Lerp(PartyKarmaOffColor, PartyKarmaOnColor, 0.5f) : PartyKarmaOffColor;
         }
 
         for (int i = 0; i < slot.Runes.Length; i++)
@@ -2337,6 +2341,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             hash = hash * 31 + runtime.PreviewCost;
             hash = hash * 31 + runtime.CurrentCost;
             hash = hash * 31 + runtime.PreviewResource;
+            hash = hash * 31 + runtime.CurrentResource;
             hash = hash * 31 + ResolvePartyMaxHP(runtime);
             hash = hash * 31 + ResolvePartyMaxCost(runtime);
             hash = hash * 31 + (runtime.PassiveSkillId ?? string.Empty).GetHashCode();
@@ -3155,6 +3160,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         StopNumberChangeCoroutine();
         hasDisplayedStats = false;
         boundRuntime = runtimeData;
+        consumablePanel ??= GetComponentInChildren<BattleConsumablePanelUI>(true);
+        consumablePanel?.BindActor(runtimeData);
         boundMaster = null;
         displayedSkillInfoData = null;
         lastPreviewTimelineSlotIndex = battleTimelineController != null
@@ -3196,9 +3203,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         // Char01~03 / Char_Select / Active를 모두 이 컴포넌트에서 갱신합니다.
+        RefreshPartyFromRuntimeStore();
+        for (int i = 0; i < partySlots.Length; i++)
+            RefreshPartySlot(i);
         RefreshSkillList();
         RefreshMoveButton();
-        RefreshItemButton();
+        consumablePanel?.BindActor(boundRuntime);
         CaptureRuntimeDisplayState();
         RefreshHoveredSkillTooltip();
     }
@@ -6703,7 +6713,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (boundMaster != null)
             return Mathf.Max(0, boundMaster.MaxResource);
 
-        return Mathf.Max(0, boundRuntime.CurrentResource);
+        return UniqueResourceRuntimeUtility.GetDisplayCurrent(boundRuntime);
     }
 
     private static void RefreshCurrentAndMaxText(

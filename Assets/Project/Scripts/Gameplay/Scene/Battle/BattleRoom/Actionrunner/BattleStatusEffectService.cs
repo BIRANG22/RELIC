@@ -615,7 +615,8 @@ public class BattleStatusEffectService
                 CharacterMasterData masterData = DataManager.Instance?.CharacterDatabase?.Get(character.RuntimeData.CharacterId);
                 int maxResource = masterData != null ? Mathf.Max(0, masterData.MaxResource) : int.MaxValue;
                 int requestedAmount = Mathf.Max(0, status.Stack);
-                int previousResource = Mathf.Max(0, character.RuntimeData.CurrentResource);
+                bool isKarma = UniqueResourceRuntimeUtility.IsKarma(character.RuntimeData);
+                int previousResource = KarmaFixedPoint.GetDisplayFloor(character.RuntimeData, isKarma);
                 int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(
                     character.RuntimeData, requestedAmount);
 
@@ -625,10 +626,7 @@ public class BattleStatusEffectService
                     previousResource,
                     maxResource);
 
-                character.RuntimeData.CurrentResource = Mathf.Min(
-                    maxResource,
-                    previousResource + finalAmount
-                );
+                KarmaFixedPoint.AddDisplayUnits(character.RuntimeData, finalAmount, maxResource, isKarma);
             }
 
             if (status.EffectId == "E_Charge")

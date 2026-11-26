@@ -44,6 +44,8 @@ namespace Relic.Gameplay.Data
 
         // 가방 내부 아이템
         public List<string> BagItemIds = new();
+        public List<BattleConsumableSlotRuntimeData> ConsumableSlots = new();
+        public bool ConsumablesSettled;
 
         // 탐사에서 획득한 퀘스트 전용 아이템(가방으로 정산하지 않음)
         public List<string> QuestRewardItemIds = new();
@@ -111,6 +113,7 @@ namespace Relic.Gameplay.Data
         public int CurrentHP;
         public int CurrentCost;
         public int CurrentResource;
+        public int UniqueResourceUnitVersion;
         public int CurrentMoveLevel;
 
         public BattleDirection Direction = BattleDirection.Right;
@@ -176,6 +179,8 @@ namespace Relic.Gameplay.Data
             global::SaveSystem.Instance?.ClearBattleRoomResumeState();
 
             BattleRuntimeData currentBattleRuntime = dataManager.BattleRuntimeStore?.Get();
+            LobbyRuntimeData lobbyRuntime = dataManager.LobbyRuntimeStore?.GetOrCreate();
+            PartyConsumableRuntime.ReturnUnusedToLobby(currentBattleRuntime, lobbyRuntime);
 
             Dictionary<string, BattleLobbyLoadoutSnapshotData> snapshots =
                 BuildSnapshotMap(currentBattleRuntime);
@@ -188,7 +193,6 @@ namespace Relic.Gameplay.Data
 
             // 전투 포기 후에는 로비에 남아 있는 전투용 장비 정보도 반드시 비웁니다.
             // 캐릭터 런타임만 비우면 로비 재진입 시 CharacterLoadouts가 장비를 다시 복원할 수 있습니다.
-            LobbyRuntimeData lobbyRuntime = dataManager.LobbyRuntimeStore?.GetOrCreate();
             if (lobbyRuntime != null)
             {
                 ClearLobbyEquippedRelics(lobbyRuntime.CharacterLoadouts);
@@ -222,6 +226,7 @@ namespace Relic.Gameplay.Data
                 CurrentHP = character.CurrentHP,
                 CurrentCost = character.CurrentCost,
                 CurrentResource = character.CurrentResource,
+                UniqueResourceUnitVersion = character.UniqueResourceUnitVersion,
                 CurrentMoveLevel = character.CurrentMoveLevel,
                 Direction = character.Direction
             };
@@ -312,6 +317,7 @@ namespace Relic.Gameplay.Data
             character.CurrentHP = Mathf.Clamp(snapshot.CurrentHP, 1, character.MaxHP);
             character.CurrentCost = Mathf.Clamp(snapshot.CurrentCost, 0, character.MaxCost);
             character.CurrentResource = Mathf.Max(0, snapshot.CurrentResource);
+            character.UniqueResourceUnitVersion = Mathf.Max(0, snapshot.UniqueResourceUnitVersion);
             character.CurrentMoveLevel = Mathf.Max(0, snapshot.CurrentMoveLevel);
             character.Direction = snapshot.Direction;
         }
@@ -337,6 +343,7 @@ namespace Relic.Gameplay.Data
             character.CurrentHP = character.MaxHP;
             character.CurrentCost = character.MaxCost;
             character.CurrentResource = 0;
+            character.UniqueResourceUnitVersion = KarmaFixedPoint.CurrentVersion;
             // 이동값은 캐릭터 데이터가 아니라 이동 관련 효과에서 결정합니다.
             character.CurrentMoveLevel = 0;
             character.MoveSkillId = "S_Move_1";

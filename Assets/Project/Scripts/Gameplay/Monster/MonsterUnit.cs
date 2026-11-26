@@ -82,6 +82,9 @@ namespace Relic.Gameplay.Monster
             RuntimeData = runtimeData;
 
             if (RuntimeData != null)
+                RecordDiscoveryService.RegisterMonster(DataManager.Instance, RuntimeData.MonsterId);
+
+            if (RuntimeData != null)
                 ai = MonsterAIFactory.Create(RuntimeData.MonsterId);
 
             EnsureClickCollider2D();
@@ -501,6 +504,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            // 몬스터 상세 정보는 기록서에서 확인하므로 월드 클릭은 처리하지 않습니다.
+            return;
+#pragma warning disable CS0162
             if (TutorialGuideController.IsModalOpen || BattleBossCinematicInputGate.IsBlocked) return;
             if (!BattleWorldClickGate.CanProcessWorldClick()) return;
             if (TutorialBattleSequence.CanClickFinalTutorialWorldMonster(this))
@@ -588,6 +594,7 @@ namespace Relic.Gameplay.Monster
 
             if (diagnoseWorldClick) Debug.Log("[T03CLICK] PASS MonsterInfoSelectionChanged event sent", this);
             MonsterInfoSelectionChanged?.Invoke(this);
+#pragma warning restore CS0162
         }
 
         private void OnMouseEnter()

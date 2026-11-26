@@ -1597,7 +1597,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             Transform compoundSlot = charRoot.Find("Compound");
             if (compoundSlot != null)
             {
-                int activeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+                int activeSlotIndex = partyIndex;
 
                 ConfigureInfoEquipmentInteractionTargets(
                     compoundSlot,
@@ -1779,6 +1779,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             Transform compoundRoot = button.transform.Find("Compound");
             if (compoundRoot != null)
             {
+                compoundRoot.gameObject.SetActive(i < PartyConsumableRuntime.SlotCount);
+                if (i >= PartyConsumableRuntime.SlotCount)
+                    continue;
                 Transform placeholderRoot = compoundRoot.Find("Compound");
                 Transform iconRoot = compoundRoot.Find("Icon");
                 Image iconImage = iconRoot != null
@@ -1786,12 +1789,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                     : null;
 
                 string compoundId = null;
-                int activeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
-                if (isRegistered && runtime?.EquippedRelicIds != null &&
-                    activeSlotIndex >= 0 && activeSlotIndex < runtime.EquippedRelicIds.Length)
-                {
-                    compoundId = runtime.EquippedRelicIds[activeSlotIndex]?.Trim();
-                }
+                LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+                PartyConsumableRuntime.NormalizeLobby(lobby);
+                if (lobby != null)
+                    compoundId = lobby.EquippedConsumableIds[i]?.Trim();
 
                 bool hasCompound = !string.IsNullOrWhiteSpace(compoundId);
 
@@ -2111,41 +2112,40 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private bool EquipStoredCompoundToInfoSlot(int partyIndex, string compoundId)
     {
         DataManager dataManager = DataManager.Instance;
-        if (dataManager?.CompoundDatabase == null || dataManager.CharacterRuntimeStore == null)
+        if (dataManager?.CompoundDatabase == null)
             return false;
 
-        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partyIndex);
-        if (string.IsNullOrWhiteSpace(characterId) ||
-            !dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtime) ||
-            !dataManager.CompoundDatabase.TryGet(compoundId, out CompoundData compound))
+        if (!dataManager.CompoundDatabase.TryGet(compoundId, out CompoundData _))
         {
             return false;
         }
 
+        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        SteamLobbySharedStateSynchronizer synchronizer = SteamLobbySharedStateSynchronizer.Instance;
+        if (synchronizer != null && synchronizer.IsNetworkSharedStateActive)
+            return synchronizer.RequestEquipConsumable(characterId, partyIndex, compoundId);
+
         LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
-        if (lobby?.StoredCompoundIds == null)
-            return false;
-
-        int storedIndex = FindStoredCompoundIndex(lobby.StoredCompoundIds, compoundId);
-        if (storedIndex < 0)
-            return false;
-
-        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
-        int activeSlot = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
-        string previous = runtime.EquippedRelicIds[activeSlot];
-
-        lobby.StoredCompoundIds.RemoveAt(storedIndex);
-        if (!string.IsNullOrWhiteSpace(previous))
-            lobby.StoredCompoundIds.Add(previous.Trim());
-
-        runtime.EquippedRelicIds[activeSlot] = compoundId.Trim();
-        ActiveRelicRuntimeUtility.ResetUses(runtime, compound);
-        return true;
+        return PartyConsumableRuntime.TryEquip(lobby, partyIndex, compoundId);
     }
 
     private bool TryUnequipInfoSlot(int partyIndex, int runtimeSlotIndex, bool isCompound)
     {
         DataManager dataManager = DataManager.Instance;
+        if (isCompound)
+        {
+            string sharedCharacterId = dataManager?.PartyRuntimeStore?.GetCharacterId(partyIndex);
+            SteamLobbySharedStateSynchronizer synchronizer = SteamLobbySharedStateSynchronizer.Instance;
+            bool sharedChanged = synchronizer != null && synchronizer.IsNetworkSharedStateActive
+                ? synchronizer.RequestUnequipConsumable(sharedCharacterId, partyIndex)
+                : PartyConsumableRuntime.TryUnequip(
+                    dataManager?.LobbyRuntimeStore?.GetOrCreate(),
+                    partyIndex);
+            if (sharedChanged)
+                RefreshAfterEquipmentChange();
+            return sharedChanged;
+        }
+
         if (dataManager?.CharacterRuntimeStore == null)
             return false;
 
@@ -2165,18 +2165,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return false;
 
         bool changed;
-        if (isCompound)
-        {
-            LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
-            if (lobby == null)
-                return false;
-
-            lobby.StoredCompoundIds ??= new List<string>();
-            lobby.StoredCompoundIds.Add(itemId.Trim());
-            runtime.EquippedRelicIds[runtimeSlotIndex] = null;
-            changed = true;
-        }
-        else
         {
             LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
             if (lobby?.OwnedRelicIds == null || dataManager.RelicDatabase == null)
@@ -2936,43 +2924,27 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
 
         DataManager dataManager = DataManager.Instance;
-        if (dataManager?.CompoundDatabase == null || dataManager.CharacterRuntimeStore == null)
+        if (dataManager?.CompoundDatabase == null)
             return;
 
-        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partySlotIndex);
-        if (string.IsNullOrWhiteSpace(characterId) ||
-            !dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtime))
-        {
-            return;
-        }
-
-        if (!dataManager.CompoundDatabase.TryGet(selectedCompoundId, out CompoundData compound))
+        if (!dataManager.CompoundDatabase.TryGet(selectedCompoundId, out CompoundData _))
             return;
 
         LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
         if (lobby?.StoredCompoundIds == null)
             return;
 
-        int storedIndex = FindStoredCompoundIndex(lobby.StoredCompoundIds, selectedCompoundId);
-        if (storedIndex < 0)
+        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partySlotIndex);
+        SteamLobbySharedStateSynchronizer synchronizer = SteamLobbySharedStateSynchronizer.Instance;
+        bool equipped = synchronizer != null && synchronizer.IsNetworkSharedStateActive
+            ? synchronizer.RequestEquipConsumable(characterId, partySlotIndex, selectedCompoundId)
+            : PartyConsumableRuntime.TryEquip(lobby, partySlotIndex, selectedCompoundId);
+        if (!equipped)
         {
             ResetCompoundSelection();
             RefreshCharacterData();
             return;
         }
-
-        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
-        int activeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
-        string previousCompoundId = runtime.EquippedRelicIds[activeSlotIndex];
-
-        // 보관 중인 동일 연성제가 여러 개여도 선택한 1개만 제거합니다.
-        lobby.StoredCompoundIds.RemoveAt(storedIndex);
-
-        if (!string.IsNullOrWhiteSpace(previousCompoundId))
-            lobby.StoredCompoundIds.Add(previousCompoundId.Trim());
-
-        runtime.EquippedRelicIds[activeSlotIndex] = selectedCompoundId;
-        ActiveRelicRuntimeUtility.ResetUses(runtime, compound);
 
         ResetCompoundSelection();
         RefreshCharacterData();

@@ -753,9 +753,12 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
                 {
+                    uniqueResourceService.RecoverAllAlivePlayersAtTurnEnd(
+                        TurnEndKarmaPolicy.FromExecutedCommands(executedPlayerCommands));
                     RefreshBattleHUDs();
                     yield return ReturnCameraDefaultRoutine();
                     ClearTimeline();
+                    RefreshBattleHUDs();
                     yield break;
                 }
 
@@ -835,11 +838,12 @@ public class BattleTurnExecutor : MonoBehaviour
             ApplyPlayerEndTurnTriggeredEquipmentEffects();
             RefreshBattleHUDs();
 
-            // 카르마는 캐릭터별 조건 없이 턴 종료 시 생존 캐릭터가 1씩 회복합니다.
-            uniqueResourceService.RecoverAllAlivePlayersAtTurnEnd();
+            uniqueResourceService.RecoverAllAlivePlayersAtTurnEnd(
+                TurnEndKarmaPolicy.FromExecutedCommands(executedPlayerCommands));
             RefreshBattleHUDs();
 
             ClearTimeline();
+            RefreshBattleHUDs();
             yield return null;
 
             if (BattleResultChecker.Instance != null &&

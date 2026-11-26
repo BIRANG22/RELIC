@@ -15,7 +15,8 @@ public class KarmaEffect : BattleEffectBase
             target.RuntimeData.CharacterId);
         int maxResource = masterData != null ? Mathf.Max(0, masterData.MaxResource) : int.MaxValue;
         int requestedAmount = BattleEffectUtility.GetRepeatedValue(context);
-        int previousResource = Mathf.Max(0, target.RuntimeData.CurrentResource);
+        bool isKarma = UniqueResourceRuntimeUtility.IsKarma(target.RuntimeData);
+        int previousResource = KarmaFixedPoint.GetDisplayFloor(target.RuntimeData, isKarma);
         int finalAmount = BattleEquipmentEffectService.ModifyUniqueResourceGain(
             target.RuntimeData, requestedAmount);
 
@@ -25,9 +26,7 @@ public class KarmaEffect : BattleEffectBase
             previousResource,
             maxResource);
 
-        target.RuntimeData.CurrentResource = Mathf.Min(
-            maxResource,
-            previousResource + finalAmount);
+        KarmaFixedPoint.AddDisplayUnits(target.RuntimeData, finalAmount, maxResource, isKarma);
 
         BattleEffectUtility.OnPlayerHudRefreshRequested?.Invoke(target);
     }

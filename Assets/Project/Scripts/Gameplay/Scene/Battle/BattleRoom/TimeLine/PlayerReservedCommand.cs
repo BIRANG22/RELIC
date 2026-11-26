@@ -274,6 +274,12 @@ public class PlayerReservedCommand
         TimelineSlotIndex = slotIndex;
     }
 
+    public void MarkValidExecution()
+    {
+        if (ExecutionResult != null)
+            ExecutionResult.WasValidExecution = true;
+    }
+
     public void SetSlotReservationContext(
         bool isFirstSkillInSlot,
         bool hadEarlierMoveInSlot,
