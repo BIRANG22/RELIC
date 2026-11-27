@@ -24,6 +24,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [Header("Skill Select Panels")]
     [SerializeField] private GameObject[] skillIconSelectPanels = new GameObject[SetupSkillSlotCount];
     private readonly Image[] mainSkillImages = new Image[SetupSkillSlotCount];
+    private readonly HashSet<string> missingSkillIconWarnings = new HashSet<string>();
 
     [Header("Skill Select Button Count")]
     [SerializeField] private bool autoBindSkillIconButtons = true;
@@ -233,57 +234,83 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         }
     }
 
+    // Scope all lookups to this character panel, including when this component
+    // lives on Contant rather than on Skill_Area itself.
+    private Transform ResolveSkillArea()
+    {
+        for (Transform node = transform; node != null; node = node.parent)
+        {
+            if (node.name == "Skill_Area")
+                return node;
+            Transform area = node.Find("Skill_Area");
+            if (area != null)
+                return area;
+            if (node.name == "CharacterSettingPanel")
+                break;
+        }
+        return FindChildByName(transform, "Skill_Area");
+    }
+
     private void BindSkillIconButtonsIfNeeded()
     {
         if (!autoBindSkillIconButtons)
             return;
+        if (skillIconSelectPanels == null || skillIconSelectPanels.Length != SetupSkillSlotCount)
+            Array.Resize(ref skillIconSelectPanels, SetupSkillSlotCount);
 
-        if (skillIconSelectPanels == null)
-            skillIconSelectPanels = new GameObject[SetupSkillSlotCount];
-
-        for (int i = 0; i < skillIconSelectPanels.Length; i++)
+        Transform area = ResolveSkillArea();
+        if (area == null)
+            return;
+        Transform content = area.Find("Contant") ?? area.Find("Content");
+        for (int i = 0; i < SetupSkillSlotCount; i++)
         {
-            if (i >= SetupSkillSlotCount)
-            {
-
-                continue;
-            }
-
-            if (skillIconSelectPanels[i] != null)
-                continue;
-
-            Transform panel = transform.Find("SkillIconSelectPanel_" + i);
-
+            string panelName = "SkillIconSelectPanel_" + i;
+            Transform panel = content != null ? content.Find(panelName) : null;
             if (panel == null)
-                panel = FindChildByName(transform, "SkillIconSelectPanel_" + i);
-
-            if (panel != null)
-                skillIconSelectPanels[i] = panel.gameObject;
+                panel = FindChildByName(area, panelName);
+            skillIconSelectPanels[i] = panel != null ? panel.gameObject : null;
         }
     }
 
     private SkillIconButton[] GetSkillIconButtons(int panelIndex)
     {
-        if (skillIconSelectPanels == null ||
-            panelIndex < 0 ||
-            panelIndex >= SetupSkillSlotCount ||
-            panelIndex >= skillIconSelectPanels.Length ||
+        if (skillIconSelectPanels == null || panelIndex < 0 ||
+            panelIndex >= SetupSkillSlotCount || panelIndex >= skillIconSelectPanels.Length ||
             skillIconSelectPanels[panelIndex] == null)
             return Array.Empty<SkillIconButton>();
 
         Transform panel = skillIconSelectPanels[panelIndex].transform;
-        SkillIconButton[] result = new SkillIconButton[2];
-
+        // Candidate positions correspond exactly to the Character sheet columns.
+        SkillIconButton[] result = new SkillIconButton[panelIndex == 0 ? 2 : 3];
         for (int i = 0; i < result.Length; i++)
         {
-            Transform buttonTransform = panel.Find("SkillIconButton_" + i);
-            if (buttonTransform == null)
-                buttonTransform = FindChildByName(panel, "SkillIconButton_" + i);
+            Transform root = panel.Find("SkillIconButton_" + i);
+            if (root == null)
+                root = FindChildByName(panel, "SkillIconButton_" + i);
+            // Support the existing prefab typo without shifting any candidate indices.
+            if (root == null && panelIndex == 1 && i == 2)
+                root = panel.Find("SkillIconButton_3") ?? FindChildByName(panel, "SkillIconButton_3");
+            if (root == null)
+                continue;
 
-            if (buttonTransform != null)
-                result[i] = buttonTransform.GetComponent<SkillIconButton>();
+            SkillIconButton item = root.GetComponent<SkillIconButton>();
+            if (item == null)
+            {
+                // A newly created slot may contain only the visual children.
+                Button click = root.GetComponent<Button>();
+                if (click == null)
+                {
+                    Transform back = root.Find("Back");
+                    Image graphic = back != null ? back.GetComponent<Image>() : root.GetComponent<Image>();
+                    if (graphic == null)
+                        continue;
+                    click = root.gameObject.AddComponent<Button>();
+                    click.targetGraphic = graphic;
+                }
+                item = root.gameObject.AddComponent<SkillIconButton>();
+            }
+            result[i] = item;
         }
-
         return result;
     }
 
@@ -857,7 +884,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (IsDirectSelectionLayout)
         {
             RefreshAllDirectSkillButtons();
-            }
+        }
         else
         {
             ClearSkillIconButtons();
@@ -875,7 +902,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (IsDirectSelectionLayout)
         {
             RefreshAllDirectSkillButtons();
-            }
+        }
         else if (currentSelectedSlot != null)
         {
             OpenSkillSelectPanel(currentSelectedSlot);
@@ -919,6 +946,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 skillSlotButtons[i].SetSkill(skill);
 
             SetRuntimeSkillId(i, skill != null ? skill.SkillId : "");
+            RefreshMainSkillIcon(i);
         }
 
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
@@ -975,6 +1003,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 skill = null;
 
             SetRuntimeSkillId(i, skill != null ? skill.SkillId : "");
+            RefreshMainSkillIcon(i);
         }
 
         if (DataManager.Instance != null)
@@ -1035,13 +1064,11 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         {
             string skillId = skillIds[i];
 
-            if (string.IsNullOrWhiteSpace(skillId))
-                continue;
-
-            if (DataManager.Instance.SkillDatabase.TryGet(skillId, out var skill))
-                AddUniqueSkill(result, skill);
-            else
+            SkillMasterData skill = null;
+            if (!string.IsNullOrWhiteSpace(skillId) &&
+                !DataManager.Instance.SkillDatabase.TryGet(skillId, out skill))
                 Debug.LogWarning("[SkillSettingPanel] Candidate skill not found: " + skillId);
+            result.Add(skill);
         }
 
         return result;
@@ -1055,8 +1082,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         return slotIndex switch
         {
             0 => new[] { currentMasterData.PassiveSkill1, currentMasterData.PassiveSkill2 },
-            1 => new[] { currentMasterData.UniqueSkill1, currentMasterData.UniqueSkill2 },
-            2 => new[] { currentMasterData.CharacterSkill1, currentMasterData.CharacterSkill2 },
+            1 => new[] { currentMasterData.UniqueSkill1, currentMasterData.UniqueSkill2, currentMasterData.UniqueSkill3 },
+            2 => new[] { currentMasterData.CharacterSkill1, currentMasterData.CharacterSkill2, currentMasterData.CharacterSkill3 },
             _ => Array.Empty<string>()
         };
     }
@@ -1221,7 +1248,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
             int requiredLevel = GetRequiredLevelForSkill(skill, slotIndex);
             bool locked = characterLevel < requiredLevel;
+            button.Init(this, slotIndex);
             button.SetSkillData(skill, locked, requiredLevel);
+            WarnMissingSkillIcon(skill.SkillId, SkillIconUtility.GetSkillIcon(skill.SkillId));
         }
     }
 
@@ -1297,6 +1326,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (!IsDirectSelectionLayout)
             return;
 
+        BindMainSkillImages();
+        InitSkillIconButtons();
         bool appliedDefaultSkill = false;
 
         for (int slotIndex = 0; slotIndex < SetupSkillSlotCount; slotIndex++)
@@ -1345,44 +1376,40 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void BindMainSkillImages()
     {
-        Transform area = FindChildByName(transform, "Skill_Area");
-        if (area == null) area = FindChildByName(transform.root, "Skill_Area");
+        Transform area = ResolveSkillArea();
+        string[] slotNames = { "Passive", "Ultimate", "Ability" };
         for (int i = 0; i < SetupSkillSlotCount; i++)
         {
-            GameObject panel = skillIconSelectPanels != null && i < skillIconSelectPanels.Length ? skillIconSelectPanels[i] : null;
-            Transform slot = panel != null ? panel.transform.parent : null;
-            if (slot == null || slot.name != "Skill" + (i + 1))
-                slot = area != null ? area.Find("Skill" + (i + 1)) : slot;
+            Transform slot = area != null ? area.Find(slotNames[i]) : null;
             Transform icon = slot != null ? slot.Find("IconImg") : null;
+            // Never use the slot's Back image or a candidate icon as the equipped image.
             mainSkillImages[i] = icon != null ? icon.GetComponent<Image>() : null;
         }
     }
 
-
-
-
-
     private void RefreshMainSkillIcon(int index)
     {
+        if (mainSkillImages[index] == null)
+            BindMainSkillImages();
         Image target = mainSkillImages[index];
-        if (target == null) return;
-        string equipped = GetRuntimeSkillId(index);
-        Sprite sprite = null;
-        foreach (SkillIconButton candidate in GetSkillIconButtons(index))
-        {
-            if (candidate == null || candidate.CurrentSkillData == null ||
-                !string.Equals(candidate.CurrentSkillData.SkillId, equipped, StringComparison.OrdinalIgnoreCase)) continue;
-            Transform icon = FindChildByName(candidate.transform, "IconImg");
-            if (icon == null) icon = FindChildByName(candidate.transform, "Icon");
-            if (icon == null) icon = FindChildByName(candidate.transform, "IconImage");
-            if (icon == null) icon = FindChildByName(candidate.transform, "SkillIcon");
-            Image image = icon != null ? icon.GetComponent<Image>() : null;
-            if (image == null) image = candidate.GetComponent<Image>();
-            if (image != null) sprite = image.sprite;
-            break;
-        }
+        if (target == null)
+            return;
+
+        string skillId = GetRuntimeSkillId(index);
+        Sprite sprite = SkillIconUtility.GetSkillIcon(skillId);
         target.sprite = sprite;
         target.enabled = sprite != null;
+        if (sprite != null && !target.gameObject.activeSelf)
+            target.gameObject.SetActive(true);
+        WarnMissingSkillIcon(skillId, sprite);
+    }
+
+    private void WarnMissingSkillIcon(string skillId, Sprite sprite)
+    {
+        if (sprite != null || string.IsNullOrWhiteSpace(skillId) ||
+            !missingSkillIconWarnings.Add(skillId))
+            return;
+        Debug.LogWarning("[SkillSettingPanel] SkillIconDatabase icon not found: " + skillId, this);
     }
 
     public void ShowSkillInfo(SkillMasterData skill)

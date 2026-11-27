@@ -87,6 +87,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void Init(SkillSettingPanel panel, int slotIndex)
     {
+        EnsureUiReferences();
         owner = panel;
         directSlotIndex = slotIndex;
 
@@ -151,6 +152,8 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;
+            if (icon != null && !iconImage.gameObject.activeSelf)
+                iconImage.gameObject.SetActive(true);
 
             // 알파값은 변경하지 않고 RGB만 잠금 색으로 바꿉니다.
             if (isLocked)
@@ -332,14 +335,17 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         else if (buttonImage == null)
             buttonImage = GetComponent<Image>();
 
-        if (iconImage == null)
+        Transform iconTransform = transform.Find("IconImg");
+        if (iconTransform == null)
+            iconTransform = FindChildByName(transform, "IconImg");
+        if (iconTransform != null)
         {
-            Transform iconTransform = transform.Find("IconImg");
-            if (iconTransform == null)
-                iconTransform = FindChildByName(transform, "IconImg");
-
-            if (iconTransform != null)
-                iconImage = iconTransform.GetComponent<Image>();
+            Image currentIcon = iconTransform.GetComponent<Image>();
+            if (currentIcon != null && iconImage != currentIcon)
+            {
+                iconImage = currentIcon;
+                visualColorsCached = false;
+            }
         }
 
         if (lockObject == null)

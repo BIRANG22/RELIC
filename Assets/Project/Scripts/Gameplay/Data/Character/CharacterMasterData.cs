@@ -39,9 +39,11 @@ namespace Relic.Gameplay.Data
 
         public string UniqueSkill1;
         public string UniqueSkill2;
+        public string UniqueSkill3;
 
         public string CharacterSkill1;
         public string CharacterSkill2;
+        public string CharacterSkill3;
 
         public string CommonSkill1;
         public string CommonSkill2;
@@ -85,8 +87,8 @@ namespace Relic.Gameplay.Data
 
         private static readonly int[] DefaultRuneSlotUnlockLevels = { 1, 1, 2, 4, 6, 8 };
         private static readonly int[] DefaultPassiveSkillUnlockLevels = { 1, 5 };
-        private static readonly int[] DefaultUniqueSkillUnlockLevels = { 1, 10 };
-        private static readonly int[] DefaultCharacterSkillUnlockLevels = { 1, 1 };
+        private static readonly int[] DefaultUniqueSkillUnlockLevels = { 1, 10, 20 };
+        private static readonly int[] DefaultCharacterSkillUnlockLevels = { 1, 1, 15 };
 
         public static int GetRuneSlotUnlockLevel(CharacterMasterData character, int slotIndex)
         {
@@ -121,10 +123,11 @@ namespace Relic.Gameplay.Data
                 _ => null
             };
 
-            if (fixedLevels == null || candidateIndex < 0 || candidateIndex >= fixedLevels.Length)
-                return 1;
-
-            return fixedLevels[candidateIndex];
+            return GetConfiguredLevel(
+                GetSkillUnlockLevels(character, slotIndex),
+                fixedLevels,
+                candidateIndex,
+                1);
         }
 
         public static IReadOnlyList<string> GetUnlockTexts(
@@ -231,8 +234,8 @@ namespace Relic.Gameplay.Data
             return slotIndex switch
             {
                 0 => new[] { character.PassiveSkill1, character.PassiveSkill2 },
-                1 => new[] { character.UniqueSkill1, character.UniqueSkill2 },
-                2 => new[] { character.CharacterSkill1, character.CharacterSkill2 },
+                1 => new[] { character.UniqueSkill1, character.UniqueSkill2, character.UniqueSkill3 },
+                2 => new[] { character.CharacterSkill1, character.CharacterSkill2, character.CharacterSkill3 },
                 _ => Array.Empty<string>()
             };
         }

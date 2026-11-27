@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SkillVfxDatabase
   m_EditorClassIdentifier: 
   entries:
-  - SkillId: S_Unique_01
+  - SkillId: S_Unique_101
     Vfx:
       prefab: {fileID: 396270323009959054, guid: eab634f3ffd2e4441ab6c90624f5b2be, type: 3}
       flipType: 0
@@ -55,7 +55,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_02
+  - SkillId: S_Unique_102
     Vfx:
       prefab: {fileID: 5372841363813152920, guid: efbd15a5c1bcbcb4dab256d631f18d60, type: 3}
       flipType: 0
@@ -97,7 +97,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_03
+  - SkillId: S_Unique_103
     Vfx:
       prefab: {fileID: 6453203898449280538, guid: d2549dd471998d54d97cc0c61d413305, type: 3}
       flipType: 0
@@ -139,7 +139,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_04
+  - SkillId: S_Unique_201
     Vfx:
       prefab: {fileID: 306457477009657887, guid: 8c7cc4a40f6dea04f89f2f807cdb8472, type: 3}
       flipType: 2
@@ -181,7 +181,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_05
+  - SkillId: S_Unique_202
     Vfx:
       prefab: {fileID: 3657311369840355751, guid: e63bdec7a44d8e74ca2b1e69d61d3e7e, type: 3}
       flipType: 0
@@ -223,7 +223,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_06
+  - SkillId: S_Unique_203
     Vfx:
       prefab: {fileID: 3857453107072273608, guid: a2bb111defe50ed44aba0c62d3eac585, type: 3}
       flipType: 2
@@ -265,7 +265,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_07
+  - SkillId: S_Unique_301
     Vfx:
       prefab: {fileID: 5022181577685763610, guid: fd96bbed608d1014b8c6d903be12193c, type: 3}
       flipType: 2
@@ -307,7 +307,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_08
+  - SkillId: S_Unique_302
     Vfx:
       prefab: {fileID: 6202610271562724098, guid: dc9c0c79f08cb984d84a798fc7656c9e, type: 3}
       flipType: 0
@@ -349,7 +349,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_09
+  - SkillId: S_Unique_303
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -391,7 +391,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_10
+  - SkillId: S_Unique_401
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -433,7 +433,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_11
+  - SkillId: S_Unique_402
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -475,7 +475,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Unique_12
+  - SkillId: S_Unique_403
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -517,7 +517,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_01
+  - SkillId: S_Ability_101
     Vfx:
       prefab: {fileID: 9032009973510874767, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
       flipType: 2
@@ -559,7 +559,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_02
+  - SkillId: S_Ability_102
     Vfx:
       prefab: {fileID: 7311764206653381872, guid: 4a5bf8f3c66134a4689914364ff9c77d, type: 3}
       flipType: 2
@@ -601,7 +601,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_03
+  - SkillId: S_Ability_103
     Vfx:
       prefab: {fileID: 6814607968632299061, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
       flipType: 0
@@ -643,7 +643,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_04
+  - SkillId: S_Ability_201
     Vfx:
       prefab: {fileID: 1211211539450989031, guid: ad2188fbf0e2d7745911825db1f2644e, type: 3}
       flipType: 0
@@ -685,7 +685,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_05
+  - SkillId: S_Ability_202
     Vfx:
       prefab: {fileID: 5464498477634507533, guid: d9e677191abd37b4ea44b0c2a095d363, type: 3}
       flipType: 2
@@ -727,7 +727,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_06
+  - SkillId: S_Ability_203
     Vfx:
       prefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
       flipType: 2
@@ -769,7 +769,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_07
+  - SkillId: S_Ability_301
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: 9fcd410c3ce6f064ba77b97fa3cdcd5a, type: 3}
       flipType: 0
@@ -811,7 +811,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_08
+  - SkillId: S_Ability_302
     Vfx:
       prefab: {fileID: 529139466995848897, guid: 4021fb98fe8fe3c4da30a2071dd71f02, type: 3}
       flipType: 2
@@ -853,7 +853,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_09
+  - SkillId: S_Ability_303
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -895,7 +895,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_10
+  - SkillId: S_Ability_401
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -937,7 +937,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_11
+  - SkillId: S_Ability_402
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -979,7 +979,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_12
+  - SkillId: S_Ability_403
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -1021,7 +1021,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_01
+  - SkillId: S_Core_101
     Vfx:
       prefab: {fileID: 1116342728058327303, guid: 367d94d8ab01f964392daf5c85890ca0, type: 3}
       flipType: 2
@@ -1063,7 +1063,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_02
+  - SkillId: S_Core_102
     Vfx:
       prefab: {fileID: 1116342728058327303, guid: 3591d8c755312ac4faf0ef8222c382d3, type: 3}
       flipType: 2
@@ -1105,7 +1105,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_03
+  - SkillId: S_Core_103
     Vfx:
       prefab: {fileID: 8776789016844861869, guid: 1396847cc4c493340a193e57c9610278, type: 3}
       flipType: 2
@@ -1147,7 +1147,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_04
+  - SkillId: S_Core_104
     Vfx:
       prefab: {fileID: 7311764206653381872, guid: 9544ed4635c375b4fab0378b5c0ec3dc, type: 3}
       flipType: 0
@@ -1189,7 +1189,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_05
+  - SkillId: S_Core_105
     Vfx:
       prefab: {fileID: 1116342728058327303, guid: b9ce7c7e10f3c9846ab377c3b72c10d8, type: 3}
       flipType: 2
@@ -1231,7 +1231,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_06
+  - SkillId: S_Core_106
     Vfx:
       prefab: {fileID: 1116342728058327303, guid: 5ee56116e1ff44f488cd70e6e98c20b4, type: 3}
       flipType: 2
@@ -1273,7 +1273,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_07
+  - SkillId: S_Core_107
     Vfx:
       prefab: {fileID: 6808545895853519640, guid: 39da642f5e0e7664bb39abf6d1c2597d, type: 3}
       flipType: 0
@@ -1315,7 +1315,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_08
+  - SkillId: S_Core_108
     Vfx:
       prefab: {fileID: 1116342728058327303, guid: 754d458df7c9a7e42bc850ca318430f8, type: 3}
       flipType: 2
@@ -1357,7 +1357,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_09
+  - SkillId: S_Core_109
     Vfx:
       prefab: {fileID: 6808545895853519640, guid: 3541f3da60188cc43be31cc70dd5e87b, type: 3}
       flipType: 0
@@ -1399,7 +1399,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_10
+  - SkillId: S_Core_110
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: eb32e8c619f0eef42b3b29ef659cf51b, type: 3}
       flipType: 2
@@ -1441,7 +1441,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_11
+  - SkillId: S_Core_111
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: 4d81eb16844a76545bda148609ebb89b, type: 3}
       flipType: 2
@@ -1483,7 +1483,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_12
+  - SkillId: S_Core_112
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: aef80a47534469a4fa5eb4854dd04006, type: 3}
       flipType: 2
@@ -1525,7 +1525,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_13
+  - SkillId: S_Core_201
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: c186fa3d9a8fd614195ffcf8daa063cf, type: 3}
       flipType: 2
@@ -1567,7 +1567,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_14
+  - SkillId: S_Core_202
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: 2671d1872102b8d429dfb946aea22d7f, type: 3}
       flipType: 2
@@ -1609,7 +1609,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_15
+  - SkillId: S_Core_203
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: 5f38b39647333cd42b503d58e1afd238, type: 3}
       flipType: 2
@@ -1651,7 +1651,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_16
+  - SkillId: S_Core_204
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: bd1a8d3272d706a45a98caec35340a3d, type: 3}
       flipType: 2
@@ -1693,7 +1693,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_17
+  - SkillId: S_Core_205
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: 38821a95a46a84947bdc362959b21023, type: 3}
       flipType: 0
@@ -1735,7 +1735,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_18
+  - SkillId: S_Core_206
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: 5f90bf965e5e41c408421ff73a22d48a, type: 3}
       flipType: 0
@@ -1777,7 +1777,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_19
+  - SkillId: S_Core_207
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: 3011e706563e25248a4d594cb215ba35, type: 3}
       flipType: 2
@@ -1819,7 +1819,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_20
+  - SkillId: S_Core_208
     Vfx:
       prefab: {fileID: 3037673656474629809, guid: 43ddc712efc6245478562f6fbff52cf6, type: 3}
       flipType: 0
@@ -1861,7 +1861,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_21
+  - SkillId: S_Core_209
     Vfx:
       prefab: {fileID: 2841605795099109794, guid: 9df08a715c4b0ee41be518ebeeb393f1, type: 3}
       flipType: 2
@@ -1903,7 +1903,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_22
+  - SkillId: S_Core_210
     Vfx:
       prefab: {fileID: 2841605795099109794, guid: 69a71cc3541ad8f41bb4a3c5967dd89b, type: 3}
       flipType: 2
@@ -1945,7 +1945,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_23
+  - SkillId: S_Core_211
     Vfx:
       prefab: {fileID: 2841605795099109794, guid: 317110988f56ddf48b82b27becfd0c1e, type: 3}
       flipType: 2
@@ -1987,7 +1987,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_24
+  - SkillId: S_Core_212
     Vfx:
       prefab: {fileID: 3857453107072273608, guid: d65b00fe6ce90bd408afef19be55b670, type: 3}
       flipType: 2
@@ -2029,7 +2029,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_25
+  - SkillId: S_Core_301
     Vfx:
       prefab: {fileID: 3857453107072273608, guid: b4e43286312e66640b47860b694e7b62, type: 3}
       flipType: 2
@@ -2071,7 +2071,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_26
+  - SkillId: S_Core_302
     Vfx:
       prefab: {fileID: 3857453107072273608, guid: 1ccc5bbb344bab0459d9ac19719dcf22, type: 3}
       flipType: 0
@@ -2113,7 +2113,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_27
+  - SkillId: S_Core_303
     Vfx:
       prefab: {fileID: 2841605795099109794, guid: 5c5f90f9d5668b1438bc02039c0c1e81, type: 3}
       flipType: 2
@@ -2155,7 +2155,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_28
+  - SkillId: S_Core_304
     Vfx:
       prefab: {fileID: 2841605795099109794, guid: 4f34edcfb523dbb44b46060c9965450b, type: 3}
       flipType: 0
@@ -2197,7 +2197,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_29
+  - SkillId: S_Core_305
     Vfx:
       prefab: {fileID: 5464498477634507533, guid: 5ede49eb0835e01488d72a82c7797da4, type: 3}
       flipType: 2
@@ -2239,7 +2239,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_30
+  - SkillId: S_Core_306
     Vfx:
       prefab: {fileID: 3857453107072273608, guid: 4e85f126ab5e4a54bb592421160659ee, type: 3}
       flipType: 2
@@ -2281,7 +2281,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_31
+  - SkillId: S_Core_307
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: 880a28b0f013b334eaeea0eeaad452a9, type: 3}
       flipType: 0
@@ -2323,7 +2323,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_32
+  - SkillId: S_Core_308
     Vfx:
       prefab: {fileID: 529139466995848897, guid: ba706f8505d4b8c4c9c7e7bbc05fbba1, type: 3}
       flipType: 2
@@ -2365,7 +2365,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_33
+  - SkillId: S_Core_309
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: 5d210d5ff92f8f04bb563133c0655223, type: 3}
       flipType: 2
@@ -2407,7 +2407,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_34
+  - SkillId: S_Core_310
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: 02bb4d048a058b448aca02adeaed9e68, type: 3}
       flipType: 2
@@ -2449,7 +2449,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_35
+  - SkillId: S_Core_311
     Vfx:
       prefab: {fileID: 5022181577685763610, guid: 86511d6cfc9f08c418b18b579e1f018a, type: 3}
       flipType: 0
@@ -2491,7 +2491,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_36
+  - SkillId: S_Core_312
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: 93f08a2249a956445b89e13d3bf5e66f, type: 3}
       flipType: 2
@@ -2533,7 +2533,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_37
+  - SkillId: S_Core_401
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d7cb20a941d51084cbbbd4a625dfa25e, type: 3}
       flipType: 2
@@ -2575,7 +2575,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_38
+  - SkillId: S_Core_402
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: b47ba35bb845e9247a5eb7138cfda125, type: 3}
       flipType: 2
@@ -2617,7 +2617,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_39
+  - SkillId: S_Core_403
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: 6bf2ec8d3febe3b43aebc59e98b00d56, type: 3}
       flipType: 2
@@ -2659,7 +2659,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_40
+  - SkillId: S_Core_404
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2701,7 +2701,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_41
+  - SkillId: S_Core_405
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2743,7 +2743,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_42
+  - SkillId: S_Core_406
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2785,7 +2785,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_43
+  - SkillId: S_Core_407
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2827,7 +2827,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_44
+  - SkillId: S_Core_408
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2869,7 +2869,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_45
+  - SkillId: S_Core_409
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2911,7 +2911,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_46
+  - SkillId: S_Core_410
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2953,7 +2953,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_47
+  - SkillId: S_Core_411
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
@@ -2995,7 +2995,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Core_48
+  - SkillId: S_Core_412
     Vfx:
       prefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
       flipType: 2
