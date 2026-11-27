@@ -68,102 +68,102 @@ Mon_12_2,2,각성 아라벨라,Boss,80,0,80,95,Item_012,0.69999999999999996,Rang
 스킬 ID,이름,분류,레어도,참조자원,대상,레벨,점유,캐릭터ID,스킬,선행스킬,패시브트리거,효과 ID,수치계수,횟수계수,자원소모량,범위타입,범위ID,효과
 SkillId,Name,Category,Rarity,ReferenceResource,Target,Level,Entry,CharacterID,SkillType,IsFastSkill,PassiveTrigger,EffectIds,ValueRate,CountRate,ResourceCostValue,RangeType,RangeId,Details
 S_Move_1,이동,Move,Move,Cost,Self,1,1,ALL,Move,0,,E_Move,0,1,1,Selection,Range_Move,선택한 그리드로 이동한다. 이동한 칸 수만큼 마나를 소모한다.
-S_Passive_01,용린,Passive,Exclusive,Ulti,Self,0,0,Char_01,Passive,0,TurnStart,E_Armor,4,1,0,Passive,Range_Self,"매 턴, 자신에게 {ValueRate1}의 {E_Armor}를 부여한다."
-S_Passive_02,용혈,Passive,Exclusive,Ulti,Self,0,0,Char_01,Passive,0,TurnStart,E_Lifesteal;E_Passive_Lose_HP,1;3,1;1,0,Passive,Range_Self,"매 턴, 자신의 생명력이 {ValueRate2} 감소하고, {ValueRate1}의 {E_Lifesteal}을 부여한다."
-S_Passive_03,기세,Passive,Exclusive,Ulti,Self,0,0,Char_02,Passive,0,TurnStart,E_Elasticity,2,1,0,Passive,Range_Self,"매 턴, 자신에게 {ValueRate1}의 {E_Elasticity}을 부여한다."
-S_Passive_04,예리,Passive,Exclusive,Ulti,EnemyParty,0,0,Char_02,Passive,0,BattleStart,E_Bleed,3,1,0,Passive,Range_All,"전투 시작 시, 모든 적에게 {ValueRate1}의 {E_Bleed}를 부여한다."
-S_Passive_05,순환,Passive,Exclusive,Ulti,PlayerParty,0,0,Char_03,Passive,0,TurnStart,E_Charge,1,1,0,Passive,Range_Party,"매 턴, 모든 아군에게 {ValueRate1}의 {E_Charge}을 부여한다."
-S_Passive_06,독기,Passive,Exclusive,Ulti,EnemyParty,0,0,Char_03,Passive,0,BattleStart,E_Poison,3,1,0,Passive,Range_All,"전투 시작 시, 모든 적에게 {ValueRate1}의 {E_Poison}을 부여한다."
-S_Passive_07,서약,Passive,Exclusive,Ulti,PlayerParty,0,0,Char_04,Passive,0,TurnStart,E_Armor,2,1,0,Passive,Range_Party,"매 턴, 모든 아군에게 {ValueRate1}의 {E_Armor}를 부여한다."
-S_Passive_08,열망,Passive,Exclusive,Ulti,EnemyParty,0,0,Char_04,Passive,0,BattleStart,E_Vulnerable,2,1,0,Passive,Range_All,"전투 시작 시, 모든 적에게 {ValueRate1}의 {E_Vulnerable}을 부여한다."
+S_Passive_101,용린,Passive,Exclusive,Ulti,Self,0,0,Char_01,Passive,0,TurnStart,E_Armor,4,1,0,Passive,Range_Self,"매 턴, 자신에게 {ValueRate1}의 {E_Armor}를 부여한다."
+S_Passive_102,용혈,Passive,Exclusive,Ulti,Self,0,0,Char_01,Passive,0,TurnStart,E_Lifesteal;E_Passive_Lose_HP,1;3,1;1,0,Passive,Range_Self,"매 턴, 자신의 생명력이 {ValueRate2} 감소하고, {ValueRate1}의 {E_Lifesteal}을 부여한다."
+S_Passive_201,기세,Passive,Exclusive,Ulti,Self,0,0,Char_02,Passive,0,TurnStart,E_Elasticity,2,1,0,Passive,Range_Self,"매 턴, 자신에게 {ValueRate1}의 {E_Elasticity}을 부여한다."
+S_Passive_202,예리,Passive,Exclusive,Ulti,EnemyParty,0,0,Char_02,Passive,0,BattleStart,E_Bleed,3,1,0,Passive,Range_All,"전투 시작 시, 모든 적에게 {ValueRate1}의 {E_Bleed}를 부여한다."
+S_Passive_301,순환,Passive,Exclusive,Ulti,PlayerParty,0,0,Char_03,Passive,0,TurnStart,E_Charge,1,1,0,Passive,Range_Party,"매 턴, 모든 아군에게 {ValueRate1}의 {E_Charge}을 부여한다."
+S_Passive_302,독기,Passive,Exclusive,Ulti,EnemyParty,0,0,Char_03,Passive,0,BattleStart,E_Poison,3,1,0,Passive,Range_All,"전투 시작 시, 모든 적에게 {ValueRate1}의 {E_Poison}을 부여한다."
+S_Passive_401,서약,Passive,Exclusive,Ulti,PlayerParty,0,0,Char_04,Passive,0,TurnStart,E_Armor,2,1,0,Passive,Range_Party,"매 턴, 모든 아군에게 {ValueRate1}의 {E_Armor}를 부여한다."
+S_Passive_402,열망,Passive,Exclusive,Ulti,EnemyParty,0,0,Char_04,Passive,0,BattleStart,E_Vulnerable,2,1,0,Passive,Range_All,"전투 시작 시, 모든 적에게 {ValueRate1}의 {E_Vulnerable}을 부여한다."
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
-S_Unique_01,용의 가호,Unique,Exclusive,Ulti,PlayerParty,0,2,Char_01,FastBuff,1,,E_Armor,12,1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Armor}를 부여한다.
-S_Unique_02,피의 참격,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_01,Attack,0,,E_MissingHPStrike,50,1,4,Direction,Range_16,범위에 {E_MissingHPStrike}의 {E_Strike}를 준다.
-S_Unique_03,거센 포효,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_01,Attack,0,,E_Strike;E_Knockback,15;1,1;1,2,Direction,Range_13,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Knockback}을 {ValueRate2}칸 적용한다."
-S_Unique_04,질풍난무,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_02,Attack,0,,E_Strike,5,4,4,Direction,Range_13,범위에 {ValueRate1}의 {E_Strike}를 준다.
-S_Unique_05,달그림자,Unique,Exclusive,Ulti,EnemyParty,0,2,Char_02,FastAttack,1,,E_Pierce,21,1,3,Direction,Range_06,범위에 {ValueRate1}의 {E_Pierce}를 준다.
-S_Unique_06,절단,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_02,Attack,0,,E_Strike;E_Bleed,18;2,1;1,3,Direction,Range_16,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Bleed}을 부여한다."
-S_Unique_07,활성화,Unique,Exclusive,Ulti,PlayerParty,0,3,Char_03,Buff,0,,E_Grit;E_Charge,1;2,1;1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Grit}와 {ValueRate2}의 {E_Charge}을 부여한다.
-S_Unique_08,맹독화,Unique,Exclusive,Ulti,EnemyParty,0,1,Char_03,Debuff,0,,E_Poison,6,1,2,Direction,Range_25,범위에 {ValueRate1}의 {E_Poison}을 부여한다.
-S_Unique_09,무력화,Unique,Exclusive,Ulti,EnemyParty,0,2,Char_03,Attack,0,,E_Strike;E_Weaken,16;1,1;1,3,Direction,Range_23,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Weaken}을 부여한다."
-S_Unique_10,은총,Unique,Exclusive,Ulti,PlayerParty,0,3,Char_04,Buff,0,,E_Heal,3,1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Heal}을 부여한다.,,
-S_Unique_11,처형,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_04,Attack,0,,E_Strike;E_Vulnerable,20;2,1;1,4,Direction,Range_23,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}을 부여한다."
-S_Unique_12,성역,Unique,Exclusive,Ulti,PlayerParty,0,2,Char_04,FastBuff,1,,E_Armor;E_Ward,8;2,1;1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Armor}와 {ValueRate2}의 {E_Ward}를 부여한다.,,
+S_Unique_101,용의 가호,Unique,Exclusive,Ulti,PlayerParty,0,2,Char_01,FastBuff,1,,E_Armor,12,1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Armor}를 부여한다.
+S_Unique_102,피의 참격,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_01,Attack,0,,E_MissingHPStrike,50,1,4,Direction,Range_16,범위에 {E_MissingHPStrike}의 {E_Strike}를 준다.
+S_Unique_103,거센 포효,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_01,Attack,0,,E_Strike;E_Knockback,15;1,1;1,2,Direction,Range_13,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Knockback}을 {ValueRate2}칸 적용한다."
+S_Unique_201,질풍난무,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_02,Attack,0,,E_Strike,5,4,4,Direction,Range_13,범위에 {ValueRate1}의 {E_Strike}를 준다.
+S_Unique_202,달그림자,Unique,Exclusive,Ulti,EnemyParty,0,2,Char_02,FastAttack,1,,E_Pierce,21,1,3,Direction,Range_06,범위에 {ValueRate1}의 {E_Pierce}를 준다.
+S_Unique_203,절단,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_02,Attack,0,,E_Strike;E_Bleed,18;2,1;1,3,Direction,Range_16,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Bleed}을 부여한다."
+S_Unique_301,활성화,Unique,Exclusive,Ulti,PlayerParty,0,3,Char_03,Buff,0,,E_Grit;E_Charge,1;2,1;1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Grit}와 {ValueRate2}의 {E_Charge}을 부여한다.
+S_Unique_302,맹독화,Unique,Exclusive,Ulti,EnemyParty,0,1,Char_03,Debuff,0,,E_Poison,6,1,2,Direction,Range_25,범위에 {ValueRate1}의 {E_Poison}을 부여한다.
+S_Unique_303,무력화,Unique,Exclusive,Ulti,EnemyParty,0,2,Char_03,Attack,0,,E_Strike;E_Weaken,16;1,1;1,3,Direction,Range_23,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Weaken}을 부여한다."
+S_Unique_401,은총,Unique,Exclusive,Ulti,PlayerParty,0,3,Char_04,Buff,0,,E_Heal,3,1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Heal}을 부여한다.,,
+S_Unique_402,처형,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_04,Attack,0,,E_Strike;E_Vulnerable,20;2,1;1,4,Direction,Range_23,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}을 부여한다."
+S_Unique_403,성역,Unique,Exclusive,Ulti,PlayerParty,0,2,Char_04,FastBuff,1,,E_Armor;E_Ward,8;2,1;1,3,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Armor}와 {ValueRate2}의 {E_Ward}를 부여한다.,,
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
-S_Ability_01,반월베기,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike,8,1,3,Direction,Range_15,범위에 {ValueRate1}의 {E_Strike}를 준다.
-S_Ability_02,휘두르기,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike,13,1,5,Direction,Range_18,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
-S_Ability_03,지면강타,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_Knockback,9;1,1;1,3,Direction,Range_16,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Knockback}을 {ValueRate2}칸 적용한다."
-S_Ability_04,제2식 연무,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike,3,2,3,Direction,Range_11,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
-S_Ability_05,제1식 백야,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Pierce,10,1,4,Direction,Range_04,범위에 {ValueRate1}의 {E_Pierce}를 준다.
-S_Ability_06,제5식 낙화,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike;E_Bleed,7;1,1;1,3,Direction,Range_10,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Bleed}을 부여한다.",,
-S_Ability_07,루멘,Ability,Exclusive,Cost,PlayerParty,1,2,Char_03,Buff,0,,E_Boost,1,1,4,Direction,Range_b_04,범위에 {ValueRate1}의 {E_Boost}을 부여한다.
-S_Ability_08,베놈,Ability,Exclusive,Cost,EnemyParty,1,2,Char_03,Debuff,0,,E_Poison,4,1,5,Direction,Range_23,범위에 {ValueRate1}의 {E_Poison}을 부여한다.,,
-S_Ability_09,펄스,Ability,Exclusive,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike,8,1,3,Direction,Range_04,범위에 {ValueRate1}의 {E_Strike}를 준다.
-S_Ability_10,자비,Ability,Exclusive,Cost,PlayerParty,1,2,Char_04,Buff,0,,E_Cure,3,1,5,Direction,Range_b_09,범위에 {ValueRate1}의 생명력을 회복한다.,,
-S_Ability_11,응징,Ability,Exclusive,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_Strike;E_Vulnerable,7;1,1;1,3,Direction,Range_12,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}을 부여한다.",,
-S_Ability_12,비호,Ability,Exclusive,Cost,PlayerParty,1,2,Char_04,FastBuff,1,,E_Armor,5,1,3,Direction,Range_b_04,범위에 {ValueRate1}의 {E_Armor}를 부여한다.,,
+S_Ability_101,반월베기,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike,8,1,3,Direction,Range_15,범위에 {ValueRate1}의 {E_Strike}를 준다.
+S_Ability_102,휘두르기,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike,13,1,5,Direction,Range_18,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
+S_Ability_103,지면강타,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_Knockback,9;1,1;1,3,Direction,Range_16,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Knockback}을 {ValueRate2}칸 적용한다."
+S_Ability_201,제2식 연무,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike,3,2,3,Direction,Range_11,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
+S_Ability_202,제1식 백야,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Pierce,10,1,4,Direction,Range_04,범위에 {ValueRate1}의 {E_Pierce}를 준다.
+S_Ability_203,제5식 낙화,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike;E_Bleed,7;1,1;1,3,Direction,Range_10,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Bleed}을 부여한다.",,
+S_Ability_301,루멘,Ability,Exclusive,Cost,PlayerParty,1,2,Char_03,Buff,0,,E_Boost,1,1,4,Direction,Range_b_04,범위에 {ValueRate1}의 {E_Boost}을 부여한다.
+S_Ability_302,베놈,Ability,Exclusive,Cost,EnemyParty,1,2,Char_03,Debuff,0,,E_Poison,4,1,5,Direction,Range_23,범위에 {ValueRate1}의 {E_Poison}을 부여한다.,,
+S_Ability_303,펄스,Ability,Exclusive,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike,8,1,3,Direction,Range_04,범위에 {ValueRate1}의 {E_Strike}를 준다.
+S_Ability_401,자비,Ability,Exclusive,Cost,PlayerParty,1,2,Char_04,Buff,0,,E_Cure,3,1,5,Direction,Range_b_09,범위에 {ValueRate1}의 생명력을 회복한다.,,
+S_Ability_402,응징,Ability,Exclusive,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_Strike;E_Vulnerable,7;1,1;1,3,Direction,Range_12,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}을 부여한다.",,
+S_Ability_403,비호,Ability,Exclusive,Cost,PlayerParty,1,2,Char_04,FastBuff,1,,E_Armor,5,1,3,Direction,Range_b_04,범위에 {ValueRate1}의 {E_Armor}를 부여한다.,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
-S_Core_01,수호의 기운,Core,Common,Cost,PlayerParty,1,2,Char_01,FastBuff,1,,E_Armor,6,1,3,Direction,Range_b_02,범위에 {ValueRate1}의 {E_Armor}를 부여한다.,,
-S_Core_02,피의 갑주,Core,Common,Hp,Self,1,1,Char_01,Buff,0,,E_Armor,12,1,5,Direction,Range_Self,"생명력을 {ResourceCostValue} 소모하여, 자신에게 {ValueRate1}의 {E_Armor}를 부여한다.",,
-S_Core_03,꼬리 쓸기,Core,Common,Cost,EnemyParty,1,1,Char_01,Attack,0,,E_Strike;E_Knockback,4;1,1;1,2,Direction,Range_10,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",,
-S_Core_04,갑주 파쇄,Core,Rare,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_Vulnerable,6;2,1;1,3,Direction,Range_11,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}을 부여한다.",,
-S_Core_05,가시 갑옷,Core,Rare,Cost,Self,1,2,Char_01,Buff,0,,E_Ward,3,1,3,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Ward}를 부여한다.,,
-S_Core_06,전투의 기세,Core,Rare,Cost,PlayerParty,1,1,Char_01,Buff,0,,E_Smite,2,1,5,Direction,Range_b_01,범위에 {ValueRate1}의 {E_Smite}를 부여한다.,,
-S_Core_07,압도,Core,Rare,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_Weaken,6;1,1;1,3,Direction,Range_20,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Weaken}를 부여한다.",,
-S_Core_08,생명의 가호,Core,Epic,Ulti,PlayerParty,1,2,Char_01,FastBuff,1,,E_Armor;E_Cure,4;2,1;1,1,Direction,Range_b_04,"범위에 {ValueRate1}의 {E_Armor}를 부여하고, {ValueRate2}의 생명력을 회복한다.",,
-S_Core_09,무모한 일격,Core,Epic,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_MissSelfDamage,16;8,1;1,4,Direction,Range_02,"범위에 {ValueRate1}의 {E_Strike} 를 주고, 적중 실패 시 생명력이 {ValueRate2} 감소한다.",,
-S_Core_10,갈증,Core,Epic,Hp,Self,1,2,Char_01,Buff,0,,E_Lifesteal;E_Boost,2;2,1;1,4,Direction,Range_Self,"생명력을 {ResourceCostValue} 소모하여, 자신에게 {ValueRate1}의 {E_Lifesteal}과 {E_Boost}을 부여한다.",,
-S_Core_11,철갑 돌진,Core,Unique,Ulti,EnemyParty,1,2,Char_01,Attack,0,,E_Rush;E_ArmorStrike,1;1,1;1,2,Direction,Range_05,돌진하여 충돌한 적에게 {E_ArmorStrike}의 {E_Strike}를 준다.,,
-S_Core_12,핏빛 수확,Core,Unique,Cost,EnemyParty,1,3,Char_01,Attack,0,,E_Strike;E_ValueUpOnKill,6;2,1;1,5,Direction,Range_10,범위에 {ValueRate1}의 피해를 준다. 처치 시 영구적으로 피해량이 {ValueRate2} 증가한다.,,
-S_Core_13,간파,Core,Common,Cost,Self,1,1,Char_02,FastBuff,1,,E_Blindside,2,1,4,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Blindside}을 부여한다.,,
-S_Core_14,비상검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Move;E_Strike,1;9,1;1,3,Direction,Range_15,{ValueRate1}칸 전진하여 범위에 {ValueRate2}의 {E_Strike}를 준다.,,
-S_Core_15,비연검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike;E_Move,9;-1,1;1,3,Direction,Range_16,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}칸 후퇴한다.",,
-S_Core_16,전투감각,Core,Rare,Ulti,Self,1,1,Char_02,Buff,0,,E_Boost,2,1,1,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Boost}을 부여한다.,,
-S_Core_17,열상유도,Core,Rare,Cost,EnemyParty,1,2,Char_02,Debuff,0,,E_Bleed;E_Weaken,4;1,1;1,4,Direction,Range_08,"범위에 {ValueRate1}의 {E_Bleed}과, {ValueRate2}의 {E_Weaken}를 부여한다.",,
-S_Core_18,일섬,Core,Rare,Cost,EnemyParty,1,1,Char_02,FastAttack,1,,E_Strike,4,1,2,Direction,Range_09,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
-S_Core_19,급소타격,Core,Rare,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike;E_Fatigue,7;1,1;1,3,Direction,Range_14,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Fatigue}을 부여한다.",,
-S_Core_20,폭풍쇄도,Core,Epic,Cost,EnemyParty,1,3,Char_02,Attack,0,,E_Pierce,X,3,X,Direction,Range_05,범위에 {ValueRate1}의 {E_Pierce}를 준다.,,
-S_Core_21,일점돌파,Core,Epic,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Pierce;E_Bleed,8;2,1;1,2,Direction,Range_03,"범위에 {ValueRate1}의 {E_Pierce}를 주고, 범위 끝에 적중한 대상에게 {ValueRate2}의 {E_Bleed}을 부여한다.",,
-S_Core_22,혈화만개,Core,Epic,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_DamageUpIfBleeding,10,1,3,Direction,Range_12,범위에 {ValueRate1}의 {E_Strike}를 준다. {E_Bleed}을 보유한 적에게 피해량 50% 증가한다.,,
-S_Core_23,환영검무,Core,Unique,Ulti,EnemyParty,1,2,Char_02,Attack,0,,E_StrikeCountByBuff,4,1,3,Direction,Range_16,범위에 {ValueRate1}의 {E_Strike}를 준다. 보유 버프의 종류만큼 횟수가 증가한다.,,
-S_Core_24,공단참,Core,Unique,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Pierce;E_ValueUpOnHit,7;2,1;1,4,Direction,Range_11,범위에 {ValueRate1}의 {E_Pierce}를 준다. 적중 시 이번 전투 동안 피해량이 {ValueRate2} 증가한다.,,
-S_Core_25,등불의 광휘,Core,Common,Cost,PlayerParty,1,2,Char_03,Buff,0,,E_Smite,1,1,5,Direction,Range_b_04,범위에 {ValueRate1}의 {E_Smite}를 부여한다.,,
-S_Core_26,마나 스파크,Core,Common,Cost,PlayerParty,1,1,Char_03,Buff,0,,E_Charge,3,1,4,Direction,Range_b_07,범위에 {ValueRate1}의 {E_Charge}을 부여한다.,,
-S_Core_27,날카로운 섬광,Core,Common,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike,9,1,3,Direction,Range_23,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
-S_Core_28,마비독,Core,Rare,Cost,EnemyParty,1,2,Char_03,Debuff,0,,E_Poison;E_Weaken,4;1,1;1,4,Direction,Range_24,"범위에 {ValueRate1}의 {E_Poison}을 부여하고, {ValueRate2}의 {E_Weaken}를 부여한다.",,
-S_Core_29,짙은 그림자,Core,Rare,Ulti,EnemyParty,1,2,Char_03,Debuff,0,,E_Fatigue;E_Vulnerable,3;1,1;1,1,Direction,Range_22,범위에 {ValueRate1}의 {E_Fatigue}과 {ValueRate2}의 {E_Vulnerable}을 부여한다.,,
-S_Core_30,영혼 흡수,Core,Rare,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike;E_RestoreManaPerHitTarget,8;1,1;1,4,Direction,Range_24,범위에 {ValueRate1}의 {E_Strike}를 준다. 적중한 적의 수만큼 마나를 회복한다.,,
-S_Core_31,마력 공명,Core,Rare,Ulti,PlayerParty,1,1,Char_03,Buff,0,,E_Focus,1,1,2,Direction,Range_b_09,범위에 {ValueRate1}의 {E_Focus}을 부여한다.,,
-S_Core_32,암흑 섬광,Core,Epic,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike;E_Weaken,10;1,1;1,4,Direction,Range_13,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Weaken}를 부여한다.",,
-S_Core_33,독성증식,Core,Epic,Cost,EnemyParty,1,3,Char_03,Debuff,0,,E_PoisonEqualTargetPoison,1,1,6,Direction,Range_12,대상이 보유한 {E_Poison} 수치만큼 {E_Poison}을 부여한다.,,
-S_Core_34,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,2,Char_03,Debuff,0,,E_Bondage,1,1,2,Direction,Range_06,범위에 {ValueRate1}의 {E_Bondage}을 부여한다.,,
-S_Core_35,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,3,Char_03,Buff,1,,E_Swift,2,1,9,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Swift}을 부여한다.,,
-S_Core_36,극성맹독,Core,Unique,Cost,EnemyParty,1,2,Char_03,Debuff,0,,E_Poison;E_TriggerPoison,4;1,1;1,5,Direction,Range_24,범위에 {ValueRate1}의 {E_Poison}을 부여한다. 적중한 대상의 중독을 즉시 1회 발동한다.,,
-S_Core_37,희생,Core,Common,Hp,PlayerParty,1,2,Char_04,FastBuff,1,,E_Armor;E_Cure,5;2,1;1,4,Direction,Range_b_07,"생명력을 {ResourceCostValue} 소모하여, {ValueRate1}의 {E_Armor}를 부여하고, {ValueRate2}의 생명력을 회복한다.",,
-S_Core_38,죄의 무게,Core,Common,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_Strike,9,1,3,Direction,Range_08,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
-S_Core_39,고결한 의지,Core,Common,Cost,PlayerParty,1,1,Char_04,FastBuff,1,,E_Armor;E_Ward,4;1,1;1,3,Direction,Range_b_02,범위에 {ValueRate1}의 {E_Armor}와 {ValueRate2}의 {E_Ward}를 부여한다.,,
-S_Core_40,신의 숨결,Core,Rare,Cost,Self,1,2,Char_04,Buff,0,,E_Karma;E_Cure,1;3,1;1,4,Direction,Range_Self,"자신의 {E_Karma}를 {ValueRate1}, 생명력을 {ValueRate2} 회복한다.",,
-S_Core_41,제네시스,Core,Rare,Ulti,EnemyParty,1,3,Char_04,Attack,0,,E_RandomStrike,9,X,X,Direction,Range_21,범위 내 무작위 적의 위치에 {ValueRate1}의 {E_Strike}를 준다.,,
-S_Core_42,파멸의 선고,Core,Rare,Cost,EnemyParty,1,2,Char_04,Debuff,0,,E_Vulnerable,3,1,4,Direction,Range_22,범위에 {ValueRate1}의 {E_Vulnerable}을 부여한다.,,
-S_Core_43,고통의 계시,Core,Rare,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_Strike;E_Vulnerable;E_Bleed,10;1;1,1;1;1,4,Direction,Range_15,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}과 {E_Bleed}을 부여한다.",,
-S_Core_44,심판 집행,Core,Epic,Ulti,EnemyParty,1,3,Char_04,Debuff,0,,E_RemoveArmor,1,1,3,Direction,Range_All,모든 대상의 {E_Armor}를 제거한다.,,
-S_Core_45,결속,Core,Epic,Cost,PlayerParty,1,2,Char_04,Buff,0,,E_Bond,1,1,5,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Bond}를 부여한다.,,
-S_Core_46,가중처벌,Core,Epic,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_StrikeByVulnerable,6,1,4,Direction,Range_13,범위에 {ValueRate1}의 {E_Strike}를 준다. 대상이 보유한 {E_Vulnerable} 수치만큼 피해량이 증가한다.,,
-S_Core_47,인과율,Core,Unique,Cost,EnemyParty,1,2,Char_04,Debuff,0,,E_DebuffDouble,2,1,8,Direction,Range_12,대상이 보유한 디버프 중 수치가 가장 높은 1종을 {ValueRate1}배로 증가시킨다.,,
-S_Core_48,구원,Core,Unique,Ulti,PlayerParty,1,3,Char_04,Buff,0,,E_Revive,10,1,5,Direction,Range_b_09,범위 내 전투불능 아군 1명이 {ValueRate1}%의 생명력으로 부활한다.,,
+S_Core_101,수호의 기운,Core,Common,Cost,PlayerParty,1,2,Char_01,FastBuff,1,,E_Armor,6,1,3,Direction,Range_b_02,범위에 {ValueRate1}의 {E_Armor}를 부여한다.,,
+S_Core_102,피의 갑주,Core,Common,Hp,Self,1,1,Char_01,Buff,0,,E_Armor,12,1,5,Direction,Range_Self,"생명력을 {ResourceCostValue} 소모하여, 자신에게 {ValueRate1}의 {E_Armor}를 부여한다.",,
+S_Core_103,꼬리 쓸기,Core,Common,Cost,EnemyParty,1,1,Char_01,Attack,0,,E_Strike;E_Knockback,4;1,1;1,2,Direction,Range_10,"범위에 {ValueRate1}의 {E_Strike}를 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",,
+S_Core_104,갑주 파쇄,Core,Rare,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_Vulnerable,6;2,1;1,3,Direction,Range_11,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}을 부여한다.",,
+S_Core_105,가시 갑옷,Core,Rare,Cost,Self,1,2,Char_01,Buff,0,,E_Ward,3,1,3,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Ward}를 부여한다.,,
+S_Core_106,전투의 기세,Core,Rare,Cost,PlayerParty,1,1,Char_01,Buff,0,,E_Smite,2,1,5,Direction,Range_b_01,범위에 {ValueRate1}의 {E_Smite}를 부여한다.,,
+S_Core_107,압도,Core,Rare,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_Weaken,6;1,1;1,3,Direction,Range_20,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Weaken}를 부여한다.",,
+S_Core_108,생명의 가호,Core,Epic,Ulti,PlayerParty,1,2,Char_01,FastBuff,1,,E_Armor;E_Cure,4;2,1;1,1,Direction,Range_b_04,"범위에 {ValueRate1}의 {E_Armor}를 부여하고, {ValueRate2}의 생명력을 회복한다.",,
+S_Core_109,무모한 일격,Core,Epic,Cost,EnemyParty,1,2,Char_01,Attack,0,,E_Strike;E_MissSelfDamage,16;8,1;1,4,Direction,Range_02,"범위에 {ValueRate1}의 {E_Strike} 를 주고, 적중 실패 시 생명력이 {ValueRate2} 감소한다.",,
+S_Core_110,갈증,Core,Epic,Hp,Self,1,2,Char_01,Buff,0,,E_Lifesteal;E_Boost,2;2,1;1,4,Direction,Range_Self,"생명력을 {ResourceCostValue} 소모하여, 자신에게 {ValueRate1}의 {E_Lifesteal}과 {E_Boost}을 부여한다.",,
+S_Core_111,철갑 돌진,Core,Unique,Ulti,EnemyParty,1,2,Char_01,Attack,0,,E_Rush;E_ArmorStrike,1;1,1;1,2,Direction,Range_05,돌진하여 충돌한 적에게 {E_ArmorStrike}의 {E_Strike}를 준다.,,
+S_Core_112,핏빛 수확,Core,Unique,Cost,EnemyParty,1,3,Char_01,Attack,0,,E_Strike;E_ValueUpOnKill,6;2,1;1,5,Direction,Range_10,범위에 {ValueRate1}의 피해를 준다. 처치 시 영구적으로 피해량이 {ValueRate2} 증가한다.,,
+S_Core_201,간파,Core,Common,Cost,Self,1,1,Char_02,FastBuff,1,,E_Blindside,2,1,4,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Blindside}을 부여한다.,,
+S_Core_202,비상검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Move;E_Strike,1;9,1;1,3,Direction,Range_15,{ValueRate1}칸 전진하여 범위에 {ValueRate2}의 {E_Strike}를 준다.,,
+S_Core_203,비연검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike;E_Move,9;-1,1;1,3,Direction,Range_16,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}칸 후퇴한다.",,
+S_Core_204,전투감각,Core,Rare,Ulti,Self,1,1,Char_02,Buff,0,,E_Boost,2,1,1,Direction,Range_Self,자신에게 {ValueRate1}의 {E_Boost}을 부여한다.,,
+S_Core_205,치명상,Core,Rare,Cost,EnemyParty,1,2,Char_02,Debuff,0,,E_Bleed;E_Weaken,4;1,1;1,4,Direction,Range_08,"범위에 {ValueRate1}의 {E_Bleed}과, {ValueRate2}의 {E_Weaken}를 부여한다.",,
+S_Core_206,일섬,Core,Rare,Cost,EnemyParty,1,1,Char_02,FastAttack,1,,E_Strike,4,1,2,Direction,Range_09,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
+S_Core_207,급소타격,Core,Rare,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Strike;E_Fatigue,7;1,1;1,3,Direction,Range_14,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Fatigue}을 부여한다.",,
+S_Core_208,폭풍쇄도,Core,Epic,Cost,EnemyParty,1,3,Char_02,Attack,0,,E_Pierce,X,3,X,Direction,Range_05,범위에 {ValueRate1}의 {E_Pierce}를 준다.,,
+S_Core_209,일점돌파,Core,Epic,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Pierce;E_Bleed,8;2,1;1,2,Direction,Range_03,"범위에 {ValueRate1}의 {E_Pierce}를 주고, 범위 끝에 적중한 대상에게 {ValueRate2}의 {E_Bleed}을 부여한다.",,
+S_Core_210,혈화만개,Core,Epic,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_DamageUpIfBleeding,10,1,3,Direction,Range_12,범위에 {ValueRate1}의 {E_Strike}를 준다. {E_Bleed}을 보유한 적에게 피해량 50% 증가한다.,,
+S_Core_211,환영검무,Core,Unique,Ulti,EnemyParty,1,2,Char_02,Attack,0,,E_StrikeCountByBuff,4,1,3,Direction,Range_16,범위에 {ValueRate1}의 {E_Strike}를 준다. 보유 버프의 종류만큼 횟수가 증가한다.,,
+S_Core_212,공단참,Core,Unique,Cost,EnemyParty,1,2,Char_02,Attack,0,,E_Pierce;E_ValueUpOnHit,7;2,1;1,4,Direction,Range_11,범위에 {ValueRate1}의 {E_Pierce}를 준다. 적중 시 이번 전투 동안 피해량이 {ValueRate2} 증가한다.,,
+S_Core_301,등불의 광휘,Core,Common,Cost,PlayerParty,1,2,Char_03,Buff,0,,E_Smite,1,1,5,Direction,Range_b_04,범위에 {ValueRate1}의 {E_Smite}를 부여한다.,,
+S_Core_302,마나 스파크,Core,Common,Cost,PlayerParty,1,1,Char_03,Buff,0,,E_Charge,3,1,4,Direction,Range_b_07,범위에 {ValueRate1}의 {E_Charge}을 부여한다.,,
+S_Core_303,날카로운 섬광,Core,Common,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike,9,1,3,Direction,Range_23,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
+S_Core_304,마비독,Core,Rare,Cost,EnemyParty,1,2,Char_03,Debuff,0,,E_Poison;E_Weaken,4;1,1;1,4,Direction,Range_24,"범위에 {ValueRate1}의 {E_Poison}을 부여하고, {ValueRate2}의 {E_Weaken}를 부여한다.",,
+S_Core_305,짙은 그림자,Core,Rare,Ulti,EnemyParty,1,2,Char_03,Debuff,0,,E_Fatigue;E_Vulnerable,3;1,1;1,1,Direction,Range_22,범위에 {ValueRate1}의 {E_Fatigue}과 {ValueRate2}의 {E_Vulnerable}을 부여한다.,,
+S_Core_306,영혼 흡수,Core,Rare,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike;E_RestoreManaPerHitTarget,8;1,1;1,4,Direction,Range_24,범위에 {ValueRate1}의 {E_Strike}를 준다. 적중한 적의 수만큼 마나를 회복한다.,,
+S_Core_307,마력 공명,Core,Rare,Ulti,PlayerParty,1,1,Char_03,Buff,0,,E_Focus,1,1,2,Direction,Range_b_09,범위에 {ValueRate1}의 {E_Focus}을 부여한다.,,
+S_Core_308,암흑 섬광,Core,Epic,Cost,EnemyParty,1,2,Char_03,Attack,0,,E_Strike;E_Weaken,10;1,1;1,4,Direction,Range_13,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Weaken}를 부여한다.",,
+S_Core_309,독성증식,Core,Epic,Cost,EnemyParty,1,3,Char_03,Debuff,0,,E_PoisonEqualTargetPoison,1,1,6,Direction,Range_12,대상이 보유한 {E_Poison} 수치만큼 {E_Poison}을 부여한다.,,
+S_Core_310,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,2,Char_03,Debuff,0,,E_Bondage,1,1,2,Direction,Range_06,범위에 {ValueRate1}의 {E_Bondage}을 부여한다.,,
+S_Core_311,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,3,Char_03,Buff,1,,E_Swift,2,1,9,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Swift}을 부여한다.,,
+S_Core_312,극성맹독,Core,Unique,Cost,EnemyParty,1,2,Char_03,Debuff,0,,E_Poison;E_TriggerPoison,4;1,1;1,5,Direction,Range_24,범위에 {ValueRate1}의 {E_Poison}을 부여한다. 적중한 대상의 중독을 즉시 1회 발동한다.,,
+S_Core_401,희생,Core,Common,Hp,PlayerParty,1,2,Char_04,FastBuff,1,,E_Armor;E_Cure,5;2,1;1,4,Direction,Range_b_07,"생명력을 {ResourceCostValue} 소모하여, {ValueRate1}의 {E_Armor}를 부여하고, {ValueRate2}의 생명력을 회복한다.",,
+S_Core_402,죄의 무게,Core,Common,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_Strike,9,1,3,Direction,Range_08,범위에 {ValueRate1}의 {E_Strike}를 준다.,,
+S_Core_403,고결한 의지,Core,Common,Cost,PlayerParty,1,1,Char_04,FastBuff,1,,E_Armor;E_Ward,4;1,1;1,3,Direction,Range_b_02,범위에 {ValueRate1}의 {E_Armor}와 {ValueRate2}의 {E_Ward}를 부여한다.,,
+S_Core_404,신의 숨결,Core,Rare,Cost,Self,1,2,Char_04,Buff,0,,E_Karma;E_Cure,1;3,1;1,4,Direction,Range_Self,"자신의 {E_Karma}를 {ValueRate1}, 생명력을 {ValueRate2} 회복한다.",,
+S_Core_405,제네시스,Core,Rare,Ulti,EnemyParty,1,3,Char_04,Attack,0,,E_RandomStrike,9,X,X,Direction,Range_21,범위 내 무작위 적의 위치에 {ValueRate1}의 {E_Strike}를 준다.,,
+S_Core_406,파멸의 선고,Core,Rare,Cost,EnemyParty,1,2,Char_04,Debuff,0,,E_Vulnerable,3,1,4,Direction,Range_22,범위에 {ValueRate1}의 {E_Vulnerable}을 부여한다.,,
+S_Core_407,고통의 계시,Core,Rare,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_Strike;E_Vulnerable;E_Bleed,10;1;1,1;1;1,4,Direction,Range_15,"범위에 {ValueRate1}의 {E_Strike}를 주고, {ValueRate2}의 {E_Vulnerable}과 {E_Bleed}을 부여한다.",,
+S_Core_408,심판 집행,Core,Epic,Ulti,EnemyParty,1,3,Char_04,Debuff,0,,E_RemoveArmor,1,1,3,Direction,Range_All,모든 대상의 {E_Armor}를 제거한다.,,
+S_Core_409,결속,Core,Epic,Cost,PlayerParty,1,2,Char_04,Buff,0,,E_Bond,1,1,5,Direction,Range_Party,모든 아군에게 {ValueRate1}의 {E_Bond}를 부여한다.,,
+S_Core_410,가중처벌,Core,Epic,Cost,EnemyParty,1,2,Char_04,Attack,0,,E_StrikeByVulnerable,6,1,4,Direction,Range_13,범위에 {ValueRate1}의 {E_Strike}를 준다. 대상이 보유한 {E_Vulnerable} 수치만큼 피해량이 증가한다.,,
+S_Core_411,인과율,Core,Unique,Cost,EnemyParty,1,2,Char_04,Debuff,0,,E_DebuffDouble,2,1,8,Direction,Range_12,대상이 보유한 디버프 중 수치가 가장 높은 1종을 {ValueRate1}배로 증가시킨다.,,
+S_Core_412,구원,Core,Unique,Ulti,PlayerParty,1,3,Char_04,Buff,0,,E_Revive,10,1,5,Direction,Range_b_09,범위 내 전투불능 아군 1명이 {ValueRate1}%의 생명력으로 부활한다.,,
 ,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,

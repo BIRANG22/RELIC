@@ -37,8 +37,6 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private Vector2 shortcutHighlightSize = new Vector2(425f, 50f);
     [SerializeField] private Vector2 shortcutResetButtonPosition = new Vector2(0f, 75f);
     [SerializeField] private Vector2 shortcutResetButtonSize = new Vector2(260f, 60f);
-    [Header("Shortcut Hover Sound")]
-    [SerializeField, SoundId(SoundCategory.Sfx)] private string shortcutHoverSfxId;
 
     [Header("Resolution")]
     [SerializeField] private Button resolutionPreviousButton;
@@ -68,10 +66,19 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private string tutorialYesKey = "common.yes";
     [SerializeField] private string tutorialNoKey = "common.no";
 
+    [Header("Background Audio")]
+    [SerializeField] private Button backgroundAudioPreviousButton;
+    [SerializeField] private Button backgroundAudioNextButton;
+    [SerializeField] private TMP_Text backgroundAudioValueText;
+    [SerializeField] private string backgroundAudioOnKey = "ui.option.background_audio.on";
+    [SerializeField] private string backgroundAudioOffKey = "ui.option.background_audio.off";
+
     [Header("Language Arrows")]
     [SerializeField] private Button languagePreviousButton;
     [SerializeField] private Button languageNextButton;
     [SerializeField] private TMP_Text languageValueText;
+    [Tooltip("Language cycling order, using locale codes.")]
+    [SerializeField] private string[] languageOrder = { "ko", "en", "zh-Hans", "zh-Hant", "ja", "es" };
     private bool languageReady;
     private int languageInitVersion;
 
@@ -113,6 +120,7 @@ public class OptionPanelUI : MonoBehaviour
 
         AutoFindReferences();
         EnsureControlContent();
+        RefreshShortcutHoverSound();
         BindArrowSelectors();
         LocalizationSettings.SelectedLocaleChanged -= OnSelectedLanguageChanged;
         LocalizationSettings.SelectedLocaleChanged += OnSelectedLanguageChanged;
@@ -189,7 +197,25 @@ public class OptionPanelUI : MonoBehaviour
         RefreshLanguageLabel();
     }
 
-    public void ShowSound() => ShowSingleContent(soundContent);
+    public void ShowSound()
+    {
+        ShowSingleContent(soundContent);
+        RefreshBackgroundAudioLabel();
+    }
+
+    public void CycleBackgroundAudio()
+    {
+        AudioManager.SetBackgroundAudioEnabled(!AudioManager.BackgroundAudioEnabled);
+        RefreshBackgroundAudioLabel();
+    }
+
+    private void RefreshBackgroundAudioLabel()
+    {
+        bool enabled = AudioManager.BackgroundAudioEnabled;
+        SetSelectorLabel(backgroundAudioValueText, enabled ? backgroundAudioOnKey : backgroundAudioOffKey,
+            enabled ? LocalizedOptionText("켜기", "On", "オン", "开启", "開啟", "Activado")
+                    : LocalizedOptionText("끄기", "Off", "オフ", "关闭", "關閉", "Desactivado"));
+    }
     public void ShowLanguage() => ShowGame();
     public void ShowResolution()
     {
@@ -266,7 +292,7 @@ public class OptionPanelUI : MonoBehaviour
         if (gameContent == null)
             gameContent = FindChildGameObject("GameContent");
         if (soundContent == null)
-            soundContent = FindChildGameObject(SoundContentName);
+            soundContent = FindChildGameObject("AudioContent") ?? FindChildGameObject(SoundContentName);
 
         if (resolutionContent == null)
             resolutionContent = FindChildGameObject(ResolutionContentName);
@@ -301,8 +327,8 @@ public class OptionPanelUI : MonoBehaviour
     private void CycleLanguage(int direction)
     {
         if (!languageReady) return;
-        var locales = LocalizationSettings.AvailableLocales.Locales;
-        if (locales == null || locales.Count < 2) return;
+        var locales = GetOrderedLanguageLocales();
+        if (locales.Count < 2) return;
         int index = -1;
         for (int i = 0; i < locales.Count; i++)
             if (locales[i] == LocalizationSettings.SelectedLocale) { index = i; break; }
@@ -316,6 +342,28 @@ public class OptionPanelUI : MonoBehaviour
         RefreshLanguageLabel();
     }
 
+    private List<Locale> GetOrderedLanguageLocales()
+    {
+        var result = new List<Locale>();
+        var available = LocalizationSettings.AvailableLocales.Locales;
+        if (available == null) return result;
+        if (languageOrder != null)
+        {
+            foreach (string code in languageOrder)
+            {
+                if (string.IsNullOrWhiteSpace(code)) continue;
+                foreach (Locale locale in available)
+                {
+                    if (locale != null && string.Equals(locale.Identifier.Code, code.Trim(), System.StringComparison.OrdinalIgnoreCase) && !result.Contains(locale))
+                        result.Add(locale);
+                }
+            }
+        }
+        foreach (Locale locale in available)
+            if (locale != null && !result.Contains(locale)) result.Add(locale);
+        return result;
+    }
+
     private void OnSelectedLanguageChanged(Locale _) => RefreshLanguageLabel();
 
     private void SetLanguageButtonsInteractable(bool value)
@@ -327,7 +375,7 @@ public class OptionPanelUI : MonoBehaviour
     private void RefreshLanguageLabel()
     {
         if (!languageReady) return;
-        SetLanguageButtonsInteractable(LocalizationSettings.AvailableLocales.Locales?.Count > 1);
+        SetLanguageButtonsInteractable(GetOrderedLanguageLocales().Count > 1);
         if (languageValueText == null) return;
         Locale locale = LocalizationSettings.SelectedLocale;
         languageValueText.text = locale == null ? string.Empty : GetLanguageDisplayName(locale);
@@ -385,6 +433,15 @@ public class OptionPanelUI : MonoBehaviour
     private void BindArrowSelectors()
     {
         UnbindArrowSelectors();
+        Transform audioRoot = soundContent != null ? soundContent.transform : transform;
+        Transform backgroundAudio = FindChildByName(audioRoot, "BackgroundAudio");
+        if (backgroundAudioPreviousButton == null) backgroundAudioPreviousButton = FindTabButton(backgroundAudio, "LeftButton");
+        if (backgroundAudioNextButton == null) backgroundAudioNextButton = FindTabButton(backgroundAudio, "RightButton");
+        if (backgroundAudioValueText == null) backgroundAudioValueText = FindSelectorText(backgroundAudio);
+        if (backgroundAudioPreviousButton != null) backgroundAudioPreviousButton.onClick.AddListener(CycleBackgroundAudio);
+        if (backgroundAudioNextButton != null && backgroundAudioNextButton != backgroundAudioPreviousButton)
+            backgroundAudioNextButton.onClick.AddListener(CycleBackgroundAudio);
+        RefreshBackgroundAudioLabel();
         Transform gameRoot = gameContent != null ? gameContent.transform : transform;
         Transform language = FindChildByName(gameRoot, "LanguageContent") ?? FindChildByName(gameRoot, "LanguageSelector");
         if (languagePreviousButton == null) languagePreviousButton = FindTabButton(language, "LeftButton");
@@ -445,6 +502,8 @@ public class OptionPanelUI : MonoBehaviour
 
     private void UnbindArrowSelectors()
     {
+        if (backgroundAudioPreviousButton != null) backgroundAudioPreviousButton.onClick.RemoveListener(CycleBackgroundAudio);
+        if (backgroundAudioNextButton != null) backgroundAudioNextButton.onClick.RemoveListener(CycleBackgroundAudio);
         if (languagePreviousButton != null) languagePreviousButton.onClick.RemoveListener(PreviousLanguage);
         if (languageNextButton != null) languageNextButton.onClick.RemoveListener(NextLanguage);
         if (battlePresentationSpeedPreviousButton != null) battlePresentationSpeedPreviousButton.onClick.RemoveListener(PreviousBattlePresentationSpeed);
@@ -529,6 +588,7 @@ public class OptionPanelUI : MonoBehaviour
         RefreshDisplayModeLabels();
         RefreshResolutionLabel();
         SyncTutorialToggleFromSettings();
+        RefreshBackgroundAudioLabel();
         RefreshOptionHeadingLabels();
         RefreshTabLabels();
         RefreshShortcutRows();
@@ -538,6 +598,8 @@ public class OptionPanelUI : MonoBehaviour
     // The panel owns these four headings; dropdown captions and other dynamic values stay untouched.
     private void RefreshOptionHeadingLabels()
     {
+        SetOptionHeading("BackgroundAudioLabel", "ui.option.background_audio.label",
+            LocalizedOptionText("백그라운드 재생", "Background Audio", "バックグラウンド再生", "后台播放", "背景播放", "Audio en segundo plano"));
         SetOptionHeading("Language_text", "ui.option.header.language", "언어");
         SetOptionHeading("LanguageText", "ui.option.header.language", "언어");
         SetOptionHeading("Resolution_text", "ui.option.header.resolution", "해상도");
@@ -598,6 +660,7 @@ public class OptionPanelUI : MonoBehaviour
             RefreshDisplayModeLabels();
             RefreshResolutionLabel();
             SyncTutorialToggleFromSettings();
+            RefreshBackgroundAudioLabel();
             RefreshTabLabels();
             RefreshShortcutRows();
         }
@@ -709,7 +772,6 @@ public class OptionPanelUI : MonoBehaviour
             // Reuse the same hover highlight as the other option tabs.
             var hover = rowObject.AddComponent<OptionHoverItem>();
             hover.SetHighlightSize(shortcutHighlightSize);
-            hover.SetHoverSfxId(shortcutHoverSfxId);
         }
 
         var resetObject = new GameObject("ResetShortcuts", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
@@ -720,7 +782,29 @@ public class OptionPanelUI : MonoBehaviour
         resetObject.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.18f, 0.95f);
         resetObject.GetComponent<Button>().onClick.AddListener(BattleKeyboardShortcutBindings.ResetAll);
         shortcutResetText = CreateChildText(resetObject.transform, fontSource, "ResetText", 25f);
-        resetObject.AddComponent<OptionHoverItem>().SetHoverSfxId(shortcutHoverSfxId);
+        resetObject.AddComponent<OptionHoverItem>();
+    }
+
+    private void RefreshShortcutHoverSound()
+    {
+        if (controlContent == null) return;
+
+        string inheritedSfxId = null;
+        // Read the configured sound even from inactive option tabs.
+        foreach (GameObject content in new[] { gameContent, resolutionContent, soundContent })
+        {
+            if (content == null || content == controlContent) continue;
+            foreach (OptionHoverItem source in content.GetComponentsInChildren<OptionHoverItem>(true))
+            {
+                if (string.IsNullOrWhiteSpace(source.HoverSfxId)) continue;
+                inheritedSfxId = source.HoverSfxId;
+                break;
+            }
+            if (!string.IsNullOrWhiteSpace(inheritedSfxId)) break;
+        }
+
+        foreach (OptionHoverItem item in controlContent.GetComponentsInChildren<OptionHoverItem>(true))
+            item.SetHoverSfxId(inheritedSfxId);
     }
 
     private void ApplyShortcutResetLayout()

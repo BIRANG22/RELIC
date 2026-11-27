@@ -90,6 +90,49 @@ public class AudioManager : Singleton<AudioManager>
     private float bgmFadeMultiplier = 1f;
     private float standbyBgmFadeMultiplier;
 
+    private const string BackgroundAudioPrefsKey = "Dustium.BackgroundAudioEnabled";
+    private bool backgroundAudioMuted;
+    private float listenerVolumeBeforeBackgroundMute;
+
+    public static bool BackgroundAudioEnabled => PlayerPrefs.GetInt(BackgroundAudioPrefsKey, 1) != 0;
+
+    public static void SetBackgroundAudioEnabled(bool enabled)
+    {
+        PlayerPrefs.SetInt(BackgroundAudioPrefsKey, enabled ? 1 : 0);
+        PlayerPrefs.Save();
+        if (Instance != null)
+            Instance.ApplyBackgroundAudioFocus(Application.isFocused);
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!IsDuplicateInstance && Instance == this)
+            ApplyBackgroundAudioFocus(hasFocus);
+    }
+
+    private void ApplyBackgroundAudioFocus(bool hasFocus)
+    {
+        bool shouldMute = !hasFocus && !BackgroundAudioEnabled;
+        if (shouldMute == backgroundAudioMuted) return;
+        if (shouldMute)
+        {
+            listenerVolumeBeforeBackgroundMute = AudioListener.volume;
+            AudioListener.volume = 0f;
+        }
+        else
+        {
+            AudioListener.volume = listenerVolumeBeforeBackgroundMute;
+        }
+        backgroundAudioMuted = shouldMute;
+    }
+
+    protected override void OnDestroy()
+    {
+        if (!IsDuplicateInstance && backgroundAudioMuted)
+            ApplyBackgroundAudioFocus(true);
+        base.OnDestroy();
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -98,6 +141,7 @@ public class AudioManager : Singleton<AudioManager>
             return;
 
         InitializeDictionary();
+        ApplyBackgroundAudioFocus(Application.isFocused);
     }
 
     public void Initialize()
