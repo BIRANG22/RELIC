@@ -8,7 +8,16 @@ namespace Relic.Gameplay.Data
         None,
         Buff,
         Debuff,
-        Attack
+        Attack,
+        Move,
+        Passive
+    }
+
+    public enum PassiveTriggerType
+    {
+        Unspecified,
+        TurnStart,
+        BattleStart
     }
 
     public enum TimelineActionType
@@ -99,6 +108,7 @@ namespace Relic.Gameplay.Data
         // SkillMaster.IsFastSkill: 0 = normal, 1 = executes before monsters.
         public int IsFastSkill;
         public TimelineActionType TimelineNotation;
+        public PassiveTriggerType PassiveTrigger;
 
         // 엑셀 원본 문자열: 세미콜론 구분
         public string EffectIds;

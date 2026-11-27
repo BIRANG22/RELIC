@@ -43,6 +43,12 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 26a3931b7d297d44ab3c72cfdd23d9f0, type: 3}
   - RelicId: Compound_15
     Icon: {fileID: 21300000, guid: c2aa04d438985e045b54ae153def8aa8, type: 3}
+  - RelicId: Compound_16
+    Icon: {fileID: 21300000, guid: 71bdf8e033b4ff1478d7fe235cc31ee4, type: 3}
+  - RelicId: Compound_17
+    Icon: {fileID: 21300000, guid: a1ddae91cf05f6140b60f5afcbd84446, type: 3}
+  - RelicId: Compound_18
+    Icon: {fileID: 21300000, guid: 84f71aa974c8b5b43a987ac32c015514, type: 3}
   - RelicId: Relic_P_01
     Icon: {fileID: 21300000, guid: 91ebc247a2bd53140a493b2a611439b9, type: 3}
   - RelicId: Relic_P_02

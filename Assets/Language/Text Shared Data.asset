@@ -6683,6 +6683,230 @@ MonoBehaviour:
     m_Key: tutorial.battle_guide.05
     m_Metadata:
       m_Items: []
+  - m_Id: 39235267978305536
+    m_Key: data.skill_master.s_unique_09.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054272
+    m_Key: data.skill_master.s_unique_09.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054273
+    m_Key: data.skill_master.s_unique_10.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054274
+    m_Key: data.skill_master.s_unique_10.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054275
+    m_Key: data.skill_master.s_unique_11.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054276
+    m_Key: data.skill_master.s_unique_11.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054277
+    m_Key: data.skill_master.s_unique_12.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054278
+    m_Key: data.skill_master.s_unique_12.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054279
+    m_Key: data.skill_master.s_ability_09.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054280
+    m_Key: data.skill_master.s_ability_09.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054281
+    m_Key: data.skill_master.s_ability_10.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054282
+    m_Key: data.skill_master.s_ability_10.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054283
+    m_Key: data.skill_master.s_ability_11.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054284
+    m_Key: data.skill_master.s_ability_11.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054285
+    m_Key: data.skill_master.s_ability_12.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054286
+    m_Key: data.skill_master.s_ability_12.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054287
+    m_Key: data.skill_master.s_core_41.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268016054288
+    m_Key: data.skill_master.s_core_41.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248576
+    m_Key: data.skill_master.s_core_42.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248577
+    m_Key: data.skill_master.s_core_42.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248578
+    m_Key: data.skill_master.s_core_43.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248579
+    m_Key: data.skill_master.s_core_43.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248580
+    m_Key: data.skill_master.s_core_44.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248581
+    m_Key: data.skill_master.s_core_44.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248582
+    m_Key: data.skill_master.s_core_45.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248583
+    m_Key: data.skill_master.s_core_45.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248584
+    m_Key: data.skill_master.s_core_46.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248585
+    m_Key: data.skill_master.s_core_46.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248586
+    m_Key: data.skill_master.s_core_47.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248587
+    m_Key: data.skill_master.s_core_47.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248588
+    m_Key: data.skill_master.s_core_48.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248589
+    m_Key: data.skill_master.s_core_48.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248590
+    m_Key: data.monster_skill.s_monster_29.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248591
+    m_Key: data.monster_skill.s_monster_33.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248592
+    m_Key: data.monster_skill.s_monster_38.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248593
+    m_Key: data.monster_skill.s_monster_38.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248594
+    m_Key: data.monster_skill.s_monster_41.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248595
+    m_Key: data.monster_skill.s_monster_41.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248596
+    m_Key: data.effect.e_strength.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248597
+    m_Key: data.effect.e_strength.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248598
+    m_Key: data.effect.e_hardening.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248599
+    m_Key: data.effect.e_hardening.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248600
+    m_Key: data.effect.e_remove_first_debuff.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248601
+    m_Key: data.effect.e_remove_first_debuff.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248602
+    m_Key: data.effect.e_reduce_erosion.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248603
+    m_Key: data.effect.e_reduce_erosion.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248604
+    m_Key: data.effect.e_invulnerable.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248605
+    m_Key: data.effect.e_invulnerable.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248606
+    m_Key: data.effect.e_revive.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248607
+    m_Key: data.effect.e_revive.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248608
+    m_Key: data.compound.compound_16.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248609
+    m_Key: data.compound.compound_16.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248610
+    m_Key: data.compound.compound_17.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248611
+    m_Key: data.compound.compound_17.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248612
+    m_Key: data.compound.compound_18.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39235268020248613
+    m_Key: data.compound.compound_18.effect_description
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

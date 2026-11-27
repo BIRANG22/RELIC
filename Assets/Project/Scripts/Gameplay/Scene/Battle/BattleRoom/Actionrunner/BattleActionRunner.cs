@@ -612,7 +612,7 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
-            if (character.RuntimeData.IsDead)
+            if (character.RuntimeData.IsDead && !effectExecutor.AcceptsDeadTarget(command.SkillData))
                 continue;
 
             if (command.RangeGridIndices.Contains(character.CurrentGridIndex))
@@ -2040,7 +2040,7 @@ public class BattleActionRunner
                     foreach (BattleCharacter candidate in focusCharacters)
                     {
                         if (candidate != null && candidate.RuntimeData != null &&
-                            !candidate.RuntimeData.IsDead &&
+                            (!candidate.RuntimeData.IsDead || effectExecutor.AcceptsDeadTarget(command.SkillData)) &&
                             command.RangeGridIndices != null &&
                             command.RangeGridIndices.Contains(candidate.CurrentGridIndex))
                             recipients.Add(candidate.transform);
@@ -2077,6 +2077,8 @@ public class BattleActionRunner
                 );
 
                 bool allowTargetUnitPlayOnceCue = true;
+                var deadTargetCounts = new Dictionary<SkillEffectEntry, int>();
+                System.Array.Sort(characters, (a, b) => string.CompareOrdinal(a?.RuntimeData?.CharacterId, b?.RuntimeData?.CharacterId));
 
                 for (int i = 0; i < characters.Length; i++)
                 {
@@ -2085,7 +2087,7 @@ public class BattleActionRunner
                     if (target == null || target.RuntimeData == null)
                         continue;
 
-                    if (target.RuntimeData.IsDead)
+                    if (target.RuntimeData.IsDead && !effectExecutor.AcceptsDeadTarget(command.SkillData))
                         continue;
 
                     if (!command.RangeGridIndices.Contains(target.CurrentGridIndex))
@@ -2100,7 +2102,7 @@ public class BattleActionRunner
                     if (spawnedTargetUnitVfx)
                         allowTargetUnitPlayOnceCue = false;
 
-                    ExecutePlayerSkillEffectsToPlayer(attacker, target, command);
+                    ExecutePlayerSkillEffectsToPlayer(attacker, target, command, deadTargetCounts);
                 }
 
                 hudService.RefreshHUDs();
@@ -3688,12 +3690,13 @@ public class BattleActionRunner
     private void ExecutePlayerSkillEffectsToPlayer(
     BattleCharacter caster,
     BattleCharacter playerTarget,
-    PlayerReservedCommand command)
+    PlayerReservedCommand command,
+    Dictionary<SkillEffectEntry, int> deadTargetCounts = null)
     {
         if (caster == null || playerTarget == null || command == null || command.SkillData == null)
             return;
 
-        if (playerTarget.RuntimeData == null || playerTarget.RuntimeData.IsDead)
+        if (playerTarget.RuntimeData == null)
             return;
 
         if (command.SkillData.EffectEntries == null || command.SkillData.EffectEntries.Count == 0)
@@ -3701,7 +3704,7 @@ public class BattleActionRunner
 
         for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
         {
-            if (playerTarget.RuntimeData == null || playerTarget.RuntimeData.IsDead)
+            if (playerTarget.RuntimeData == null)
                 break;
 
             SkillEffectEntry entry = command.SkillData.EffectEntries[i];
@@ -3716,6 +3719,15 @@ public class BattleActionRunner
                 command.UserRuntime,
                 command,
                 entry.EffectId);
+            bool acceptsDead = effectExecutor.AcceptsDeadTarget(effectId);
+            if (playerTarget.RuntimeData.IsDead && !acceptsDead)
+                continue;
+            if (acceptsDead && !playerTarget.RuntimeData.IsDead)
+                continue;
+            if (acceptsDead && deadTargetCounts != null &&
+                deadTargetCounts.TryGetValue(entry, out int usedTargets) &&
+                usedTargets >= GetPlayerEffectCount(command, entry))
+                continue;
             BattleEffectContext context = new BattleEffectContext
             {
                 PlayerCaster = caster,
@@ -3747,7 +3759,18 @@ public class BattleActionRunner
             }
             else
             {
-                ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
+                if (acceptsDead)
+                {
+                    context.Count = 1;
+                    ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
+                    if (!playerTarget.RuntimeData.IsDead && deadTargetCounts != null)
+                    {
+                        deadTargetCounts.TryGetValue(entry, out int applied);
+                        deadTargetCounts[entry] = applied + 1;
+                    }
+                }
+                else
+                    ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
             }
         }
     }
@@ -3766,7 +3789,7 @@ public class BattleActionRunner
         for (int repeatIndex = 0; repeatIndex < repeatCount; repeatIndex++)
         {
             if (context.PlayerTarget != null &&
-                (context.PlayerTarget.RuntimeData == null || context.PlayerTarget.RuntimeData.IsDead))
+                (context.PlayerTarget.RuntimeData == null || (context.PlayerTarget.RuntimeData.IsDead && !effectExecutor.AcceptsDeadTarget(effectId))))
             {
                 break;
             }

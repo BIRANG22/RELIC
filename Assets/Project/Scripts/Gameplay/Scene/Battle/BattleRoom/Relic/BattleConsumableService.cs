@@ -91,40 +91,7 @@ public static class BattleConsumableService
         BattleGridEffectController gridEffects = null, PartyRuntimeStore partyPositions = null)
     {
         return TryUse(battle, command, isReservationPhase, () =>
-        {
-            if (effectService == null) return false;
-            var availability = effectService.GetConsumableAvailability(command.ItemId);
-            if (!availability.CanUse) return false;
-            if (availability.TargetMode == ActiveRelicTargetMode.Self)
-                return ApplyToLivingParty(party, member => effectService.TryUseConsumableImmediate(member, command.ItemId).Succeeded);
-            CharacterRuntimeData target = null;
-            bool hasLivingMember = false;
-            if (party != null)
-                foreach (var member in party)
-                    if (member != null && !member.IsDead)
-                    {
-                        hasLivingMember = true;
-                        if (string.Equals(member.CharacterId, command.TargetCharacterId, StringComparison.Ordinal)) target = member;
-                    }
-            if (!hasLivingMember || command.TargetGridIndex < 0) return false;
-            if (availability.EffectId == ActiveRelicEffectIds.MoveToGrid || availability.EffectId == ActiveRelicEffectIds.SwapAlly)
-            {
-                if (target == null) return false;
-                if (availability.EffectId == ActiveRelicEffectIds.SwapAlly)
-                {
-                    var partyStore = partyPositions;
-                    bool validDestination = false;
-                    if (partyStore != null)
-                        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
-                            foreach (var member in party)
-                                if (member != null && !member.IsDead && member.CharacterId != target.CharacterId &&
-                                    member.CharacterId == partyStore.GetCharacterId(i) && partyStore.GetCurrentGridIndex(i) == command.TargetGridIndex)
-                                    validDestination = true;
-                    if (!validDestination) return false;
-                }
-            }
-            return effectService.TryUseConsumableTarget(target, command.ItemId, command.TargetGridIndex, gridManager, gridEffects).Succeeded;
-        });
+            effectService != null && effectService.TryUsePartyEffects(command.ItemId, party));
     }
 
     public static UseConsumableResult TryUse(

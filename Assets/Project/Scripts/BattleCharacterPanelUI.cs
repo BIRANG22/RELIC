@@ -3332,15 +3332,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
             string activeRelicId = ActiveRelicRuntimeUtility.GetActiveRelicId(boundRuntime);
             hash = hash * 31 + (activeRelicId ?? string.Empty).GetHashCode();
 
-            if (!string.IsNullOrWhiteSpace(activeRelicId) &&
-                DataManager.Instance != null &&
-                DataManager.Instance.RelicDatabase != null &&
-                DataManager.Instance.RelicDatabase.TryGet(activeRelicId, out RelicData relic) &&
-                relic != null)
-            {
-                hash = hash * 31 + ActiveRelicRuntimeUtility.GetRemainingUses(boundRuntime, relic);
-                hash = hash * 31 + ActiveRelicRuntimeUtility.GetMaxUses(relic);
-            }
 
             return hash;
         }

@@ -247,7 +247,7 @@ namespace Relic.Gameplay.Battle
             if (!IsDamageEffect(effectId))
                 return false;
 
-            int damage = Mathf.Max(0, value);
+            int damage = ConfiguredDamageRules.ApplyIncoming(value, runtimeData.StatusEffects);
 
             if (damage <= 0)
                 return false;
@@ -276,7 +276,7 @@ namespace Relic.Gameplay.Battle
             if (!IsDamageEffect(effectId))
                 return false;
 
-            int damage = Mathf.Max(0, value);
+            int damage = ConfiguredDamageRules.ApplyIncoming(value, runtimeData.StatusEffects);
 
             if (damage <= 0)
                 return false;

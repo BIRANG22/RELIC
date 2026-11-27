@@ -18,7 +18,6 @@ namespace Relic.Gameplay.Data
 
                 data.CompoundId = data.CompoundId?.Trim();
                 data.FragmentId = data.CompoundId;
-                data.TargetType = data.TargetType?.Trim();
                 data.MaterialId1 = data.MaterialId1?.Trim();
                 data.MaterialId2 = data.MaterialId2?.Trim();
                 data.MaterialId3 = data.MaterialId3?.Trim();

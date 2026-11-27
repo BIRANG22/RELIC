@@ -112,3 +112,5 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 54941137540be7643b502a1e52bf59fd, type: 3}
   - EffectId: E_Spawn_Spider_Web
     Icon: {fileID: 21300000, guid: 15da78a4f35944347849564c9a54aaca, type: 3}
+  - EffectId: E_Invulnerable
+    Icon: {fileID: 21300000, guid: 61ab5c00be8da8948951796c9075ff9c, type: 3}

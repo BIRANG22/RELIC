@@ -69,7 +69,8 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string hitStateName = "Hit";
     [SerializeField] private string healStateName = "";
     [SerializeField] private string deadStateName = "Dead";
-    [SerializeField] private string arabellaPhaseOneDefeatedStateName =
+    [SerializeField]
+    private string arabellaPhaseOneDefeatedStateName =
         ArabellaPhaseTransition.PhaseOneDefeatedAnimationState;
 
     [Header("Hit Flash")]
@@ -262,6 +263,12 @@ public class BattleUnitAnimator : MonoBehaviour
         EnsureMonsterActionPresentationArray();
         vfxSortingReference = null;
         hitFlashPropertyId = Shader.PropertyToID(string.IsNullOrWhiteSpace(hitFlashPropertyName) ? "_HitFlash" : hitFlashPropertyName);
+    }
+
+    public void PlayRevived()
+    {
+        deathPresentationPlayed = false;
+        PlayIdle();
     }
 
     public void PlayIdle()

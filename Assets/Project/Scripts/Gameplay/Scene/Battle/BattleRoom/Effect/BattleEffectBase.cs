@@ -1,6 +1,8 @@
 public abstract class BattleEffectBase
 {
     public abstract string EffectId { get; }
+    public virtual bool IsPartyShared => false;
+    public virtual bool AcceptsDeadTarget => false;
 
     public virtual bool CanApply(BattleEffectContext context)
     {

@@ -23,6 +23,7 @@ public class PierceEffect : BattleEffectBase
             BattleEffectUtility.PierceDamagePlayer(context.PlayerTarget, finalDamage, context.MonsterCaster != null || context.MonsterCommand != null);
             int dealtDamage = Mathf.Max(0, previousHp - context.PlayerTarget.RuntimeData.CurrentHP);
             BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
+            ConfiguredDamageRules.ConsumeRearHit(context, dealtDamage);
             BattleDamageModifierUtility.TryConsumeVulnerableOnDamageTrigger(
                 context.PlayerTarget.RuntimeData.StatusEffects,
                 damage,
@@ -39,6 +40,7 @@ public class PierceEffect : BattleEffectBase
 
             int dealtDamage = BattleEffectUtility.PierceDamageMonster(context.MonsterTarget, finalDamage);
             BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
+            ConfiguredDamageRules.ConsumeRearHit(context, dealtDamage);
             bool killedByPierce = wasAlive && context.MonsterTarget.RuntimeData.IsDead;
             if (context.ExecutionResult != null)
             {

@@ -9,6 +9,10 @@ public class OptionHoverItem : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private bool respondToSelection = true;
     [Header("Hover Sound")]
     [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfxId;
+    private Vector2? overrideHighlightSize;
+    public void SetHighlightSize(Vector2 size) => overrideHighlightSize = size;
+    public void SetHoverSfxId(string sfxId) => hoverSfxId = sfxId;
+
     private RectTransform rectTransform;
     private bool hovered;
     private bool selected;
@@ -37,7 +41,7 @@ public class OptionHoverItem : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (!hovered && !string.IsNullOrWhiteSpace(hoverSfxId))
             AudioManager.Instance?.PlaySfx(hoverSfxId);
         hovered = true;
-        if (highlight != null) highlight.MoveTo(rectTransform);
+        if (highlight != null) highlight.MoveTo(rectTransform, overrideHighlightSize);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -50,7 +54,7 @@ public class OptionHoverItem : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (!respondToSelection) return;
         selected = true;
-        if (highlight != null) highlight.MoveTo(rectTransform);
+        if (highlight != null) highlight.MoveTo(rectTransform, overrideHighlightSize);
     }
 
     public void OnDeselect(BaseEventData eventData)
