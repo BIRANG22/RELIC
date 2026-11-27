@@ -209,7 +209,7 @@ GameObject:
   - component: {fileID: 6981716730426612126}
   - component: {fileID: 4216591762182499937}
   m_Layer: 5
-  m_Name: Item
+  m_Name: Monster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -618,7 +618,7 @@ MonoBehaviour:
   fragmentTabButton: {fileID: 8459693606058004735}
   relicTabButton: {fileID: 1038522500040184554}
   compoundTabButton: {fileID: 174488669260118084}
-  itemTabButton: {fileID: 5775821375924963743}
+  monsterTabButton: {fileID: 5775821375924963743}
   effectTabButton: {fileID: 2611644980184389082}
   skillNumberText: {fileID: 2307555978154728391}
   commonRarityColor: {r: 0.7607843, g: 0.8181423, b: 0.8901961, a: 1}
@@ -5212,7 +5212,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC7AC\uB8CC"
+  m_text: "\uBAAC\uC2A4\uD130"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
   m_sharedMaterial: {fileID: -7133732941862592188, guid: c2055745db82a15418a5dd0f06fbd6be, type: 2}
@@ -5297,8 +5297,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 959763560256424829}
-  localizationKey: common.material
-  koreanSource: "\uC7AC\uB8CC"
+  localizationKey: ui.record.tab.monster
+  koreanSource: "\uBAAC\uC2A4\uD130"
   automaticallyRegistered: 1
 --- !u!1 &8639274816238106690
 GameObject:

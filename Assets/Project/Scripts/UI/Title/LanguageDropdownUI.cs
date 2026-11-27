@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 public class LanguageDropdownUI : MonoBehaviour
@@ -23,8 +24,6 @@ public class LanguageDropdownUI : MonoBehaviour
 
     [Header("Template Sorting")]
     [SerializeField] private int dropdownSortingOrderOffset = 50;
-
-    private const string SaveKey = "SelectedLanguage";
 
     private readonly List<string> localeCodes = new()
     {
@@ -49,16 +48,29 @@ public class LanguageDropdownUI : MonoBehaviour
     {
         await LocalizationSettings.InitializationOperation.Task;
 
-        SetupDropdownOptions();
-        SyncDropdownFromCurrentLocale();
-        directDropdown?.ApplyCaptionFont();
-        if (languageDropdown == null)
+        if (!this || languageDropdown == null)
             return;
 
-        RefreshLanguagePreview(languageDropdown.value);
+        SetupDropdownOptions();
+        RefreshSelectionFromCurrentLocale();
         languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
 
         isInitialized = true;
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += OnSelectedLocaleChanged;
+        if (isInitialized)
+            RefreshSelectionFromCurrentLocale();
+    }
+
+    private void OnDisable() => LocalizationSettings.SelectedLocaleChanged -= OnSelectedLocaleChanged;
+
+    private void OnSelectedLocaleChanged(Locale _)
+    {
+        if (isInitialized)
+            RefreshSelectionFromCurrentLocale();
     }
 
     private void OnDestroy()
@@ -92,7 +104,7 @@ public class LanguageDropdownUI : MonoBehaviour
         languageDropdown.AddOptions(options);
     }
 
-    private void SyncDropdownFromCurrentLocale()
+    private void RefreshSelectionFromCurrentLocale()
     {
         string currentCode = LocalizationSettings.SelectedLocale != null
             ? LocalizationSettings.SelectedLocale.Identifier.Code
@@ -105,7 +117,9 @@ public class LanguageDropdownUI : MonoBehaviour
         }
 
         languageDropdown.SetValueWithoutNotify(index);
+        languageDropdown.RefreshShownValue();
         directDropdown?.ApplyCaptionFont();
+        RefreshLanguagePreview(index);
     }
 
     private void OnLanguageChanged(int index)
@@ -134,7 +148,7 @@ public class LanguageDropdownUI : MonoBehaviour
             if (locale.Identifier.Code == localeCode)
             {
                 LocalizationSettings.SelectedLocale = locale;
-                PlayerPrefs.SetString(SaveKey, localeCode);
+                PlayerPrefs.SetString(GameLocalization.SelectedLanguagePreferenceKey, localeCode);
                 PlayerPrefs.Save();
 
                 Debug.Log($"[LanguageDropdownUI] Language changed: {localeCode}");
@@ -143,8 +157,7 @@ public class LanguageDropdownUI : MonoBehaviour
         }
 
         Debug.LogWarning($"[LanguageDropdownUI] Locale not found: {localeCode}. Add it to Localization Settings > Available Locales.");
-        SyncDropdownFromCurrentLocale();
-        RefreshLanguagePreview(languageDropdown.value);
+        RefreshSelectionFromCurrentLocale();
     }
 
     private void RefreshLanguagePreview(int index)

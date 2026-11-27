@@ -9,6 +9,7 @@ public class SaveSystem : Singleton<SaveSystem>
 {
     private const int CurrentSaveVersion = 1;
     private const string SaveFileName = "relic-save.json";
+    private const string MonsterDiscoveryFileName = "relic-monster-discoveries.json";
     private const string SaveBackupExtension = ".bak";
     private const string SaveTemporaryExtension = ".tmp";
     private const int EquippedSkillSlotCount = 4;
@@ -26,6 +27,7 @@ public class SaveSystem : Singleton<SaveSystem>
     // 런타임 데이터 Apply 후에도 전투방 1턴의 확정 결과(장애물/몬스터 예약)는 이 스냅샷에서 복구합니다.
     private GameSaveData pendingBattleContinueSaveData;
     private ResumeData pendingResumeData;
+    private bool monsterDiscoverySavePending;
     // A result checkpoint remains authoritative until the player confirms it.
     private bool explorationResultConfirmedForSave;
 
@@ -56,6 +58,7 @@ public class SaveSystem : Singleton<SaveSystem>
 
 
     public string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
+    private string MonsterDiscoveryFilePath => Path.Combine(Application.persistentDataPath, MonsterDiscoveryFileName);
 
     public void Initialize()
     {
@@ -70,22 +73,21 @@ public class SaveSystem : Singleton<SaveSystem>
     /// <summary>
     /// 저장 파일을 삭제합니다. 언어와 음량 같은 PlayerPrefs 설정값은 건드리지 않습니다.
     /// </summary>
-    public bool DeleteSaveFile()
+    public bool DeleteSaveFile(bool deleteMonsterDiscoveries = false)
     {
+        if (!deleteMonsterDiscoveries)
+            SaveMonsterDiscoveries(true);
         explorationResultConfirmedForSave = false;
         ClearBattleRoomEntryCheckpoint();
         ClearPendingResolvedBattleRoomEntryState();
         pendingBattleContinueSaveData = null;
         pendingResumeData = null;
+        if (deleteMonsterDiscoveries)
+            monsterDiscoverySavePending = false;
 
         try
         {
-            if (File.Exists(SaveFilePath))
-                File.Delete(SaveFilePath);
-            if (File.Exists(SaveFilePath + SaveBackupExtension))
-                File.Delete(SaveFilePath + SaveBackupExtension);
-            if (File.Exists(SaveFilePath + SaveTemporaryExtension))
-                File.Delete(SaveFilePath + SaveTemporaryExtension);
+            DeleteProgressFiles(SaveFilePath, MonsterDiscoveryFilePath, deleteMonsterDiscoveries);
 
             Debug.Log($"[SaveSystem] Save file deleted: {SaveFilePath}");
             return true;
@@ -95,6 +97,23 @@ public class SaveSystem : Singleton<SaveSystem>
             Debug.LogError($"[SaveSystem] Failed to delete save file. {ex}");
             return false;
         }
+    }
+
+    public static void DeleteProgressFiles(string saveFilePath, string discoveryFilePath, bool deleteMonsterDiscoveries)
+    {
+        DeleteSaveFiles(saveFilePath);
+        if (deleteMonsterDiscoveries)
+            DeleteSaveFiles(discoveryFilePath);
+    }
+
+    private static void DeleteSaveFiles(string filePath)
+    {
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+        if (File.Exists(filePath + SaveBackupExtension))
+            File.Delete(filePath + SaveBackupExtension);
+        if (File.Exists(filePath + SaveTemporaryExtension))
+            File.Delete(filePath + SaveTemporaryExtension);
     }
 
     public bool HasBattleContinueSave()
@@ -328,6 +347,9 @@ public class SaveSystem : Singleton<SaveSystem>
         if (saveData == null)
             return false;
 
+        RecordDiscoveryService.MergeMonsterDiscoveries(
+            saveData.Player,
+            DataManager.Instance.PlayerRuntimeStore?.Data?.DiscoveredMonsterIds);
         saveData.SavedAtUtc = DateTime.UtcNow.ToString("O");
         saveData.ActiveSceneName = SceneName.Battle;
         return true;
@@ -338,12 +360,13 @@ public class SaveSystem : Singleton<SaveSystem>
         ClearPendingResolvedBattleRoomEntryState();
         pendingBattleContinueSaveData = null;
         pendingResumeData = null;
-        if (!HasSaveFile())
-            return false;
 
         GameSaveData saveData = ReadSaveData();
         if (saveData == null)
+        {
+            RestoreMonsterDiscoveries(MonsterDiscoveryFilePath, DataManager.Instance?.PlayerRuntimeStore?.Data);
             return false;
+        }
 
         ApplySaveData(saveData);
         if (ShouldDiscardInvalidBattleState(saveData))
@@ -654,7 +677,73 @@ public class SaveSystem : Singleton<SaveSystem>
         }
 
         NormalizeSaveData(saveData, saveData.ActiveSceneName);
+        RestoreMonsterDiscoveries(MonsterDiscoveryFilePath, saveData.Player);
         return saveData;
+    }
+
+    public void SaveMonsterDiscoveries(bool hasNewDiscovery)
+    {
+        monsterDiscoverySavePending |= hasNewDiscovery;
+        if (!monsterDiscoverySavePending)
+            return;
+
+        List<string> monsterIds = DataManager.Instance?.PlayerRuntimeStore?.Data?.DiscoveredMonsterIds;
+        if (monsterIds == null)
+            return;
+
+        try
+        {
+            if (TryWriteMonsterDiscoveries(MonsterDiscoveryFilePath, monsterIds, out Exception error))
+                monsterDiscoverySavePending = false;
+            else
+                Debug.LogError($"[SaveSystem] Failed to save monster discoveries. {error}");
+        }
+        catch (Exception error)
+        {
+            Debug.LogError($"[SaveSystem] Failed to save monster discoveries. {error}");
+        }
+    }
+
+    public static bool TryWriteMonsterDiscoveries(string filePath, IEnumerable<string> monsterIds, out Exception error)
+    {
+        var player = new PlayerRuntimeData();
+        RestoreMonsterDiscoveries(filePath, player);
+
+        error = null;
+        if (!RecordDiscoveryService.MergeMonsterDiscoveries(player, monsterIds))
+            return true;
+
+        var discoveries = new MonsterDiscoverySaveData { MonsterIds = player.DiscoveredMonsterIds };
+        return TryWriteJsonAtomically(filePath, JsonUtility.ToJson(discoveries), out error);
+    }
+
+    public static void RestoreMonsterDiscoveries(string filePath, PlayerRuntimeData player)
+    {
+        if (player == null)
+            return;
+
+        MonsterDiscoverySaveData discoveries = null;
+        if (!TryReadJsonWithBackup(
+                filePath,
+                json =>
+                {
+                    discoveries = JsonUtility.FromJson<MonsterDiscoverySaveData>(json);
+                    return discoveries?.MonsterIds != null;
+                },
+                out string savedJson,
+                out bool usedBackup))
+            return;
+
+        if (usedBackup)
+            TryRestorePrimaryFromBackup(filePath, savedJson, out _);
+
+        RecordDiscoveryService.MergeMonsterDiscoveries(player, discoveries.MonsterIds);
+    }
+
+    [Serializable]
+    private sealed class MonsterDiscoverySaveData
+    {
+        public List<string> MonsterIds;
     }
 
     private static bool TryDeserializeSaveData(string json, out GameSaveData saveData)

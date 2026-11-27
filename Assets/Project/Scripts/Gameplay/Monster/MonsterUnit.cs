@@ -82,10 +82,11 @@ namespace Relic.Gameplay.Monster
             RuntimeData = runtimeData;
 
             if (RuntimeData != null)
-                RecordDiscoveryService.RegisterMonster(DataManager.Instance, RuntimeData.MonsterId);
-
-            if (RuntimeData != null)
+            {
+                bool hasNewDiscovery = RecordDiscoveryService.RegisterMonster(DataManager.Instance, RuntimeData.MonsterId);
+                SaveSystem.Instance?.SaveMonsterDiscoveries(hasNewDiscovery);
                 ai = MonsterAIFactory.Create(RuntimeData.MonsterId);
+            }
 
             EnsureClickCollider2D();
 

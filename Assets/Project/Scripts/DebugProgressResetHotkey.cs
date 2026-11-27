@@ -583,7 +583,7 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
         // 저장 파일에 들어 있는 아이템, 재화, 캐릭터 성장, 편성,
         // 클리어 및 탐사 진행 데이터를 삭제합니다.
         if (SaveSystem.Instance != null)
-            SaveSystem.Instance.DeleteSaveFile();
+            SaveSystem.Instance.DeleteSaveFile(deleteMonsterDiscoveries: true);
 
         // PlayerPrefs에 별도로 저장되는 시련 해금 진행도를 삭제합니다.
         // A full progress reset also restores eligibility for the first tutorial EXP bonus.
@@ -615,7 +615,7 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
         // 초기화 결과가 확실히 유지되도록 타이틀 진입 후 한 번 더 삭제합니다.
         if (SaveSystem.Instance != null)
         {
-            SaveSystem.Instance.DeleteSaveFile();
+            SaveSystem.Instance.DeleteSaveFile(deleteMonsterDiscoveries: true);
 
             if (SaveSystem.Instance.HasSaveFile())
                 Debug.LogError("[DebugProgressResetHotkey] 초기화 후에도 저장 파일이 남아 있습니다.");

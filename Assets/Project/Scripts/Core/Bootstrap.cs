@@ -5,6 +5,8 @@ using Relic.Gameplay.Data;
 
 public class Bootstrap : MonoBehaviour
 {
+    private const string LegacyOptionLanguagePreferenceKey = "OptionPanelUI.LanguageCode";
+
     [SerializeField] private GameStateType firstState = GameStateType.DemoTitle;
     [SerializeField] private string defaultLanguageCode = "ko";
 
@@ -57,7 +59,9 @@ public class Bootstrap : MonoBehaviour
     {
         yield return LocalizationSettings.InitializationOperation;
 
-        string savedLanguageCode = PlayerPrefs.GetString("SelectedLanguage", defaultLanguageCode);
+        string savedLanguageCode = PlayerPrefs.GetString(
+            GameLocalization.SelectedLanguagePreferenceKey,
+            PlayerPrefs.GetString(LegacyOptionLanguagePreferenceKey, defaultLanguageCode));
 
         var locales = LocalizationSettings.AvailableLocales.Locales;
         foreach (var locale in locales)

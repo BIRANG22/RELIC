@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -63,25 +64,30 @@ public class TimelineSkillHoverPresentationTests
     }
 
     [Test]
-    public void TooltipDescription_IncludesActionCostRangeTargetAndEffect()
+    public void Popup_ShowMonsterEntry_BindsOnlyNameAndEffectDescription()
     {
-        string result = BattleTimelinePreviewEntry.BuildTooltipDescription(
-            "적에게 피해를 줍니다.",
-            "Attack",
-            2,
-            "코스트",
-            4,
-            1);
+        CreatePopupView(out TMP_Text nameText, out TMP_Text descriptionText, out Image rangeIcon);
+        TimelineSkillHoverPopupUI popup = root.AddComponent<TimelineSkillHoverPopupUI>();
+        BattleTimelinePreviewEntry entry = new()
+        {
+            IsMonster = true,
+            MonsterSkillData = new MonsterSkillData
+            {
+                Name = "강습",
+                EffectDesc = "적에게 피해를 줍니다.",
+                TimelineNotation = TimelineActionType.Attack
+            }
+        };
 
-        Assert.That(result, Does.Contain("Attack"));
-        Assert.That(result, Does.Contain("2 코스트"));
-        Assert.That(result, Does.Contain("4"));
-        Assert.That(result, Does.Contain("1"));
-        Assert.That(result, Does.Contain("적에게 피해를 줍니다."));
+        popup.Show(entry, null);
+
+        Assert.That(nameText.text, Is.EqualTo("강습"));
+        Assert.That(descriptionText.text, Is.EqualTo("적에게 피해를 줍니다."));
+        Assert.That(rangeIcon.gameObject.activeSelf, Is.False);
     }
 
     [Test]
-    public void PopupView_Set_BindsNameDescriptionAndRangeIcon()
+    public void PopupView_Set_HidesLegacyRangeIcon()
     {
         TimelineSkillHoverPopupView view = CreatePopupView(
             out TMP_Text nameText,
@@ -92,13 +98,14 @@ public class TimelineSkillHoverPresentationTests
             new Rect(0, 0, 2, 2),
             new Vector2(0.5f, 0.5f));
 
-        view.Set("기억 이름", "행동 상세 설명", sprite);
+        rangeIcon.sprite = sprite;
+        view.Set("기억 이름", "행동 상세 설명");
 
         Assert.That(nameText.text, Is.EqualTo("기억 이름"));
         Assert.That(descriptionText.text, Is.EqualTo("행동 상세 설명"));
         Assert.That(descriptionText.gameObject.activeSelf, Is.True);
-        Assert.That(rangeIcon.sprite, Is.SameAs(sprite));
-        Assert.That(rangeIcon.gameObject.activeSelf, Is.True);
+        Assert.That(rangeIcon.sprite, Is.Null);
+        Assert.That(rangeIcon.gameObject.activeSelf, Is.False);
 
         Object.DestroyImmediate(sprite.texture);
         Object.DestroyImmediate(sprite);
@@ -112,7 +119,7 @@ public class TimelineSkillHoverPresentationTests
             out TMP_Text descriptionText,
             out Image rangeIcon);
 
-        view.Set("이동", "", null);
+        view.Set("이동", "");
 
         Assert.That(nameText.text, Is.EqualTo("이동"));
         Assert.That(descriptionText.gameObject.activeSelf, Is.False);
@@ -128,7 +135,7 @@ public class TimelineSkillHoverPresentationTests
         nameObject.transform.SetParent(root.transform, false);
         TMP_Text nameText = nameObject.AddComponent<TextMeshProUGUI>();
 
-        view.Set("기억 이름", "행동 상세 설명", null);
+        view.Set("기억 이름", "행동 상세 설명");
 
         Assert.That(nameText.text, Is.EqualTo("기억 이름\n행동 상세 설명"));
     }
