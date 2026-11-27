@@ -138,9 +138,7 @@ public sealed class ActiveRelicService
         return availability;
     }
 
-    public ActiveRelicAvailability GetConsumableAvailability(
-        CharacterRuntimeData runtime,
-        string itemId)
+    public ActiveRelicAvailability GetConsumableAvailability(string itemId)
     {
         ActiveRelicAvailability availability = new()
         {
@@ -150,11 +148,6 @@ public sealed class ActiveRelicService
             MaxUses = 1,
             RemainingUses = 1
         };
-        if (runtime == null || runtime.IsDead)
-        {
-            availability.Message = "Living actor is required.";
-            return availability;
-        }
         if (compoundDatabase == null ||
             !compoundDatabase.TryGet(availability.RelicId, out CompoundData compound) ||
             compound == null)
@@ -181,14 +174,15 @@ public sealed class ActiveRelicService
         CharacterRuntimeData runtime,
         string itemId)
     {
-        ActiveRelicAvailability availability = GetConsumableAvailability(runtime, itemId);
+        ActiveRelicAvailability availability = GetConsumableAvailability(itemId);
+        if (runtime == null || runtime.IsDead)
+            return ActiveRelicUseResult.Fail(availability, "Living target is required.");
         if (!availability.CanUse)
             return ActiveRelicUseResult.Fail(availability, availability.Message);
         if (availability.TargetMode != ActiveRelicTargetMode.Self)
             return ActiveRelicUseResult.Fail(availability, "Consumable requires a target.");
         if (!TryApplyImmediateSelfEffect(runtime, availability, out string message))
             return ActiveRelicUseResult.Fail(availability, message);
-        RefreshBattleHud();
         return ActiveRelicUseResult.Success(availability, false);
     }
 
@@ -199,7 +193,7 @@ public sealed class ActiveRelicService
         GridManager gridManager,
         BattleGridEffectController gridEffectController)
     {
-        ActiveRelicAvailability availability = GetConsumableAvailability(runtime, itemId);
+        ActiveRelicAvailability availability = GetConsumableAvailability(itemId);
         if (!availability.CanUse)
             return ActiveRelicUseResult.Fail(availability, availability.Message);
         if (!availability.RequiresTarget)
@@ -235,7 +229,6 @@ public sealed class ActiveRelicService
         }
         if (!succeeded)
             return ActiveRelicUseResult.Fail(availability, message);
-        RefreshBattleHud();
         return ActiveRelicUseResult.Success(availability, false);
     }
 

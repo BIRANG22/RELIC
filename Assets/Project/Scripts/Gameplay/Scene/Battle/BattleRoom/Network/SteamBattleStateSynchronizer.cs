@@ -42,6 +42,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     private readonly Dictionary<ulong, bool> readyByMember = new();
     private readonly Dictionary<string, BattleNetworkCommandType> pendingCommandTypesByRequestId = new();
     private readonly Dictionary<string, int> pendingSlotSelectionRollbackByRequestId = new();
+    private readonly HashSet<string> acceptedConsumableRequests = new(StringComparer.Ordinal);
     private string[] startRelicChoiceIds = Array.Empty<string>();
 
     private long hostRevision;
@@ -460,12 +461,12 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
     private bool RequestConsumableUse(UseConsumableCommand request)
     {
 #if STEAMWORKS_NET
-        if (request == null || !CanLocalPlayerControlCharacter(request.ActorCharacterId))
+        if (request == null || !IsConsumableMember(localSteamId))
             return false;
 
         BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.UseConsumable);
         command.slotIndex = request.SlotIndex;
-        command.characterId = request.ActorCharacterId ?? string.Empty;
+        command.targetCharacterId = request.TargetCharacterId ?? string.Empty;
         command.itemId = request.ItemId ?? string.Empty;
         command.selectedGridIndex = request.TargetGridIndex;
         return SendOrApplyCommand(command, true);
@@ -1070,69 +1071,38 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         return BattleNetworkRejectReason.None;
     }
 
-    private BattleNetworkRejectReason ApplyHostConsumableCommand(
-        ulong requester,
-        BattleNetworkCommand command)
+    private bool IsConsumableMember(ulong memberId)
     {
-        if (!SteamLobbySessionState.IsMemberAllowedToControlCharacter(requester, command.characterId))
-            return BattleNetworkRejectReason.NotCharacterOwner;
-        if (turnExecutor == null || !turnExecutor.CanAcceptPlayerInput || DataManager.Instance == null)
-            return BattleNetworkRejectReason.RejectedByService;
-        if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
-                command.characterId,
-                out CharacterRuntimeData actor) || actor == null)
-            return BattleNetworkRejectReason.InvalidCommand;
-
-        BattleRuntimeData battle = DataManager.Instance.BattleRuntimeStore?.GetOrCreate();
-        if (battle == null || DataManager.Instance.CompoundDatabase == null)
-            return BattleNetworkRejectReason.RejectedByService;
-
-        ActiveRelicService effectService = new(DataManager.Instance.CompoundDatabase);
-        ActiveRelicAvailability availability = effectService.GetConsumableAvailability(actor, command.itemId);
-        UseConsumableCommand request = new()
-        {
-            RequestId = command.requestId,
-            ActorCharacterId = command.characterId,
-            SlotIndex = command.slotIndex,
-            ItemId = command.itemId,
-            TargetGridIndex = command.selectedGridIndex
-        };
-
-        UseConsumableResult result = BattleConsumableService.TryUse(
-            battle,
-            request,
-            actor,
-            true,
-            () => ApplyConsumableEffect(effectService, availability, actor, request));
-        if (!result.Succeeded)
-            return BattleNetworkRejectReason.RejectedByService;
-
-        RefreshRuntimeViews();
-        return BattleNetworkRejectReason.None;
+        if (memberId == 0UL) return false;
+        for (int i = 0; i < SteamMatchmaking.GetNumLobbyMembers(currentLobbyId); i++)
+            if (SteamMatchmaking.GetLobbyMemberByIndex(currentLobbyId, i).m_SteamID == memberId) return true;
+        return false;
     }
 
-    private static bool ApplyConsumableEffect(
-        ActiveRelicService effectService,
-        ActiveRelicAvailability availability,
-        CharacterRuntimeData actor,
-        UseConsumableCommand command)
+    private BattleNetworkRejectReason ApplyHostConsumableCommand(ulong requester, BattleNetworkCommand command)
     {
-        if (availability == null || !availability.CanUse)
-            return false;
-        if (!availability.RequiresTarget)
-            return effectService.TryUseConsumableImmediate(actor, command.ItemId).Succeeded;
-        if (command.TargetGridIndex < 0)
-            return false;
-
-        GridManager gridManager = UnityEngine.Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
-        BattleGridEffectController gridEffectController =
-            UnityEngine.Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
-        return effectService.TryUseConsumableTarget(
-            actor,
-            command.ItemId,
-            command.TargetGridIndex,
-            gridManager,
-            gridEffectController).Succeeded;
+        if (!IsConsumableMember(requester)) return BattleNetworkRejectReason.UnknownMember;
+        string requestKey = requester + ":" + command.requestId;
+        if (string.IsNullOrWhiteSpace(command.requestId) || acceptedConsumableRequests.Contains(requestKey))
+            return BattleNetworkRejectReason.InvalidCommand;
+        var data = DataManager.Instance;
+        if (turnExecutor == null || !turnExecutor.CanAcceptPlayerInput || data?.CompoundDatabase == null)
+            return BattleNetworkRejectReason.RejectedByService;
+        var request = new UseConsumableCommand
+        {
+            RequestId = command.requestId, TargetCharacterId = command.targetCharacterId,
+            SlotIndex = command.slotIndex, ItemId = command.itemId, TargetGridIndex = command.selectedGridIndex
+        };
+        var result = BattleConsumableService.TryUseParty(
+            data.BattleRuntimeStore?.GetOrCreate(), request,
+            BattleConsumableService.GetPartyMembers(data.PartyRuntimeStore, data.CharacterRuntimeStore),
+            turnExecutor.CanAcceptPlayerInput, new ActiveRelicService(data.CompoundDatabase),
+            UnityEngine.Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include),
+            UnityEngine.Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include), data.PartyRuntimeStore);
+        if (!result.Succeeded) return BattleNetworkRejectReason.RejectedByService;
+        acceptedConsumableRequests.Add(requestKey);
+        RefreshRuntimeViews();
+        return BattleNetworkRejectReason.None;
     }
 
     private bool ApplyEquipmentCommand(BattleNetworkCommand command)
@@ -2756,6 +2726,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
     private void RefreshRuntimeViews()
     {
+        UnityEngine.Object.FindFirstObjectByType<BattleConsumablePanelUI>(FindObjectsInactive.Include)?.Refresh();
         BattleBagPanelUI.RefreshAll();
         BattleGoldHudUI.RefreshAll();
         SkillInventoryPanelUI.RefreshAll();

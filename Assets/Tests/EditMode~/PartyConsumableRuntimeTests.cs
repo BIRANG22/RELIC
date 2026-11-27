@@ -45,7 +45,7 @@ public sealed class PartyConsumableRuntimeTests
             new[] { first, second, third });
 
         Assert.That(lobby.EquippedConsumableIds,
-            Is.EqualTo(new[] { "Compound_01", "Compound_01", "Compound_02", null }));
+            Is.EqualTo(new[] { "Compound_01", "Compound_01", "Compound_02", string.Empty }));
         Assert.That(first.EquippedRelicIds[0], Is.Null.Or.Empty);
         Assert.That(second.EquippedRelicIds[0], Is.Null.Or.Empty);
         Assert.That(third.EquippedRelicIds[0], Is.Null.Or.Empty);
@@ -54,7 +54,7 @@ public sealed class PartyConsumableRuntimeTests
             lobby,
             new[] { first, second, third });
         Assert.That(lobby.EquippedConsumableIds,
-            Is.EqualTo(new[] { "Compound_01", "Compound_01", "Compound_02", null }));
+            Is.EqualTo(new[] { "Compound_01", "Compound_01", "Compound_02", string.Empty }));
     }
 
     [Test]
@@ -76,7 +76,7 @@ public sealed class PartyConsumableRuntimeTests
         PartyConsumableRuntime.MigrateCharacterCompounds(lobby, new[] { character });
 
         Assert.That(lobby.EquippedConsumableIds,
-            Is.EqualTo(new[] { "Compound_01", null, null, null }));
+            Is.EqualTo(new[] { "Compound_01", string.Empty, string.Empty, string.Empty }));
         Assert.That(character.EquippedRelicIds[0], Is.Null.Or.Empty);
     }
 

@@ -22,6 +22,8 @@ public class ActiveRelicTargetingController : MonoBehaviour
     private int gridEffectPreviewIndex = -1;
     private BattleRuntimeData pendingConsumableBattle;
     private UseConsumableCommand pendingConsumableCommand;
+    private bool selectingConsumableSource;
+    [SerializeField] private BattleTurnExecutor turnExecutor;
 
     public bool IsTargeting => isTargeting;
 
@@ -30,6 +32,9 @@ public class ActiveRelicTargetingController : MonoBehaviour
         if (TutorialGuideController.IsModalOpen) return;
         if (!isTargeting)
             return;
+
+        if (pendingConsumableCommand != null && turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+        { CancelTargeting(); return; }
 
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
         {
@@ -60,31 +65,26 @@ public class ActiveRelicTargetingController : MonoBehaviour
     }
 
     public bool BeginConsumableTargeting(
-        ActiveRelicService activeRelicService,
-        BattleRuntimeData battle,
-        UseConsumableCommand command,
-        CharacterRuntimeData runtime,
-        ActiveRelicAvailability availability,
+        ActiveRelicService activeRelicService, BattleRuntimeData battle,
+        UseConsumableCommand command, ActiveRelicAvailability availability,
         Action succeededCallback = null)
     {
-        bool started = BeginTargetingInternal(activeRelicService, runtime, availability);
-        if (!started) return false;
-        pendingConsumableBattle = battle;
-        pendingConsumableCommand = command;
-        onTargetingSucceeded = succeededCallback;
-        return true;
+        bool started = BeginTargetingInternal(activeRelicService, null, availability, battle, command);
+        if (started) onTargetingSucceeded = succeededCallback;
+        return started;
     }
 
     private bool BeginTargetingInternal(
         ActiveRelicService activeRelicService,
         CharacterRuntimeData runtime,
-        ActiveRelicAvailability availability)
+        ActiveRelicAvailability availability,
+        BattleRuntimeData battle = null, UseConsumableCommand command = null)
     {
         EnsureReferences();
 
         if (gridManager == null ||
             activeRelicService == null ||
-            runtime == null ||
+            (runtime == null && command == null) ||
             availability == null ||
             !availability.RequiresTarget)
         {
@@ -93,6 +93,10 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
         CancelTargeting();
 
+        pendingConsumableBattle = battle;
+        pendingConsumableCommand = command;
+        selectingConsumableSource = command != null &&
+            (availability.EffectId == ActiveRelicEffectIds.MoveToGrid || availability.EffectId == ActiveRelicEffectIds.SwapAlly);
         service = activeRelicService;
         pendingRuntime = runtime;
         pendingAvailability = availability;
@@ -145,6 +149,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
         pendingGridEffectId = null;
         pendingConsumableBattle = null;
         pendingConsumableCommand = null;
+        selectingConsumableSource = false;
     }
 
     private void HandleCellHovered(GridCell cell)
@@ -207,6 +212,25 @@ public class ActiveRelicTargetingController : MonoBehaviour
         ActiveRelicUseResult result;
         if (pendingConsumableCommand != null)
         {
+            if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput) { CancelTargeting(); return; }
+            if (selectingConsumableSource)
+            {
+                var store = DataManager.Instance?.PartyRuntimeStore;
+                var members = BattleConsumableService.GetPartyMembers(store, DataManager.Instance?.CharacterRuntimeStore);
+                if (store == null) return;
+                for (int i = 0; i < store.MaxPartyCountValue; i++)
+                    if (store.GetCurrentGridIndex(i) == cell.Index)
+                        foreach (var member in members)
+                            if (!member.IsDead && member.CharacterId == store.GetCharacterId(i))
+                            {
+                                pendingRuntime = member;
+                                pendingConsumableCommand.TargetCharacterId = member.CharacterId;
+                                selectingConsumableSource = false;
+                                gridManager.ShowExecutionRange(BuildPreviewCells(), targetPreviewColor);
+                                return;
+                            }
+                return;
+            }
             pendingConsumableCommand.TargetGridIndex = cell.Index;
             if (SteamBattleStateSynchronizer.TryHandleConsumableUse(
                     pendingConsumableCommand,
@@ -218,21 +242,14 @@ public class ActiveRelicTargetingController : MonoBehaviour
             }
             else
             {
-            ActiveRelicUseResult effectResult = null;
-            UseConsumableResult useResult = BattleConsumableService.TryUse(
-                pendingConsumableBattle,
-                pendingConsumableCommand,
-                pendingRuntime,
-                true,
-                () => (effectResult = service.TryUseConsumableTarget(
-                    pendingRuntime,
-                    pendingConsumableCommand.ItemId,
-                    cell.Index,
-                    gridManager,
-                    gridEffectController)).Succeeded);
-            result = effectResult ?? (useResult.Succeeded
-                ? ActiveRelicUseResult.Success(pendingAvailability, false)
-                : ActiveRelicUseResult.Fail(pendingAvailability, useResult.RejectReason.ToString()));
+                UseConsumableResult useResult = BattleConsumableService.TryUseParty(
+                    pendingConsumableBattle, pendingConsumableCommand,
+                    BattleConsumableService.GetPartyMembers(DataManager.Instance?.PartyRuntimeStore, DataManager.Instance?.CharacterRuntimeStore),
+                    turnExecutor == null || turnExecutor.CanAcceptPlayerInput,
+                    service, gridManager, gridEffectController, DataManager.Instance?.PartyRuntimeStore);
+                result = useResult.Succeeded
+                    ? ActiveRelicUseResult.Success(pendingAvailability, false)
+                    : ActiveRelicUseResult.Fail(pendingAvailability, useResult.RejectReason.ToString());
             }
         }
         else
@@ -262,7 +279,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
         if (gridManager == null || pendingAvailability == null)
             return cells;
 
-        if (pendingAvailability.TargetMode == ActiveRelicTargetMode.AllyGrid)
+        if (selectingConsumableSource || pendingAvailability.TargetMode == ActiveRelicTargetMode.AllyGrid)
         {
             AddAllyCells(cells);
             return cells;
@@ -288,6 +305,17 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
     private void AddAllyCells(List<int> cells)
     {
+        if (pendingConsumableCommand != null)
+        {
+            var store = DataManager.Instance?.PartyRuntimeStore;
+            var members = BattleConsumableService.GetPartyMembers(store, DataManager.Instance?.CharacterRuntimeStore);
+            if (store != null)
+                for (int i = 0; i < store.MaxPartyCountValue; i++)
+                    foreach (var member in members)
+                        if (!member.IsDead && member.CharacterId != pendingRuntime?.CharacterId && member.CharacterId == store.GetCharacterId(i) && store.GetCurrentGridIndex(i) >= 0)
+                            cells.Add(store.GetCurrentGridIndex(i));
+            return;
+        }
         BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None);
@@ -336,6 +364,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
     private void EnsureReferences()
     {
+        turnExecutor ??= FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
 

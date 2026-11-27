@@ -3161,7 +3161,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         hasDisplayedStats = false;
         boundRuntime = runtimeData;
         consumablePanel ??= GetComponentInChildren<BattleConsumablePanelUI>(true);
-        consumablePanel?.BindActor(runtimeData);
+        consumablePanel?.Refresh();
         boundMaster = null;
         displayedSkillInfoData = null;
         lastPreviewTimelineSlotIndex = battleTimelineController != null
@@ -3208,7 +3208,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             RefreshPartySlot(i);
         RefreshSkillList();
         RefreshMoveButton();
-        consumablePanel?.BindActor(boundRuntime);
+        consumablePanel?.Refresh();
         CaptureRuntimeDisplayState();
         RefreshHoveredSkillTooltip();
     }

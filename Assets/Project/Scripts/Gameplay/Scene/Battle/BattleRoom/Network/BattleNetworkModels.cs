@@ -42,6 +42,7 @@ public sealed class BattleNetworkCommand
     public int commandIndex = -1;
     public int destinationSlotIndex = -1;
     public int destinationCommandIndex = -1;
+    public string targetCharacterId;
     public string characterId;
     public string reservationId;
     public string itemId;

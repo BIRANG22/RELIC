@@ -18,12 +18,18 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
     [SerializeField] private ActiveRelicTargetingController targetingController;
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
-    private CharacterRuntimeData actor;
     private ActiveRelicService effectService;
+    private bool lastReservationPhase;
 
-    public void BindActor(CharacterRuntimeData value)
+    private void OnEnable() => Refresh();
+    private void Update()
     {
-        actor = value;
+        if (lastReservationPhase != (turnExecutor == null || turnExecutor.CanAcceptPlayerInput)) Refresh();
+    }
+
+    private void RefreshAfterUse()
+    {
+        FindFirstObjectByType<BattleRoomLoader>()?.RefreshBattleHUDs();
         Refresh();
     }
 
@@ -49,6 +55,8 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
         BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
         if (battle != null) PartyConsumableRuntime.NormalizeBattle(battle);
         bool reservationPhase = turnExecutor == null || turnExecutor.CanAcceptPlayerInput;
+        lastReservationPhase = reservationPhase;
+        bool hasLivingMember = BattleConsumableService.GetPartyMembers(DataManager.Instance?.PartyRuntimeStore, DataManager.Instance?.CharacterRuntimeStore).Exists(member => !member.IsDead);
         for (int i = 0; i < PartyConsumableRuntime.SlotCount; i++)
         {
             SlotView view = slots != null && i < slots.Length ? slots[i] : null;
@@ -69,7 +77,8 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
             }
             if (view.UsedOverlay != null) view.UsedOverlay.SetActive(used);
             if (view.Button != null)
-                view.Button.interactable = reservationPhase && actor != null && !actor.IsDead &&
+                view.Button.interactable = reservationPhase &&
+                                           hasLivingMember &&
                                            !used && !string.IsNullOrWhiteSpace(itemId);
         }
     }
@@ -112,26 +121,27 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
     private void UseSlot(int slotIndex)
     {
         BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
-        if (battle == null || actor == null || DataManager.Instance?.CompoundDatabase == null) return;
+        if (battle == null || slotIndex < 0 || slotIndex >= PartyConsumableRuntime.SlotCount || DataManager.Instance?.CompoundDatabase == null) return;
         PartyConsumableRuntime.NormalizeBattle(battle);
         BattleConsumableSlotRuntimeData slot = battle.ConsumableSlots[slotIndex];
         string itemId = slot.ItemId;
         effectService ??= new ActiveRelicService(DataManager.Instance.CompoundDatabase);
-        ActiveRelicAvailability availability = effectService.GetConsumableAvailability(actor, itemId);
+        ActiveRelicAvailability availability = effectService.GetConsumableAvailability(itemId);
         bool reservationPhase = turnExecutor == null || turnExecutor.CanAcceptPlayerInput;
         UseConsumableCommand command = new()
         {
             RequestId = Guid.NewGuid().ToString("N"),
-            ActorCharacterId = actor.CharacterId,
             SlotIndex = slotIndex,
             ItemId = itemId
         };
 
+        if (!availability.CanUse || !reservationPhase || slot.IsUsed) return;
+        targetingController?.CancelTargeting();
         if (availability.RequiresTarget)
         {
             if (!reservationPhase || targetingController == null ||
                 !targetingController.BeginConsumableTargeting(
-                    effectService, battle, command, actor, availability, Refresh))
+                    effectService, battle, command, availability, RefreshAfterUse))
                 BattleWarningUI.ShowMessage(availability.Message);
             return;
         }
@@ -145,15 +155,12 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
             return;
         }
 
-        ActiveRelicUseResult effectResult = null;
-        UseConsumableResult result = BattleConsumableService.TryUse(
-            battle,
-            command,
-            actor,
-            reservationPhase,
-            () => (effectResult = effectService.TryUseConsumableImmediate(actor, itemId)).Succeeded);
+        UseConsumableResult result = BattleConsumableService.TryUseParty(
+            battle, command,
+            BattleConsumableService.GetPartyMembers(DataManager.Instance.PartyRuntimeStore, DataManager.Instance.CharacterRuntimeStore),
+            reservationPhase, effectService);
         if (!result.Succeeded)
-            BattleWarningUI.ShowMessage(effectResult?.Message ?? result.RejectReason.ToString());
-        Refresh();
+            BattleWarningUI.ShowMessage(result.RejectReason.ToString());
+        RefreshAfterUse();
     }
 }
