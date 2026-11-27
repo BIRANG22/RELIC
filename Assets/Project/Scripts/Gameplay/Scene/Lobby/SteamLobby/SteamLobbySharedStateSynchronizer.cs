@@ -32,6 +32,7 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
 #endif
 
     private SteamLobbyPartySynchronizer subscribedPartySynchronizer;
+    private readonly HashSet<string> acceptedConsumableRequests = new(StringComparer.Ordinal);
 
 #if STEAMWORKS_NET
     private CSteamID currentLobbyId;
@@ -71,6 +72,7 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
             return;
 
         EnsureSteamCallbacks();
+        if (currentLobbyId.m_SteamID != lobbyId) acceptedConsumableRequests.Clear();
         currentLobbyId = new CSteamID(lobbyId);
         localSteamId = localId;
         originalHostSteamId = ownerSteamId;
@@ -224,22 +226,21 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
     }
 
     public bool RequestEquipConsumable(
-        string characterId,
         int slotIndex,
         string itemId)
     {
         return RequestEquipmentCommand(
             LobbySharedStateCommandType.EquipConsumable,
-            characterId,
+            string.Empty,
             slotIndex,
             itemId);
     }
 
-    public bool RequestUnequipConsumable(string characterId, int slotIndex)
+    public bool RequestUnequipConsumable(int slotIndex)
     {
         return RequestEquipmentCommand(
             LobbySharedStateCommandType.UnequipConsumable,
-            characterId,
+            string.Empty,
             slotIndex,
             string.Empty);
     }
@@ -278,6 +279,9 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
             RefreshSharedStateViews();
     }
 
+    private static bool IsConsumableCommand(LobbySharedStateCommandType type) =>
+        type == LobbySharedStateCommandType.EquipConsumable || type == LobbySharedStateCommandType.UnequipConsumable;
+
     private bool RequestEquipmentCommand(
         LobbySharedStateCommandType commandType,
         string characterId,
@@ -285,8 +289,8 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
         string itemId)
     {
         if (!IsNetworkSharedStateActive ||
-            string.IsNullOrWhiteSpace(characterId) ||
-            !CanLocalPlayerEditCharacter(characterId))
+            (!IsConsumableCommand(commandType) &&
+             (string.IsNullOrWhiteSpace(characterId) || !CanLocalPlayerEditCharacter(characterId))))
         {
             return false;
         }
@@ -408,6 +412,14 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
         TrySendLobbyChatPayload(responsePayload);
     }
 
+    private bool IsConsumableMember(ulong memberId)
+    {
+        if (memberId == 0UL) return false;
+        for (int i = 0; i < SteamMatchmaking.GetNumLobbyMembers(currentLobbyId); i++)
+            if (SteamMatchmaking.GetLobbyMemberByIndex(currentLobbyId, i).m_SteamID == memberId) return true;
+        return false;
+    }
+
     private LobbySharedStateCommandResult TryApplyHostCommand(
         LobbySharedStateCommand command)
     {
@@ -417,7 +429,10 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
                 LobbySharedStateCommandRejectReason.UnknownMember);
         }
 
-        if (!IsMemberAllowedToEditCharacter(
+        if (!IsConsumableMember(command.RequesterSteamId))
+            return LobbySharedStateCommandResult.Reject(LobbySharedStateCommandRejectReason.UnknownMember);
+
+        if (!IsConsumableCommand(command.CommandType) && !IsMemberAllowedToEditCharacter(
                 command.RequesterSteamId,
                 command.CharacterId))
         {
@@ -425,12 +440,18 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
                 LobbySharedStateCommandRejectReason.NotCharacterOwner);
         }
 
+        string consumableRequestKey = command.RequesterSteamId + ":" + command.RequestId;
+        if (IsConsumableCommand(command.CommandType) &&
+            (string.IsNullOrWhiteSpace(command.RequestId) || acceptedConsumableRequests.Contains(consumableRequestKey)))
+            return LobbySharedStateCommandResult.Reject(LobbySharedStateCommandRejectReason.InvalidCommand);
+
         if (!ApplyEquipmentCommand(command))
         {
             return LobbySharedStateCommandResult.Reject(
                 LobbySharedStateCommandRejectReason.RejectedByService);
         }
 
+        if (IsConsumableCommand(command.CommandType)) acceptedConsumableRequests.Add(consumableRequestKey);
         LobbySharedStateSnapshot snapshot = PublishSnapshot();
         return LobbySharedStateCommandResult.Accept(snapshot);
     }
@@ -757,6 +778,8 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
 
     private static void RefreshSharedStateViews()
     {
+        LobbyEquipPanelUI.RefreshAllCharacterData();
+        LobbyInfoPanelUI.RefreshAll();
         LobbyBlueDustiumHudUI.RefreshAll();
         BattleBagPanelUI.RefreshAll();
         RelicEquipPanelUI.RefreshAll();

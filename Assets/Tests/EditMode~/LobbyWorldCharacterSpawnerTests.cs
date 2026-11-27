@@ -1,134 +1,150 @@
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
+using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 public class LobbyWorldCharacterSpawnerTests
 {
     private readonly List<Object> cleanup = new();
-
-    [TearDown]
-    public void TearDown()
+    [TearDown] public void TearDown()
     {
         for (int i = cleanup.Count - 1; i >= 0; i--)
-        {
-            if (cleanup[i] != null)
-                Object.DestroyImmediate(cleanup[i]);
-        }
-
+            if (cleanup[i] != null) Object.DestroyImmediate(cleanup[i]);
         cleanup.Clear();
     }
 
-    [Test]
-    public void Spawn_SkipsEmptyDuplicateAndMissingEntries_AndAppliesTransform()
+    [Test] public void Spawn_InheritsScenePointTransform_AndDoesNotDuplicate()
     {
-        GameObject parentObject = Track(new GameObject("CharacterRoot"));
-        GameObject prefab = Track(new GameObject("Char01Prefab"));
+        var point = CreatePoint(out var prefab);
+        point.transform.position = new Vector3(3, -4, 7);
+        point.transform.rotation = Quaternion.Euler(0, 0, 25);
+        point.transform.localScale = new Vector3(-0.5f, 0.5f, 0.5f);
+        prefab.transform.localScale = Vector3.one * 9;
+        var instance = point.Spawn();
+        Assert.That(instance.transform.parent, Is.SameAs(point.transform));
+        Assert.That(instance.transform.localPosition, Is.EqualTo(Vector3.zero));
+        Assert.That(instance.transform.localRotation, Is.EqualTo(Quaternion.identity));
+        Assert.That(instance.transform.localScale, Is.EqualTo(Vector3.one));
+        Assert.That(instance.transform.position, Is.EqualTo(point.transform.position));
+        Assert.That(point.Spawn(), Is.SameAs(instance));
+        Assert.That(point.transform.childCount, Is.EqualTo(1));
+    }
+
+    [TestCase(false)] [TestCase(true)]
+    public void Spawn_AppliesInspectorPresentation_AndLayerScope(bool children)
+    {
+        var point = CreatePoint(out var prefab);
+        Set(point, "flipX", false);
+        Set(point, "sortingLayerId", SortingLayer.NameToID("Unit"));
+        Set(point, "frontSortingOrder", 17);
+        Set(point, "backSortingOrder", -3);
+        Set(point, "overrideLayer", true);
+        Set(point, "objectLayer", 8);
+        Set(point, "applyLayerToChildren", children);
+        var instance = point.Spawn();
+        var sprites = instance.GetComponentsInChildren<SpriteRenderer>(true);
+        Assert.That(sprites[0].flipX, Is.False);
+        Assert.That(sprites[0].sortingOrder, Is.EqualTo(17));
+        Assert.That(sprites[1].sortingOrder, Is.EqualTo(-3));
+        Assert.That(sprites[0].sortingLayerID, Is.EqualTo(SortingLayer.NameToID("Unit")));
+        Assert.That(sprites[1].sortingLayerID, Is.EqualTo(sprites[0].sortingLayerID));
+        Assert.That(instance.layer, Is.EqualTo(8));
+        Assert.That(sprites[1].gameObject.layer, Is.EqualTo(children ? 8 : 9));
+        Assert.That(prefab.GetComponent<SpriteRenderer>().flipX, Is.True);
+        Assert.That(prefab.layer, Is.EqualTo(7));
+    }
+
+    [Test] public void Spawn_PreservesPrefabLayersAndLight_AndBindsStableId()
+    {
+        var point = CreatePoint(out var prefab);
+        var ownerObject = Track(new GameObject("Owner"));
+        var owner = ownerObject.AddComponent<LobbyWorldCharacterSettingOpenObject>();
+        point.Initialize(owner);
+        var instance = point.Spawn();
+        var light = instance.GetComponentInChildren<Light2D>(true);
+        Assert.That(instance.layer, Is.EqualTo(7));
+        Assert.That(instance.GetComponentsInChildren<Light2D>(true), Has.Length.EqualTo(1));
+        Assert.That(light.pointLightOuterRadius, Is.EqualTo(12.34f).Within(0.001f));
+        Assert.That(instance.GetComponent<UIHoverLight2DFalloff>(), Is.Not.Null);
+        Assert.That(instance.GetComponent<LobbyWorldObjectHoverName>(), Is.Not.Null);
+        var relay = instance.GetComponent<LobbyWorldCharacterClickRelay>();
+        Assert.That(relay, Is.Not.Null);
+        Assert.That(relay.CharacterId, Is.EqualTo("Char_01"));
+    }
+
+    [Test] public void Spawn_SkipsInactiveMissingDatabaseIdAndPrefab()
+    {
+        var point = CreatePoint(out _);
+        point.gameObject.SetActive(false);
+        Assert.That(point.Spawn(), Is.Null);
+        point.gameObject.SetActive(true);
+        Set(point, "characterId", "Unknown");
+        Assert.That(point.Spawn(), Is.Null);
+        Set(point, "characterId", " ");
+        Assert.That(point.Spawn(), Is.Null);
+        Set(point, "database", null);
+        Assert.That(point.Spawn(), Is.Null);
+        Assert.That(point.transform.childCount, Is.Zero);
+    }
+
+    [Test] public void Initialize_InactivePointSpawnsWhenEnabled_WithoutDuplicates()
+    {
+        var point = CreatePoint(out _);
+        point.gameObject.SetActive(false);
+        var owner = Track(new GameObject("Owner")).AddComponent<LobbyWorldCharacterSettingOpenObject>();
+        point.Initialize(owner);
+        Assert.That(point.transform.childCount, Is.Zero);
+        point.gameObject.SetActive(true);
+        Assert.That(point.transform.childCount, Is.EqualTo(1));
+        var instance = point.Spawn();
+        point.gameObject.SetActive(false);
+        point.gameObject.SetActive(true);
+        Assert.That(point.Spawn(), Is.SameAs(instance));
+        Assert.That(instance.GetComponent<LobbyWorldCharacterClickRelay>().CharacterId, Is.EqualTo("Char_01"));
+    }
+
+    [Test] public void Spawn_MissingLobbyPrefabDoesNotCreateChild()
+    {
+        var point = CreatePoint(out var prefab);
+        Object.DestroyImmediate(prefab);
+        Assert.That(point.Spawn(), Is.Null);
+        Assert.That(point.transform.childCount, Is.Zero);
+    }
+
+    [Test] public void Spawn_SameCharacterAtTwoPointsIsIndependent()
+    {
+        var first = CreatePoint(out _);
+        var second = CreatePoint(out _);
+        Assert.That(first.Spawn(), Is.Not.SameAs(second.Spawn()));
+        Assert.That(first.transform.childCount, Is.EqualTo(1));
+        Assert.That(second.transform.childCount, Is.EqualTo(1));
+    }
+
+    private LobbyCharacterSpawnPoint CreatePoint(out GameObject prefab)
+    {
+        prefab = Track(new GameObject("UnrelatedPrefabName"));
+        prefab.layer = 7;
         prefab.AddComponent<BoxCollider2D>();
-        var definitions = new[]
-        {
-            new LobbyWorldCharacterSpawnDefinition(
-                "Char_01",
-                new Vector3(1f, 2f, 3f),
-                new Vector3(0f, 0f, 15f),
-                new Vector3(0.5f, 0.5f, 1f)),
-            new LobbyWorldCharacterSpawnDefinition("Char_01", Vector3.zero, Vector3.zero, Vector3.one),
-            new LobbyWorldCharacterSpawnDefinition("", Vector3.zero, Vector3.zero, Vector3.one),
-            new LobbyWorldCharacterSpawnDefinition("Char_02", Vector3.zero, Vector3.zero, Vector3.one)
-        };
-
-        IReadOnlyList<GameObject> spawned = LobbyWorldCharacterSpawner.Spawn(
-            parentObject.transform,
-            definitions,
-            id => id == "Char_01" ? prefab : null);
-
-        Assert.That(spawned, Has.Count.EqualTo(1));
-        Assert.That(spawned[0].name, Is.EqualTo("LobbyWorld_Char_01"));
-        Assert.That(spawned[0].transform.parent, Is.SameAs(parentObject.transform));
-        Assert.That(spawned[0].transform.localPosition, Is.EqualTo(new Vector3(1f, 2f, 3f)));
-        Assert.That(spawned[0].transform.localEulerAngles.z, Is.EqualTo(15f).Within(0.01f));
-        Assert.That(spawned[0].transform.localScale, Is.EqualTo(new Vector3(0.5f, 0.5f, 1f)));
-        Assert.That(spawned[0].GetComponent<LobbyWorldObjectHoverName>(), Is.Not.Null);
-
-        cleanup.Add(spawned[0]);
+        prefab.AddComponent<SpriteRenderer>().flipX = true;
+        var back = new GameObject("Back");
+        back.transform.SetParent(prefab.transform, false);
+        back.layer = 9;
+        back.AddComponent<SpriteRenderer>();
+        var light = new GameObject("AuthoredLight");
+        light.transform.SetParent(prefab.transform, false);
+        light.AddComponent<Light2D>().pointLightOuterRadius = 12.34f;
+        var database = Track(ScriptableObject.CreateInstance<CharacterPrefabDatabase>());
+        Set(database, "entries", new List<CharacterPrefabEntry> {
+            new CharacterPrefabEntry { CharacterId = "Char_01", LobbyPrefab = prefab }
+        });
+        var point = Track(new GameObject("ArbitrarySpawnPoint")).AddComponent<LobbyCharacterSpawnPoint>();
+        Set(point, "database", database);
+        Set(point, "characterId", "Char_01");
+        return point;
     }
-
-    [Test]
-    public void ReplaceSpawned_DestroysPreviousInstancesBeforeRespawn()
-    {
-        GameObject parentObject = Track(new GameObject("CharacterRoot"));
-        GameObject prefab = Track(new GameObject("Char01Prefab"));
-        var definitions = new[]
-        {
-            new LobbyWorldCharacterSpawnDefinition("Char_01", Vector3.zero, Vector3.zero, Vector3.one)
-        };
-        var existing = new List<GameObject>
-        {
-            Track(Object.Instantiate(prefab, parentObject.transform))
-        };
-
-        LobbyWorldCharacterSpawner.ReplaceSpawned(
-            parentObject.transform,
-            definitions,
-            id => prefab,
-            existing);
-
-        Assert.That(existing, Has.Count.EqualTo(1));
-        Assert.That(parentObject.transform.childCount, Is.EqualTo(1));
-        Assert.That(existing[0].name, Is.EqualTo("LobbyWorld_Char_01"));
-    }
-
-    [Test]
-    public void Spawn_PreservesPrefabAuthoredHoverLightWithoutCreatingAnother()
-    {
-        GameObject parentObject = Track(new GameObject("CharacterRoot"));
-        GameObject prefab = Track(new GameObject("Char01Prefab"));
-        prefab.AddComponent<BoxCollider2D>();
-        SpriteRenderer front = prefab.AddComponent<SpriteRenderer>();
-        GameObject backObject = new GameObject("Back");
-        backObject.transform.SetParent(prefab.transform, false);
-        SpriteRenderer back = backObject.AddComponent<SpriteRenderer>();
-        GameObject lightObject = new GameObject("light");
-        lightObject.transform.SetParent(prefab.transform, false);
-        Light2D authoredLight = lightObject.AddComponent<Light2D>();
-        authoredLight.pointLightOuterRadius = 12.34f;
-        authoredLight.falloffIntensity = 0.42f;
-
-        IReadOnlyList<GameObject> spawned = LobbyWorldCharacterSpawner.Spawn(
-            parentObject.transform,
-            new[] { new LobbyWorldCharacterSpawnDefinition("Char_01", Vector3.zero, Vector3.zero, Vector3.one) },
-            _ => prefab);
-
-        Light2D[] lights = spawned[0].GetComponentsInChildren<Light2D>(true);
-        Assert.That(lights, Has.Length.EqualTo(1));
-        Assert.That(lights[0].pointLightOuterRadius, Is.EqualTo(12.34f).Within(0.0001f));
-        Assert.That(lights[0].falloffIntensity, Is.EqualTo(0.42f).Within(0.0001f));
-        Assert.That(spawned[0].GetComponent<UIHoverLight2DFalloff>(), Is.Not.Null);
-        SpriteRenderer[] renderers = spawned[0].GetComponentsInChildren<SpriteRenderer>(true);
-        Assert.That(renderers[0].flipX, Is.True);
-        Assert.That(renderers[0].sortingOrder, Is.EqualTo(2));
-        Assert.That(renderers[1].sortingOrder, Is.EqualTo(1));
-
-        cleanup.Add(spawned[0]);
-    }
-
-    [Test]
-    public void BindCharacterChildren_RecognizesRuntimeSpawnedCharacterName()
-    {
-        GameObject ownerObject = Track(new GameObject("CharacterRoot"));
-        LobbyWorldCharacterSettingOpenObject owner = ownerObject.AddComponent<LobbyWorldCharacterSettingOpenObject>();
-        GameObject characterObject = new GameObject("LobbyWorld_Char_01");
-        characterObject.transform.SetParent(ownerObject.transform, false);
-        characterObject.AddComponent<BoxCollider2D>();
-
-        owner.BindCharacterChildren();
-
-        Assert.That(characterObject.GetComponent<LobbyWorldCharacterClickRelay>(), Is.Not.Null);
-    }
-
-    private T Track<T>(T value) where T : Object
-    {
-        cleanup.Add(value);
-        return value;
-    }
+    private static void Set(object target, string name, object value) =>
+        target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
+    private T Track<T>(T value) where T : Object { cleanup.Add(value); return value; }
 }

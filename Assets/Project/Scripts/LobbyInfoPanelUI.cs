@@ -132,7 +132,6 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         CacheInventoryContentChildCounts();
         BindCharacterEquipmentTargets();
         ValidateSelectedInventorySlot();
-        RefreshSharedConsumableSlots();
     }
 
     public static void RefreshAll()
@@ -254,7 +253,6 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
                 continue;
 
             BindCharacterEquipmentTarget(charButton, "Relic", false);
-            BindCharacterEquipmentTarget(charButton, "Compound", true);
         }
     }
 
@@ -346,21 +344,19 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         }
     }
 
+    public bool TryGetSelectedSharedCompound(out string itemId)
+    {
+        itemId = selectedItemIsCompound ? selectedItemId : null;
+        return !string.IsNullOrWhiteSpace(itemId);
+    }
+
+    public void ClearSharedCompoundSelection() => ClearInventorySelection();
+
     internal bool CanUseEquipmentTarget(CharBtn charButton, bool isCompound)
     {
+        if (isCompound) return false;
         if (!TryGetCharacterRuntime(charButton, out CharacterRuntimeData runtime))
             return false;
-
-        if (isCompound)
-        {
-            int slotIndex = GetSharedConsumableSlotIndex(charButton);
-            if (slotIndex < 0) return false;
-            LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-            PartyConsumableRuntime.NormalizeLobby(lobby);
-            return !string.IsNullOrWhiteSpace(selectedItemId)
-                ? selectedItemIsCompound && IsMatchingItemType(selectedItemId, true)
-                : lobby != null && !string.IsNullOrWhiteSpace(lobby.EquippedConsumableIds[slotIndex]);
-        }
 
         // 장착 슬롯에서 다른 캐릭터의 빈 슬롯으로 옮길 때도
         // 드롭 대상의 호버 색상을 보여줍니다. 클릭/해제의 기존 판정은
@@ -382,13 +378,11 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 
     internal bool HandleEquipmentTargetClick(CharBtn charButton, bool isCompound)
     {
+        if (isCompound) return false;
         if (!TryGetCharacterRuntime(charButton, out CharacterRuntimeData runtime))
             return false;
 
         string characterId = charButton.CharacterId;
-        int consumableSlotIndex = isCompound ? GetSharedConsumableSlotIndex(charButton) : -1;
-        if (isCompound && consumableSlotIndex < 0)
-            return false;
         bool changed;
 
         if (!string.IsNullOrWhiteSpace(selectedItemId))
@@ -401,9 +395,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             }
 
             string itemId = selectedItemId;
-            changed = isCompound
-                ? EquipCompound(characterId, consumableSlotIndex, itemId)
-                : EquipRelic(characterId, itemId);
+            changed = EquipRelic(characterId, itemId);
 
             if (!changed)
                 return false;
@@ -414,9 +406,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         else
         {
             // 아무 아이템도 선택하지 않은 상태에서 이미 장착된 Back을 클릭하면 해제합니다.
-            changed = isCompound
-                ? UnequipCompound(characterId, consumableSlotIndex)
-                : UnequipRelic(characterId, runtime);
+            changed = UnequipRelic(characterId, runtime);
 
             if (!changed)
                 return false;
@@ -462,21 +452,9 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 
     internal void ShowEquipmentTooltip(CharBtn charButton, bool isCompound, RectTransform anchorRect)
     {
+        if (isCompound) return;
         if (!TryGetCharacterRuntime(charButton, out CharacterRuntimeData runtime))
             return;
-
-        if (isCompound)
-        {
-            LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-            PartyConsumableRuntime.NormalizeLobby(lobby);
-            int sharedSlot = GetSharedConsumableSlotIndex(charButton);
-            string sharedItemId = lobby != null && sharedSlot >= 0
-                ? lobby.EquippedConsumableIds[sharedSlot]
-                : string.Empty;
-            if (!string.IsNullOrWhiteSpace(sharedItemId))
-                ShowTooltipForItem(sharedItemId, true, anchorRect, $"equip:consumable:{sharedSlot}");
-            return;
-        }
 
         ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
         const int slotIndex = 1;
@@ -886,24 +864,6 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         return service.EquipRelic(characterId, targetSlot, relicId);
     }
 
-    private bool EquipCompound(string characterId, int slotIndex, string compoundId)
-    {
-        DataManager dataManager = DataManager.Instance;
-        if (dataManager?.CompoundDatabase == null ||
-            string.IsNullOrWhiteSpace(compoundId) ||
-            !dataManager.CompoundDatabase.TryGet(compoundId, out CompoundData _))
-        {
-            return false;
-        }
-
-        SteamLobbySharedStateSynchronizer synchronizer = SteamLobbySharedStateSynchronizer.Instance;
-        if (synchronizer != null && synchronizer.IsNetworkSharedStateActive)
-            return synchronizer.RequestEquipConsumable(characterId, slotIndex, compoundId);
-
-        LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
-        return PartyConsumableRuntime.TryEquip(lobby, slotIndex, compoundId);
-    }
-
     private bool UnequipRelic(string characterId, CharacterRuntimeData runtime)
     {
         DataManager dataManager = DataManager.Instance;
@@ -934,52 +894,6 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             dataManager.RelicDatabase);
 
         return service.UnequipRelic(characterId, runtimeRelicSlotIndex);
-    }
-
-    private bool UnequipCompound(string characterId, int slotIndex)
-    {
-        SteamLobbySharedStateSynchronizer synchronizer = SteamLobbySharedStateSynchronizer.Instance;
-        if (synchronizer != null && synchronizer.IsNetworkSharedStateActive)
-            return synchronizer.RequestUnequipConsumable(characterId, slotIndex);
-
-        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-        return PartyConsumableRuntime.TryUnequip(lobby, slotIndex);
-    }
-
-    private int GetSharedConsumableSlotIndex(CharBtn target)
-    {
-        if (target == null || characterSelectRoot == null) return -1;
-        CharBtn[] buttons = characterSelectRoot.GetComponentsInChildren<CharBtn>(true);
-        for (int i = 0; i < buttons.Length && i < PartyConsumableRuntime.SlotCount; i++)
-            if (buttons[i] == target) return i;
-        return -1;
-    }
-
-    private void RefreshSharedConsumableSlots()
-    {
-        if (characterSelectRoot == null) return;
-        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-        PartyConsumableRuntime.NormalizeLobby(lobby);
-        CharBtn[] buttons = characterSelectRoot.GetComponentsInChildren<CharBtn>(true);
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            Transform root = buttons[i].transform.Find("Compound") ??
-                             FindChildRecursive(buttons[i].transform, "Compound");
-            if (root == null) continue;
-            root.gameObject.SetActive(i < PartyConsumableRuntime.SlotCount);
-            if (i >= PartyConsumableRuntime.SlotCount || lobby == null) continue;
-            string itemId = lobby.EquippedConsumableIds[i];
-            Transform iconRoot = root.Find("Icon") ?? FindChildRecursive(root, "Icon");
-            Image icon = iconRoot != null ? iconRoot.GetComponent<Image>() : null;
-            Sprite sprite = null;
-            if (!string.IsNullOrWhiteSpace(itemId))
-                DataManager.Instance?.RelicIconDatabase?.TryGetIcon(itemId, out sprite);
-            if (icon != null)
-            {
-                icon.sprite = sprite;
-                icon.enabled = sprite != null;
-            }
-        }
     }
 
     private static int FindFirstEmptyRelicSlot(CharacterRuntimeData runtime)

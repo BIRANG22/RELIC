@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 
 [Serializable]
 public sealed class UseConsumableCommand
 {
     public string RequestId;
-    public string ActorCharacterId;
+    public string TargetCharacterId;
     public int SlotIndex = -1;
     public string ItemId;
     public int TargetGridIndex = -1;
@@ -58,10 +59,77 @@ public readonly struct UseConsumableResult
 
 public static class BattleConsumableService
 {
+    public static List<CharacterRuntimeData> GetPartyMembers(PartyRuntimeStore party, CharacterRuntimeStore characters)
+    {
+        List<CharacterRuntimeData> members = new();
+        HashSet<string> seen = new(StringComparer.Ordinal);
+        if (party == null || characters == null) return members;
+        for (int i = 0; i < party.MaxPartyCountValue; i++)
+        {
+            string id = party.GetCharacterId(i);
+            if (!string.IsNullOrWhiteSpace(id) && seen.Add(id) && characters.TryGet(id, out var member) && member != null)
+                members.Add(member);
+        }
+        return members;
+    }
+
+    public static bool ApplyToLivingParty(IReadOnlyList<CharacterRuntimeData> party, Func<CharacterRuntimeData, bool> apply)
+    {
+        if (party == null || apply == null) return false;
+        HashSet<string> seen = new(StringComparer.Ordinal);
+        bool succeeded = false;
+        foreach (var member in party)
+            if (member != null && !member.IsDead && !string.IsNullOrWhiteSpace(member.CharacterId) && seen.Add(member.CharacterId))
+                succeeded |= apply(member);
+        return succeeded;
+    }
+
+    public static UseConsumableResult TryUseParty(
+        BattleRuntimeData battle, UseConsumableCommand command,
+        IReadOnlyList<CharacterRuntimeData> party, bool isReservationPhase,
+        ActiveRelicService effectService, GridManager gridManager = null,
+        BattleGridEffectController gridEffects = null, PartyRuntimeStore partyPositions = null)
+    {
+        return TryUse(battle, command, isReservationPhase, () =>
+        {
+            if (effectService == null) return false;
+            var availability = effectService.GetConsumableAvailability(command.ItemId);
+            if (!availability.CanUse) return false;
+            if (availability.TargetMode == ActiveRelicTargetMode.Self)
+                return ApplyToLivingParty(party, member => effectService.TryUseConsumableImmediate(member, command.ItemId).Succeeded);
+            CharacterRuntimeData target = null;
+            bool hasLivingMember = false;
+            if (party != null)
+                foreach (var member in party)
+                    if (member != null && !member.IsDead)
+                    {
+                        hasLivingMember = true;
+                        if (string.Equals(member.CharacterId, command.TargetCharacterId, StringComparison.Ordinal)) target = member;
+                    }
+            if (!hasLivingMember || command.TargetGridIndex < 0) return false;
+            if (availability.EffectId == ActiveRelicEffectIds.MoveToGrid || availability.EffectId == ActiveRelicEffectIds.SwapAlly)
+            {
+                if (target == null) return false;
+                if (availability.EffectId == ActiveRelicEffectIds.SwapAlly)
+                {
+                    var partyStore = partyPositions;
+                    bool validDestination = false;
+                    if (partyStore != null)
+                        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+                            foreach (var member in party)
+                                if (member != null && !member.IsDead && member.CharacterId != target.CharacterId &&
+                                    member.CharacterId == partyStore.GetCharacterId(i) && partyStore.GetCurrentGridIndex(i) == command.TargetGridIndex)
+                                    validDestination = true;
+                    if (!validDestination) return false;
+                }
+            }
+            return effectService.TryUseConsumableTarget(target, command.ItemId, command.TargetGridIndex, gridManager, gridEffects).Succeeded;
+        });
+    }
+
     public static UseConsumableResult TryUse(
         BattleRuntimeData battle,
         UseConsumableCommand command,
-        CharacterRuntimeData actor,
         bool isReservationPhase,
         Func<bool> applyEffect)
     {
@@ -70,11 +138,6 @@ public static class BattleConsumableService
         if (battle == null || command == null ||
             command.SlotIndex < 0 || command.SlotIndex >= PartyConsumableRuntime.SlotCount)
             return UseConsumableResult.Reject(ConsumableRejectReason.InvalidSlot);
-        if (actor == null || actor.IsDead ||
-            string.IsNullOrWhiteSpace(command.ActorCharacterId) ||
-            !string.Equals(actor.CharacterId, command.ActorCharacterId, StringComparison.Ordinal))
-            return UseConsumableResult.Reject(ConsumableRejectReason.InvalidActor, command.SlotIndex);
-
         PartyConsumableRuntime.NormalizeBattle(battle);
         BattleConsumableSlotRuntimeData slot = battle.ConsumableSlots[command.SlotIndex];
         string slotItemId = slot.ItemId?.Trim() ?? string.Empty;
