@@ -825,7 +825,6 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
             }
             AdvanceGridEffectDurations();
-            ClearActiveRelicTurnScopedStatuses();
             ClearAllShield();
             RefreshBattleHUDs();
 
@@ -2295,22 +2294,6 @@ public class BattleTurnExecutor : MonoBehaviour
                 continue;
 
             monsters[i].RuntimeData.ClearTemporaryShield();
-        }
-    }
-
-    private void ClearActiveRelicTurnScopedStatuses()
-    {
-        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
-            FindObjectsInactive.Exclude,
-            FindObjectsSortMode.None
-        );
-
-        for (int i = 0; i < characters.Length; i++)
-        {
-            if (characters[i] == null || characters[i].RuntimeData == null)
-                continue;
-
-            ActiveRelicRuntimeUtility.RemoveTurnScopedStatuses(characters[i].RuntimeData);
         }
     }
 

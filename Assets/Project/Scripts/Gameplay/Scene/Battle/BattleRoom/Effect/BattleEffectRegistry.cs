@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -76,6 +77,10 @@ public class BattleEffectRegistry
         Register(new StrikeCountByDebuffEffect());
         Register(new RushEffect());
         Register(new CrashEffect());
+        Register(new RemoveFirstDebuffEffect());
+        Register(new ReduceErosionEffect());
+        Register(new ReviveEffect());
+
     }
 
     private void Register(BattleEffectBase effect)
@@ -86,6 +91,18 @@ public class BattleEffectRegistry
         effects[effect.EffectId] = effect;
     }
 
+    public bool TryGet(string effectId, out BattleEffectBase effect)
+    {
+        effect = null;
+        if (string.IsNullOrWhiteSpace(effectId)) return false;
+        effectId = effectId.Trim();
+        if (effects.TryGetValue(effectId, out effect)) return true;
+        var data = DataManager.Instance?.EffectDatabase?.Get(effectId);
+        if (data == null || data.DamageModifier == DamageModifierType.None) return false;
+        effect = new ConfiguredDamageStatusEffect(effectId);
+        return true;
+    }
+
     public BattleEffectBase Get(string effectId)
     {
         if (string.IsNullOrWhiteSpace(effectId))
@@ -93,7 +110,7 @@ public class BattleEffectRegistry
 
         effectId = effectId.Trim();
 
-        if (effects.TryGetValue(effectId, out BattleEffectBase effect))
+        if (TryGet(effectId, out BattleEffectBase effect))
             return effect;
 
         Debug.LogWarning($"[BattleEffectRegistry] 등록되지 않은 EffectId: {effectId}");

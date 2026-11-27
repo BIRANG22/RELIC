@@ -411,10 +411,7 @@ public static class BattlePlayerSkillPreviewCalculator
                 case "E_Weaken":
                     formulaParts.Add("-15%");
                     break;
-                case ActiveRelicEffectIds.DamageBoostThisTurn:
-                    formulaParts.Add("+100%");
-                    break;
-                case ActiveRelicEffectIds.Fatigue:
+                case "E_Fatigue":
                     formulaParts.Add($"-{status.Stack}");
                     break;
                 case "E_Grit":
@@ -435,6 +432,10 @@ public static class BattlePlayerSkillPreviewCalculator
                     break;
                 case "E_Grudge":
                     formulaParts.Add($"+{status.Stack}");
+                    break;
+                default:
+                    if (ConfiguredDamageRules.TryGetModifier(status, DamageModifierType.OutgoingPercent, out int modifier))
+                        formulaParts.Add($"{modifier:+0;-0;0}%");
                     break;
             }
         }

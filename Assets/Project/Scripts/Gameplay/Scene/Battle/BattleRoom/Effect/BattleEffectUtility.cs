@@ -231,7 +231,7 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        damage = Mathf.Max(0, damage);
+        damage = ConfiguredDamageRules.ApplyIncoming(damage, target.RuntimeData.StatusEffects);
 
         if (damage > 0)
             BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
@@ -293,7 +293,7 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return 0;
 
-        damage = Mathf.Max(0, damage);
+        damage = ConfiguredDamageRules.ApplyIncoming(damage, target.RuntimeData.StatusEffects);
 
         if (damage > 0)
             BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
@@ -365,7 +365,7 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        damage = Mathf.Max(0, damage);
+        damage = ConfiguredDamageRules.ApplyIncoming(damage, target.RuntimeData.StatusEffects);
 
         if (damage > 0)
             BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
@@ -415,7 +415,7 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return 0;
 
-        damage = Mathf.Max(0, damage);
+        damage = ConfiguredDamageRules.ApplyIncoming(damage, target.RuntimeData.StatusEffects);
 
         if (damage > 0)
             BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
@@ -549,7 +549,7 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        damage = Mathf.Max(0, damage);
+        damage = ConfiguredDamageRules.ApplyIncoming(damage, target.RuntimeData.StatusEffects);
 
         if (damage > 0)
             BattleDamageTextPopupUI.PrepareTargetHud(target.transform);
@@ -599,7 +599,7 @@ public static class BattleEffectUtility
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
-        damage = Mathf.Max(0, damage);
+        damage = ConfiguredDamageRules.ApplyIncoming(damage, target.RuntimeData.StatusEffects);
 
         if (damage > 0)
             BattleDamageTextPopupUI.PrepareTargetHud(target.transform);

@@ -33,6 +33,7 @@ public class StrikeEffect : BattleEffectBase
                 Mathf.Max(0, previousHp - context.PlayerTarget.RuntimeData.CurrentHP) +
                 Mathf.Max(0, previousShield - context.PlayerTarget.RuntimeData.CurrentShield);
             BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
+            ConfiguredDamageRules.ConsumeRearHit(context, dealtDamage);
             RecordImpact(
                 context,
                 context.PlayerTarget.RuntimeData.CharacterId,
@@ -57,6 +58,7 @@ public class StrikeEffect : BattleEffectBase
 
             int dealtDamage = BattleEffectUtility.DamageMonster(context.MonsterTarget, finalDamage);
             BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
+            ConfiguredDamageRules.ConsumeRearHit(context, dealtDamage);
 
             RecordImpact(
                 context,

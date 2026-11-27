@@ -15,7 +15,6 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
 
     [SerializeField] private SlotView[] slots = new SlotView[PartyConsumableRuntime.SlotCount];
     [SerializeField] private Transform slotRoot;
-    [SerializeField] private ActiveRelicTargetingController targetingController;
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
     private ActiveRelicService effectService;
@@ -35,7 +34,6 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
 
     private void Awake()
     {
-        targetingController ??= FindFirstObjectByType<ActiveRelicTargetingController>(FindObjectsInactive.Include);
         turnExecutor ??= FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
         AutoBindSlots();
         BindButtons();
@@ -56,7 +54,7 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
         if (battle != null) PartyConsumableRuntime.NormalizeBattle(battle);
         bool reservationPhase = turnExecutor == null || turnExecutor.CanAcceptPlayerInput;
         lastReservationPhase = reservationPhase;
-        bool hasLivingMember = BattleConsumableService.GetPartyMembers(DataManager.Instance?.PartyRuntimeStore, DataManager.Instance?.CharacterRuntimeStore).Exists(member => !member.IsDead);
+        bool hasPartyMember = BattleConsumableService.GetPartyMembers(DataManager.Instance?.PartyRuntimeStore, DataManager.Instance?.CharacterRuntimeStore).Count > 0;
         for (int i = 0; i < PartyConsumableRuntime.SlotCount; i++)
         {
             SlotView view = slots != null && i < slots.Length ? slots[i] : null;
@@ -78,7 +76,7 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
             if (view.UsedOverlay != null) view.UsedOverlay.SetActive(used);
             if (view.Button != null)
                 view.Button.interactable = reservationPhase &&
-                                           hasLivingMember &&
+                                           hasPartyMember &&
                                            !used && !string.IsNullOrWhiteSpace(itemId);
         }
     }
@@ -136,21 +134,10 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
         };
 
         if (!availability.CanUse || !reservationPhase || slot.IsUsed) return;
-        targetingController?.CancelTargeting();
-        if (availability.RequiresTarget)
-        {
-            if (!reservationPhase || targetingController == null ||
-                !targetingController.BeginConsumableTargeting(
-                    effectService, battle, command, availability, RefreshAfterUse))
-                BattleWarningUI.ShowMessage(availability.Message);
-            return;
-        }
-
-
         if (SteamBattleStateSynchronizer.TryHandleConsumableUse(command, out bool networkAccepted))
         {
             if (!networkAccepted)
-                BattleWarningUI.ShowMessage("소모품 사용 요청이 거부되었습니다.");
+                BattleWarningUI.ShowMessage(GameLocalization.Get("battle.network_command_failed"));
             Refresh();
             return;
         }
@@ -160,7 +147,7 @@ public sealed class BattleConsumablePanelUI : MonoBehaviour
             BattleConsumableService.GetPartyMembers(DataManager.Instance.PartyRuntimeStore, DataManager.Instance.CharacterRuntimeStore),
             reservationPhase, effectService);
         if (!result.Succeeded)
-            BattleWarningUI.ShowMessage(result.RejectReason.ToString());
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.network_command_failed"));
         RefreshAfterUse();
     }
 }

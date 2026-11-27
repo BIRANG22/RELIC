@@ -25,6 +25,15 @@ namespace Relic.Gameplay.Data
         Harmful,
     }
 
+    public enum DamageModifierType
+    {
+        None,
+        OutgoingPercent,
+        IncomingPercent,
+        RearOutgoingPercent,
+        FixedIncomingDamage
+    }
+
     [System.Serializable]
     public class EffectMasterData
     {
@@ -42,5 +51,9 @@ namespace Relic.Gameplay.Data
 
         // Effect sheet: 1 = visible in Record Effect tab.
         public int Mark;
+
+        // Optional Effect sheet columns. Signed percent deltas, or absolute damage.
+        public DamageModifierType DamageModifier;
+        public int DamageModifierValue;
     }
 }

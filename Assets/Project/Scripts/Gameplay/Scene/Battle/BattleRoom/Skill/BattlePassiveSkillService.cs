@@ -14,12 +14,6 @@ public class BattlePassiveSkillService
         appliedBattleStartPassives.Clear();
     }
 
-    private static bool IsBattleStartOnlyPassive(string skillId)
-    {
-        return skillId == "S_Passive_04" ||
-               skillId == "S_Passive_06" ||
-               skillId == "S_Passive_08";
-    }
 
     public void RefreshAllPlayerPassives()
     {
@@ -42,7 +36,7 @@ public class BattlePassiveSkillService
             CharacterRuntimeData runtime = character != null ? character.RuntimeData : null;
             if (runtime == null || runtime.IsDead) continue;
             SkillMasterData passiveSkill = GetPassiveSkill(runtime);
-            if (passiveSkill == null || passiveSkill.EffectEntries == null || passiveSkill.EffectEntries.Count == 0)
+            if (!ShouldApplyPassive(passiveSkill, runtime) || passiveSkill.EffectEntries == null || passiveSkill.EffectEntries.Count == 0)
             {
                 RefreshRuntimePassiveEffects(runtime);
                 continue;
@@ -89,7 +83,7 @@ public class BattlePassiveSkillService
             return;
         }
 
-        bool battleStartOnly = IsBattleStartOnlyPassive(passiveSkill.SkillId);
+        bool battleStartOnly = passiveSkill.PassiveTrigger == PassiveTriggerType.BattleStart;
         if (battleStartOnly)
         {
             string key = runtime.CharacterId + ":" + passiveSkill.SkillId;
@@ -121,7 +115,9 @@ public class BattlePassiveSkillService
         SkillMasterData passiveSkill,
         CharacterRuntimeData runtime)
     {
-        return passiveSkill != null && runtime != null && !runtime.IsDead;
+        return passiveSkill != null && runtime != null && !runtime.IsDead &&
+               (passiveSkill.PassiveTrigger == PassiveTriggerType.TurnStart ||
+                passiveSkill.PassiveTrigger == PassiveTriggerType.BattleStart);
     }
 
     private static void ApplyPassiveEffect(

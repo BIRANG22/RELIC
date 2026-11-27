@@ -11,6 +11,7 @@ public class OptionHoverHighlight : MonoBehaviour
     [SerializeField, Min(0f)] private float moveSpeed = 15f;
     [SerializeField] private bool hideOnExit = true;
     private RectTransform target;
+    private Vector2? targetSizeOverride;
     private CanvasGroup group;
     private bool snap = true;
 
@@ -30,15 +31,19 @@ public class OptionHoverHighlight : MonoBehaviour
     private void OnDisable()
     {
         target = null;
+        targetSizeOverride = null;
         snap = true;
         if (group != null) group.alpha = 0f;
     }
 
-    public void MoveTo(RectTransform item)
+    public void MoveTo(RectTransform item) => MoveTo(item, null);
+
+    public void MoveTo(RectTransform item, Vector2? sizeOverride)
     {
         if (item == null || highlightRect == null || group == null) return;
         snap = group.alpha <= 0f;
         target = item;
+        targetSizeOverride = sizeOverride;
         UpdatePosition();
         group.alpha = 1f;
     }
@@ -47,6 +52,7 @@ public class OptionHoverHighlight : MonoBehaviour
     {
         if (target != item || (!hideOnExit && !force)) return;
         target = null;
+        targetSizeOverride = null;
         snap = true;
         if (group != null) group.alpha = 0f;
     }
@@ -57,6 +63,7 @@ public class OptionHoverHighlight : MonoBehaviour
         {
             if (group != null) group.alpha = 0f;
             target = null;
+            targetSizeOverride = null;
             snap = true;
             return;
         }
@@ -81,6 +88,7 @@ public class OptionHoverHighlight : MonoBehaviour
         Vector2 size = highlightRect.rect.size;
         if (matchWidth) size.x = Mathf.Max(0f, max.x - min.x + sizeOffset.x);
         if (matchHeight) size.y = Mathf.Max(0f, max.y - min.y + sizeOffset.y);
+        if (targetSizeOverride.HasValue) size = targetSizeOverride.Value;
         Vector2 center = (Vector2)((min + max) * 0.5f) + positionOffset;
         Vector2 pivotPosition = center + Vector2.Scale(size, highlightRect.pivot - Vector2.one * 0.5f);
         float t = snap || moveSpeed <= 0f ? 1f : 1f - Mathf.Exp(-moveSpeed * Time.unscaledDeltaTime);

@@ -27,6 +27,18 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private GameObject soundContent;
     [SerializeField] private GameObject resolutionContent;
     [SerializeField] private GameObject controlContent;
+    [SerializeField] private RectTransform control;
+
+    [Header("Shortcut Layout")]
+    [SerializeField, Min(0f)] private float shortcutLabelWidth = 150f;
+    [SerializeField, Min(0f)] private float shortcutButtonWidth = 200f;
+    [SerializeField, Min(1f)] private float shortcutRowHeight = 80f;
+    [SerializeField] private float shortcutRowSpacing = 0f;
+    [SerializeField] private Vector2 shortcutHighlightSize = new Vector2(425f, 50f);
+    [SerializeField] private Vector2 shortcutResetButtonPosition = new Vector2(0f, 75f);
+    [SerializeField] private Vector2 shortcutResetButtonSize = new Vector2(260f, 60f);
+    [Header("Shortcut Hover Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string shortcutHoverSfxId;
 
     [Header("Resolution")]
     [SerializeField] private Button resolutionPreviousButton;
@@ -71,6 +83,7 @@ public class OptionPanelUI : MonoBehaviour
     private readonly Dictionary<BattleShortcutAction, TMP_Text> shortcutKeyTexts = new Dictionary<BattleShortcutAction, TMP_Text>();
     private readonly Dictionary<BattleShortcutAction, TMP_Text> shortcutNameTexts = new Dictionary<BattleShortcutAction, TMP_Text>();
     private TMP_Text shortcutResetText;
+    private RectTransform shortcutResetRect;
     private BattleShortcutAction? capturingShortcut;
 
 
@@ -594,47 +607,83 @@ public class OptionPanelUI : MonoBehaviour
     {
         if (controlContent == null)
         {
-            Transform parent = gameContent != null ? gameContent.transform.parent : transform;
-            var root = new GameObject(ControlContentName, typeof(RectTransform));
-            root.transform.SetParent(parent, false);
-            RectTransform rect = root.GetComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            controlContent = root;
+            controlContent = FindChildGameObject(ControlContentName);
+            if (controlContent == null)
+            {
+                Debug.LogWarning("[OptionPanelUI] Assign ControlContent or add it to the Option prefab.", this);
+                return;
+            }
+        }
+
+        if (control == null)
+            control = controlContent.transform.Find("Control") as RectTransform;
+        if (control == null || control.parent != controlContent.transform)
+        {
+            Debug.LogWarning("[OptionPanelUI] Assign Control or add Control directly under ControlContent.", this);
+            return;
         }
 
         if (shortcutButtons.Count > 0)
+        {
+            ApplyShortcutResetLayout();
             return;
+        }
 
         TMP_Text fontSource = controlButton != null ? controlButton.GetComponentInChildren<TMP_Text>(true) : null;
         BattleShortcutAction[] actions = (BattleShortcutAction[])System.Enum.GetValues(typeof(BattleShortcutAction));
+        float labelWidth = Mathf.Max(0f, shortcutLabelWidth);
+        float buttonWidth = Mathf.Max(0f, shortcutButtonWidth);
+        float rowHeight = Mathf.Max(1f, shortcutRowHeight);
+        float spacing = Mathf.Max(0f, shortcutRowSpacing);
+        float rowWidth = labelWidth + spacing + buttonWidth;
         for (int i = 0; i < actions.Length; i++)
         {
             BattleShortcutAction action = actions[i];
-            int column = i / 6;
-            int row = i % 6;
+            var rowObject = new GameObject(action + "Row", typeof(RectTransform), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
+            rowObject.transform.SetParent(control, false);
+            RectTransform rowRect = rowObject.GetComponent<RectTransform>();
+            rowRect.sizeDelta = new Vector2(rowWidth, rowHeight);
+            LayoutElement rowLayout = rowObject.GetComponent<LayoutElement>();
+            rowLayout.preferredWidth = rowWidth;
+            rowLayout.preferredHeight = rowHeight;
+            rowLayout.minWidth = rowWidth;
+            rowLayout.minHeight = rowHeight;
+            rowLayout.flexibleHeight = 0f;
+            HorizontalLayoutGroup rowGroup = rowObject.GetComponent<HorizontalLayoutGroup>();
+            rowGroup.spacing = spacing;
+            rowGroup.childAlignment = TextAnchor.MiddleLeft;
+            rowGroup.childControlWidth = true;
+            rowGroup.childControlHeight = true;
+            rowGroup.childForceExpandWidth = false;
+            rowGroup.childForceExpandHeight = false;
 
-            var nameObject = new GameObject(action + "Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-            nameObject.transform.SetParent(controlContent.transform, false);
-            RectTransform nameRect = nameObject.GetComponent<RectTransform>();
-            nameRect.anchorMin = nameRect.anchorMax = new Vector2(0.5f, 1f);
-            nameRect.pivot = new Vector2(0f, 1f);
-            nameRect.anchoredPosition = new Vector2(-650f + column * 430f, -105f - row * 78f);
-            nameRect.sizeDelta = new Vector2(210f, 56f);
+            var nameObject = new GameObject(action + "Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI), typeof(LayoutElement));
+            nameObject.transform.SetParent(rowRect, false);
+            LayoutElement nameLayout = nameObject.GetComponent<LayoutElement>();
+            nameLayout.minWidth = labelWidth;
+            nameLayout.preferredWidth = labelWidth;
+            nameLayout.flexibleWidth = 0f;
+            nameLayout.minHeight = rowHeight;
+            nameLayout.preferredHeight = rowHeight;
+            nameLayout.flexibleHeight = 0f;
             TextMeshProUGUI nameText = nameObject.GetComponent<TextMeshProUGUI>();
             CopyTextStyle(fontSource, nameText, 24f);
             nameText.alignment = TextAlignmentOptions.MidlineLeft;
+            nameText.textWrappingMode = TextWrappingModes.NoWrap;
+            nameText.enableAutoSizing = true;
+            nameText.fontSizeMin = 12f;
+            nameText.fontSizeMax = 24f;
             shortcutNameTexts[action] = nameText;
 
-            var buttonObject = new GameObject(action + "KeyButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            buttonObject.transform.SetParent(controlContent.transform, false);
-            RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
-            buttonRect.anchorMin = buttonRect.anchorMax = new Vector2(0.5f, 1f);
-            buttonRect.pivot = new Vector2(0f, 1f);
-            buttonRect.anchoredPosition = new Vector2(-435f + column * 430f, -105f - row * 78f);
-            buttonRect.sizeDelta = new Vector2(130f, 56f);
+            var buttonObject = new GameObject(action + "KeyButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
+            buttonObject.transform.SetParent(rowRect, false);
+            LayoutElement buttonLayout = buttonObject.GetComponent<LayoutElement>();
+            buttonLayout.minWidth = buttonWidth;
+            buttonLayout.preferredWidth = buttonWidth;
+            buttonLayout.minHeight = rowHeight;
+            buttonLayout.preferredHeight = rowHeight;
+            buttonLayout.flexibleHeight = 0f;
+            buttonLayout.flexibleWidth = 0f;
             Image image = buttonObject.GetComponent<Image>();
             image.color = new Color(0.15f, 0.15f, 0.18f, 0.95f);
             Button button = buttonObject.GetComponent<Button>();
@@ -651,19 +700,36 @@ public class OptionPanelUI : MonoBehaviour
             TextMeshProUGUI keyText = keyObject.GetComponent<TextMeshProUGUI>();
             CopyTextStyle(fontSource, keyText, 24f);
             keyText.alignment = TextAlignmentOptions.Center;
+            keyText.textWrappingMode = TextWrappingModes.NoWrap;
+            keyText.enableAutoSizing = true;
+            keyText.fontSizeMin = 12f;
+            keyText.fontSizeMax = 24f;
             shortcutKeyTexts[action] = keyText;
+
+            // Reuse the same hover highlight as the other option tabs.
+            var hover = rowObject.AddComponent<OptionHoverItem>();
+            hover.SetHighlightSize(shortcutHighlightSize);
+            hover.SetHoverSfxId(shortcutHoverSfxId);
         }
 
-        var resetObject = new GameObject("ResetShortcuts", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        var resetObject = new GameObject("ResetShortcuts", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button), typeof(LayoutElement));
         resetObject.transform.SetParent(controlContent.transform, false);
-        RectTransform resetRect = resetObject.GetComponent<RectTransform>();
-        resetRect.anchorMin = resetRect.anchorMax = new Vector2(0.5f, 0f);
-        resetRect.pivot = new Vector2(0.5f, 0f);
-        resetRect.anchoredPosition = new Vector2(0f, 25f);
-        resetRect.sizeDelta = new Vector2(260f, 58f);
+        resetObject.GetComponent<LayoutElement>().ignoreLayout = true;
+        shortcutResetRect = resetObject.GetComponent<RectTransform>();
+        ApplyShortcutResetLayout();
         resetObject.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.18f, 0.95f);
         resetObject.GetComponent<Button>().onClick.AddListener(BattleKeyboardShortcutBindings.ResetAll);
         shortcutResetText = CreateChildText(resetObject.transform, fontSource, "ResetText", 25f);
+        resetObject.AddComponent<OptionHoverItem>().SetHoverSfxId(shortcutHoverSfxId);
+    }
+
+    private void ApplyShortcutResetLayout()
+    {
+        if (shortcutResetRect == null) return;
+        shortcutResetRect.anchorMin = shortcutResetRect.anchorMax = new Vector2(0.5f, 0f);
+        shortcutResetRect.pivot = new Vector2(0.5f, 0f);
+        shortcutResetRect.sizeDelta = shortcutResetButtonSize;
+        shortcutResetRect.anchoredPosition = shortcutResetButtonPosition;
     }
 
     private static TMP_Text CreateChildText(Transform parent, TMP_Text source, string name, float size)

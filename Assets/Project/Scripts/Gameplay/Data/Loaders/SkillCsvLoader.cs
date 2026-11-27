@@ -32,6 +32,15 @@ namespace Relic.Gameplay.Data
                     }
                     break;
                 }
+
+                // SkillMaster no longer needs a separate timeline notation column.
+                if (skills[i].TimelineNotation == TimelineActionType.None &&
+                    System.Enum.TryParse(skills[i].SkillType.ToString(), out TimelineActionType notation))
+                    skills[i].TimelineNotation = notation;
+
+                if (skills[i].Category == Category.Passive &&
+                    skills[i].PassiveTrigger == PassiveTriggerType.Unspecified)
+                    UnityEngine.Debug.LogWarning($"[SkillMaster] Missing PassiveTrigger: {skills[i].SkillId}");
             }
 
             return skills.Where(x => !string.IsNullOrWhiteSpace(x.SkillId)).ToList();
