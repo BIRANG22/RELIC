@@ -11,6 +11,7 @@ public class OptionHoverItem : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfxId;
     private Vector2? overrideHighlightSize;
     public void SetHighlightSize(Vector2 size) => overrideHighlightSize = size;
+    public string HoverSfxId => hoverSfxId;
     public void SetHoverSfxId(string sfxId) => hoverSfxId = sfxId;
 
     private RectTransform rectTransform;

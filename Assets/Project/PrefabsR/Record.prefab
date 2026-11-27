@@ -619,7 +619,6 @@ MonoBehaviour:
   relicTabButton: {fileID: 1038522500040184554}
   compoundTabButton: {fileID: 174488669260118084}
   monsterTabButton: {fileID: 5775821375924963743}
-  effectTabButton: {fileID: 2611644980184389082}
   skillNumberText: {fileID: 2307555978154728391}
   commonRarityColor: {r: 0.7607843, g: 0.8181423, b: 0.8901961, a: 1}
   rareRarityColor: {r: 0.39417946, g: 0.60176724, b: 0.8113208, a: 1}
@@ -1584,7 +1583,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6392157, g: 0.6627451, b: 0.7019608, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
