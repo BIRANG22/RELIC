@@ -213,8 +213,8 @@ namespace Relic.Gameplay.Data
             string[][] memorySkillIds =
             {
                 new[] { master.PassiveSkill1, master.PassiveSkill2 },
-                new[] { master.UniqueSkill1, master.UniqueSkill2 },
-                new[] { master.CharacterSkill1, master.CharacterSkill2 }
+                new[] { master.UniqueSkill1, master.UniqueSkill2, master.UniqueSkill3 },
+                new[] { master.CharacterSkill1, master.CharacterSkill2, master.CharacterSkill3 }
             };
 
             for (int slotIndex = 0; slotIndex < memorySkillIds.Length; slotIndex++)
