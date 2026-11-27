@@ -73,19 +73,21 @@ public class SaveSystem : Singleton<SaveSystem>
     /// <summary>
     /// 저장 파일을 삭제합니다. 언어와 음량 같은 PlayerPrefs 설정값은 건드리지 않습니다.
     /// </summary>
-    public bool DeleteSaveFile()
+    public bool DeleteSaveFile(bool deleteMonsterDiscoveries = false)
     {
+        if (!deleteMonsterDiscoveries)
+            SaveMonsterDiscoveries(true);
         explorationResultConfirmedForSave = false;
         ClearBattleRoomEntryCheckpoint();
         ClearPendingResolvedBattleRoomEntryState();
         pendingBattleContinueSaveData = null;
         pendingResumeData = null;
-        monsterDiscoverySavePending = false;
+        if (deleteMonsterDiscoveries)
+            monsterDiscoverySavePending = false;
 
         try
         {
-            DeleteSaveFiles(SaveFilePath);
-            DeleteSaveFiles(MonsterDiscoveryFilePath);
+            DeleteProgressFiles(SaveFilePath, MonsterDiscoveryFilePath, deleteMonsterDiscoveries);
 
             Debug.Log($"[SaveSystem] Save file deleted: {SaveFilePath}");
             return true;
@@ -95,6 +97,13 @@ public class SaveSystem : Singleton<SaveSystem>
             Debug.LogError($"[SaveSystem] Failed to delete save file. {ex}");
             return false;
         }
+    }
+
+    public static void DeleteProgressFiles(string saveFilePath, string discoveryFilePath, bool deleteMonsterDiscoveries)
+    {
+        DeleteSaveFiles(saveFilePath);
+        if (deleteMonsterDiscoveries)
+            DeleteSaveFiles(discoveryFilePath);
     }
 
     private static void DeleteSaveFiles(string filePath)

@@ -45,7 +45,12 @@ public static class ArabellaLandingChecks
             "Immobilized targets must not be forcibly displaced to make room");
         Check(ArabellaLeapLandingPolicy.Resolve(5, 5, 0, new[] { 0 }, blocked, targets, 18) == 18,
             "Keep an equally safe reserved landing rather than jittering the telegraph");
-        return 11;
+        Check(ArabellaLeapLandingPolicy.Resolve(5, 5, 0, new[] { 0 }, blocked, targets, 6, followup) == 6,
+            "An announced safe landing must not move just because another cell scores better");
+        blocked = new bool[25]; blocked[24] = true;
+        Check(ArabellaLeapLandingPolicy.Resolve(5, 5, 0, new[] { 0 }, blocked, new[] { T(24) }, 6) == 6,
+            "Dodging the announced impact must not make the leap track the character");
+        return 13;
     }
 }
 '@

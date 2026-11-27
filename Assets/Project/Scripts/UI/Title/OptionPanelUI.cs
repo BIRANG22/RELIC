@@ -377,7 +377,7 @@ public class OptionPanelUI : MonoBehaviour
         if (languagePreviousButton == null) languagePreviousButton = FindTabButton(language, "LeftButton");
         if (languageNextButton == null) languageNextButton = FindTabButton(language, "RightButton");
         if (languageValueText == null) languageValueText = FindSelectorText(language);
-        LocalizedTMPText.ProtectDynamicOwnership(languageValueText);
+        ProtectLanguageValueOwnership();
         if (languagePreviousButton != null) languagePreviousButton.onClick.AddListener(PreviousLanguage);
         if (languageNextButton != null && languageNextButton != languagePreviousButton) languageNextButton.onClick.AddListener(NextLanguage);
         Transform speed = FindChildByName(transform, "BattleSpeedSelector");
@@ -409,6 +409,19 @@ public class OptionPanelUI : MonoBehaviour
         if (displayModeNextButton != null) displayModeNextButton.onClick.AddListener(NextDisplayMode);
         if (tutorialPreviousButton != null) tutorialPreviousButton.onClick.AddListener(CycleTutorial);
         if (tutorialNextButton != null && tutorialNextButton != tutorialPreviousButton) tutorialNextButton.onClick.AddListener(CycleTutorial);
+    }
+
+    private void ProtectLanguageValueOwnership()
+    {
+        if (languageValueText == null) return;
+        // LocalizationIgnore alone permits a dynamic writer to remember "한국어"
+        // and replay its translation on reopen. This value is already a locale name.
+        if (languageValueText.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            languageValueText.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+        LocalizedTMPText.ProtectDynamicOwnership(languageValueText);
+        DynamicLocalizedTMPText dynamicWriter = languageValueText.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
     }
 
     private static TMP_Text FindSelectorText(Transform root)

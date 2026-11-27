@@ -5039,6 +5039,10 @@ MonoBehaviour:
     m_Key: ui.record.text.efa882c6
     m_Metadata:
       m_Items: []
+  - m_Id: 35203227649810433
+    m_Key: ui.record.tab.monster
+    m_Metadata:
+      m_Items: []
   - m_Id: 11938458548838477
     m_Key: ui.help.shortcut_title
     m_Metadata:
@@ -6677,10 +6681,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275482117021703
     m_Key: tutorial.battle_guide.05
-    m_Metadata:
-      m_Items: []
-  - m_Id: 35203227649810433
-    m_Key: ui.record.tab.monster
     m_Metadata:
       m_Items: []
   m_Metadata:

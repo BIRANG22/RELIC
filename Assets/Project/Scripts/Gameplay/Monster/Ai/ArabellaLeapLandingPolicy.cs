@@ -29,6 +29,12 @@ namespace Relic.Gameplay.Monster
                 blocked.Count != width * height || targets == null)
                 return -1;
 
+            // Preserve the telegraphed impact when it remains safe, even if the target dodges.
+            if (preferred >= 0 && preferred < blocked.Count && preferred != origin &&
+                CanOccupy(preferred, width, height, origin, footprint, blocked) &&
+                CountExits(preferred, width, height, origin, footprint, blocked) > 0)
+                return preferred;
+
             int best = -1, bestFailures = int.MaxValue, bestHits = -1, bestExits = -1, bestFollowup = -1;
             int bestDistance = int.MaxValue;
             for (int candidate = 0; candidate < blocked.Count; candidate++)
@@ -50,11 +56,7 @@ namespace Relic.Gameplay.Monster
                         failures++;
                 }
                 if (hits == 0) continue;
-                int exits = 0;
-                if (x > 0 && CanOccupy(candidate - height, width, height, origin, footprint, blocked)) exits++;
-                if (x + 1 < width && CanOccupy(candidate + height, width, height, origin, footprint, blocked)) exits++;
-                if (y > 0 && CanOccupy(candidate - 1, width, height, origin, footprint, blocked)) exits++;
-                if (y + 1 < height && CanOccupy(candidate + 1, width, height, origin, footprint, blocked)) exits++;
+                int exits = CountExits(candidate, width, height, origin, footprint, blocked);
                 // A landing with no legal next move is not a usable AI destination.
                 if (exits == 0) continue;
                 int followup = followupHits != null && candidate < followupHits.Count ? followupHits[candidate] : 0;
@@ -74,6 +76,17 @@ namespace Relic.Gameplay.Monster
                 bestDistance = distance;
             }
             return best;
+        }
+
+        private static int CountExits(int candidate, int width, int height, int origin,
+            IReadOnlyList<int> footprint, IReadOnlyList<bool> blocked)
+        {
+            int x = candidate / height, y = candidate % height, exits = 0;
+            if (x > 0 && CanOccupy(candidate - height, width, height, origin, footprint, blocked)) exits++;
+            if (x + 1 < width && CanOccupy(candidate + height, width, height, origin, footprint, blocked)) exits++;
+            if (y > 0 && CanOccupy(candidate - 1, width, height, origin, footprint, blocked)) exits++;
+            if (y + 1 < height && CanOccupy(candidate + 1, width, height, origin, footprint, blocked)) exits++;
+            return exits;
         }
 
         private static bool CanOccupy(int candidate, int width, int height, int origin,

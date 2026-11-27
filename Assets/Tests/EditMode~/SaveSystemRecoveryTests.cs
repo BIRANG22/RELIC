@@ -119,6 +119,29 @@ public sealed class SaveSystemRecoveryTests
         Assert.That(File.ReadAllText(checkpointPath), Is.EqualTo(checkpointJson));
     }
 
+    [TestCase(false)]
+    [TestCase(true)]
+    public void DeleteProgressFiles_KeepsDiscoveriesUnlessFullReset(bool fullReset)
+    {
+        string progress = Path.Combine(tempDirectory, "save.json");
+        string discoveries = Path.Combine(tempDirectory, "monsters.json");
+        foreach (string suffix in new[] { "", ".bak", ".tmp" })
+        {
+            File.WriteAllText(progress + suffix, "checkpoint");
+            File.WriteAllText(discoveries + suffix, "discoveries");
+        }
+
+        SaveSystem.DeleteProgressFiles(progress, discoveries, fullReset);
+
+        foreach (string suffix in new[] { "", ".bak", ".tmp" })
+        {
+            Assert.That(File.Exists(progress + suffix), Is.False);
+            Assert.That(File.Exists(discoveries + suffix), Is.EqualTo(!fullReset));
+            if (!fullReset)
+                Assert.That(File.ReadAllText(discoveries + suffix), Is.EqualTo("discoveries"));
+        }
+    }
+
     [Test]
     public void MonsterDiscoveries_RestoreFromBackupWithoutProgressSave()
     {
