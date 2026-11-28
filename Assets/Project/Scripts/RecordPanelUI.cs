@@ -36,6 +36,14 @@ public sealed class RecordPanelUI : MonoBehaviour
     [SerializeField] private RectTransform fragmentCategoryButtons;
     [SerializeField] private RectTransform fragmentExclusiveSlots;
     [SerializeField] private RectTransform fragmentSharedSlots;
+    [SerializeField, Min(0f)] private float fragmentScrollBottomPadding = 40f;
+
+    [Header("Monster Layout")]
+    [SerializeField] private RectTransform monsterRoot;
+    [SerializeField] private RectTransform monsterButtonViewport;
+    [SerializeField] private Image monsterPreviewImage;
+    [SerializeField] private Button monsterPhaseOneButton;
+    [SerializeField] private Button monsterPhaseTwoButton;
 
     [Header("Record Tab Buttons")]
     [SerializeField] private Button skillTabButton;
@@ -86,11 +94,21 @@ public sealed class RecordPanelUI : MonoBehaviour
     private readonly List<Button> createdMemoryCharacterButtons = new();
     private string selectedMemoryCharacterId;
     private readonly List<Button> createdFragmentCategoryButtons = new();
+    private readonly List<Button> createdMonsterButtons = new();
+    private RectTransform defaultRecordViewport;
+    private RectTransform monsterListContent;
+    private Coroutine monsterPreviewAnimation;
+    private Vector2? monsterPreviewLayoutPosition;
+    private ColorBlock? monsterPhaseOneColors;
+    private ColorBlock? monsterPhaseTwoColors;
+    private UnityEngine.Events.UnityAction showMonsterPhaseOne;
+    private UnityEngine.Events.UnityAction showMonsterPhaseTwo;
 
     private void Awake()
     {
         CacheRarityPalette();
         ResolveReferences();
+        defaultRecordViewport = recordScrollRect != null ? recordScrollRect.viewport : null;
         BindButtons();
         CacheButtonColors();
         BindInfoCancelButton();
@@ -117,6 +135,7 @@ public sealed class RecordPanelUI : MonoBehaviour
     {
         HideInfo();
         HideNameTooltip();
+        ClearMonsterPreview();
     }
 
     public void Close()
@@ -256,6 +275,19 @@ public sealed class RecordPanelUI : MonoBehaviour
             if (recordScrollRect.verticalScrollbarVisibility != ScrollRect.ScrollbarVisibility.AutoHide)
                 recordScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
         }
+        if (monsterRoot == null && defaultRecordViewport != null)
+            monsterRoot = defaultRecordViewport.Find("Monster") as RectTransform;
+        if (monsterRoot != null)
+        {
+            monsterButtonViewport ??= monsterRoot.Find("Charbutton") as RectTransform;
+            monsterPreviewImage ??= monsterRoot.Find("Content/Preview")?.GetComponent<Image>();
+            monsterPhaseOneButton ??= monsterRoot.Find("Content/Charbutton01")?.GetComponent<Button>();
+            monsterPhaseTwoButton ??= monsterRoot.Find("Content/Charbutton02")?.GetComponent<Button>();
+            if (monsterPhaseOneButton != null)
+                monsterPhaseOneColors ??= monsterPhaseOneButton.colors;
+            if (monsterPhaseTwoButton != null)
+                monsterPhaseTwoColors ??= monsterPhaseTwoButton.colors;
+        }
     }
 
     private Button FindTabButton(string tabName)
@@ -304,19 +336,21 @@ public sealed class RecordPanelUI : MonoBehaviour
         RefreshSelectedButton();
         bool showMemory = tab == RecordTab.Skill && memoryRoot != null;
         bool showFragment = tab == RecordTab.Fragment && fragmentRoot != null;
-        SetRecordContent(showMemory, showFragment);
+        bool showMonster = tab == RecordTab.Monster && monsterRoot != null;
+        if (showMonster)
+            EnsureMonsterListContent();
+        SetRecordContent(showMemory, showFragment, showMonster);
         ClearSlots();
-        ClearMemoryCharacterButtons();
-        ClearFragmentCategoryButtons();
-        if (!showMemory && !showFragment && recordGridContent == null)
+        ClearGeneratedButtons(createdMemoryCharacterButtons);
+        ClearGeneratedButtons(createdFragmentCategoryButtons);
+        ClearGeneratedButtons(createdMonsterButtons);
+        ClearMonsterPreview();
+        ClearMonsterPhaseButtons();
+        if (!showMemory && !showFragment && !showMonster && recordGridContent == null)
         {
             Debug.LogWarning("[RecordPanelUI] Scroll View/Viewport/Content를 찾을 수 없습니다.", this);
             return;
         }
-
-        if (iconSlotPrefab == null && recordGridContent != null)
-            iconSlotPrefab = CreateRuntimeIconTemplate();
-        if (iconSlotPrefab == null) return;
 
         DataManager data = DataManager.Instance != null
             ? DataManager.Instance
@@ -326,6 +360,17 @@ public sealed class RecordPanelUI : MonoBehaviour
             Debug.LogWarning("[RecordPanelUI] DataManager를 찾을 수 없습니다.", this);
             return;
         }
+
+        if (showMonster)
+        {
+            BuildMonsterButtons(data);
+            RefreshRecordNumber(data, tab);
+            return;
+        }
+
+        if (iconSlotPrefab == null && recordGridContent != null)
+            iconSlotPrefab = CreateRuntimeIconTemplate();
+        if (iconSlotPrefab == null) return;
 
         if (showMemory)
         {
@@ -414,14 +459,16 @@ public sealed class RecordPanelUI : MonoBehaviour
         }
     }
 
-    private void SetRecordContent(bool showMemory, bool showFragment)
+    private void SetRecordContent(bool showMemory, bool showFragment, bool showMonster)
     {
         if (memoryRoot != null)
             memoryRoot.gameObject.SetActive(showMemory);
         if (fragmentRoot != null)
             fragmentRoot.gameObject.SetActive(showFragment);
+        if (monsterRoot != null)
+            monsterRoot.gameObject.SetActive(showMonster);
         if (recordGridContent != null)
-            recordGridContent.gameObject.SetActive(!showMemory && !showFragment);
+            recordGridContent.gameObject.SetActive(!showMemory && !showFragment && !showMonster);
         if (recordScrollRect == null)
             return;
 
@@ -431,15 +478,18 @@ public sealed class RecordPanelUI : MonoBehaviour
             scrollContent = memoryScrollContent;
         else if (showFragment)
             scrollContent = fragmentScrollContent;
+        else if (showMonster)
+            scrollContent = monsterListContent;
 
+        recordScrollRect.viewport = showMonster ? monsterButtonViewport : defaultRecordViewport;
         recordScrollRect.content = scrollContent;
         if (scrollContent == null && recordScrollRect.verticalScrollbar != null)
             recordScrollRect.verticalScrollbar.gameObject.SetActive(false);
     }
 
-    private void ClearMemoryCharacterButtons()
+    private static void ClearGeneratedButtons(List<Button> buttons)
     {
-        foreach (Button button in createdMemoryCharacterButtons)
+        foreach (Button button in buttons)
         {
             if (button == null)
                 continue;
@@ -447,7 +497,7 @@ public sealed class RecordPanelUI : MonoBehaviour
             button.gameObject.SetActive(false);
             Destroy(button.gameObject);
         }
-        createdMemoryCharacterButtons.Clear();
+        buttons.Clear();
     }
 
     private void BuildMemoryCharacterButtons(DataManager data)
@@ -494,34 +544,35 @@ public sealed class RecordPanelUI : MonoBehaviour
         if (initialCharacter != null)
             ShowCharacterMemory(data, initialCharacter, initialButton);
         else
-            RefreshListScrollBounds(memoryScrollContent);
+            RefreshListScrollBounds(memoryScrollContent, 0f);
     }
 
     private static void RefreshGeneratedButtonColors(IEnumerable<Button> buttons, Button selectedButton, ColorBlock prefabColors)
     {
         foreach (Button button in buttons)
+            ApplyRecordButtonColors(button, button == selectedButton, prefabColors);
+    }
+
+    private static void ApplyRecordButtonColors(Button button, bool selected, ColorBlock prefabColors)
+    {
+        if (button == null)
+            return;
+
+        ColorBlock colors = prefabColors;
+        if (selected)
         {
-            if (button == null)
-                continue;
-
-            ColorBlock colors = prefabColors;
-            if (button == selectedButton)
-            {
-                colors.normalColor = prefabColors.selectedColor;
-                colors.highlightedColor = prefabColors.selectedColor;
-            }
-            else
-            {
-                colors.selectedColor = prefabColors.normalColor;
-            }
-
-            button.colors = colors;
-            if (button.targetGraphic != null)
-            {
-                button.targetGraphic.CrossFadeColor(
-                    colors.normalColor * colors.colorMultiplier, 0f, true, true);
-            }
+            colors.normalColor = prefabColors.selectedColor;
+            colors.highlightedColor = prefabColors.selectedColor;
         }
+        else
+        {
+            colors.selectedColor = prefabColors.normalColor;
+        }
+
+        button.colors = colors;
+        if (button.targetGraphic != null)
+            button.targetGraphic.CrossFadeColor(
+                (button.interactable ? colors.normalColor : colors.disabledColor) * colors.colorMultiplier, 0f, true, true);
     }
 
     private void ShowCharacterMemory(DataManager data, CharacterMasterData character, Button selectedButton)
@@ -531,7 +582,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         SkillDatabase skills = data.SkillDatabase;
         if (skills == null)
         {
-            RefreshListScrollBounds(memoryScrollContent);
+            RefreshListScrollBounds(memoryScrollContent, 0f);
             return;
         }
 
@@ -548,7 +599,7 @@ public sealed class RecordPanelUI : MonoBehaviour
             AddMemorySlot(data, memoryCoreSlots, skill);
         }
 
-        RefreshListScrollBounds(memoryScrollContent, memoryPassiveSlots, memoryUltimateSlots,
+        RefreshListScrollBounds(memoryScrollContent, 0f, memoryPassiveSlots, memoryUltimateSlots,
             memoryAbilitySlots, memoryCoreSlots);
     }
 
@@ -613,19 +664,6 @@ public sealed class RecordPanelUI : MonoBehaviour
         return button;
     }
 
-    private void ClearFragmentCategoryButtons()
-    {
-        foreach (Button button in createdFragmentCategoryButtons)
-        {
-            if (button == null)
-                continue;
-
-            button.gameObject.SetActive(false);
-            Destroy(button.gameObject);
-        }
-        createdFragmentCategoryButtons.Clear();
-    }
-
     private void ShowFragmentCategory(DataManager data, bool exclusive, Button selectedButton)
     {
         if (currentTab != RecordTab.Fragment)
@@ -658,7 +696,8 @@ public sealed class RecordPanelUI : MonoBehaviour
                     AddRuneSlot(data, rune, fragmentSharedSlots);
         }
 
-        RefreshListScrollBounds(fragmentScrollContent, exclusive ? fragmentExclusiveSlots : fragmentSharedSlots);
+        RefreshListScrollBounds(fragmentScrollContent, fragmentScrollBottomPadding,
+            exclusive ? fragmentExclusiveSlots : fragmentSharedSlots);
     }
 
     private static IEnumerable<RuneData> GetSortedRecordRunes(RuneDatabase runes)
@@ -677,7 +716,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         AddSlot(icon, RecordDisplayNameResolver.RuneName(rune), discovered, rune.Rarity, parent: parent);
     }
 
-    private void RefreshListScrollBounds(RectTransform scrollContent, params RectTransform[] sections)
+    private void RefreshListScrollBounds(RectTransform scrollContent, float bottomPadding, params RectTransform[] sections)
     {
         if (scrollContent == null)
             return;
@@ -690,19 +729,237 @@ public sealed class RecordPanelUI : MonoBehaviour
             if (section == null || !section.IsChildOf(scrollContent))
                 continue;
 
+            LayoutRebuilder.ForceRebuildLayoutImmediate(section);
             Bounds sectionBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scrollContent, section);
             bottom = Mathf.Min(bottom, sectionBounds.min.y);
         }
 
-        // Preserve the authored positions of the center-anchored sections when the content height changes.
+        // Keep the same top edge and section offsets when the prefab uses a centered pivot.
+        Vector3 topPosition = scrollContent.TransformPoint(Vector3.up * top);
         Vector3[] childPositions = new Vector3[scrollContent.childCount];
         for (int i = 0; i < childPositions.Length; i++)
-            childPositions[i] = scrollContent.GetChild(i).localPosition;
-        scrollContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, top - bottom);
+            childPositions[i] = scrollContent.GetChild(i).localPosition - Vector3.up * top;
+
+        Vector2 pivot = scrollContent.pivot;
+        pivot.y = 1f;
+        scrollContent.pivot = pivot;
+        scrollContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, top - bottom + Mathf.Max(0f, bottomPadding));
+        scrollContent.position = topPosition;
         for (int i = 0; i < childPositions.Length; i++)
             scrollContent.GetChild(i).localPosition = childPositions[i];
 
         ResetRecordScrollPosition();
+    }
+
+    private void EnsureMonsterListContent()
+    {
+        if (monsterListContent != null || monsterButtonViewport == null)
+            return;
+
+        var list = new GameObject("MonsterButtons", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        monsterListContent = (RectTransform)list.transform;
+        monsterListContent.SetParent(monsterButtonViewport, false);
+        monsterListContent.anchorMin = new Vector2(0f, 1f);
+        monsterListContent.anchorMax = new Vector2(1f, 1f);
+        monsterListContent.pivot = new Vector2(0.5f, 1f);
+        monsterListContent.anchoredPosition = Vector2.zero;
+        monsterListContent.sizeDelta = Vector2.zero;
+
+        VerticalLayoutGroup source = monsterButtonViewport.GetComponent<VerticalLayoutGroup>();
+        if (source == null)
+            return;
+
+        VerticalLayoutGroup layout = list.GetComponent<VerticalLayoutGroup>();
+        layout.padding = source.padding;
+        layout.childAlignment = source.childAlignment;
+        layout.spacing = source.spacing;
+        layout.childControlWidth = source.childControlWidth;
+        layout.childControlHeight = source.childControlHeight;
+        layout.childForceExpandWidth = source.childForceExpandWidth;
+        layout.childForceExpandHeight = source.childForceExpandHeight;
+        layout.childScaleWidth = source.childScaleWidth;
+        layout.childScaleHeight = source.childScaleHeight;
+        layout.reverseArrangement = source.reverseArrangement;
+        source.enabled = false;
+    }
+
+    private static IEnumerable<MonsterMasterData> GetRecordMonsters(MonsterDatabase monsters)
+    {
+        if (monsters == null)
+            return Enumerable.Empty<MonsterMasterData>();
+
+        return monsters.GetAll().Values
+            .Where(monster => monster != null && !string.IsNullOrWhiteSpace(monster.MonsterId) &&
+                !(monster.MonsterId.EndsWith("_2", StringComparison.Ordinal) &&
+                  monsters.TryGet(monster.MonsterId.Substring(0, monster.MonsterId.Length - 2) + "_1", out _)))
+            .OrderBy(monster => monster.MonsterId, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private bool CanShowMonster(DataManager data, string monsterId)
+    {
+        return debugRevealAll || RecordDiscoveryService.IsMonsterDiscovered(data, monsterId);
+    }
+
+    private void BuildMonsterButtons(DataManager data)
+    {
+        if (monsterListContent == null || monsterPreviewImage == null || memoryCharacterButtonPrefab == null)
+        {
+            Debug.LogWarning("[RecordPanelUI] Monster Layout 인스펙터 연결을 확인해 주세요.", this);
+            return;
+        }
+
+        monsterPreviewLayoutPosition ??= monsterPreviewImage.rectTransform.anchoredPosition;
+        MonsterMasterData initialMonster = null;
+        Button initialButton = null;
+        foreach (MonsterMasterData monster in GetRecordMonsters(data.MonsterDatabase))
+        {
+            Button button = Instantiate(memoryCharacterButtonPrefab, monsterListContent, false);
+            bool discovered = CanShowMonster(data, monster.MonsterId);
+            string label = discovered
+                ? GameDataLocalization.MonsterName(monster.MonsterId,
+                    string.IsNullOrWhiteSpace(monster.Name) ? monster.MonsterId : monster.Name)
+                : GameLocalization.Get(LocalizationKeys.Record.Undiscovered);
+            SetMonsterButtonLabel(button, label);
+            button.interactable = discovered;
+            button.onClick.AddListener(() => SelectRecordMonster(data, monster, button));
+            button.gameObject.SetActive(true);
+            createdMonsterButtons.Add(button);
+
+            if (discovered && initialMonster == null)
+            {
+                initialMonster = monster;
+                initialButton = button;
+            }
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(monsterListContent);
+        monsterListContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+            LayoutUtility.GetPreferredHeight(monsterListContent));
+        Canvas.ForceUpdateCanvases();
+        ResetRecordScrollPosition();
+
+        if (initialMonster != null)
+            SelectRecordMonster(data, initialMonster, initialButton);
+    }
+
+    private static void SetMonsterButtonLabel(Button button, string label)
+    {
+        TMP_Text nameLabel = button.transform.Find("Name")?.GetComponent<TMP_Text>();
+        if (nameLabel != null)
+            nameLabel.text = label;
+    }
+
+    private void SelectRecordMonster(DataManager data, MonsterMasterData monster, Button selectedButton)
+    {
+        if (currentTab != RecordTab.Monster || !CanShowMonster(data, monster.MonsterId))
+            return;
+
+        RefreshGeneratedButtonColors(createdMonsterButtons, selectedButton, memoryCharacterButtonPrefab.colors);
+        string monsterId = monster.MonsterId;
+        string phaseTwoId = monsterId.EndsWith("_1", StringComparison.Ordinal)
+            ? monsterId.Substring(0, monsterId.Length - 2) + "_2"
+            : null;
+        ClearMonsterPhaseButtons();
+        if (phaseTwoId != null && data.MonsterDatabase.TryGet(phaseTwoId, out _) &&
+            monsterPhaseOneButton != null && monsterPhaseTwoButton != null)
+            BindMonsterPhaseButtons(data, monsterId, phaseTwoId);
+
+        ShowMonsterPreview(data, monsterId);
+    }
+
+    private void ClearMonsterPhaseButtons()
+    {
+        if (monsterPhaseOneButton != null)
+        {
+            if (showMonsterPhaseOne != null)
+                monsterPhaseOneButton.onClick.RemoveListener(showMonsterPhaseOne);
+            monsterPhaseOneButton.gameObject.SetActive(false);
+        }
+        if (monsterPhaseTwoButton != null)
+        {
+            if (showMonsterPhaseTwo != null)
+                monsterPhaseTwoButton.onClick.RemoveListener(showMonsterPhaseTwo);
+            monsterPhaseTwoButton.gameObject.SetActive(false);
+        }
+        showMonsterPhaseOne = null;
+        showMonsterPhaseTwo = null;
+    }
+
+    private void BindMonsterPhaseButtons(DataManager data, string phaseOneId, string phaseTwoId)
+    {
+        showMonsterPhaseOne = () => SelectMonsterPhase(data, phaseOneId, false);
+        showMonsterPhaseTwo = () => SelectMonsterPhase(data, phaseTwoId, true);
+        monsterPhaseOneButton.onClick.AddListener(showMonsterPhaseOne);
+        monsterPhaseTwoButton.onClick.AddListener(showMonsterPhaseTwo);
+        monsterPhaseOneButton.interactable = true;
+        monsterPhaseTwoButton.interactable = CanShowMonster(data, phaseTwoId);
+        monsterPhaseOneButton.gameObject.SetActive(true);
+        monsterPhaseTwoButton.gameObject.SetActive(true);
+        RefreshMonsterPhaseButtonColors(false);
+    }
+
+    private void SelectMonsterPhase(DataManager data, string monsterId, bool phaseTwo)
+    {
+        if (currentTab != RecordTab.Monster || !CanShowMonster(data, monsterId))
+            return;
+
+        RefreshMonsterPhaseButtonColors(phaseTwo);
+        ShowMonsterPreview(data, monsterId);
+    }
+
+    private void RefreshMonsterPhaseButtonColors(bool phaseTwo)
+    {
+        ApplyRecordButtonColors(monsterPhaseOneButton, !phaseTwo, monsterPhaseOneColors.Value);
+        ApplyRecordButtonColors(monsterPhaseTwoButton, phaseTwo, monsterPhaseTwoColors.Value);
+    }
+
+    private void ShowMonsterPreview(DataManager data, string monsterId)
+    {
+        ClearMonsterPreview();
+        if (data.MonsterPrefabDatabase == null ||
+            !data.MonsterPrefabDatabase.TryGetEntry(monsterId, out MonsterPrefabDatabase.Entry entry))
+            return;
+
+        // Pair entries can share a battle prefab but have different authored preview frames.
+        Sprite[] frames = entry.idlePreviewSprites?.Where(sprite => sprite != null).ToArray() ?? Array.Empty<Sprite>();
+        Sprite preview = frames.Length > 0 ? frames[0] : entry.prefab != null
+            ? entry.prefab.GetComponentInChildren<SpriteRenderer>(true)?.sprite
+            : null;
+        RectTransform previewRect = monsterPreviewImage.rectTransform;
+        previewRect.sizeDelta = entry.previewSize;
+        previewRect.anchoredPosition = monsterPreviewLayoutPosition.GetValueOrDefault() + entry.previewOffset;
+        monsterPreviewImage.sprite = preview;
+        monsterPreviewImage.preserveAspect = true;
+        monsterPreviewImage.raycastTarget = false;
+        monsterPreviewImage.enabled = preview != null;
+        if (frames.Length > 1)
+            monsterPreviewAnimation = StartCoroutine(AnimateMonsterPreview(frames, entry.previewFramesPerSecond));
+    }
+
+    private IEnumerator AnimateMonsterPreview(Sprite[] frames, float framesPerSecond)
+    {
+        var frameWait = new WaitForSecondsRealtime(1f / Mathf.Max(0.01f, framesPerSecond));
+        int frame = 0;
+        while (true)
+        {
+            yield return frameWait;
+            frame = (frame + 1) % frames.Length;
+            monsterPreviewImage.sprite = frames[frame];
+        }
+    }
+
+    private void ClearMonsterPreview()
+    {
+        if (monsterPreviewAnimation != null)
+        {
+            StopCoroutine(monsterPreviewAnimation);
+            monsterPreviewAnimation = null;
+        }
+        if (monsterPreviewImage != null)
+        {
+            monsterPreviewImage.sprite = null;
+            monsterPreviewImage.enabled = false;
+        }
     }
 
     private void RefreshRecordNumber(DataManager data, RecordTab tab)
@@ -754,7 +1011,9 @@ public sealed class RecordPanelUI : MonoBehaviour
                 break;
             case RecordTab.Monster:
                 if (data.MonsterDatabase != null)
-                    foreach (MonsterMasterData monster in data.MonsterDatabase.GetAll().Values)
+                    foreach (MonsterMasterData monster in monsterRoot != null
+                        ? GetRecordMonsters(data.MonsterDatabase)
+                        : data.MonsterDatabase.GetAll().Values)
                     {
                         if (monster == null) continue;
                         total++;
