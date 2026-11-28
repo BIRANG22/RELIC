@@ -245,8 +245,13 @@ public sealed class RecordPanelUI : MonoBehaviour
             iconSlotPrefab.transform.IsChildOf(recordGridContent))
             iconSlotPrefab.gameObject.SetActive(false);
 
-        if (recordScrollRect != null && recordGridContent != null)
-            recordScrollRect.content = recordGridContent;
+        if (recordScrollRect != null)
+        {
+            if (recordGridContent != null)
+                recordScrollRect.content = recordGridContent;
+            if (recordScrollRect.verticalScrollbarVisibility != ScrollRect.ScrollbarVisibility.AutoHide)
+                recordScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+        }
     }
 
     private Button FindTabButton(string tabName)
@@ -456,17 +461,20 @@ public sealed class RecordPanelUI : MonoBehaviour
         if (data.CharacterDatabase == null)
             return;
 
-        CharacterMasterData firstCharacter = null;
-        CharacterMasterData selectedCharacter = null;
+        CharacterMasterData initialCharacter = null;
+        Button initialButton = null;
         foreach (CharacterMasterData character in data.CharacterDatabase.GetAll().Values
             .Where(character => character != null && !string.IsNullOrWhiteSpace(character.Name))
             .OrderBy(character => character.CharacterId, StringComparer.OrdinalIgnoreCase))
         {
-            firstCharacter ??= character;
-            if (string.Equals(character.CharacterId, selectedMemoryCharacterId, StringComparison.OrdinalIgnoreCase))
-                selectedCharacter = character;
-
             Button button = Instantiate(memoryCharacterButtonPrefab, memoryCharacterButtons, false);
+            if (initialCharacter == null ||
+                string.Equals(character.CharacterId, selectedMemoryCharacterId, StringComparison.OrdinalIgnoreCase))
+            {
+                initialCharacter = character;
+                initialButton = button;
+            }
+
             TMP_Text nameLabel = button.transform.Find("Name")?.GetComponent<TMP_Text>();
             if (nameLabel != null)
                 nameLabel.text = GameDataLocalization.CharacterName(character);
@@ -477,20 +485,48 @@ public sealed class RecordPanelUI : MonoBehaviour
                     return;
 
                 ClearSlots();
-                ShowCharacterMemory(data, character);
+                ShowCharacterMemory(data, character, button);
             });
             button.gameObject.SetActive(true);
             createdMemoryCharacterButtons.Add(button);
         }
 
-        CharacterMasterData initialCharacter = selectedCharacter ?? firstCharacter;
         if (initialCharacter != null)
-            ShowCharacterMemory(data, initialCharacter);
+            ShowCharacterMemory(data, initialCharacter, initialButton);
     }
 
-    private void ShowCharacterMemory(DataManager data, CharacterMasterData character)
+    private void RefreshMemoryCharacterButtonColors(Button selectedButton)
+    {
+        ColorBlock prefabColors = memoryCharacterButtonPrefab.colors;
+        foreach (Button button in createdMemoryCharacterButtons)
+        {
+            if (button == null)
+                continue;
+
+            ColorBlock colors = prefabColors;
+            if (button == selectedButton)
+            {
+                colors.normalColor = prefabColors.selectedColor;
+                colors.highlightedColor = prefabColors.selectedColor;
+            }
+            else
+            {
+                colors.selectedColor = prefabColors.normalColor;
+            }
+
+            button.colors = colors;
+            if (button.targetGraphic != null)
+            {
+                button.targetGraphic.CrossFadeColor(
+                    colors.normalColor * colors.colorMultiplier, 0f, true, true);
+            }
+        }
+    }
+
+    private void ShowCharacterMemory(DataManager data, CharacterMasterData character, Button selectedButton)
     {
         selectedMemoryCharacterId = character.CharacterId;
+        RefreshMemoryCharacterButtonColors(selectedButton);
         SkillDatabase skills = data.SkillDatabase;
         if (skills == null)
             return;
