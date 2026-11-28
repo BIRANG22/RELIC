@@ -181,6 +181,7 @@ GameObject:
   - component: {fileID: 2414042886625591375}
   - component: {fileID: 231018427663599096}
   - component: {fileID: 5151550318212480088}
+  - component: {fileID: 4892202221541347130}
   m_Layer: 5
   m_Name: Name
   m_TagString: Untagged
@@ -307,6 +308,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4892202221541347130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2701594705198724099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 5151550318212480088}
+  localizationKey: ui.charbutton.name.6f5c6955
+  koreanSource: "\uCE90\uB9AD\uD130 \uC774\uB984"
+  automaticallyRegistered: 1
 --- !u!1 &2729921485566545999
 GameObject:
   m_ObjectHideFlags: 0

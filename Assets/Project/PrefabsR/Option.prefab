@@ -1034,8 +1034,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 810000000000000014}
-  localizationKey: common.tutorial
-  koreanSource: "\uBBF8\uBC88\uC5ED"
+  localizationKey: ui.option.tutoriallabel.2641c998
+  koreanSource: "\uD29C\uD1A0\uB9AC\uC5BC \uC9C4\uD589"
   automaticallyRegistered: 1
 --- !u!1 &842197245693120679
 GameObject:
@@ -1048,6 +1048,7 @@ GameObject:
   - component: {fileID: 6690329440681086105}
   - component: {fileID: 7329093643449930543}
   - component: {fileID: 9057835424529594623}
+  - component: {fileID: 2652761262431201622}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1174,6 +1175,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2652761262431201622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 842197245693120679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 9057835424529594623}
+  localizationKey: ui.option.text_tmp.bb116d1c
+  koreanSource: "\uADF8\uB798\uD53D"
+  automaticallyRegistered: 1
 --- !u!1 &877526009046277518
 GameObject:
   m_ObjectHideFlags: 0
@@ -1585,6 +1602,7 @@ GameObject:
   - component: {fileID: 7786096175306282317}
   - component: {fileID: 4543091463949861161}
   - component: {fileID: 4103191916432793568}
+  - component: {fileID: 294517329122650894}
   m_Layer: 5
   m_Name: ValueText
   m_TagString: Untagged
@@ -1711,6 +1729,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &294517329122650894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1092006479918155152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 4103191916432793568}
+  localizationKey: ui.option.label.5be979a5
+  koreanSource: "\uD654\uBA74 \uC124\uC815"
+  automaticallyRegistered: 1
 --- !u!1 &1129287049096515388
 GameObject:
   m_ObjectHideFlags: 0
@@ -5730,6 +5764,7 @@ GameObject:
   - component: {fileID: 4580336606142507160}
   - component: {fileID: 7746897946998251163}
   - component: {fileID: 7628082530785854062}
+  - component: {fileID: 9097075033903115322}
   m_Layer: 5
   m_Name: text
   m_TagString: Untagged
@@ -5856,6 +5891,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &9097075033903115322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3809756216782287594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 7628082530785854062}
+  localizationKey: ui.option.text.003e150e
+  koreanSource: "\uD654\uBA74 \uBC1D\uAE30"
+  automaticallyRegistered: 1
 --- !u!1 &3830652809106518935
 GameObject:
   m_ObjectHideFlags: 0
@@ -6392,6 +6443,7 @@ GameObject:
   - component: {fileID: 4183540632029468160}
   - component: {fileID: 718658487171520799}
   - component: {fileID: 8002421534991774603}
+  - component: {fileID: 5866003330649617304}
   m_Layer: 5
   m_Name: ValueText
   m_TagString: Untagged
@@ -6518,6 +6570,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5866003330649617304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4279881101193039729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8002421534991774603}
+  localizationKey: ui.option.valuetext.4805d596
+  koreanSource: "\uCF1C\uAE30"
+  automaticallyRegistered: 1
 --- !u!1 &4297758766299694873
 GameObject:
   m_ObjectHideFlags: 0
@@ -6687,6 +6755,7 @@ GameObject:
   - component: {fileID: 3012439495035155219}
   - component: {fileID: 5858966592043746628}
   - component: {fileID: 2205981478064207196}
+  - component: {fileID: 7371913077370820926}
   m_Layer: 5
   m_Name: ValueText
   m_TagString: Untagged
@@ -6813,6 +6882,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7371913077370820926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4570820111458429350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2205981478064207196}
+  localizationKey: ui.option.label.5be979a5
+  koreanSource: "\uD654\uBA74 \uC124\uC815"
+  automaticallyRegistered: 1
 --- !u!1 &4575777395779345227
 GameObject:
   m_ObjectHideFlags: 0
@@ -7483,6 +7568,7 @@ GameObject:
   - component: {fileID: 6836482763244063077}
   - component: {fileID: 2283955529946161349}
   - component: {fileID: 4864526929901734156}
+  - component: {fileID: 5240897521835800266}
   m_Layer: 5
   m_Name: BackgroundAudioLabel
   m_TagString: Untagged
@@ -7609,6 +7695,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5240897521835800266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5073353818120313987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 4864526929901734156}
+  localizationKey: ui.option.backgroundaudiolabel.61cc73b2
+  koreanSource: "\uBC31\uADF8\uB77C\uC6B4\uB4DC \uC7AC\uC0DD"
+  automaticallyRegistered: 1
 --- !u!1 &5088004501359697912
 GameObject:
   m_ObjectHideFlags: 0
@@ -8004,6 +8106,7 @@ GameObject:
   - component: {fileID: 2643514254661824025}
   - component: {fileID: 4844853963110574835}
   - component: {fileID: 8835761973463104415}
+  - component: {fileID: 2408711759381738964}
   m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
@@ -8130,6 +8233,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2408711759381738964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949073657404167680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8835761973463104415}
+  localizationKey: ui.option.label.5be979a5
+  koreanSource: "\uD654\uBA74 \uC124\uC815"
+  automaticallyRegistered: 1
 --- !u!1 &5983532984275811007
 GameObject:
   m_ObjectHideFlags: 0
@@ -9025,8 +9144,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 7772554794672981405}
-  localizationKey: common.resolution
-  koreanSource: "\uBBF8\uBC88\uC5ED"
+  localizationKey: ui.option.resolution_text.9ae04392
+  koreanSource: "\uD654\uBA74 \uD574\uC0C1\uB3C4"
   automaticallyRegistered: 1
 --- !u!1 &6278147784542615829
 GameObject:
@@ -11179,8 +11298,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2873430942213951600}
-  localizationKey: common.language
-  koreanSource: "\uBBF8\uBC88\uC5ED"
+  localizationKey: ui.option.language_text.a75d70ed
+  koreanSource: "\uC5B8\uC5B4 \uBCC0\uACBD"
   automaticallyRegistered: 1
 --- !u!1 &7007198580823449223
 GameObject:
@@ -11681,6 +11800,7 @@ GameObject:
   - component: {fileID: 8479407084562017590}
   - component: {fileID: 3951021206625579461}
   - component: {fileID: 3635276146298783040}
+  - component: {fileID: 5379567748466845183}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -11807,6 +11927,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5379567748466845183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7184108263947327179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 3635276146298783040}
+  localizationKey: ui.option.text_tmp.5b818f79
+  koreanSource: "\uAC8C\uC784"
+  automaticallyRegistered: 1
 --- !u!1 &7358559880620310224
 GameObject:
   m_ObjectHideFlags: 0
@@ -13987,6 +14123,7 @@ GameObject:
   - component: {fileID: 2661520770920311658}
   - component: {fileID: 8851736211034129491}
   - component: {fileID: 2371448199438098654}
+  - component: {fileID: 4251466043253705493}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -14113,6 +14250,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4251466043253705493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8851325600783798049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2371448199438098654}
+  localizationKey: ui.option.text_tmp.65f4b4ff
+  koreanSource: "\uC624\uB514\uC624"
+  automaticallyRegistered: 1
 --- !u!1 &8861876721296248018
 GameObject:
   m_ObjectHideFlags: 0
@@ -15023,6 +15176,7 @@ GameObject:
   - component: {fileID: 4228358966125244191}
   - component: {fileID: 8779512942695199657}
   - component: {fileID: 2386800384614014502}
+  - component: {fileID: 8266096659640565316}
   m_Layer: 5
   m_Name: ValueText
   m_TagString: Untagged
@@ -15149,3 +15303,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &8266096659640565316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9220304194544335528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2386800384614014502}
+  localizationKey: ui.option.valuetext.3f904293
+  koreanSource: "\uC18D\uB3C4"
+  automaticallyRegistered: 1

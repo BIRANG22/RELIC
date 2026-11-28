@@ -47,10 +47,6 @@ MonoBehaviour:
     m_Key: common.relic
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100704
-    m_Key: common.rune
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915741380660
     m_Key: common.move
     m_Metadata:
@@ -127,16 +123,8 @@ MonoBehaviour:
     m_Key: common.fast_debuff
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100720
-    m_Key: lobby.combine
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100721
     m_Key: lobby.invite
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100724
-    m_Key: lobby.explore
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100726
@@ -1631,22 +1619,6 @@ MonoBehaviour:
     m_Key: data.effect.e_spawn_spider_egg.name
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915728797797
-    m_Key: data.effect.e_spawn_spider_web.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797796
-    m_Key: data.effect.e_spawn_spider_web.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797798
-    m_Key: data.effect.e_spider_web.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797799
-    m_Key: data.effect.e_spider_web.tooltip
-    m_Metadata:
-      m_Items: []
   - m_Id: 17507550995423297
     m_Key: data.effect.e_blindside.name
     m_Metadata:
@@ -1711,124 +1683,12 @@ MonoBehaviour:
     m_Key: data.effect.e_unique_resource_max_skill_cost_delta.tooltip
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627626047
-    m_Key: data.effect.ar_damage_boost_this_turn.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626048
-    m_Key: data.effect.ar_damage_boost_this_turn.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626049
-    m_Key: data.effect.ar_damage_reduction_this_turn.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626050
-    m_Key: data.effect.ar_damage_reduction_this_turn.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626051
-    m_Key: data.effect.ar_recover_unique_resource_to_max.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626052
-    m_Key: data.effect.ar_recover_unique_resource_to_max.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626053
-    m_Key: data.effect.ar_recover_cost_to_max.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626054
-    m_Key: data.effect.ar_recover_cost_to_max.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626055
-    m_Key: data.effect.ar_grant_swift.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626056
-    m_Key: data.effect.ar_grant_swift.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626057
-    m_Key: data.effect.ar_cleanse_debuffs.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626058
-    m_Key: data.effect.ar_cleanse_debuffs.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626059
-    m_Key: data.effect.ar_move_to_grid.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626060
-    m_Key: data.effect.ar_move_to_grid.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626061
-    m_Key: data.effect.ar_swap_ally.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626062
-    m_Key: data.effect.ar_swap_ally.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626063
-    m_Key: data.effect.ar_spawn_poison_grid_effect.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626064
-    m_Key: data.effect.ar_spawn_poison_grid_effect.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626065
-    m_Key: data.effect.ar_spawn_thorn_grid_effect.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626066
-    m_Key: data.effect.ar_spawn_thorn_grid_effect.tooltip
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528627626067
     m_Key: data.effect.e_fatigue.name
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626068
     m_Key: data.effect.e_fatigue.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626069
-    m_Key: data.effect.ar_spawn_obstacle_grid_effect.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626070
-    m_Key: data.effect.ar_spawn_obstacle_grid_effect.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626071
-    m_Key: data.effect.ar_remove_grid_effect.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626072
-    m_Key: data.effect.ar_remove_grid_effect.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626073
-    m_Key: data.effect.ar_spawn_dummy_grid_effect.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626074
-    m_Key: data.effect.ar_spawn_dummy_grid_effect.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626075
-    m_Key: data.effect.ar_spawn_explosive_doll_grid_effect.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626076
-    m_Key: data.effect.ar_spawn_explosive_doll_grid_effect.tooltip
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626077
@@ -3323,190 +3183,6 @@ MonoBehaviour:
     m_Key: data.compound.compound_06.effect_description
     m_Metadata:
       m_Items: []
-  - m_Id: 11677536446062592
-    m_Key: data.skill_master.s_passive_01.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100945
-    m_Key: data.skill_master.s_passive_01.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536458645504
-    m_Key: data.skill_master.s_passive_02.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100946
-    m_Key: data.skill_master.s_passive_02.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536458645505
-    m_Key: data.skill_master.s_passive_03.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100947
-    m_Key: data.skill_master.s_passive_03.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536458645506
-    m_Key: data.skill_master.s_passive_04.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100948
-    m_Key: data.skill_master.s_passive_04.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839808
-    m_Key: data.skill_master.s_passive_05.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100949
-    m_Key: data.skill_master.s_passive_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839809
-    m_Key: data.skill_master.s_passive_06.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100950
-    m_Key: data.skill_master.s_passive_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839810
-    m_Key: data.skill_master.s_passive_07.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100951
-    m_Key: data.skill_master.s_passive_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839811
-    m_Key: data.skill_master.s_passive_08.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100952
-    m_Key: data.skill_master.s_passive_08.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839815
-    m_Key: data.skill_master.s_unique_02.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218222092288
-    m_Key: data.skill_master.s_unique_02.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839816
-    m_Key: data.skill_master.s_unique_03.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452416
-    m_Key: data.skill_master.s_unique_03.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839817
-    m_Key: data.skill_master.s_unique_04.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452417
-    m_Key: data.skill_master.s_unique_04.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839818
-    m_Key: data.skill_master.s_unique_05.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452418
-    m_Key: data.skill_master.s_unique_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839819
-    m_Key: data.skill_master.s_unique_06.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452419
-    m_Key: data.skill_master.s_unique_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839820
-    m_Key: data.skill_master.s_unique_07.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452420
-    m_Key: data.skill_master.s_unique_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839821
-    m_Key: data.skill_master.s_unique_08.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452421
-    m_Key: data.skill_master.s_unique_08.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839825
-    m_Key: data.skill_master.s_ability_01.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452422
-    m_Key: data.skill_master.s_ability_01.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839827
-    m_Key: data.skill_master.s_ability_02.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452423
-    m_Key: data.skill_master.s_ability_02.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839829
-    m_Key: data.skill_master.s_ability_03.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452424
-    m_Key: data.skill_master.s_ability_03.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839831
-    m_Key: data.skill_master.s_ability_04.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452425
-    m_Key: data.skill_master.s_ability_04.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839833
-    m_Key: data.skill_master.s_ability_05.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452426
-    m_Key: data.skill_master.s_ability_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839835
-    m_Key: data.skill_master.s_ability_06.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452427
-    m_Key: data.skill_master.s_ability_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839837
-    m_Key: data.skill_master.s_ability_07.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452428
-    m_Key: data.skill_master.s_ability_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839839
-    m_Key: data.skill_master.s_ability_08.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452429
-    m_Key: data.skill_master.s_ability_08.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 11677536462839845
     m_Key: data.skill_master.s_core_01.name
     m_Metadata:
@@ -3515,328 +3191,16 @@ MonoBehaviour:
     m_Key: data.skill_master.s_core_01.details
     m_Metadata:
       m_Items: []
-  - m_Id: 11677536462839847
-    m_Key: data.skill_master.s_core_02.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100995
-    m_Key: data.skill_master.s_core_02.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839849
-    m_Key: data.skill_master.s_core_03.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452430
-    m_Key: data.skill_master.s_core_03.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839851
-    m_Key: data.skill_master.s_core_04.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452431
-    m_Key: data.skill_master.s_core_04.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839853
-    m_Key: data.skill_master.s_core_05.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101001
-    m_Key: data.skill_master.s_core_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839855
-    m_Key: data.skill_master.s_core_06.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101003
-    m_Key: data.skill_master.s_core_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839857
-    m_Key: data.skill_master.s_core_07.name
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101005
     m_Key: data.skill_master.s_core_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839859
-    m_Key: data.skill_master.s_core_08.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101007
-    m_Key: data.skill_master.s_core_08.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839861
-    m_Key: data.skill_master.s_core_09.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101009
-    m_Key: data.skill_master.s_core_09.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839863
-    m_Key: data.skill_master.s_core_10.name
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101011
     m_Key: data.skill_master.s_core_10.details
     m_Metadata:
       m_Items: []
-  - m_Id: 11677536462839865
-    m_Key: data.skill_master.s_core_11.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101013
-    m_Key: data.skill_master.s_core_11.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839867
-    m_Key: data.skill_master.s_core_12.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101015
-    m_Key: data.skill_master.s_core_12.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839869
-    m_Key: data.skill_master.s_core_13.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101017
-    m_Key: data.skill_master.s_core_13.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839871
-    m_Key: data.skill_master.s_core_14.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101019
-    m_Key: data.skill_master.s_core_14.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839873
-    m_Key: data.skill_master.s_core_15.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101021
-    m_Key: data.skill_master.s_core_15.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839875
-    m_Key: data.skill_master.s_core_16.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24322630735110146
-    m_Key: data.skill_master.s_core_16.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101042
-    m_Key: data.skill_master.s_core_21.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101043
-    m_Key: data.skill_master.s_core_21.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101046
-    m_Key: data.skill_master.s_core_22.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101047
-    m_Key: data.skill_master.s_core_22.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101050
-    m_Key: data.skill_master.s_core_23.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24322630735110147
-    m_Key: data.skill_master.s_core_23.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101054
-    m_Key: data.skill_master.s_core_24.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101055
-    m_Key: data.skill_master.s_core_24.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101058
-    m_Key: data.skill_master.s_core_25.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101059
-    m_Key: data.skill_master.s_core_25.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101062
-    m_Key: data.skill_master.s_core_26.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101063
-    m_Key: data.skill_master.s_core_26.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101086
-    m_Key: data.skill_master.s_core_32.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24322630735110148
-    m_Key: data.skill_master.s_core_32.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101090
-    m_Key: data.skill_master.s_core_33.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101091
-    m_Key: data.skill_master.s_core_33.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101094
-    m_Key: data.skill_master.s_core_34.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101095
-    m_Key: data.skill_master.s_core_34.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101098
-    m_Key: data.skill_master.s_core_35.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101029
-    m_Key: data.skill_master.s_core_35.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101102
-    m_Key: data.skill_master.s_core_36.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101103
-    m_Key: data.skill_master.s_core_36.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101106
-    m_Key: data.skill_master.s_core_37.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101107
-    m_Key: data.skill_master.s_core_37.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101110
-    m_Key: data.skill_master.s_core_38.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101111
-    m_Key: data.skill_master.s_core_38.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915678466129
-    m_Key: data.skill_master.s_unique_01.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100957
-    m_Key: data.skill_master.s_unique_01.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100944
     m_Key: data.skill_master.s_move_1.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101026
-    m_Key: data.skill_master.s_core_17.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101027
-    m_Key: data.skill_master.s_core_17.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101030
-    m_Key: data.skill_master.s_core_18.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101031
-    m_Key: data.skill_master.s_core_18.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101034
-    m_Key: data.skill_master.s_core_19.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101035
-    m_Key: data.skill_master.s_core_19.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101038
-    m_Key: data.skill_master.s_core_20.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101039
-    m_Key: data.skill_master.s_core_20.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101066
-    m_Key: data.skill_master.s_core_27.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101067
-    m_Key: data.skill_master.s_core_27.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101070
-    m_Key: data.skill_master.s_core_28.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101071
-    m_Key: data.skill_master.s_core_28.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101074
-    m_Key: data.skill_master.s_core_29.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101075
-    m_Key: data.skill_master.s_core_29.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101078
-    m_Key: data.skill_master.s_core_30.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101079
-    m_Key: data.skill_master.s_core_30.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101082
-    m_Key: data.skill_master.s_core_31.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101083
-    m_Key: data.skill_master.s_core_31.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101114
-    m_Key: data.skill_master.s_core_39.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101115
-    m_Key: data.skill_master.s_core_39.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101118
-    m_Key: data.skill_master.s_core_40.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101119
-    m_Key: data.skill_master.s_core_40.details
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626087
@@ -3947,22 +3311,6 @@ MonoBehaviour:
     m_Key: data.grid_effect.gr_residue.tooltip
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627626033
-    m_Key: data.grid_effect.gr_dummy.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626034
-    m_Key: data.grid_effect.gr_dummy.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626035
-    m_Key: data.grid_effect.gr_explosive_doll.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626036
-    m_Key: data.grid_effect.gr_explosive_doll.tooltip
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528627626037
     m_Key: data.grid_effect.gr_spider_egg.name
     m_Metadata:
@@ -3985,14 +3333,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17531528627626042
     m_Key: data.grid_effect.gr_nocturn_portal_preview.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26084960592846848
-    m_Key: data.monster_skill.s_monster_39.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626017
-    m_Key: data.monster_skill.s_monster_39.effect_description
     m_Metadata:
       m_Items: []
   - m_Id: 26084960622206976
@@ -4139,14 +3479,6 @@ MonoBehaviour:
     m_Key: data.monster_skill.s_monster_24.effect_description
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528623431751
-    m_Key: data.monster_skill.s_monster_25.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528623431752
-    m_Key: data.monster_skill.s_monster_25.effect_description
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528623431754
     m_Key: data.monster_skill.s_monster_26.name
     m_Metadata:
@@ -4175,10 +3507,6 @@ MonoBehaviour:
     m_Key: data.monster_skill.s_monster_29.effect_description
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627625989
-    m_Key: data.monster_skill.s_monster_30.name
-    m_Metadata:
-      m_Items: []
   - m_Id: 32716823371194373
     m_Key: data.monster_skill.s_monster_30.effect_description
     m_Metadata:
@@ -4197,10 +3525,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17531528627625996
     m_Key: data.monster_skill.s_monster_32.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626001
-    m_Key: data.monster_skill.s_monster_34.name
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626002
@@ -4319,7 +3643,7 @@ MonoBehaviour:
     m_Key: data.rune.rune_59.effect_description
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915703631879
+  - m_Id: 41385915703631800
     m_Key: data.rune.rune_60.name
     m_Metadata:
       m_Items: []
@@ -4835,10 +4159,6 @@ MonoBehaviour:
     m_Key: ui.battle.text.d50f2f0f
     m_Metadata:
       m_Items: []
-  - m_Id: 34946122195902465
-    m_Key: ui.battle.text.a182bab0
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554315
     m_Key: ui.battle.textcomplete.aef18b5e
     m_Metadata:
@@ -4873,14 +4193,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275309840179225
     m_Key: ui.record.text_tmp.d9c0e5aa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179226
-    m_Key: ui.record.text_tmp.91b291c3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34946122195902464
-    m_Key: ui.record.text_tmp.925df354
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179227
@@ -5019,10 +4331,6 @@ MonoBehaviour:
     m_Key: ui.record.relic_rarity.unique
     m_Metadata:
       m_Items: []
-  - m_Id: 11697455342559232
-    m_Key: ui.record.alchemy_agent
-    m_Metadata:
-      m_Items: []
   - m_Id: 31275475406135313
     m_Key: ui.record.compound_rarity.common
     m_Metadata:
@@ -5033,10 +4341,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275475406135315
     m_Key: ui.record.compound_rarity.epic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34952682506788864
-    m_Key: ui.record.text.efa882c6
     m_Metadata:
       m_Items: []
   - m_Id: 35203227649810433
@@ -5103,10 +4407,6 @@ MonoBehaviour:
     m_Key: ui.lobby.only_faint_traces_remain
     m_Metadata:
       m_Items: []
-  - m_Id: 13436147038191718
-    m_Key: ui.lobby.recipe
-    m_Metadata:
-      m_Items: []
   - m_Id: 13436147038191719
     m_Key: ui.lobby.erosion_signs
     m_Metadata:
@@ -5161,10 +4461,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31304009331744770
     m_Key: ui.lobby.play.ready
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34946042025975808
-    m_Key: ui.lobby.text_tmp.36ad8928
     m_Metadata:
       m_Items: []
   - m_Id: 35203227603673088
@@ -5295,10 +4591,6 @@ MonoBehaviour:
     m_Key: ui.canvas.text_tmp.7fa80515
     m_Metadata:
       m_Items: []
-  - m_Id: 29434412307554375
-    m_Key: ui.canvas.text_tmp.1e682874
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554382
     m_Key: ui.canvas.text.158c6ff3
     m_Metadata:
@@ -5309,10 +4601,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275309840179242
     m_Key: ui.canvas.text.0f87cf8b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34946042021781504
-    m_Key: ui.canvas.text.120fcfce
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554337
@@ -5411,10 +4699,6 @@ MonoBehaviour:
     m_Key: ui.explorationresultpanel.name.51a79365
     m_Metadata:
       m_Items: []
-  - m_Id: 32786741371052032
-    m_Key: ui.explorationresultpanel.deaths.3cb00e8a
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554367
     m_Key: ui.demoendingpanel.demoendingmessage.77085158
     m_Metadata:
@@ -5491,18 +4775,6 @@ MonoBehaviour:
     m_Key: ui.menupanel.giveup_text.aff71724
     m_Metadata:
       m_Items: []
-  - m_Id: 31275309840179213
-    m_Key: ui.monsterskill.detail.a1254f92
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179214
-    m_Key: ui.monsterskill.typetext.93c680ec
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179215
-    m_Key: ui.monsterstatus.detail.0b91b57d
-    m_Metadata:
-      m_Items: []
   - m_Id: 31275309840179216
     m_Key: ui.option.master.552df9fd
     m_Metadata:
@@ -5513,22 +4785,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275309840179218
     m_Key: ui.option.sfx.269099a4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179219
-    m_Key: ui.option.bright.6114350a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179220
-    m_Key: ui.option.windowedlabel.970c6ae8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179221
-    m_Key: ui.option.borderlesslabel.a870cd1b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179222
-    m_Key: ui.option.fullscreenlabel.31920105
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179223
@@ -5669,22 +4925,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31323240152670208
     m_Key: ui.menu.battle.save_and_quit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34940494052302848
-    m_Key: ui.setting_panel.name.f03bcae8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34955470141890560
-    m_Key: ui.storagepanel.compoundtext.27d0889a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616531308544
-    m_Key: title.explore_continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616548085760
-    m_Key: title.explore_abandon
     m_Metadata:
       m_Items: []
   - m_Id: 10999245246570496
@@ -6683,134 +5923,6 @@ MonoBehaviour:
     m_Key: tutorial.battle_guide.05
     m_Metadata:
       m_Items: []
-  - m_Id: 39235267978305536
-    m_Key: data.skill_master.s_unique_09.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054272
-    m_Key: data.skill_master.s_unique_09.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054273
-    m_Key: data.skill_master.s_unique_10.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054274
-    m_Key: data.skill_master.s_unique_10.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054275
-    m_Key: data.skill_master.s_unique_11.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054276
-    m_Key: data.skill_master.s_unique_11.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054277
-    m_Key: data.skill_master.s_unique_12.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054278
-    m_Key: data.skill_master.s_unique_12.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054279
-    m_Key: data.skill_master.s_ability_09.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054280
-    m_Key: data.skill_master.s_ability_09.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054281
-    m_Key: data.skill_master.s_ability_10.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054282
-    m_Key: data.skill_master.s_ability_10.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054283
-    m_Key: data.skill_master.s_ability_11.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054284
-    m_Key: data.skill_master.s_ability_11.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054285
-    m_Key: data.skill_master.s_ability_12.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054286
-    m_Key: data.skill_master.s_ability_12.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054287
-    m_Key: data.skill_master.s_core_41.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268016054288
-    m_Key: data.skill_master.s_core_41.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248576
-    m_Key: data.skill_master.s_core_42.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248577
-    m_Key: data.skill_master.s_core_42.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248578
-    m_Key: data.skill_master.s_core_43.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248579
-    m_Key: data.skill_master.s_core_43.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248580
-    m_Key: data.skill_master.s_core_44.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248581
-    m_Key: data.skill_master.s_core_44.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248582
-    m_Key: data.skill_master.s_core_45.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248583
-    m_Key: data.skill_master.s_core_45.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248584
-    m_Key: data.skill_master.s_core_46.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248585
-    m_Key: data.skill_master.s_core_46.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248586
-    m_Key: data.skill_master.s_core_47.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248587
-    m_Key: data.skill_master.s_core_47.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248588
-    m_Key: data.skill_master.s_core_48.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 39235268020248589
-    m_Key: data.skill_master.s_core_48.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 39235268020248590
     m_Key: data.monster_skill.s_monster_29.name
     m_Metadata:
@@ -7545,6 +6657,122 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 39492349000265750
     m_Key: data.skill_master.s_core_412.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440821559296
+    m_Key: ui.charbutton.name.6f5c6955
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502336
+    m_Key: ui.option.text_tmp.5b818f79
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502337
+    m_Key: ui.option.text_tmp.bb116d1c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502338
+    m_Key: ui.option.text_tmp.65f4b4ff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502339
+    m_Key: ui.option.tutoriallabel.2641c998
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502340
+    m_Key: ui.option.valuetext.3f904293
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502341
+    m_Key: ui.option.language_text.a75d70ed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502342
+    m_Key: ui.option.resolution_text.9ae04392
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502345
+    m_Key: ui.option.text.003e150e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502346
+    m_Key: ui.option.backgroundaudiolabel.61cc73b2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502347
+    m_Key: ui.option.valuetext.4805d596
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502349
+    m_Key: ui.record.nametext.b8606790
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502350
+    m_Key: ui.record.name.6b9f4bef
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502351
+    m_Key: ui.record.name.26a1a818
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502352
+    m_Key: ui.record.name.24bb23b1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502354
+    m_Key: ui.lobby.nametext.7418880f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502355
+    m_Key: ui.lobby.text_tmp.a71f2cb3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502356
+    m_Key: ui.lobby.text_tmp.1bd973ec
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502357
+    m_Key: ui.lobby.text_tmp.40ebd6d6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502359
+    m_Key: ui.title.text.eaf3c0de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39639440863502360
+    m_Key: ui.title.text.68a40772
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39642014844952576
+    m_Key: ui.option.label.5be979a5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39644867965722624
+    m_Key: ui.record.text_tmp.90c7cba7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39644867965722625
+    m_Key: ui.canvas.text.cbef7693
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39644867965722626
+    m_Key: ui.canvas.text.6ef5a2a3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39644867965722627
+    m_Key: ui.canvas.text.8ee7f010
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39644867965722628
+    m_Key: ui.canvas.text.120fcfce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39644867965722629
+    m_Key: ui.canvas.text_tmp.37831b3b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39644867965722630
+    m_Key: ui.storagepanel.compoundtext.e006cb2b
     m_Metadata:
       m_Items: []
   m_Metadata:

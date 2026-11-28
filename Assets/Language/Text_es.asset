@@ -50,20 +50,8 @@ MonoBehaviour:
     m_Localized: Artefacto
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100704
-    m_Localized: Runa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100720
-    m_Localized: "\tFabricaci\xF3n\t"
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100721
     m_Localized: Invitar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100724
-    m_Localized: "Expedici\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100726
@@ -163,10 +151,6 @@ MonoBehaviour:
     m_Localized: Mort
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915678466129
-    m_Localized: "Bendici\xF3n del drag\xF3n"
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915691048991
     m_Localized: "Esp\xEDritu de lucha"
     m_Metadata:
@@ -244,10 +228,6 @@ MonoBehaviour:
   - m_Id: 41385915703631878
     m_Localized: "Tras el \xFAltimo ataque, inflige da\xF1o perforante igual al n\xFAmero
       de ataques reservados consecutivamente."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915703631879
-    m_Localized: "Incisi\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631880
@@ -1344,22 +1324,6 @@ MonoBehaviour:
     m_Localized: "Crea un capullo en la posici\xF3n indicada."
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915728797796
-    m_Localized: "C\xE1mara de caza"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797797
-    m_Localized: "Crea una telara\xF1a en la posici\xF3n indicada."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797798
-    m_Localized: "Telara\xF1a"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797799
-    m_Localized: "Duplica el coste de man\xE1 del movimiento."
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915728797874
     m_Localized: "Ra\xEDz de la Vida"
     m_Metadata:
@@ -2121,160 +2085,8 @@ MonoBehaviour:
     m_Localized: Resonancia
     m_Metadata:
       m_Items: []
-  - m_Id: 11677536446062592
-    m_Localized: "Escama de drag\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536458645504
-    m_Localized: "Sangre de drag\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536458645505
-    m_Localized: "Intuici\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536458645506
-    m_Localized: "\xCDmpetu"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839808
-    m_Localized: Ciclo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839809
-    m_Localized: "Aura t\xF3xica"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839810
-    m_Localized: Juramento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839811
-    m_Localized: Anhelo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839815
-    m_Localized: Tajo sangriento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839816
-    m_Localized: "R\xE1faga de vendaval"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839817
-    m_Localized: Sombra lunar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839818
-    m_Localized: Oleada arcana
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839819
-    m_Localized: "Diluvio t\xF3xico"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839820
-    m_Localized: "Plegaria de salvaci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839821
-    m_Localized: "Ejecuci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839825
-    m_Localized: Tajo creciente
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839827
-    m_Localized: Golpe al suelo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839829
-    m_Localized: 'Espada del vendaval: tercera forma'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839831
-    m_Localized: 'Espada del vendaval: primera forma'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839833
-    m_Localized: Luz radiante
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839835
-    m_Localized: Veneno
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839837
-    m_Localized: Toque sanador
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839839
-    m_Localized: Castigo
-    m_Metadata:
-      m_Items: []
   - m_Id: 11677536462839845
     m_Localized: Aura protectora
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839847
-    m_Localized: Armadura de sangre
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839849
-    m_Localized: Barrido de cola
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839851
-    m_Localized: Rompearmaduras
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839853
-    m_Localized: Armadura espinosa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839855
-    m_Localized: "\xCDmpetu de combate"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839857
-    m_Localized: Golpe temerario
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839859
-    m_Localized: Sed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839861
-    m_Localized: Embestida acorazada
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839863
-    m_Localized: "Cosecha carmes\xED"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839865
-    m_Localized: Perspicacia
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839867
-    m_Localized: Espada voladora
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839869
-    m_Localized: Golondrina voladora
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839871
-    m_Localized: Instinto de combate
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839873
-    m_Localized: Tajo cicatrizante
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839875
-    m_Localized: "\tTajo fulminante"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100944
@@ -2282,61 +2094,8 @@ MonoBehaviour:
       el n\xFAmero de casillas recorridas."
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100945
-    m_Localized: Al comienzo de cada turno, obtienes {ValueRate1} de {E_Armor}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100946
-    m_Localized: Al comienzo de cada turno, pierdes {ValueRate2} PV y obtienes {ValueRate1}
-      de {E_Lifesteal}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100947
-    m_Localized: Al comienzo de cada turno, obtienes {ValueRate1} de {E_Elasticity}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100948
-    m_Localized: Al comenzar el combate, obtienes {ValueRate1} de {E_Smite}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100949
-    m_Localized: Al comienzo de cada turno, otorga {ValueRate1} de {E_Charge} a todos
-      los aliados.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100950
-    m_Localized: Al comenzar el combate, aplica {ValueRate1} de {E_Poison} a todos
-      los enemigos.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100951
-    m_Localized: Al comienzo de cada turno, otorga {ValueRate1} de {E_Armor} a todos
-      los aliados.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100952
-    m_Localized: Al comenzar el combate, aplica {ValueRate1} de {E_Vulnerable} a
-      todos los enemigos.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100957
-    m_Localized: Otorga {ValueRate1} de {E_Armor} a todos los aliados.
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100993
     m_Localized: "Otorga {ValueRate1} de {E_Armor} a las unidades del \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100995
-    m_Localized: Consume {ResourceCostValue} PV para obtener {ValueRate1} de {E_Armor}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101001
-    m_Localized: Obtienes {ValueRate1} de {E_Ward}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101003
-    m_Localized: "Aplica {ValueRate1} de {E_Smite} en el \xE1rea."
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101005
@@ -2344,237 +2103,9 @@ MonoBehaviour:
       {ValueRate2} PV."
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101007
-    m_Localized: Consume {ResourceCostValue} PV para obtener {ValueRate1} de {E_Lifesteal}
-      y {E_Boost}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101009
-    m_Localized: Carga hacia delante e inflige {E_ArmorStrike} de {E_Strike} al enemigo
-      con el que chocas.
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101011
     m_Localized: "Inflige {ValueRate1} de da\xF1o en el \xE1rea. Si derrotas a un
       enemigo, el da\xF1o aumenta permanentemente en {ValueRate2}."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101013
-    m_Localized: Obtienes {ValueRate1} de {E_Swift}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101015
-    m_Localized: "Avanza {ValueRate1} casillas e inflige {ValueRate2} de {E_Strike}
-      en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101017
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y retrocede {ValueRate2}
-      casillas."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101019
-    m_Localized: Obtienes {ValueRate1} de {E_Boost}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101021
-    m_Localized: "Aplica {ValueRate1} de {E_Bleed} y {ValueRate2} de {E_Weaken} en
-      el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101026
-    m_Localized: Estocada a las venas
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101027
-    m_Localized: "Inflige {ValueRate1} de {E_Pierce} en el \xE1rea. Si golpeas al
-      final del alcance, aplica {ValueRate2} de {E_Bleed}."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101029
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en la posici\xF3n de un enemigo
-      aleatorio del \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101030
-    m_Localized: "Floraci\xF3n sangrienta"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101031
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea. El da\xF1o aumenta
-      un 50% contra enemigos con {E_Bleed}."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101034
-    m_Localized: Danza de espadas fantasmales
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101035
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea. Los impactos
-      aumentan seg\xFAn la cantidad de tipos de mejoras que tengas."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101038
-    m_Localized: "Corte del vac\xEDo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101039
-    m_Localized: "Inflige {ValueRate1} de {E_Pierce} en el \xE1rea. Al acertar, el
-      da\xF1o de esta habilidad aumenta en {ValueRate2} durante el resto del combate."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101042
-    m_Localized: Resplandor del farol
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101043
-    m_Localized: "Aplica {ValueRate1} de {E_Smite} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101046
-    m_Localized: "Chispa de Man\xE1"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101047
-    m_Localized: "Aplica {ValueRate1} de {E_Charge} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101050
-    m_Localized: Destello penetrante
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101054
-    m_Localized: Veneno paralizante
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101055
-    m_Localized: "Aplica {ValueRate1} de {E_Poison} y {ValueRate2} de {E_Weaken}
-      en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101058
-    m_Localized: Sombra densa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101059
-    m_Localized: "Aplica {ValueRate1} de {E_Fatigue} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101062
-    m_Localized: "Absorci\xF3n de almas"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101063
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea. Recupera 1 de
-      man\xE1 por cada enemigo alcanzado."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101066
-    m_Localized: "Manifestaci\xF3n t\xF3xica"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101067
-    m_Localized: Aplica {E_Poison} igual al valor actual de {E_Poison} del objetivo.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101070
-    m_Localized: Llama de Nia
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101071
-    m_Localized: "Aplica {ValueRate1} de {E_Bondage} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101074
-    m_Localized: Susurro de Nia
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101075
-    m_Localized: Otorga {ValueRate1} de rapidez a todos los aliados.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101078
-    m_Localized: Veneno virulento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101079
-    m_Localized: "Aplica {ValueRate1} de {E_Poison} en el \xE1rea. Activa inmediatamente
-      el veneno una vez en cada objetivo alcanzado."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101082
-    m_Localized: Sacrificio
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101083
-    m_Localized: "Otorga {ValueRate1} de {E_Armor} en el \xE1rea y restaura {ValueRate2}
-      PV."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101086
-    m_Localized: "Gu\xEDa del pecado"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101090
-    m_Localized: Plegaria protectora
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101091
-    m_Localized: "Otorga {ValueRate1} de {E_Armor} y {E_Ward} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101094
-    m_Localized: "Meditaci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101095
-    m_Localized: Obtienes {ValueRate1} de {E_Karma} y recuperas {ValueRate2} PV.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101098
-    m_Localized: "G\xE9nesis"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101102
-    m_Localized: "Marca de la perdici\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101103
-    m_Localized: "Aplica {ValueRate1} de {E_Vulnerable} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101106
-    m_Localized: "Uni\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101107
-    m_Localized: Otorga {ValueRate1} de {E_Bond} a todos los aliados.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101110
-    m_Localized: "Ejecuci\xF3n del juicio"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101111
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea. El da\xF1o aumenta
-      seg\xFAn el valor actual de {E_Vulnerable} del objetivo."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101114
-    m_Localized: "Confesi\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101115
-    m_Localized: "Multiplica por {ValueRate1} el valor del perjuicio m\xE1s alto
-      del objetivo."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101118
-    m_Localized: "Cu\xF1a de condena"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101119
-    m_Localized: "Elimina {E_Armor} de los objetivos del \xE1rea."
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975624
@@ -2651,79 +2182,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975698
     m_Localized: "Aceptar la purificaci\xF3n."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218222092288
-    m_Localized: "Inflige {E_MissingHPStrike} de {E_Strike} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452416
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452417
-    m_Localized: "Inflige {ValueRate1} de {E_Pierce} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452418
-    m_Localized: Otorga {ValueRate1} de {E_Grit} y {E_Charge} a todos los aliados.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452419
-    m_Localized: "Aplica {ValueRate1} de {E_Poison} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452420
-    m_Localized: Otorga {ValueRate1} de {E_Heal} a todos los aliados.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452421
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y aplica {ValueRate2}
-      de {E_Vulnerable}."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452422
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452423
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y aplica {E_Knockback}
-      durante {ValueRate2} casillas."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452424
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452425
-    m_Localized: "Inflige {ValueRate1} de {E_Pierce} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452426
-    m_Localized: "Aplica {ValueRate1} de {E_Boost} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452427
-    m_Localized: "Aplica {ValueRate1} de {E_Poison} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452428
-    m_Localized: "Restaura {ValueRate1} PV a las unidades del \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452429
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y aplica {ValueRate2}
-      de {E_Vulnerable}."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452430
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y aplica {E_Knockback}
-      durante {ValueRate2} casillas."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452431
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y aplica {ValueRate2}
-      de {E_Vulnerable}."
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449383
@@ -2948,14 +2406,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10173380895973443
     m_Localized: Ruinas de Roderne
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616531308544
-    m_Localized: "Continuar exploraci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616548085760
-    m_Localized: "Abandonar exploraci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510643
@@ -3487,10 +2937,6 @@ MonoBehaviour:
     m_Localized: "Crea escombros en la casilla vac\xEDa seleccionada."
     m_Metadata:
       m_Items: []
-  - m_Id: 11697455342559232
-    m_Localized: Consumibles
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838435
     m_Localized: "Aumenta los PV m\xE1ximos en 5"
     m_Metadata:
@@ -3593,10 +3039,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 13436147038191717
     m_Localized: Solo quedan rastros tenues.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191718
-    m_Localized: "Receta de combinaci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 13436147038191719
@@ -3800,14 +3242,6 @@ MonoBehaviour:
     m_Localized: "Inflige {ValueRate1} de {E_Strike} en todas las \xE1reas."
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528623431751
-    m_Localized: "Paso sombr\xEDo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528623431752
-    m_Localized: "Teletransp\xF3rtate a la posici\xF3n de la sombra."
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528623431754
     m_Localized: Estocada abisal
     m_Metadata:
@@ -3833,10 +3267,6 @@ MonoBehaviour:
     m_Localized: "Al\xE9jate 1 casilla del personaje m\xE1s cercano."
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627625989
-    m_Localized: Embestida espectral
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528627625992
     m_Localized: "Explosi\xF3n espiritual"
     m_Metadata:
@@ -3848,10 +3278,6 @@ MonoBehaviour:
   - m_Id: 17531528627625996
     m_Localized: "Aplica {ValueRate1} de {E_Bleed} en la posici\xF3n del objetivo
       m\xE1s cercano."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626001
-    m_Localized: Marca del cazador
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626002
@@ -3879,11 +3305,6 @@ MonoBehaviour:
     m_Localized: Genera {ValueRate1} {E_Spawn_Spider_Egg} a tu alrededor.
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627626017
-    m_Localized: "Salta hacia la marca, inflige {ValueRate1} de {E_Strike} en el
-      \xE1rea y aplica {E_Knockback} durante {ValueRate2} casillas."
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528627626020
     m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y aplica {ValueRate2}
       de {E_Poison}."
@@ -3909,23 +3330,6 @@ MonoBehaviour:
   - m_Id: 17531528627626032
     m_Localized: Inflige {ValueRate1} de {E_Strike} a las unidades que entren en
       esta casilla.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626033
-    m_Localized: "Se\xF1uelo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626034
-    m_Localized: Entidad invocada que se considera un personaje.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626035
-    m_Localized: Escoba
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626036
-    m_Localized: Explota al final del turno e inflige {ValueRate1} de {E_Strike}
-      a las unidades cercanas.
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626037
@@ -3970,124 +3374,12 @@ MonoBehaviour:
       de todas las habilidades seg\xFAn el valor indicado."
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627626047
-    m_Localized: Poder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626048
-    m_Localized: "El da\xF1o infligido aumenta un 100%."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626049
-    m_Localized: Endurecimiento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626050
-    m_Localized: "El da\xF1o recibido disminuye un 50%."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626051
-    m_Localized: Karma condensado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626052
-    m_Localized: Recupera 3 de karma.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626053
-    m_Localized: "Frasco de man\xE1"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626054
-    m_Localized: "Recupera 10 de man\xE1."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626055
-    m_Localized: Despertar
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626056
-    m_Localized: Otorga 2 de rapidez.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626057
-    m_Localized: Agua clara
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626058
-    m_Localized: Elimina todos los perjuicios.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626059
-    m_Localized: Reposicionamiento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626060
-    m_Localized: "Mu\xE9vete a la casilla vac\xEDa seleccionada."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626061
-    m_Localized: Intercambio de posiciones
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626062
-    m_Localized: "Intercambia tu posici\xF3n con la del aliado de la casilla seleccionada."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626063
-    m_Localized: Crear casilla envenenada
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626064
-    m_Localized: Crea una casilla envenenada en la casilla seleccionada.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626065
-    m_Localized: Crear espinas
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626066
-    m_Localized: Crea espinas en la casilla seleccionada.
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528627626067
     m_Localized: Fatiga
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626068
     m_Localized: "Reduce el valor de ataque seg\xFAn el valor del efecto."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626069
-    m_Localized: Crear escombros
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626070
-    m_Localized: Crea escombros en la casilla seleccionada.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626071
-    m_Localized: "Eliminar obst\xE1culo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626072
-    m_Localized: "Elimina el obst\xE1culo de la casilla seleccionada."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626073
-    m_Localized: "Se\xF1uelo hom\xFAnculo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626074
-    m_Localized: "Invoca un se\xF1uelo en la casilla vac\xEDa seleccionada."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626075
-    m_Localized: "Escoba hom\xFAnculo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626076
-    m_Localized: "Invoca una escoba en la casilla vac\xEDa seleccionada."
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626077
@@ -4574,29 +3866,12 @@ MonoBehaviour:
     m_Localized: Arabella despierta
     m_Metadata:
       m_Items: []
-  - m_Id: 24322630735110146
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24322630735110147
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24322630735110148
-    m_Localized: "Inflige {ValueRate1} de {E_Strike} en el \xE1rea y aplica {E_Grab}
-      durante {ValueRate2} casillas."
-    m_Metadata:
-      m_Items: []
   - m_Id: 25428606029373440
     m_Localized: "Restos \xF3seos"
     m_Metadata:
       m_Items: []
   - m_Id: 25428606079705088
     m_Localized: "Un mont\xF3n de huesos que impide el movimiento."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26084960592846848
-    m_Localized: Asalto depredador
     m_Metadata:
       m_Items: []
   - m_Id: 26084960622206976
@@ -4981,10 +4256,6 @@ MonoBehaviour:
     m_Localized: "Aqu\xED termina tu viaje por la demo.\n\nPero tu historia a\xFAn
       no ha acabado.\nLa aventura continuar\xE1 en el juego completo. \xA1Esperamos
       verte de nuevo!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554375
-    m_Localized: Combinar
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554376
@@ -5619,20 +4890,6 @@ MonoBehaviour:
     m_Localized: Rendirse
     m_Metadata:
       m_Items: []
-  - m_Id: 31275309840179213
-    m_Localized: Se mueve 1 o 2 casillas hasta dos veces para alinearse con la fila
-      del personaje.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179214
-    m_Localized: Efecto de habilidad
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179215
-    m_Localized: "Al inicio del siguiente turno, revive con un 30% de sus PV m\xE1ximos
-      a un mutante que haya muerto durante este turno."
-    m_Metadata:
-      m_Items: []
   - m_Id: 31275309840179216
     m_Localized: Volumen general
     m_Metadata:
@@ -5645,22 +4902,6 @@ MonoBehaviour:
     m_Localized: Efectos de sonido
     m_Metadata:
       m_Items: []
-  - m_Id: 31275309840179219
-    m_Localized: Brillo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179220
-    m_Localized: Ventana
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179221
-    m_Localized: Ventana sin bordes
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179222
-    m_Localized: Pantalla completa
-    m_Metadata:
-      m_Items: []
   - m_Id: 31275309840179223
     m_Localized: Velocidad de combate
     m_Metadata:
@@ -5671,10 +4912,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31275309840179225
     m_Localized: Fragmento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31275309840179226
-    m_Localized: Efecto
     m_Metadata:
       m_Items: []
   - m_Id: 31275309840179227
@@ -6403,10 +5640,6 @@ MonoBehaviour:
     m_Localized: ({0} veces)
     m_Metadata:
       m_Items: []
-  - m_Id: 32786741371052032
-    m_Localized: Veces incapacitado
-    m_Metadata:
-      m_Items: []
   - m_Id: 32962961515339776
     m_Localized: Ataque Prioritario
     m_Metadata:
@@ -6850,26 +6083,6 @@ MonoBehaviour:
     m_Localized: Tutorial (Murk, Blight)
     m_Metadata:
       m_Items: []
-  - m_Id: 34946122195902465
-    m_Localized: Veces incapacitado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34946122195902464
-    m_Localized: Consumibles
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34946042025975808
-    m_Localized: "Exploraci\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34946042021781504
-    m_Localized: Libro de registros
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34940494052302848
-    m_Localized: "Informaci\xF3n del personaje"
-    m_Metadata:
-      m_Items: []
   - m_Id: 34940494119411714
     m_Localized: "Se ha cancelado una acci\xF3n de cambio de direcci\xF3n sin acciones
       posteriores."
@@ -6881,10 +6094,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 34952599186939904
     m_Localized: "El dolor es pasajero. La salvaci\xF3n es eterna."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 34952682506788864
-    m_Localized: Consumibles
     m_Metadata:
       m_Items: []
   - m_Id: 34955383042973696
@@ -7054,10 +6263,6 @@ MonoBehaviour:
     m_Localized: "Peligros de la erosi\xF3n"
     m_Metadata:
       m_Items: []
-  - m_Id: 34955470141890560
-    m_Localized: Consumibles
-    m_Metadata:
-      m_Items: []
   - m_Id: 35203227603673088
     m_Localized: "\tFabricaci\xF3n\t"
     m_Metadata:
@@ -7068,6 +6273,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 35203227649810433
     m_Localized: Monstruos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41385915703631800
+    m_Localized: "Incisi\xF3n"
     m_Metadata:
       m_Items: []
   references:

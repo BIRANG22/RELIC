@@ -24170,7 +24170,7 @@ GameObject:
   - component: {fileID: 301323236}
   - component: {fileID: 301323239}
   - component: {fileID: 301323238}
-  - component: {fileID: 301323237}
+  - component: {fileID: 301323240}
   m_Layer: 0
   m_Name: NameText
   m_TagString: Untagged
@@ -24197,22 +24197,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &301323237
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 301323235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 301323238}
-  localizationKey: ui.lobby.recipe
-  koreanSource: "\uC870\uD569\uC2DD"
-  automaticallyRegistered: 1
 --- !u!114 &301323238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24233,7 +24217,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC870\uD569\uC2DD"
+  m_text: "\uB808\uC2DC\uD53C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
@@ -24313,6 +24297,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 301323235}
   m_CullTransparentMesh: 1
+--- !u!114 &301323240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 301323235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 301323238}
+  localizationKey: ui.lobby.nametext.7418880f
+  koreanSource: "\uB808\uC2DC\uD53C"
+  automaticallyRegistered: 1
 --- !u!1 &303784695
 GameObject:
   m_ObjectHideFlags: 0
@@ -41659,6 +41659,7 @@ GameObject:
   - component: {fileID: 685449462}
   - component: {fileID: 685449464}
   - component: {fileID: 685449463}
+  - component: {fileID: 685449465}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -41785,6 +41786,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 685449461}
   m_CullTransparentMesh: 1
+--- !u!114 &685449465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685449461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 685449463}
+  localizationKey: ui.lobby.text_tmp.1bd973ec
+  koreanSource: "\uACE0\uC720"
+  automaticallyRegistered: 1
 --- !u!1 &686796171
 GameObject:
   m_ObjectHideFlags: 0
@@ -65118,6 +65135,7 @@ GameObject:
   - component: {fileID: 981992514}
   - component: {fileID: 981992516}
   - component: {fileID: 981992515}
+  - component: {fileID: 981992517}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -65164,7 +65182,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD0D0\uC0AC"
+  m_text: "\uC900\uBE44"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -65244,6 +65262,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 981992513}
   m_CullTransparentMesh: 1
+--- !u!114 &981992517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 981992513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 981992515}
+  localizationKey: ui.lobby.play.ready
+  koreanSource: "\uC900\uBE44"
+  automaticallyRegistered: 1
 --- !u!1 &982761537
 GameObject:
   m_ObjectHideFlags: 0
@@ -71016,7 +71050,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 1127006642}
   localizationKey: ui.lobby.text.1c62d921
-  koreanSource: "\uC5F0\uC131\uC81C"
+  koreanSource: "\uC18C\uBAA8\uD488"
   automaticallyRegistered: 1
 --- !u!1 &1128527671
 GameObject:
@@ -123236,7 +123270,7 @@ GameObject:
   - component: {fileID: 1946236081}
   - component: {fileID: 1946236083}
   - component: {fileID: 1946236082}
-  - component: {fileID: 1946236085}
+  - component: {fileID: 1946236084}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -123283,7 +123317,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC870\uD569"
+  m_text: "\uC81C\uC791"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: badcbc82805d1f342a431daf8589608c, type: 2}
   m_sharedMaterial: {fileID: 4522203511505876769, guid: badcbc82805d1f342a431daf8589608c, type: 2}
@@ -123363,7 +123397,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1946236080}
   m_CullTransparentMesh: 1
---- !u!114 &1946236085
+--- !u!114 &1946236084
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -123376,8 +123410,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1946236082}
-  localizationKey: lobby.combine
-  koreanSource: "\uC870\uD569"
+  localizationKey: ui.lobby.text_tmp.a71f2cb3
+  koreanSource: "\uC81C\uC791"
   automaticallyRegistered: 1
 --- !u!1 &1949121706
 GameObject:
@@ -132041,6 +132075,7 @@ GameObject:
   - component: {fileID: 2141978443}
   - component: {fileID: 2141978445}
   - component: {fileID: 2141978444}
+  - component: {fileID: 2141978446}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -132167,6 +132202,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2141978442}
   m_CullTransparentMesh: 1
+--- !u!114 &2141978446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141978442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2141978444}
+  localizationKey: ui.lobby.text_tmp.40ebd6d6
+  koreanSource: "\uACF5\uC6A9"
+  automaticallyRegistered: 1
 --- !u!1 &2142506670
 GameObject:
   m_ObjectHideFlags: 0
