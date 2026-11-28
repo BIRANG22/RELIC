@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 도감의 6개 탭과 단일 Content에 표시되는 아이콘 목록을 관리합니다.
+/// 도감 탭과 캐릭터별 기억 목록을 관리합니다.
 /// 아이콘 선택 시 Info 패널을 열고 닫는 기능을 제공합니다.
 /// </summary>
 public sealed class RecordPanelUI : MonoBehaviour
@@ -19,6 +19,15 @@ public sealed class RecordPanelUI : MonoBehaviour
     [SerializeField] private RectTransform recordGridContent;
     [SerializeField] private ScrollRect recordScrollRect;
     [SerializeField] private RecordIconSlotUI iconSlotPrefab;
+
+    [Header("Memory Layout")]
+    [SerializeField] private RectTransform memoryRoot;
+    [SerializeField] private RectTransform memoryCharacterButtons;
+    [SerializeField] private Button memoryCharacterButtonPrefab;
+    [SerializeField] private RectTransform memoryPassiveSlots;
+    [SerializeField] private RectTransform memoryUltimateSlots;
+    [SerializeField] private RectTransform memoryAbilitySlots;
+    [SerializeField] private RectTransform memoryCoreSlots;
 
     [Header("Record Tab Buttons")]
     [SerializeField] private Button skillTabButton;
@@ -66,6 +75,11 @@ public sealed class RecordPanelUI : MonoBehaviour
     private RecordTab currentTab = RecordTab.Skill;
     private bool initialized;
     private bool debugRevealAll;
+    private readonly List<Button> createdMemoryCharacterButtons = new();
+    private string selectedMemoryCharacterId;
+    private bool showingMemory;
+    private bool scrollWasEnabled;
+    private bool verticalScrollbarWasVisible;
 
     private void Awake()
     {
@@ -279,14 +293,17 @@ public sealed class RecordPanelUI : MonoBehaviour
         HideInfo();
         currentTab = tab;
         RefreshSelectedButton();
-        if (recordGridContent == null)
+        bool showMemory = tab == RecordTab.Skill && memoryRoot != null;
+        SetMemoryVisible(showMemory);
+        ClearSlots();
+        ClearMemoryCharacterButtons();
+        if (!showMemory && recordGridContent == null)
         {
             Debug.LogWarning("[RecordPanelUI] Scroll View/Viewport/Content를 찾을 수 없습니다.", this);
             return;
         }
 
-        ClearSlots();
-        if (iconSlotPrefab == null)
+        if (iconSlotPrefab == null && recordGridContent != null)
             iconSlotPrefab = CreateRuntimeIconTemplate();
         if (iconSlotPrefab == null) return;
 
@@ -299,12 +316,19 @@ public sealed class RecordPanelUI : MonoBehaviour
             return;
         }
 
+        if (showMemory)
+        {
+            BuildMemoryCharacterButtons(data);
+            RefreshRecordNumber(data, tab);
+            return;
+        }
+
         switch (tab)
         {
             case RecordTab.Skill:
                 if (data.SkillDatabase != null)
                     foreach (SkillMasterData skill in data.SkillDatabase.GetAll()
-                        .Where(x => x != null && x.Category != Category.Move && x.Level != 2)
+                        .Where(x => x != null && x.Category != Category.Move)
                         .OrderBy(x => GetRecordRarityOrder(SkillRarityUtility.GetCanonicalName(x.Rarity)))
                         .ThenBy(x => x.SkillId, StringComparer.OrdinalIgnoreCase))
                     {
@@ -372,6 +396,143 @@ public sealed class RecordPanelUI : MonoBehaviour
         }
     }
 
+    private void SetMemoryVisible(bool visible)
+    {
+        if (memoryRoot != null)
+            memoryRoot.gameObject.SetActive(visible);
+        if (recordGridContent != null)
+            recordGridContent.gameObject.SetActive(!visible);
+
+        if (showingMemory == visible)
+            return;
+
+        showingMemory = visible;
+        if (recordScrollRect == null)
+            return;
+
+        Scrollbar verticalScrollbar = recordScrollRect.verticalScrollbar;
+        if (visible)
+        {
+            scrollWasEnabled = recordScrollRect.enabled;
+            recordScrollRect.StopMovement();
+            recordScrollRect.enabled = false;
+            if (verticalScrollbar != null)
+            {
+                verticalScrollbarWasVisible = verticalScrollbar.gameObject.activeSelf;
+                verticalScrollbar.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            if (verticalScrollbar != null)
+                verticalScrollbar.gameObject.SetActive(verticalScrollbarWasVisible);
+            recordScrollRect.enabled = scrollWasEnabled;
+        }
+    }
+
+    private void ClearMemoryCharacterButtons()
+    {
+        foreach (Button button in createdMemoryCharacterButtons)
+        {
+            if (button == null)
+                continue;
+
+            button.gameObject.SetActive(false);
+            Destroy(button.gameObject);
+        }
+        createdMemoryCharacterButtons.Clear();
+    }
+
+    private void BuildMemoryCharacterButtons(DataManager data)
+    {
+        if (memoryCharacterButtons == null || memoryCharacterButtonPrefab == null ||
+            memoryPassiveSlots == null || memoryUltimateSlots == null ||
+            memoryAbilitySlots == null || memoryCoreSlots == null)
+        {
+            Debug.LogWarning("[RecordPanelUI] Memory Layout 인스펙터 연결을 확인해 주세요.", this);
+            return;
+        }
+
+        if (data.CharacterDatabase == null)
+            return;
+
+        CharacterMasterData firstCharacter = null;
+        CharacterMasterData selectedCharacter = null;
+        foreach (CharacterMasterData character in data.CharacterDatabase.GetAll().Values
+            .Where(character => character != null && !string.IsNullOrWhiteSpace(character.Name))
+            .OrderBy(character => character.CharacterId, StringComparer.OrdinalIgnoreCase))
+        {
+            firstCharacter ??= character;
+            if (string.Equals(character.CharacterId, selectedMemoryCharacterId, StringComparison.OrdinalIgnoreCase))
+                selectedCharacter = character;
+
+            Button button = Instantiate(memoryCharacterButtonPrefab, memoryCharacterButtons, false);
+            TMP_Text nameLabel = button.transform.Find("Name")?.GetComponent<TMP_Text>();
+            if (nameLabel != null)
+                nameLabel.text = GameDataLocalization.CharacterName(character);
+
+            button.onClick.AddListener(() =>
+            {
+                if (currentTab != RecordTab.Skill || !showingMemory)
+                    return;
+
+                ClearSlots();
+                ShowCharacterMemory(data, character);
+            });
+            button.gameObject.SetActive(true);
+            createdMemoryCharacterButtons.Add(button);
+        }
+
+        CharacterMasterData initialCharacter = selectedCharacter ?? firstCharacter;
+        if (initialCharacter != null)
+            ShowCharacterMemory(data, initialCharacter);
+    }
+
+    private void ShowCharacterMemory(DataManager data, CharacterMasterData character)
+    {
+        selectedMemoryCharacterId = character.CharacterId;
+        SkillDatabase skills = data.SkillDatabase;
+        if (skills == null)
+            return;
+
+        AddConfiguredMemorySlots(data, memoryPassiveSlots, character.PassiveSkill1, character.PassiveSkill2);
+        AddConfiguredMemorySlots(data, memoryUltimateSlots, character.UniqueSkill1, character.UniqueSkill2, character.UniqueSkill3);
+        AddConfiguredMemorySlots(data, memoryAbilitySlots, character.CharacterSkill1, character.CharacterSkill2, character.CharacterSkill3);
+
+        foreach (SkillMasterData skill in skills.GetAll()
+            .Where(skill => skill != null && skill.Category == Category.Core &&
+                string.Equals(skill.CharacterId?.Trim(), character.CharacterId?.Trim(), StringComparison.OrdinalIgnoreCase))
+            .OrderBy(skill => GetRecordRarityOrder(SkillRarityUtility.GetCanonicalName(skill.Rarity)))
+            .ThenBy(skill => skill.SkillId, StringComparer.OrdinalIgnoreCase))
+        {
+            AddMemorySlot(data, memoryCoreSlots, skill);
+        }
+    }
+
+    private void AddConfiguredMemorySlots(DataManager data, RectTransform parent, params string[] skillIds)
+    {
+        foreach (string skillId in skillIds)
+        {
+            if (!string.IsNullOrWhiteSpace(skillId) &&
+                data.SkillDatabase.TryGet(skillId.Trim(), out SkillMasterData skill) &&
+                skill != null)
+            {
+                AddMemorySlot(data, parent, skill);
+            }
+        }
+    }
+
+    private void AddMemorySlot(DataManager data, RectTransform parent, SkillMasterData skill)
+    {
+        Sprite icon = skill.Icon;
+        if (icon == null)
+            data.SkillIconDatabase?.TryGetIcon(skill.SkillId, out icon);
+
+        bool discovered = debugRevealAll || RecordDiscoveryService.IsSkillDiscovered(data, skill.SkillId);
+        AddSlot(icon, RecordDisplayNameResolver.SkillName(skill), discovered,
+            SkillRarityUtility.GetCanonicalName(skill.Rarity), parent: parent);
+    }
+
     private void RefreshRecordNumber(DataManager data, RecordTab tab)
     {
         if (skillNumberText == null || data == null)
@@ -386,7 +547,7 @@ public sealed class RecordPanelUI : MonoBehaviour
                 if (data.SkillDatabase != null)
                     foreach (SkillMasterData skill in data.SkillDatabase.GetAll())
                     {
-                        if (skill == null || skill.Category == Category.Move || skill.Level == 2)
+                        if (skill == null || skill.Category == Category.Move)
                             continue;
                         total++;
                         if (RecordDiscoveryService.IsSkillDiscovered(data, skill.SkillId)) discovered++;
@@ -540,13 +701,19 @@ public sealed class RecordPanelUI : MonoBehaviour
         monsterIdsBySlot.Clear();
         HideNameTooltip();
         foreach (RecordIconSlotUI slot in createdSlots)
-            if (slot != null) Destroy(slot.gameObject);
+        {
+            if (slot == null)
+                continue;
+
+            slot.gameObject.SetActive(false);
+            Destroy(slot.gameObject);
+        }
         createdSlots.Clear();
     }
 
-    private RecordIconSlotUI AddSlot(Sprite icon, string displayName, bool discovered, string rarity = null, Color? backColor = null)
+    private RecordIconSlotUI AddSlot(Sprite icon, string displayName, bool discovered, string rarity = null, Color? backColor = null, Transform parent = null)
     {
-        RecordIconSlotUI slot = Instantiate(iconSlotPrefab, recordGridContent, false);
+        RecordIconSlotUI slot = Instantiate(iconSlotPrefab, parent != null ? parent : recordGridContent, false);
         slot.gameObject.SetActive(true);
         string slotDisplayName = discovered
             ? displayName

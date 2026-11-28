@@ -5,8 +5,8 @@ Char_01,힐트,96,10,4,5,Karma,1,1,S_Passive_101,S_Passive_102,S_Unique_101,S_Un
 Char_02,카야,85,12,4,5,Karma,1,1,S_Passive_201,S_Passive_202,S_Unique_201,S_Unique_202,S_Unique_203,S_Ability_201,S_Ability_202,S_Ability_203,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"""임무라면 완수합니다. 그뿐입니다."""
 Char_03,헤이즈,77,14,4,5,Karma,1,1,S_Passive_301,S_Passive_302,S_Unique_301,S_Unique_302,S_Unique_303,S_Ability_301,S_Ability_302,S_Ability_303,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"""정말 가야 하나요…? 두렵지만 해볼게요."""
 Char_04,이네스,90,11,4,5,Karma,2,2,S_Passive_401,S_Passive_402,S_Unique_401,S_Unique_402,S_Unique_403,S_Ability_401,S_Ability_402,S_Ability_403,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정 마세요. 제가 모두 지킬게요.”
-Char_05,Char_05,,,,,,,,,,,,,,,,,,,,,
-Char_06,Char_06,,,,,,,,,,,,,,,,,,,,,
+Char_05,,,,,,,,,,,,,,,,,,,,,,
+Char_06,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
