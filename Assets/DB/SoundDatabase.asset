@@ -1496,7 +1496,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_102
+  - displayName: S_Ability_103
     vfxPrefab: {fileID: 7311764206653381872, guid: 4a5bf8f3c66134a4689914364ff9c77d, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2280,7 +2280,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_15
+  - displayName: S_Core_205
     vfxPrefab: {fileID: 3037673656474629809, guid: 5f38b39647333cd42b503d58e1afd238, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2327,7 +2327,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_16
+  - displayName: S_Core_206
     vfxPrefab: {fileID: 3037673656474629809, guid: bd1a8d3272d706a45a98caec35340a3d, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2374,7 +2374,35 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_17
+  - displayName: S_Core_207
+    vfxPrefab: {fileID: 0}
+    cues:
+    - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1.5
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Core_208
+    vfxPrefab: {fileID: 0}
+    cues:
+    - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1.5
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Core_209
     vfxPrefab: {fileID: 3037673656474629809, guid: 38821a95a46a84947bdc362959b21023, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2421,7 +2449,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_18
+  - displayName: S_Core_210
     vfxPrefab: {fileID: 3037673656474629809, guid: 5f90bf965e5e41c408421ff73a22d48a, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2468,7 +2496,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_19
+  - displayName: S_Core_211
     vfxPrefab: {fileID: 3037673656474629809, guid: 3011e706563e25248a4d594cb215ba35, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2515,7 +2543,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_20
+  - displayName: S_Core_212
     vfxPrefab: {fileID: 3037673656474629809, guid: 43ddc712efc6245478562f6fbff52cf6, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2562,7 +2590,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
-  - displayName: S_Core_21
+  - displayName: S_Core_301
     vfxPrefab: {fileID: 2841605795099109794, guid: 9df08a715c4b0ee41be518ebeeb393f1, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -2598,7 +2626,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_22
+  - displayName: S_Core_302
     vfxPrefab: {fileID: 2841605795099109794, guid: 69a71cc3541ad8f41bb4a3c5967dd89b, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2634,7 +2662,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_23
+  - displayName: S_Core_303
     vfxPrefab: {fileID: 2841605795099109794, guid: 317110988f56ddf48b82b27becfd0c1e, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2670,7 +2698,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_24
+  - displayName: S_Core_304
     vfxPrefab: {fileID: 3857453107072273608, guid: d65b00fe6ce90bd408afef19be55b670, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2706,7 +2734,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_25
+  - displayName: S_Core_305
     vfxPrefab: {fileID: 3857453107072273608, guid: b4e43286312e66640b47860b694e7b62, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2742,7 +2770,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_26
+  - displayName: S_Core_306
     vfxPrefab: {fileID: 3857453107072273608, guid: 1ccc5bbb344bab0459d9ac19719dcf22, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2778,7 +2806,35 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_27
+  - displayName: S_Core_307
+    vfxPrefab: {fileID: 0}
+    cues:
+    - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1.5
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Core_308
+    vfxPrefab: {fileID: 0}
+    cues:
+    - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1.5
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Core_309
     vfxPrefab: {fileID: 2841605795099109794, guid: 5c5f90f9d5668b1438bc02039c0c1e81, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2814,7 +2870,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_28
+  - displayName: S_Core_310
     vfxPrefab: {fileID: 2841605795099109794, guid: 4f34edcfb523dbb44b46060c9965450b, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2850,7 +2906,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_29
+  - displayName: S_Core_311
     vfxPrefab: {fileID: 5464498477634507533, guid: 5ede49eb0835e01488d72a82c7797da4, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2875,7 +2931,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_30
+  - displayName: S_Core_312
     vfxPrefab: {fileID: 3857453107072273608, guid: 4e85f126ab5e4a54bb592421160659ee, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2922,7 +2978,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_31
+  - displayName: S_Core_401
     vfxPrefab: {fileID: 7054004222324287659, guid: 880a28b0f013b334eaeea0eeaad452a9, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -2947,7 +3003,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_32
+  - displayName: S_Core_402
     vfxPrefab: {fileID: 529139466995848897, guid: ba706f8505d4b8c4c9c7e7bbc05fbba1, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: a9d2efe49badf4f95b320ff0b0f84f6f, type: 3}
@@ -2994,7 +3050,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_33
+  - displayName: S_Core_403
     vfxPrefab: {fileID: 7054004222324287659, guid: 5d210d5ff92f8f04bb563133c0655223, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -3019,7 +3075,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_34
+  - displayName: S_Core_404
     vfxPrefab: {fileID: 7054004222324287659, guid: 02bb4d048a058b448aca02adeaed9e68, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -3044,7 +3100,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_35
+  - displayName: S_Core_405
     vfxPrefab: {fileID: 5022181577685763610, guid: 86511d6cfc9f08c418b18b579e1f018a, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -3124,7 +3180,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_36
+  - displayName: S_Core_406
     vfxPrefab: {fileID: 7054004222324287659, guid: 93f08a2249a956445b89e13d3bf5e66f, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -3149,7 +3205,68 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
-  - displayName: S_Core_37
+  - displayName: S_Core_407
+    vfxPrefab: {fileID: 0}
+    cues:
+    - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1.5
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Core_408
+    vfxPrefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1.5
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: eb4fed2bc599c4d51874a05d129e21f3, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1.5
+    - clip: {fileID: 8300000, guid: 5106cd8bba69b4c6bac0667dfa2ccf50, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 1
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1.5
+    - clip: {fileID: 8300000, guid: e5a3625fcbfc38f45a2a7e480df231f0, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1.2
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1.2
+  - displayName: S_Core_409
     vfxPrefab: {fileID: 7054004222324287659, guid: d7cb20a941d51084cbbbd4a625dfa25e, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -3174,7 +3291,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_38
+  - displayName: S_Core_410
     vfxPrefab: {fileID: 7054004222324287659, guid: b47ba35bb845e9247a5eb7138cfda125, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -3232,7 +3349,7 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_39
+  - displayName: S_Core_411
     vfxPrefab: {fileID: 7054004222324287659, guid: 6bf2ec8d3febe3b43aebc59e98b00d56, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -3268,8 +3385,8 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_40
-    vfxPrefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
+  - displayName: S_Core_412
+    vfxPrefab: {fileID: 0}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
       delay: 0
@@ -3282,39 +3399,6 @@ MonoBehaviour:
       spatialBlend: 0
       randomPitchMin: 1
       randomPitchMax: 1
-    - clip: {fileID: 8300000, guid: eb4fed2bc599c4d51874a05d129e21f3, type: 3}
-      delay: 0
-      volume: 0.5
-      pitch: 1
-      loop: 0
-      playOncePerAction: 0
-      useRandomPitch: 1
-      overrideSpatialBlend: 0
-      spatialBlend: 0
-      randomPitchMin: 1
-      randomPitchMax: 1.5
-    - clip: {fileID: 8300000, guid: 5106cd8bba69b4c6bac0667dfa2ccf50, type: 3}
-      delay: 0
-      volume: 1
-      pitch: 1
-      loop: 0
-      playOncePerAction: 0
-      useRandomPitch: 1
-      overrideSpatialBlend: 0
-      spatialBlend: 0
-      randomPitchMin: 1
-      randomPitchMax: 1.5
-    - clip: {fileID: 8300000, guid: e5a3625fcbfc38f45a2a7e480df231f0, type: 3}
-      delay: 0
-      volume: 0.5
-      pitch: 1.2
-      loop: 0
-      playOncePerAction: 0
-      useRandomPitch: 0
-      overrideSpatialBlend: 0
-      spatialBlend: 0
-      randomPitchMin: 1
-      randomPitchMax: 1.2
   gridEffectVfxSfxList:
   - displayName: GR_Residue
     vfxPrefab: {fileID: 6416350362071025190, guid: 29e413fcd251b764daf2b40f112d6b53, type: 3}
