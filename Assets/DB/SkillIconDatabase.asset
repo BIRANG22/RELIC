@@ -64,13 +64,13 @@ MonoBehaviour:
   - SkillId: S_Ability_201
     Icon: {fileID: 21300000, guid: d1b8555a20f4cef4ba72547f3c7792aa, type: 3}
   - SkillId: S_Ability_202
-    Icon: {fileID: 21300000, guid: d1b8555a20f4cef4ba72547f3c7792aa, type: 3}
+    Icon: {fileID: 21300000, guid: 2770739a3930a3343a5de535d72d5d2d, type: 3}
   - SkillId: S_Ability_203
     Icon: {fileID: 21300000, guid: c2cc59414b324594988e4541a9f8a7f0, type: 3}
   - SkillId: S_Ability_301
     Icon: {fileID: 21300000, guid: d2b274ae26cf8c7438f6b8b6fc0acf8f, type: 3}
   - SkillId: S_Ability_302
-    Icon: {fileID: 21300000, guid: d2b274ae26cf8c7438f6b8b6fc0acf8f, type: 3}
+    Icon: {fileID: 21300000, guid: 2e2eb651b1b0a2140a6d7af26ad7314f, type: 3}
   - SkillId: S_Ability_303
     Icon: {fileID: 21300000, guid: 6c390a541eaedda4b99f8e7905b3ed32, type: 3}
   - SkillId: S_Ability_401
