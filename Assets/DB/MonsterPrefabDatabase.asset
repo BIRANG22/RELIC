@@ -122,7 +122,7 @@ MonoBehaviour:
     - {fileID: 993635227, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
     - {fileID: -1972381535, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
     - {fileID: 1715348971, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
-    previewSize: {x: 900, y: 900}
+    previewSize: {x: 800, y: 800}
     previewOffset: {x: 0, y: 35}
     previewFramesPerSecond: 6
   - monsterId: Mon_10
@@ -134,8 +134,8 @@ MonoBehaviour:
     - {fileID: -1722086621, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
     - {fileID: 1676460331, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
     - {fileID: -2043570242, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
-    previewSize: {x: 850, y: 850}
-    previewOffset: {x: 0, y: 50}
+    previewSize: {x: 900, y: 900}
+    previewOffset: {x: 0, y: 60}
     previewFramesPerSecond: 6
   - monsterId: Mon_11
     prefab: {fileID: 5089267951778699808, guid: 4ef514e68769a0444a2085e9b7e228b3, type: 3}
@@ -158,8 +158,8 @@ MonoBehaviour:
     - {fileID: 201591197, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
     - {fileID: -218839707, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
     - {fileID: 884133443, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
-    previewSize: {x: 600, y: 600}
-    previewOffset: {x: 0, y: 35}
+    previewSize: {x: 650, y: 650}
+    previewOffset: {x: -10, y: 30}
     previewFramesPerSecond: 6
   - monsterId: Mon_12_2
     prefab: {fileID: 1910251976348132752, guid: 8df1171d9a06f794999c80c154f147eb, type: 3}
@@ -170,6 +170,6 @@ MonoBehaviour:
     - {fileID: -1854330234, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
     - {fileID: 307902891, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
     - {fileID: -712740556, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
-    previewSize: {x: 600, y: 600}
-    previewOffset: {x: 0, y: 35}
+    previewSize: {x: 650, y: 650}
+    previewOffset: {x: -10, y: 30}
     previewFramesPerSecond: 6

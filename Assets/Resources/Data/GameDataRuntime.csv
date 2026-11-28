@@ -20,21 +20,21 @@ Char_06,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,
 
 # Monster
-몬스터ID,페이즈,이름,등급,HP,방어도,최소 가격,최대 가격,고유아이템,고유 아이템 확률,이동범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID
-MonsterId,Phase,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05
-Mon_01,0,머크,Common,46,0,24,32,Item_001,0.34999999999999998,Range_18,S_Monster_01,S_Monster_02,,,
-Mon_02,0,블롭,Common,20,0,10,16,Item_002,0.34999999999999998,Range_17,S_Monster_03,S_Monster_04,,,
-Mon_03,0,랜서,Common,38,0,18,24,Item_003,0.34999999999999998,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,,
-Mon_04,0,블라이트,Common,38,0,18,24,Item_004,0.34999999999999998,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,,
-Mon_05,0,베스파,Common,50,0,25,30,Item_005,0.34999999999999998,Range_19,S_Monster_11,S_Monster_12,,,
-Mon_06,0,신더,Common,33,20,20,25,Item_006,0.34999999999999998,Range_18,S_Monster_13,S_Monster_14,,,
-Mon_07,0,드라우그,Common,66,0,30,35,Item_007,0.34999999999999998,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,,
-Mon_08,0,바로우,Common,58,0,30,35,Item_008,0.34999999999999998,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,,
-Mon_09,0,루크,Elite,85,0,55,65,Item_009,0.29999999999999999,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,
-Mon_10,0,녹턴,Elite,92,0,60,70,Item_010,0.29999999999999999,Range_18,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,S_Monster_29
-Mon_11,0,모르트,Elite,78,0,50,60,Item_011,0.29999999999999999,Range_19,S_Monster_30,S_Monster_31,S_Monster_32,S_Monster_33,
-Mon_12_1,1,아라벨라,Boss,112,0,0,0,0,0,Range_19,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37,S_Monster_38
-Mon_12_2,2,각성 아라벨라,Boss,80,0,80,95,Item_012,0.69999999999999996,Range_18,S_Monster_39,S_Monster_35,S_Monster_36,S_Monster_40,S_Monster_41
+몬스터ID,페이즈,이름,등급,HP,방어도,최소 가격,최대 가격,고유아이템,고유 아이템 확률,이동범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,특성1,특성2
+MonsterId,Phase,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,Characteristic01,Characteristic02
+Mon_01,0,머크,Common,46,0,24,32,Item_001,0.34999999999999998,Range_18,S_Monster_01,S_Monster_02,,,,E_Split,
+Mon_02,0,블롭,Common,20,0,10,16,Item_002,0.34999999999999998,Range_17,S_Monster_03,S_Monster_04,,,,E_Trail,
+Mon_03,0,랜서,Common,38,0,18,24,Item_003,0.34999999999999998,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,,,,
+Mon_04,0,블라이트,Common,38,0,18,24,Item_004,0.34999999999999998,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,,,,
+Mon_05,0,베스파,Common,50,0,25,30,Item_005,0.34999999999999998,Range_19,S_Monster_11,S_Monster_12,,,,E_DoubleMove,
+Mon_06,0,신더,Common,33,20,20,25,Item_006,0.34999999999999998,Range_18,S_Monster_13,S_Monster_14,,,,E_Explode,
+Mon_07,0,드라우그,Common,66,0,30,35,Item_007,0.34999999999999998,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,,,E_Counter,
+Mon_08,0,바로우,Common,58,0,30,35,Item_008,0.34999999999999998,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,,,E_Targeting,
+Mon_09,0,루크,Elite,85,0,55,65,Item_009,0.29999999999999999,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,,E_Fortress,
+Mon_10,0,녹턴,Elite,92,0,60,70,Item_010,0.29999999999999999,Range_18,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,S_Monster_29,E_Ambush,
+Mon_11,0,모르트,Elite,78,0,50,60,Item_011,0.29999999999999999,Range_19,S_Monster_30,S_Monster_31,S_Monster_32,S_Monster_33,,E_Necromancy,
+Mon_12_1,1,아라벨라,Boss,112,0,0,0,0,0,Range_19,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37,S_Monster_38,E_WebCreation,
+Mon_12_2,2,각성 아라벨라,Boss,80,0,80,95,Item_012,0.69999999999999996,Range_18,S_Monster_39,S_Monster_35,S_Monster_36,S_Monster_40,S_Monster_41,E_WebCreation,E_Entanglement
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
@@ -287,10 +287,10 @@ E_Bondage,속박,Harmful,DecreaseOnTrigger,이동 시 1 감소,이동을 시도�
 E_Grudge,원한,Beneficial,Maintain,0,수치만큼 공격의 피해량이 증가한다.,1
 E_Corrosion,침식,Harmful,Maintain,0,받는 모든 피해가 수치만큼 증가한다.,1
 E_Barrier,장막,Beneficial,DecreaseOnTrigger,피격 시 1 감소,받는 피해를 무효화한다.,1
-E_Split,분열,Neutral,DecreaseOnTrigger,피격 시 1 감소,"직접 피격 시 수치가 감소하며, 0이 되면 블롭 2마리로 분열한다.",1
+E_Split,분열,Neutral,DecreaseOnTrigger,피격 시 1 감소,수치가 0이 되면 블롭 2마리로 분열한다.,1
 E_Trail,흔적,Neutral,Maintain,0,이동 시 기존 위치에 점액을 남긴다.,1
 E_DoubleMove,기동,Neutral,Maintain,0,매 턴 이동을 최대 2회 예약한다.,1
-E_Explode,폭발,Neutral,Decrease,턴 종료 시 1 감소,"턴 종료 시 수치가 감소하며, 0이 되면 대폭발을 사용한다.",1
+E_Explode,폭발,Neutral,Decrease,턴 종료 시 1 감소,수치가 0이 되면 대폭발을 사용한다.,1
 E_Counter,반격,Neutral,Maintain,0,직접 공격에 피격 시 내려찍기로 반격한다.,1
 E_Targeting,표적,Neutral,Maintain,0,같은 라인에 캐릭터가 없으면 곡사를 예약한다.,1
 E_Fortress,철옹성,Neutral,Maintain,0,턴 시작 시 방어도 10을 획득한다.,1
@@ -298,9 +298,7 @@ E_Ambush,암습,Neutral,Maintain,0,후방 공격 시 피해가 100% 증가한다
 E_Necromancy,사령술,Neutral,Maintain,0,유골 상태의 변이체를 최대 생명력의 50%로 부활시킨다.,1
 E_WebCreation,사냥실,Neutral,Maintain,0,턴 시작 시 거미줄을 생성한다.,1
 E_Entanglement,뒤얽힘,Neutral,Maintain,0,턴 시작 시 무작위 타임라인 슬롯 1개를 잠근다.,1
-E_Spider_Web,거미줄,Neutral,Maintain,0,이동 마나 소모량이 2배 증가한다.,1
 E_Spawn_Spider_Egg,고치,Neutral,None,0,지정 위치에 고치를 생성한다.,1
-E_Spawn_Spider_Web,거미영역,Neutral,None,0,지정 위치에 거미줄을 생성한다.,1
 E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,0,마나 재생량을 수치만큼 변화시킨다.,0
 E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,0,카르마가 최대일 때 카르마를 회복하면 수치 배율만큼 마나를 회복한다.,0
 E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,0,카르마가 최대일 때 모든 스킬 마나 사용량을 수치만큼 변화시킨다.,0
@@ -393,8 +391,8 @@ E_Rune_Target_Boost_Value_Delta,룬 대상 기억 증폭 변화,Neutral,0,0,룬�
 E_Rune_Target_Heal_Value_Delta,룬 대상 기억 치유 변화,Neutral,0,0,룬의 대상 기억이 회복하는 생명력을 수치만큼 변화시킨다.,0
 E_Rune_Target_Knockback_Value_Delta,룬 대상 기억 넉백 변화,Neutral,0,0,룬의 대상 기억이 부여하는 넉백 거리를 수치만큼 변화시킨다.,0
 E_Rune_Target_Range_Expand,룬 대상 기억 범위 확장,Neutral,0,0,룬의 대상 기억 범위를 한 단계 확장한다.,0
-E_MissingHPStrike,잃은 생명력의 {ValueRate}%,Neutral,0,0,잃은 체력의 ValueRate%만큼 피해 계산,0,
-E_PoisonTrigger,중독 즉시 발동,Neutral,0,0,중독을 ValueRate 부여한 뒤 중독 효과를 즉시 1회 발동,0,
+E_MissingHPStrike,잃은 생명력의 {ValueRate}%,Neutral,0,0,잃은 체력의 ValueRate%만큼 피해 계산,0
+E_PoisonTrigger,중독 즉시 발동,Neutral,0,0,중독을 ValueRate 부여한 뒤 중독 효과를 즉시 1회 발동,0
 E_DebuffIncrease,디버프 수치 증가,Neutral,0,0,대상이 현재 보유한 모든 Harmful 디버프 수치를 ValueRate만큼 증가,0,
 E_DebuffDouble,디버프 증폭,Neutral,0,0,대상이 보유한 디버프 중 현재 수치가 가장 높은 1종의 수치를 2배,0,
 E_RemoveArmor,방어도 제거,Neutral,0,0,현재 방어도와 동일한 양의 방어도 피해를 주어 방어도를 0으로 만듦,0,
@@ -403,8 +401,8 @@ E_MissSelfDamage,빗나감 자해,Neutral,0,0,유효한 적을 맞히지 못하�
 E_ValueUpOnKill,처치 시 영구 피해 증가,Neutral,0,0,이 스킬로 처치한 적 하나당 다음 사용부터 피해 수치가 증가한다.,0,
 E_ValueUpOnHit,명중 시 전투 피해 증가,Neutral,0,0,성공한 타격마다 이 전투 동안 다음 사용부터 피해 수치가 증가한다.,0,
 E_DamageUpIfBleeding,출혈 대상 피해 증가,Neutral,0,0,출혈이 있는 대상에게 주는 피해가 50% 증가한다.,0,
-E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,0,,
-E_TriggerPoison,중독 즉시 발동,Neutral,0,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,0,,
+E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,0,
+E_TriggerPoison,중독 즉시 발동,Neutral,0,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,0,
 E_RestoreManaPerHitTarget,타격당 마나 회복,Neutral,0,0,성공한 총 타격 수에 비례해 마나를 회복한다.,0,,
 E_RandomStrike,무작위 연속 타격,Neutral,0,0,범위 내 살아 있는 적을 매 타격마다 다시 추첨해 피해를 준다.,0,,
 E_StrikeByVulnerable,취약 비례 피해,Neutral,0,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,0,,
@@ -448,7 +446,8 @@ E_Revive,부활,Neutral,0,0,전투불능 상태인 대상이 최대 생명력의
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
-,,,,,
+,,,,,,,,
+,,,,,,,,
 ,,,,,
 ,,,,,,
 ,,,,,,
