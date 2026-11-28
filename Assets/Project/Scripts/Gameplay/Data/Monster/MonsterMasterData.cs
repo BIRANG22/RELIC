@@ -35,6 +35,9 @@ namespace Relic.Gameplay.Data
         public string PossSkillId09;
         public string PossSkillId10;
 
+        public string Characteristic01;
+        public string Characteristic02;
+
         public string SpecialAction2;
 
         [NonSerialized]

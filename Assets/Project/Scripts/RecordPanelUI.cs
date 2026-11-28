@@ -42,6 +42,11 @@ public sealed class RecordPanelUI : MonoBehaviour
     [SerializeField] private RectTransform monsterRoot;
     [SerializeField] private RectTransform monsterButtonViewport;
     [SerializeField] private Image monsterPreviewImage;
+    [SerializeField] private TMP_Text monsterNameText;
+    [SerializeField] private RectTransform monsterActionRoot;
+    [SerializeField] private MonsterInfoSkillItemUI monsterActionItemPrefab;
+    [SerializeField] private RectTransform monsterCharacteristicRoot;
+    [SerializeField] private RectTransform monsterCharacteristicItemPrefab;
     [SerializeField] private Button monsterPhaseOneButton;
     [SerializeField] private Button monsterPhaseTwoButton;
 
@@ -95,6 +100,10 @@ public sealed class RecordPanelUI : MonoBehaviour
     private string selectedMemoryCharacterId;
     private readonly List<Button> createdFragmentCategoryButtons = new();
     private readonly List<Button> createdMonsterButtons = new();
+    private readonly ReusableComponentPool<MonsterInfoSkillItemUI> monsterActionItems = new();
+    private bool monsterActionTemplatesResolved;
+    private readonly ReusableComponentPool<RectTransform> monsterCharacteristicItems = new();
+    private bool monsterCharacteristicTemplatesResolved;
     private RectTransform defaultRecordViewport;
     private RectTransform monsterListContent;
     private Coroutine monsterPreviewAnimation;
@@ -281,6 +290,9 @@ public sealed class RecordPanelUI : MonoBehaviour
         {
             monsterButtonViewport ??= monsterRoot.Find("Charbutton") as RectTransform;
             monsterPreviewImage ??= monsterRoot.Find("Content/Preview")?.GetComponent<Image>();
+            monsterNameText ??= monsterRoot.Find("Content/Name")?.GetComponent<TMP_Text>();
+            monsterActionRoot ??= monsterRoot.Find("Content/Action") as RectTransform;
+            monsterCharacteristicRoot ??= monsterRoot.Find("Content/Characteristic") as RectTransform;
             monsterPhaseOneButton ??= monsterRoot.Find("Content/Charbutton01")?.GetComponent<Button>();
             monsterPhaseTwoButton ??= monsterRoot.Find("Content/Charbutton02")?.GetComponent<Button>();
             if (monsterPhaseOneButton != null)
@@ -544,7 +556,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         if (initialCharacter != null)
             ShowCharacterMemory(data, initialCharacter, initialButton);
         else
-            RefreshListScrollBounds(memoryScrollContent, 0f);
+            RefreshListScrollBounds(memoryScrollContent);
     }
 
     private static void RefreshGeneratedButtonColors(IEnumerable<Button> buttons, Button selectedButton, ColorBlock prefabColors)
@@ -582,7 +594,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         SkillDatabase skills = data.SkillDatabase;
         if (skills == null)
         {
-            RefreshListScrollBounds(memoryScrollContent, 0f);
+            RefreshListScrollBounds(memoryScrollContent);
             return;
         }
 
@@ -599,7 +611,7 @@ public sealed class RecordPanelUI : MonoBehaviour
             AddMemorySlot(data, memoryCoreSlots, skill);
         }
 
-        RefreshListScrollBounds(memoryScrollContent, 0f, memoryPassiveSlots, memoryUltimateSlots,
+        RefreshListScrollBounds(memoryScrollContent, memoryPassiveSlots, memoryUltimateSlots,
             memoryAbilitySlots, memoryCoreSlots);
     }
 
@@ -696,8 +708,7 @@ public sealed class RecordPanelUI : MonoBehaviour
                     AddRuneSlot(data, rune, fragmentSharedSlots);
         }
 
-        RefreshListScrollBounds(fragmentScrollContent, fragmentScrollBottomPadding,
-            exclusive ? fragmentExclusiveSlots : fragmentSharedSlots);
+        RefreshFragmentScrollBounds(exclusive ? fragmentExclusiveSlots : fragmentSharedSlots);
     }
 
     private static IEnumerable<RuneData> GetSortedRecordRunes(RuneDatabase runes)
@@ -716,7 +727,40 @@ public sealed class RecordPanelUI : MonoBehaviour
         AddSlot(icon, RecordDisplayNameResolver.RuneName(rune), discovered, rune.Rarity, parent: parent);
     }
 
-    private void RefreshListScrollBounds(RectTransform scrollContent, float bottomPadding, params RectTransform[] sections)
+    private void RefreshFragmentScrollBounds(RectTransform section)
+    {
+        if (fragmentScrollContent == null || !section.IsChildOf(fragmentScrollContent))
+            return;
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(section);
+        float top = fragmentScrollContent.rect.yMax;
+        float bottom = top;
+        foreach (RecordIconSlotUI slot in createdSlots)
+        {
+            if (slot == null || !slot.gameObject.activeInHierarchy)
+                continue;
+
+            Bounds bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(fragmentScrollContent, slot.transform);
+            bottom = Mathf.Min(bottom, bounds.min.y);
+        }
+
+        float height = top - bottom;
+        if (recordScrollRect != null)
+        {
+            RectTransform viewport = recordScrollRect.viewport != null
+                ? recordScrollRect.viewport
+                : (RectTransform)recordScrollRect.transform;
+            Vector3 worldHeight = fragmentScrollContent.TransformVector(Vector3.up * height);
+            float heightInViewport = Mathf.Abs(viewport.InverseTransformVector(worldHeight).y);
+            if (heightInViewport > viewport.rect.height + 0.01f)
+                height += Mathf.Max(0f, fragmentScrollBottomPadding);
+        }
+
+        SetListScrollHeight(fragmentScrollContent, height);
+    }
+
+    private void RefreshListScrollBounds(RectTransform scrollContent, params RectTransform[] sections)
     {
         if (scrollContent == null)
             return;
@@ -734,7 +778,13 @@ public sealed class RecordPanelUI : MonoBehaviour
             bottom = Mathf.Min(bottom, sectionBounds.min.y);
         }
 
+        SetListScrollHeight(scrollContent, top - bottom);
+    }
+
+    private void SetListScrollHeight(RectTransform scrollContent, float height)
+    {
         // Keep the same top edge and section offsets when the prefab uses a centered pivot.
+        float top = scrollContent.rect.yMax;
         Vector3 topPosition = scrollContent.TransformPoint(Vector3.up * top);
         Vector3[] childPositions = new Vector3[scrollContent.childCount];
         for (int i = 0; i < childPositions.Length; i++)
@@ -743,7 +793,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         Vector2 pivot = scrollContent.pivot;
         pivot.y = 1f;
         scrollContent.pivot = pivot;
-        scrollContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, top - bottom + Mathf.Max(0f, bottomPadding));
+        scrollContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
         scrollContent.position = topPosition;
         for (int i = 0; i < childPositions.Length; i++)
             scrollContent.GetChild(i).localPosition = childPositions[i];
@@ -756,7 +806,8 @@ public sealed class RecordPanelUI : MonoBehaviour
         if (monsterListContent != null || monsterButtonViewport == null)
             return;
 
-        var list = new GameObject("MonsterButtons", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        var list = new GameObject("MonsterButtons", typeof(RectTransform),
+            typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
         monsterListContent = (RectTransform)list.transform;
         monsterListContent.SetParent(monsterButtonViewport, false);
         monsterListContent.anchorMin = new Vector2(0f, 1f);
@@ -765,12 +816,17 @@ public sealed class RecordPanelUI : MonoBehaviour
         monsterListContent.anchoredPosition = Vector2.zero;
         monsterListContent.sizeDelta = Vector2.zero;
 
+        ContentSizeFitter fitter = list.GetComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
         VerticalLayoutGroup source = monsterButtonViewport.GetComponent<VerticalLayoutGroup>();
         if (source == null)
             return;
 
         VerticalLayoutGroup layout = list.GetComponent<VerticalLayoutGroup>();
-        layout.padding = source.padding;
+        RectOffset padding = source.padding;
+        layout.padding = new RectOffset(padding.left, padding.right,
+            Mathf.Max(8, padding.top), Mathf.Max(8, padding.bottom));
         layout.childAlignment = source.childAlignment;
         layout.spacing = source.spacing;
         layout.childControlWidth = source.childControlWidth;
@@ -802,6 +858,8 @@ public sealed class RecordPanelUI : MonoBehaviour
 
     private void BuildMonsterButtons(DataManager data)
     {
+        ResolveMonsterActionTemplates();
+        ResolveMonsterCharacteristicTemplates();
         if (monsterListContent == null || monsterPreviewImage == null || memoryCharacterButtonPrefab == null)
         {
             Debug.LogWarning("[RecordPanelUI] Monster Layout 인스펙터 연결을 확인해 주세요.", this);
@@ -815,10 +873,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         {
             Button button = Instantiate(memoryCharacterButtonPrefab, monsterListContent, false);
             bool discovered = CanShowMonster(data, monster.MonsterId);
-            string label = discovered
-                ? GameDataLocalization.MonsterName(monster.MonsterId,
-                    string.IsNullOrWhiteSpace(monster.Name) ? monster.MonsterId : monster.Name)
-                : GameLocalization.Get(LocalizationKeys.Record.Undiscovered);
+            string label = discovered ? GetRecordMonsterName(monster) : "???";
             SetMonsterButtonLabel(button, label);
             button.interactable = discovered;
             button.onClick.AddListener(() => SelectRecordMonster(data, monster, button));
@@ -833,13 +888,20 @@ public sealed class RecordPanelUI : MonoBehaviour
         }
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(monsterListContent);
-        monsterListContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-            LayoutUtility.GetPreferredHeight(monsterListContent));
         Canvas.ForceUpdateCanvases();
+        Vector2 listPosition = monsterListContent.anchoredPosition;
+        listPosition.y = 0f;
+        monsterListContent.anchoredPosition = listPosition;
         ResetRecordScrollPosition();
 
         if (initialMonster != null)
             SelectRecordMonster(data, initialMonster, initialButton);
+    }
+
+    private static string GetRecordMonsterName(MonsterMasterData monster)
+    {
+        string fallback = string.IsNullOrWhiteSpace(monster.Name) ? monster.MonsterId : monster.Name;
+        return GameDataLocalization.MonsterName(monster.MonsterId, fallback);
     }
 
     private static void SetMonsterButtonLabel(Button button, string label)
@@ -916,6 +978,14 @@ public sealed class RecordPanelUI : MonoBehaviour
     private void ShowMonsterPreview(DataManager data, string monsterId)
     {
         ClearMonsterPreview();
+        if (data.MonsterDatabase.TryGet(monsterId, out MonsterMasterData monster))
+        {
+            if (monsterNameText != null)
+                monsterNameText.text = GetRecordMonsterName(monster);
+            RebuildMonsterActions(data.MonsterSkillDatabase, monster);
+            RebuildMonsterCharacteristics(data, monster);
+        }
+
         if (data.MonsterPrefabDatabase == null ||
             !data.MonsterPrefabDatabase.TryGetEntry(monsterId, out MonsterPrefabDatabase.Entry entry))
             return;
@@ -950,6 +1020,11 @@ public sealed class RecordPanelUI : MonoBehaviour
 
     private void ClearMonsterPreview()
     {
+        monsterActionItems.DeactivateAll();
+        monsterCharacteristicItems.DeactivateAll();
+        if (monsterNameText != null)
+            monsterNameText.text = string.Empty;
+
         if (monsterPreviewAnimation != null)
         {
             StopCoroutine(monsterPreviewAnimation);
@@ -959,6 +1034,96 @@ public sealed class RecordPanelUI : MonoBehaviour
         {
             monsterPreviewImage.sprite = null;
             monsterPreviewImage.enabled = false;
+        }
+    }
+
+    private void ResolveMonsterActionTemplates()
+    {
+        if (monsterActionRoot == null || monsterActionTemplatesResolved)
+            return;
+
+        foreach (Transform child in monsterActionRoot)
+        {
+            if (!child.TryGetComponent(out MonsterInfoSkillItemUI example))
+                continue;
+
+            monsterActionItemPrefab ??= example;
+            example.gameObject.SetActive(false);
+        }
+
+        monsterActionTemplatesResolved = true;
+    }
+
+    private void RebuildMonsterActions(MonsterSkillDatabase skills, MonsterMasterData monster)
+    {
+        if (monsterActionRoot == null || monsterActionItemPrefab == null || skills == null)
+            return;
+
+        List<MonsterSkillData> actions = new();
+        foreach (string actionId in monster.GetPossibleSkillIds())
+        {
+            MonsterSkillData action = skills.Get(actionId);
+            if (action != null)
+                actions.Add(action);
+        }
+
+        monsterActionItems.Prepare(actions.Count, () => Instantiate(monsterActionItemPrefab, monsterActionRoot, false));
+        for (int i = 0; i < actions.Count; i++)
+            monsterActionItems[i].Bind(actions[i]);
+    }
+
+    private void ResolveMonsterCharacteristicTemplates()
+    {
+        if (monsterCharacteristicRoot == null || monsterCharacteristicTemplatesResolved)
+            return;
+
+        foreach (Transform child in monsterCharacteristicRoot)
+        {
+            if (!(child is RectTransform example) || example.Find("Icon") == null || example.Find("Desc") == null)
+                continue;
+
+            monsterCharacteristicItemPrefab ??= example;
+            example.gameObject.SetActive(false);
+        }
+
+        monsterCharacteristicTemplatesResolved = true;
+    }
+
+    private void RebuildMonsterCharacteristics(DataManager data, MonsterMasterData monster)
+    {
+        if (monsterCharacteristicRoot == null || monsterCharacteristicItemPrefab == null || data.EffectDatabase == null)
+            return;
+
+        List<EffectMasterData> effects = new(2);
+        foreach (string effectId in new[] { monster.Characteristic01, monster.Characteristic02 })
+        {
+            if (data.EffectDatabase.TryGet(effectId?.Trim(), out EffectMasterData effect))
+                effects.Add(effect);
+        }
+
+        monsterCharacteristicItems.Prepare(effects.Count,
+            () => Instantiate(monsterCharacteristicItemPrefab, monsterCharacteristicRoot, false));
+        for (int i = 0; i < effects.Count; i++)
+        {
+            RectTransform item = monsterCharacteristicItems[i];
+            EffectMasterData effect = effects[i];
+            Image icon = item.Find("Icon")?.GetComponent<Image>();
+            if (icon != null)
+            {
+                Sprite sprite = null;
+                data.StatusEffectIconDatabase?.TryGetIcon(effect.EffectId, out sprite);
+                icon.sprite = sprite;
+                icon.enabled = sprite != null;
+            }
+
+            TMP_Text description = item.Find("Desc")?.GetComponent<TMP_Text>();
+            if (description != null)
+            {
+                LocalizedTMPText.ProtectDynamicOwnership(description);
+                string name = MonsterInfoDataNameResolver.ResolveEffectName(effect, effect.EffectId);
+                string effectDescription = GameDataLocalization.EffectTooltip(effect);
+                description.text = string.IsNullOrWhiteSpace(effectDescription) ? name : $"{name} : {effectDescription}";
+            }
         }
     }
 
