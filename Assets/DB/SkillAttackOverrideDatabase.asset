@@ -346,7 +346,7 @@ MonoBehaviour:
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
     SkillId: S_Core_407
-    AttackSlot: 6
+    AttackSlot: 1
     RepeatAttackSlots: 
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
@@ -371,5 +371,5 @@ MonoBehaviour:
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
     SkillId: S_Core_412
-    AttackSlot: 4
+    AttackSlot: 2
     RepeatAttackSlots: 
