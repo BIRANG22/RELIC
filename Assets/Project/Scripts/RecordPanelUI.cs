@@ -22,12 +22,20 @@ public sealed class RecordPanelUI : MonoBehaviour
 
     [Header("Memory Layout")]
     [SerializeField] private RectTransform memoryRoot;
+    [SerializeField] private RectTransform memoryScrollContent;
     [SerializeField] private RectTransform memoryCharacterButtons;
     [SerializeField] private Button memoryCharacterButtonPrefab;
     [SerializeField] private RectTransform memoryPassiveSlots;
     [SerializeField] private RectTransform memoryUltimateSlots;
     [SerializeField] private RectTransform memoryAbilitySlots;
     [SerializeField] private RectTransform memoryCoreSlots;
+
+    [Header("Fragment Layout")]
+    [SerializeField] private RectTransform fragmentRoot;
+    [SerializeField] private RectTransform fragmentScrollContent;
+    [SerializeField] private RectTransform fragmentCategoryButtons;
+    [SerializeField] private RectTransform fragmentExclusiveSlots;
+    [SerializeField] private RectTransform fragmentSharedSlots;
 
     [Header("Record Tab Buttons")]
     [SerializeField] private Button skillTabButton;
@@ -77,9 +85,7 @@ public sealed class RecordPanelUI : MonoBehaviour
     private bool debugRevealAll;
     private readonly List<Button> createdMemoryCharacterButtons = new();
     private string selectedMemoryCharacterId;
-    private bool showingMemory;
-    private bool scrollWasEnabled;
-    private bool verticalScrollbarWasVisible;
+    private readonly List<Button> createdFragmentCategoryButtons = new();
 
     private void Awake()
     {
@@ -247,8 +253,6 @@ public sealed class RecordPanelUI : MonoBehaviour
 
         if (recordScrollRect != null)
         {
-            if (recordGridContent != null)
-                recordScrollRect.content = recordGridContent;
             if (recordScrollRect.verticalScrollbarVisibility != ScrollRect.ScrollbarVisibility.AutoHide)
                 recordScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
         }
@@ -299,10 +303,12 @@ public sealed class RecordPanelUI : MonoBehaviour
         currentTab = tab;
         RefreshSelectedButton();
         bool showMemory = tab == RecordTab.Skill && memoryRoot != null;
-        SetMemoryVisible(showMemory);
+        bool showFragment = tab == RecordTab.Fragment && fragmentRoot != null;
+        SetRecordContent(showMemory, showFragment);
         ClearSlots();
         ClearMemoryCharacterButtons();
-        if (!showMemory && recordGridContent == null)
+        ClearFragmentCategoryButtons();
+        if (!showMemory && !showFragment && recordGridContent == null)
         {
             Debug.LogWarning("[RecordPanelUI] Scroll View/Viewport/Content를 찾을 수 없습니다.", this);
             return;
@@ -328,6 +334,13 @@ public sealed class RecordPanelUI : MonoBehaviour
             return;
         }
 
+        if (showFragment)
+        {
+            BuildFragmentCategoryButtons(data);
+            RefreshRecordNumber(data, tab);
+            return;
+        }
+
         switch (tab)
         {
             case RecordTab.Skill:
@@ -345,13 +358,8 @@ public sealed class RecordPanelUI : MonoBehaviour
                 break;
             case RecordTab.Fragment:
                 if (data.RuneDatabase != null)
-                    foreach (RuneData rune in data.RuneDatabase.GetAll().Where(x => x != null).OrderBy(x => GetRecordRarityOrder(x.Rarity))
-                        .ThenBy(x => x.RuneId, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Sprite icon = null;
-                        if (data.RuneIconDatabase != null) data.RuneIconDatabase.TryGetIcon(rune.RuneId, out icon);
-                        AddSlot(icon, RecordDisplayNameResolver.RuneName(rune), debugRevealAll || RecordDiscoveryService.IsRuneDiscovered(data, rune.RuneId), rune.Rarity);
-                    }
+                    foreach (RuneData rune in GetSortedRecordRunes(data.RuneDatabase))
+                        AddRuneSlot(data, rune, recordGridContent);
                 break;
             case RecordTab.Relic:
                 if (data.RelicDatabase != null)
@@ -394,45 +402,39 @@ public sealed class RecordPanelUI : MonoBehaviour
 
         RefreshRecordNumber(data, tab);
         Canvas.ForceUpdateCanvases();
-        if (recordScrollRect != null)
+        ResetRecordScrollPosition();
+    }
+
+    private void ResetRecordScrollPosition()
+    {
+        if (recordScrollRect != null && recordScrollRect.content != null)
         {
             recordScrollRect.StopMovement();
             recordScrollRect.verticalNormalizedPosition = 1f;
         }
     }
 
-    private void SetMemoryVisible(bool visible)
+    private void SetRecordContent(bool showMemory, bool showFragment)
     {
         if (memoryRoot != null)
-            memoryRoot.gameObject.SetActive(visible);
+            memoryRoot.gameObject.SetActive(showMemory);
+        if (fragmentRoot != null)
+            fragmentRoot.gameObject.SetActive(showFragment);
         if (recordGridContent != null)
-            recordGridContent.gameObject.SetActive(!visible);
-
-        if (showingMemory == visible)
-            return;
-
-        showingMemory = visible;
+            recordGridContent.gameObject.SetActive(!showMemory && !showFragment);
         if (recordScrollRect == null)
             return;
 
-        Scrollbar verticalScrollbar = recordScrollRect.verticalScrollbar;
-        if (visible)
-        {
-            scrollWasEnabled = recordScrollRect.enabled;
-            recordScrollRect.StopMovement();
-            recordScrollRect.enabled = false;
-            if (verticalScrollbar != null)
-            {
-                verticalScrollbarWasVisible = verticalScrollbar.gameObject.activeSelf;
-                verticalScrollbar.gameObject.SetActive(false);
-            }
-        }
-        else
-        {
-            if (verticalScrollbar != null)
-                verticalScrollbar.gameObject.SetActive(verticalScrollbarWasVisible);
-            recordScrollRect.enabled = scrollWasEnabled;
-        }
+        recordScrollRect.StopMovement();
+        RectTransform scrollContent = recordGridContent;
+        if (showMemory)
+            scrollContent = memoryScrollContent;
+        else if (showFragment)
+            scrollContent = fragmentScrollContent;
+
+        recordScrollRect.content = scrollContent;
+        if (scrollContent == null && recordScrollRect.verticalScrollbar != null)
+            recordScrollRect.verticalScrollbar.gameObject.SetActive(false);
     }
 
     private void ClearMemoryCharacterButtons()
@@ -463,9 +465,7 @@ public sealed class RecordPanelUI : MonoBehaviour
 
         CharacterMasterData initialCharacter = null;
         Button initialButton = null;
-        foreach (CharacterMasterData character in data.CharacterDatabase.GetAll().Values
-            .Where(character => character != null && !string.IsNullOrWhiteSpace(character.Name))
-            .OrderBy(character => character.CharacterId, StringComparer.OrdinalIgnoreCase))
+        foreach (CharacterMasterData character in GetNamedRecordCharacters(data.CharacterDatabase))
         {
             Button button = Instantiate(memoryCharacterButtonPrefab, memoryCharacterButtons, false);
             if (initialCharacter == null ||
@@ -481,7 +481,7 @@ public sealed class RecordPanelUI : MonoBehaviour
 
             button.onClick.AddListener(() =>
             {
-                if (currentTab != RecordTab.Skill || !showingMemory)
+                if (currentTab != RecordTab.Skill)
                     return;
 
                 ClearSlots();
@@ -493,12 +493,13 @@ public sealed class RecordPanelUI : MonoBehaviour
 
         if (initialCharacter != null)
             ShowCharacterMemory(data, initialCharacter, initialButton);
+        else
+            RefreshListScrollBounds(memoryScrollContent);
     }
 
-    private void RefreshMemoryCharacterButtonColors(Button selectedButton)
+    private static void RefreshGeneratedButtonColors(IEnumerable<Button> buttons, Button selectedButton, ColorBlock prefabColors)
     {
-        ColorBlock prefabColors = memoryCharacterButtonPrefab.colors;
-        foreach (Button button in createdMemoryCharacterButtons)
+        foreach (Button button in buttons)
         {
             if (button == null)
                 continue;
@@ -526,10 +527,13 @@ public sealed class RecordPanelUI : MonoBehaviour
     private void ShowCharacterMemory(DataManager data, CharacterMasterData character, Button selectedButton)
     {
         selectedMemoryCharacterId = character.CharacterId;
-        RefreshMemoryCharacterButtonColors(selectedButton);
+        RefreshGeneratedButtonColors(createdMemoryCharacterButtons, selectedButton, memoryCharacterButtonPrefab.colors);
         SkillDatabase skills = data.SkillDatabase;
         if (skills == null)
+        {
+            RefreshListScrollBounds(memoryScrollContent);
             return;
+        }
 
         AddConfiguredMemorySlots(data, memoryPassiveSlots, character.PassiveSkill1, character.PassiveSkill2);
         AddConfiguredMemorySlots(data, memoryUltimateSlots, character.UniqueSkill1, character.UniqueSkill2, character.UniqueSkill3);
@@ -543,6 +547,9 @@ public sealed class RecordPanelUI : MonoBehaviour
         {
             AddMemorySlot(data, memoryCoreSlots, skill);
         }
+
+        RefreshListScrollBounds(memoryScrollContent, memoryPassiveSlots, memoryUltimateSlots,
+            memoryAbilitySlots, memoryCoreSlots);
     }
 
     private void AddConfiguredMemorySlots(DataManager data, RectTransform parent, params string[] skillIds)
@@ -567,6 +574,135 @@ public sealed class RecordPanelUI : MonoBehaviour
         bool discovered = debugRevealAll || RecordDiscoveryService.IsSkillDiscovered(data, skill.SkillId);
         AddSlot(icon, RecordDisplayNameResolver.SkillName(skill), discovered,
             SkillRarityUtility.GetCanonicalName(skill.Rarity), parent: parent);
+    }
+
+    private static IEnumerable<CharacterMasterData> GetNamedRecordCharacters(CharacterDatabase characters)
+    {
+        if (characters == null)
+            return Enumerable.Empty<CharacterMasterData>();
+
+        return characters.GetAll().Values
+            .Where(character => character != null && !string.IsNullOrWhiteSpace(character.Name))
+            .OrderBy(character => character.CharacterId, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void BuildFragmentCategoryButtons(DataManager data)
+    {
+        if (fragmentCategoryButtons == null || fragmentExclusiveSlots == null ||
+            fragmentSharedSlots == null || memoryCharacterButtonPrefab == null)
+        {
+            Debug.LogWarning("[RecordPanelUI] Fragment Layout 인스펙터 연결을 확인해 주세요.", this);
+            return;
+        }
+
+        Button exclusiveButton = CreateFragmentCategoryButton(data, "전용파편", true);
+        CreateFragmentCategoryButton(data, "공용파편", false);
+        ShowFragmentCategory(data, true, exclusiveButton);
+    }
+
+    private Button CreateFragmentCategoryButton(DataManager data, string label, bool exclusive)
+    {
+        Button button = Instantiate(memoryCharacterButtonPrefab, fragmentCategoryButtons, false);
+        TMP_Text nameLabel = button.transform.Find("Name")?.GetComponent<TMP_Text>();
+        if (nameLabel != null)
+            nameLabel.text = label;
+
+        button.onClick.AddListener(() => ShowFragmentCategory(data, exclusive, button));
+        button.gameObject.SetActive(true);
+        createdFragmentCategoryButtons.Add(button);
+        return button;
+    }
+
+    private void ClearFragmentCategoryButtons()
+    {
+        foreach (Button button in createdFragmentCategoryButtons)
+        {
+            if (button == null)
+                continue;
+
+            button.gameObject.SetActive(false);
+            Destroy(button.gameObject);
+        }
+        createdFragmentCategoryButtons.Clear();
+    }
+
+    private void ShowFragmentCategory(DataManager data, bool exclusive, Button selectedButton)
+    {
+        if (currentTab != RecordTab.Fragment)
+            return;
+
+        ClearSlots();
+        fragmentExclusiveSlots.gameObject.SetActive(exclusive);
+        fragmentSharedSlots.gameObject.SetActive(!exclusive);
+        RefreshGeneratedButtonColors(createdFragmentCategoryButtons, selectedButton, memoryCharacterButtonPrefab.colors);
+
+        IEnumerable<RuneData> runes = data.RuneDatabase != null
+            ? GetSortedRecordRunes(data.RuneDatabase)
+            : Enumerable.Empty<RuneData>();
+        if (exclusive)
+        {
+            var runesByCharacter = runes
+                .Where(rune => !string.IsNullOrWhiteSpace(rune.TargetCharacterId))
+                .ToLookup(rune => rune.TargetCharacterId.Trim(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (CharacterMasterData character in GetNamedRecordCharacters(data.CharacterDatabase))
+            {
+                foreach (RuneData rune in runesByCharacter[character.CharacterId.Trim()])
+                    AddRuneSlot(data, rune, fragmentExclusiveSlots);
+            }
+        }
+        else
+        {
+            foreach (RuneData rune in runes)
+                if (string.Equals(rune.TargetCharacterId?.Trim(), "All", StringComparison.OrdinalIgnoreCase))
+                    AddRuneSlot(data, rune, fragmentSharedSlots);
+        }
+
+        RefreshListScrollBounds(fragmentScrollContent, exclusive ? fragmentExclusiveSlots : fragmentSharedSlots);
+    }
+
+    private static IEnumerable<RuneData> GetSortedRecordRunes(RuneDatabase runes)
+    {
+        return runes.GetAll()
+            .Where(rune => rune != null)
+            .OrderBy(rune => GetRecordRarityOrder(rune.Rarity))
+            .ThenBy(rune => rune.RuneId, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void AddRuneSlot(DataManager data, RuneData rune, RectTransform parent)
+    {
+        Sprite icon = null;
+        data.RuneIconDatabase?.TryGetIcon(rune.RuneId, out icon);
+        bool discovered = debugRevealAll || RecordDiscoveryService.IsRuneDiscovered(data, rune.RuneId);
+        AddSlot(icon, RecordDisplayNameResolver.RuneName(rune), discovered, rune.Rarity, parent: parent);
+    }
+
+    private void RefreshListScrollBounds(RectTransform scrollContent, params RectTransform[] sections)
+    {
+        if (scrollContent == null)
+            return;
+
+        Canvas.ForceUpdateCanvases();
+        float top = scrollContent.rect.yMax;
+        float bottom = top;
+        foreach (RectTransform section in sections)
+        {
+            if (section == null || !section.IsChildOf(scrollContent))
+                continue;
+
+            Bounds sectionBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(scrollContent, section);
+            bottom = Mathf.Min(bottom, sectionBounds.min.y);
+        }
+
+        // Preserve the authored positions of the center-anchored sections when the content height changes.
+        Vector3[] childPositions = new Vector3[scrollContent.childCount];
+        for (int i = 0; i < childPositions.Length; i++)
+            childPositions[i] = scrollContent.GetChild(i).localPosition;
+        scrollContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, top - bottom);
+        for (int i = 0; i < childPositions.Length; i++)
+            scrollContent.GetChild(i).localPosition = childPositions[i];
+
+        ResetRecordScrollPosition();
     }
 
     private void RefreshRecordNumber(DataManager data, RecordTab tab)
