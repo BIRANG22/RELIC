@@ -20,6 +20,9 @@ public class MonsterPrefabDatabase : ScriptableObject
         [Tooltip("MonsterInfoPanel Preview 이미지의 RectTransform 크기입니다.")]
         public Vector2 previewSize = new Vector2(300f, 300f);
 
+        [Tooltip("도감의 몬스터 프리뷰에서 프리팹의 기본 위치를 기준으로 더할 X, Y 값입니다.")]
+        public Vector2 previewOffset = Vector2.zero;
+
         [Tooltip("Idle Preview 애니메이션의 초당 프레임 수입니다.")]
         [Min(0.01f)]
         public float previewFramesPerSecond = 6f;
