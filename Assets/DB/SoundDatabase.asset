@@ -1389,7 +1389,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_401
-    vfxPrefab: {fileID: 5022181577685763610, guid: fd96bbed608d1014b8c6d903be12193c, type: 3}
+    vfxPrefab: {fileID: 7054004222324287659, guid: 9fcd410c3ce6f064ba77b97fa3cdcd5a, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 335e524d7c644cf45bf160e27a164c42, type: 3}
       delay: 0
@@ -1666,7 +1666,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_401
-    vfxPrefab: {fileID: 7054004222324287659, guid: 9fcd410c3ce6f064ba77b97fa3cdcd5a, type: 3}
+    vfxPrefab: {fileID: 5022181577685763610, guid: fd96bbed608d1014b8c6d903be12193c, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
       delay: 0
@@ -3327,7 +3327,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1.2
   - displayName: S_Core_407
-    vfxPrefab: {fileID: 0}
+    vfxPrefab: {fileID: 8398766023209026343, guid: cfa02d17bacf81a4b976ba1c8ebdb038, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
       delay: 0
@@ -3335,6 +3335,28 @@ MonoBehaviour:
       pitch: 1.5
       loop: 0
       playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: e4e3c21c4a4b14bf49fbec776416afed, type: 3}
+      delay: 0
+      volume: 0.3
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 9be06d1ef9bd54e18a296563a14d533e, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
       useRandomPitch: 0
       overrideSpatialBlend: 0
       spatialBlend: 0
@@ -3507,14 +3529,25 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1.5
   - displayName: S_Core_412
-    vfxPrefab: {fileID: 0}
+    vfxPrefab: {fileID: 5809854242070298331, guid: a5e946376a6f0564997fd49b149838b3, type: 3}
     cues:
-    - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+    - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
       delay: 0
       volume: 0.5
-      pitch: 1.5
+      pitch: 1
       loop: 0
       playOncePerAction: 1
+      useRandomPitch: 0
+      overrideSpatialBlend: 0
+      spatialBlend: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: b150f25bc4eef4ff8b286c3fa842e9c3, type: 3}
+      delay: 0
+      volume: 0.3
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
       useRandomPitch: 0
       overrideSpatialBlend: 0
       spatialBlend: 0

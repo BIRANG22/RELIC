@@ -2787,7 +2787,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_407
     Vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 8398766023209026343, guid: cfa02d17bacf81a4b976ba1c8ebdb038, type: 3}
       flipType: 2
       renderMode: 2
       proxyBlendMode: 1
@@ -2997,7 +2997,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_412
     Vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 5809854242070298331, guid: a5e946376a6f0564997fd49b149838b3, type: 3}
       flipType: 2
       renderMode: 2
       proxyBlendMode: 1
